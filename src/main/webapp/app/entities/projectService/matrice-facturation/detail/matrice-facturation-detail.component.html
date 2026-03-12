@@ -1,0 +1,68 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="matriceFacturation">
+      <h2 data-cy="matriceFacturationDetailsHeading">
+        <span jhiTranslate="gpmGatewayApp.projectServiceMatriceFacturation.detail.title">Matrice Facturation</span>
+      </h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ matriceFacturation.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceMatriceFacturation.tarifBase">Tarif Base</span></dt>
+        <dd>
+          <span>{{ matriceFacturation.tarifBase }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceMatriceFacturation.tarifMissionNuit">Tarif Mission Nuit</span></dt>
+        <dd>
+          <span>{{ matriceFacturation.tarifMissionNuit }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceMatriceFacturation.tarifHebergement">Tarif Hebergement</span></dt>
+        <dd>
+          <span>{{ matriceFacturation.tarifHebergement }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceMatriceFacturation.tarifJourFerie">Tarif Jour Ferie</span></dt>
+        <dd>
+          <span>{{ matriceFacturation.tarifJourFerie }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceMatriceFacturation.tarifDimanche">Tarif Dimanche</span></dt>
+        <dd>
+          <span>{{ matriceFacturation.tarifDimanche }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceMatriceFacturation.affaire">Affaire</span></dt>
+        <dd>
+          <div *ngIf="matriceFacturation.affaire">
+            <a [routerLink]="['/affaire', matriceFacturation.affaire.id, 'view']">{{ matriceFacturation.affaire.designationAffaire }}</a>
+          </div>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceMatriceFacturation.ville">Ville</span></dt>
+        <dd>
+          <div *ngIf="matriceFacturation.ville">
+            <a [routerLink]="['/ville', matriceFacturation.ville.id, 'view']">{{ matriceFacturation.ville.nom }}</a>
+          </div>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceMatriceFacturation.zone">Zone</span></dt>
+        <dd>
+          <div *ngIf="matriceFacturation.zone">
+            <a [routerLink]="['/zone', matriceFacturation.zone.id, 'view']">{{ matriceFacturation.zone.nom }}</a>
+          </div>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/matrice-facturation', matriceFacturation.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

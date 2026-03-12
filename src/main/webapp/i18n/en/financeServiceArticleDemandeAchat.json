@@ -1,0 +1,34 @@
+{
+  "gpmGatewayApp": {
+    "financeServiceArticleDemandeAchat": {
+      "home": {
+        "title": "Article Demande Achats",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Article Demande Achat",
+        "createOrEditLabel": "Create or edit a Article Demande Achat",
+        "notFound": "No Article Demande Achats found"
+      },
+      "delete": {
+        "question": "Are you sure you want to delete Article Demande Achat {{ id }}?"
+      },
+      "detail": {
+        "title": "Article Demande Achat"
+      },
+      "id": "ID",
+      "qteDemandee": "Qte Demandee",
+      "type": "Type",
+      "articleCode": "Article Code",
+      "demandeAchat": "Demande Achat",
+      "help": {
+        "articleCode": "Cross-service FK → Article (projectService)"
+      }
+    }
+  },
+  "financeServiceApp": {
+    "financeServiceArticleDemandeAchat": {
+      "created": "A new Article Demande Achat is created with identifier {{ param }}",
+      "updated": "A Article Demande Achat is updated with identifier {{ param }}",
+      "deleted": "A Article Demande Achat is deleted with identifier {{ param }}"
+    }
+  }
+}

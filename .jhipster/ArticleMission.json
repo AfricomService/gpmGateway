@@ -1,0 +1,45 @@
+{
+  "applications": ["gpmGateway", "operationsService"],
+  "changelogDate": "20260312132040",
+  "clientRootFolder": "operationsService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "article_mission",
+  "fields": [
+    {
+      "fieldName": "item",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "quantitePlanifiee",
+      "fieldType": "Float",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "quantiteRealisee",
+      "fieldType": "Float"
+    },
+    {
+      "fieldName": "articleCode",
+      "fieldType": "String",
+      "javadoc": "Cross-service FK → Article (projectService)"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "operationsService",
+  "name": "ArticleMission",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityName": "workOrder",
+      "relationshipName": "workOrder",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "service": "serviceClass"
+}

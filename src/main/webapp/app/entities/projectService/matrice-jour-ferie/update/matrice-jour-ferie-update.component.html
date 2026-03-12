@@ -1,0 +1,126 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="jhi-matrice-jour-ferie-heading"
+        data-cy="MatriceJourFerieCreateUpdateHeading"
+        jhiTranslate="gpmGatewayApp.projectServiceMatriceJourFerie.home.createOrEditLabel"
+      >
+        Créer ou éditer un Matrice Jour Ferie
+      </h2>
+
+      <div>
+        <jhi-alert-error></jhi-alert-error>
+
+        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
+          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
+          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceMatriceJourFerie.tarifApplique" for="field_tarifApplique"
+            >Tarif Applique</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="tarifApplique"
+            id="field_tarifApplique"
+            data-cy="tarifApplique"
+            formControlName="tarifApplique"
+          />
+          <div
+            *ngIf="
+              editForm.get('tarifApplique')!.invalid && (editForm.get('tarifApplique')!.dirty || editForm.get('tarifApplique')!.touched)
+            "
+          >
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('tarifApplique')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+            <small
+              class="form-text text-danger"
+              [hidden]="!editForm.get('tarifApplique')?.errors?.number"
+              jhiTranslate="entity.validation.number"
+            >
+              Ce champ doit être un nombre.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceMatriceJourFerie.matrice" for="field_matrice">Matrice</label>
+          <select
+            class="form-control"
+            id="field_matrice"
+            data-cy="matrice"
+            name="matrice"
+            formControlName="matrice"
+            [compareWith]="compareMatriceFacturation"
+          >
+            <option *ngIf="!editForm.get('matrice')!.value" [ngValue]="null" selected></option>
+            <option [ngValue]="matriceFacturationOption" *ngFor="let matriceFacturationOption of matriceFacturationsSharedCollection">
+              {{ matriceFacturationOption.id }}
+            </option>
+          </select>
+        </div>
+        <div *ngIf="editForm.get(['matrice'])!.invalid && (editForm.get(['matrice'])!.dirty || editForm.get(['matrice'])!.touched)">
+          <small
+            class="form-text text-danger"
+            *ngIf="editForm.get(['matrice'])?.errors?.required"
+            jhiTranslate="entity.validation.required"
+          >
+            Ce champ est obligatoire.
+          </small>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceMatriceJourFerie.jourFerie" for="field_jourFerie"
+            >Jour Ferie</label
+          >
+          <select
+            class="form-control"
+            id="field_jourFerie"
+            data-cy="jourFerie"
+            name="jourFerie"
+            formControlName="jourFerie"
+            [compareWith]="compareJourFerie"
+          >
+            <option *ngIf="!editForm.get('jourFerie')!.value" [ngValue]="null" selected></option>
+            <option [ngValue]="jourFerieOption" *ngFor="let jourFerieOption of jourFeriesSharedCollection">
+              {{ jourFerieOption.designation }}
+            </option>
+          </select>
+        </div>
+        <div *ngIf="editForm.get(['jourFerie'])!.invalid && (editForm.get(['jourFerie'])!.dirty || editForm.get(['jourFerie'])!.touched)">
+          <small
+            class="form-text text-danger"
+            *ngIf="editForm.get(['jourFerie'])?.errors?.required"
+            jhiTranslate="entity.validation.required"
+          >
+            Ce champ est obligatoire.
+          </small>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,44 @@
+{
+  "gpmGatewayApp": {
+    "financeServiceFacture": {
+      "home": {
+        "title": "Factures",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Facture",
+        "createOrEditLabel": "Créer ou éditer un Facture",
+        "notFound": "Aucun Facture trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Facture {{ id }} ?"
+      },
+      "detail": {
+        "title": "Facture"
+      },
+      "id": "ID",
+      "numFacture": "Num Facture",
+      "bonDeCommande": "Bon De Commande",
+      "montantFacture": "Montant Facture",
+      "dateFacture": "Date Facture",
+      "dateEcheance": "Date Echeance",
+      "dateDecharge": "Date Decharge",
+      "statut": "Statut",
+      "clientId": "Client Id",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "createdBy": "Created By",
+      "createdByUserLogin": "Created By User Login",
+      "updatedBy": "Updated By",
+      "updatedByUserLogin": "Updated By User Login",
+      "help": {
+        "clientId": "Cross-service FK → Client (projectService)"
+      }
+    }
+  },
+  "financeServiceApp": {
+    "financeServiceFacture": {
+      "created": "Un nouveau Facture a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Facture avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Facture avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

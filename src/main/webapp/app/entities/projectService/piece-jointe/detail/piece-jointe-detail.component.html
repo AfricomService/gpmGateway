@@ -1,0 +1,62 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="pieceJointe">
+      <h2 data-cy="pieceJointeDetailsHeading">
+        <span jhiTranslate="gpmGatewayApp.projectServicePieceJointe.detail.title">Piece Jointe</span>
+      </h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ pieceJointe.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServicePieceJointe.nomFichier">Nom Fichier</span></dt>
+        <dd>
+          <span>{{ pieceJointe.nomFichier }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServicePieceJointe.type">Type</span></dt>
+        <dd>
+          <span>{{ pieceJointe.type }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServicePieceJointe.fichierURL">Fichier URL</span></dt>
+        <dd>
+          <span>{{ pieceJointe.fichierURL }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServicePieceJointe.dateUpload">Date Upload</span></dt>
+        <dd>
+          <span>{{ pieceJointe.dateUpload | formatMediumDatetime }}</span>
+        </dd>
+        <dt>
+          <span
+            jhiTranslate="gpmGatewayApp.projectServicePieceJointe.workOrderId"
+            [ngbTooltip]="'gpmGatewayApp.projectServicePieceJointe.help.workOrderId' | translate"
+            >Work Order Id</span
+          >
+        </dt>
+        <dd>
+          <span>{{ pieceJointe.workOrderId }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServicePieceJointe.affaire">Affaire</span></dt>
+        <dd>
+          <div *ngIf="pieceJointe.affaire">
+            <a [routerLink]="['/affaire', pieceJointe.affaire.id, 'view']">{{ pieceJointe.affaire.designationAffaire }}</a>
+          </div>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/piece-jointe', pieceJointe.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

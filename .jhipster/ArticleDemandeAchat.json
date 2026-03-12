@@ -1,0 +1,43 @@
+{
+  "applications": ["gpmGateway", "financeService"],
+  "changelogDate": "20260312131940",
+  "clientRootFolder": "financeService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "article_demande_achat",
+  "fields": [
+    {
+      "fieldName": "qteDemandee",
+      "fieldType": "Float",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "type",
+      "fieldType": "TypeArticleDemandeAchat",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "Fourniture,Service"
+    },
+    {
+      "fieldName": "articleCode",
+      "fieldType": "String",
+      "javadoc": "Cross-service FK → Article (projectService)"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "financeService",
+  "name": "ArticleDemandeAchat",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityField": "code",
+      "otherEntityName": "demandeAchat",
+      "relationshipName": "demandeAchat",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "service": "serviceClass"
+}

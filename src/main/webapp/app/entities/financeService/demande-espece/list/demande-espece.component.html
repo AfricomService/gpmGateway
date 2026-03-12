@@ -1,0 +1,176 @@
+<div>
+  <h2 id="page-heading" data-cy="DemandeEspeceHeading">
+    <span jhiTranslate="gpmGatewayApp.financeServiceDemandeEspece.home.title">DemandeEspeces</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
+        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        <span jhiTranslate="gpmGatewayApp.financeServiceDemandeEspece.home.refreshListLabel">Actualiser la liste</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-demande-espece"
+        [routerLink]="['/demande-espece/new']"
+      >
+        <fa-icon icon="plus"></fa-icon>
+        <span jhiTranslate="gpmGatewayApp.financeServiceDemandeEspece.home.createLabel"> Créer un nouveau Demande Espece </span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error></jhi-alert-error>
+
+  <jhi-alert></jhi-alert>
+
+  <div class="alert alert-warning" id="no-result" *ngIf="demandeEspeces?.length === 0">
+    <span jhiTranslate="gpmGatewayApp.financeServiceDemandeEspece.home.notFound">Aucun Demande Espece trouvé</span>
+  </div>
+
+  <div class="table-responsive table-entities" id="entities" *ngIf="demandeEspeces && demandeEspeces.length > 0">
+    <table class="table table-striped" aria-describedby="page-heading">
+      <thead>
+        <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
+          <th scope="col" jhiSortBy="id">
+            <div class="d-flex">
+              <span jhiTranslate="global.field.id">ID</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="montant">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceDemandeEspece.montant">Montant</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="motif">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceDemandeEspece.motif">Motif</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="workOrderId">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceDemandeEspece.workOrderId">Work Order Id</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="beneficiaireId">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceDemandeEspece.beneficiaireId">Beneficiaire Id</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="beneficiaireUserLogin">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceDemandeEspece.beneficiaireUserLogin">Beneficiaire User Login</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="createdAt">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceDemandeEspece.createdAt">Created At</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="updatedAt">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceDemandeEspece.updatedAt">Updated At</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="createdBy">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceDemandeEspece.createdBy">Created By</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="createdByUserLogin">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceDemandeEspece.createdByUserLogin">Created By User Login</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="updatedBy">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceDemandeEspece.updatedBy">Updated By</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="updatedByUserLogin">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceDemandeEspece.updatedByUserLogin">Updated By User Login</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let demandeEspece of demandeEspeces; trackBy: trackId" data-cy="entityTable">
+          <td>
+            <a [routerLink]="['/demande-espece', demandeEspece.id, 'view']">{{ demandeEspece.id }}</a>
+          </td>
+          <td>{{ demandeEspece.montant }}</td>
+          <td>{{ demandeEspece.motif }}</td>
+          <td>{{ demandeEspece.workOrderId }}</td>
+          <td>{{ demandeEspece.beneficiaireId }}</td>
+          <td>{{ demandeEspece.beneficiaireUserLogin }}</td>
+          <td>{{ demandeEspece.createdAt | formatMediumDatetime }}</td>
+          <td>{{ demandeEspece.updatedAt | formatMediumDatetime }}</td>
+          <td>{{ demandeEspece.createdBy }}</td>
+          <td>{{ demandeEspece.createdByUserLogin }}</td>
+          <td>{{ demandeEspece.updatedBy }}</td>
+          <td>{{ demandeEspece.updatedByUserLogin }}</td>
+          <td class="text-end">
+            <div class="btn-group">
+              <button
+                type="submit"
+                [routerLink]="['/demande-espece', demandeEspece.id, 'view']"
+                class="btn btn-info btn-sm"
+                data-cy="entityDetailsButton"
+              >
+                <fa-icon icon="eye"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
+              </button>
+
+              <button
+                type="submit"
+                [routerLink]="['/demande-espece', demandeEspece.id, 'edit']"
+                class="btn btn-primary btn-sm"
+                data-cy="entityEditButton"
+              >
+                <fa-icon icon="pencil-alt"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
+              </button>
+
+              <button type="submit" (click)="delete(demandeEspece)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                <fa-icon icon="times"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="demandeEspeces && demandeEspeces.length > 0">
+    <div class="d-flex justify-content-center">
+      <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+    </div>
+
+    <div class="d-flex justify-content-center">
+      <ngb-pagination
+        [collectionSize]="totalItems"
+        [page]="page"
+        [pageSize]="itemsPerPage"
+        [maxSize]="5"
+        [rotate]="true"
+        [boundaryLinks]="true"
+        (pageChange)="navigateToPage($event)"
+      ></ngb-pagination>
+    </div>
+  </div>
+</div>

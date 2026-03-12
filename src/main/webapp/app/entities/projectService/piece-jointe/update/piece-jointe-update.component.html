@@ -1,0 +1,162 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="jhi-piece-jointe-heading"
+        data-cy="PieceJointeCreateUpdateHeading"
+        jhiTranslate="gpmGatewayApp.projectServicePieceJointe.home.createOrEditLabel"
+      >
+        Créer ou éditer un Piece Jointe
+      </h2>
+
+      <div>
+        <jhi-alert-error></jhi-alert-error>
+
+        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
+          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
+          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServicePieceJointe.nomFichier" for="field_nomFichier"
+            >Nom Fichier</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="nomFichier"
+            id="field_nomFichier"
+            data-cy="nomFichier"
+            formControlName="nomFichier"
+          />
+          <div *ngIf="editForm.get('nomFichier')!.invalid && (editForm.get('nomFichier')!.dirty || editForm.get('nomFichier')!.touched)">
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('nomFichier')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServicePieceJointe.type" for="field_type">Type</label>
+          <input type="text" class="form-control" name="type" id="field_type" data-cy="type" formControlName="type" />
+          <div *ngIf="editForm.get('type')!.invalid && (editForm.get('type')!.dirty || editForm.get('type')!.touched)">
+            <small class="form-text text-danger" *ngIf="editForm.get('type')?.errors?.required" jhiTranslate="entity.validation.required">
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServicePieceJointe.fichierURL" for="field_fichierURL"
+            >Fichier URL</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="fichierURL"
+            id="field_fichierURL"
+            data-cy="fichierURL"
+            formControlName="fichierURL"
+          />
+          <div *ngIf="editForm.get('fichierURL')!.invalid && (editForm.get('fichierURL')!.dirty || editForm.get('fichierURL')!.touched)">
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('fichierURL')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServicePieceJointe.dateUpload" for="field_dateUpload"
+            >Date Upload</label
+          >
+          <div class="d-flex">
+            <input
+              id="field_dateUpload"
+              data-cy="dateUpload"
+              type="datetime-local"
+              class="form-control"
+              name="dateUpload"
+              formControlName="dateUpload"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+          <div *ngIf="editForm.get('dateUpload')!.invalid && (editForm.get('dateUpload')!.dirty || editForm.get('dateUpload')!.touched)">
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('dateUpload')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+            <small
+              class="form-text text-danger"
+              [hidden]="!editForm.get('dateUpload')?.errors?.datetimelocal"
+              jhiTranslate="entity.validation.datetimelocal"
+            >
+              Ce champ doit être une date et une heure.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.projectServicePieceJointe.workOrderId"
+            for="field_workOrderId"
+            [ngbTooltip]="'gpmGatewayApp.projectServicePieceJointe.help.workOrderId' | translate"
+            >Work Order Id</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="workOrderId"
+            id="field_workOrderId"
+            data-cy="workOrderId"
+            formControlName="workOrderId"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServicePieceJointe.affaire" for="field_affaire">Affaire</label>
+          <select
+            class="form-control"
+            id="field_affaire"
+            data-cy="affaire"
+            name="affaire"
+            formControlName="affaire"
+            [compareWith]="compareAffaire"
+          >
+            <option [ngValue]="null"></option>
+            <option [ngValue]="affaireOption" *ngFor="let affaireOption of affairesSharedCollection">
+              {{ affaireOption.designationAffaire }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

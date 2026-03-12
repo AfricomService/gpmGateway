@@ -1,0 +1,36 @@
+{
+  "gpmGatewayApp": {
+    "financeServiceFactureWo": {
+      "home": {
+        "title": "FactureWOS",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Facture WO",
+        "createOrEditLabel": "Créer ou éditer un Facture WO",
+        "notFound": "Aucun Facture WO trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Facture WO {{ id }} ?"
+      },
+      "detail": {
+        "title": "Facture WO"
+      },
+      "id": "ID",
+      "pourcentageFacture": "Pourcentage Facture",
+      "montantFacture": "Montant Facture",
+      "remarque": "Remarque",
+      "workOrderId": "Work Order Id",
+      "facture": "Facture",
+      "help": {
+        "pourcentageFacture": "ex: 75.0 pour 75%",
+        "workOrderId": "Cross-service FK → WorkOrder (operationsService)"
+      }
+    }
+  },
+  "financeServiceApp": {
+    "financeServiceFactureWo": {
+      "created": "Un nouveau Facture WO a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Facture WO avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Facture WO avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

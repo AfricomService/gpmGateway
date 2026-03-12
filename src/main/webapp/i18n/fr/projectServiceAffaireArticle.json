@@ -1,0 +1,31 @@
+{
+  "gpmGatewayApp": {
+    "projectServiceAffaireArticle": {
+      "home": {
+        "title": "AffaireArticles",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Affaire Article",
+        "createOrEditLabel": "Créer ou éditer un Affaire Article",
+        "notFound": "Aucun Affaire Article trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Affaire Article {{ id }} ?"
+      },
+      "detail": {
+        "title": "Affaire Article"
+      },
+      "id": "ID",
+      "quantiteContractuelle": "Quantite Contractuelle",
+      "quantiteRealisee": "Quantite Realisee",
+      "affaire": "Affaire",
+      "article": "Article"
+    }
+  },
+  "projectServiceApp": {
+    "projectServiceAffaireArticle": {
+      "created": "Un nouveau Affaire Article a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Affaire Article avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Affaire Article avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

@@ -1,0 +1,64 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="historiqueStatutWO">
+      <h2 data-cy="historiqueStatutWODetailsHeading">
+        <span jhiTranslate="gpmGatewayApp.operationsServiceHistoriqueStatutWo.detail.title">Historique Statut WO</span>
+      </h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ historiqueStatutWO.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceHistoriqueStatutWo.ancienStatut">Ancien Statut</span></dt>
+        <dd>
+          <span jhiTranslate="{{ 'gpmGatewayApp.StatutWO.' + historiqueStatutWO.ancienStatut }}">{{
+            historiqueStatutWO.ancienStatut
+          }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceHistoriqueStatutWo.nouveauStatut">Nouveau Statut</span></dt>
+        <dd>
+          <span jhiTranslate="{{ 'gpmGatewayApp.StatutWO.' + historiqueStatutWO.nouveauStatut }}">{{
+            historiqueStatutWO.nouveauStatut
+          }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceHistoriqueStatutWo.dateChangement">Date Changement</span></dt>
+        <dd>
+          <span>{{ historiqueStatutWO.dateChangement | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceHistoriqueStatutWo.commentaire">Commentaire</span></dt>
+        <dd>
+          <span>{{ historiqueStatutWO.commentaire }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceHistoriqueStatutWo.userId">User Id</span></dt>
+        <dd>
+          <span>{{ historiqueStatutWO.userId }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceHistoriqueStatutWo.userLogin">User Login</span></dt>
+        <dd>
+          <span>{{ historiqueStatutWO.userLogin }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceHistoriqueStatutWo.workOrder">Work Order</span></dt>
+        <dd>
+          <div *ngIf="historiqueStatutWO.workOrder">
+            <a [routerLink]="['/work-order', historiqueStatutWO.workOrder.id, 'view']">{{ historiqueStatutWO.workOrder.id }}</a>
+          </div>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/historique-statut-wo', historiqueStatutWO.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

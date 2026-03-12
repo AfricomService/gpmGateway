@@ -1,0 +1,81 @@
+{
+  "applications": ["gpmGateway", "financeService"],
+  "changelogDate": "20260312132740",
+  "clientRootFolder": "financeService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "facture",
+  "fields": [
+    {
+      "fieldName": "numFacture",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "unique"]
+    },
+    {
+      "fieldName": "bonDeCommande",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "montantFacture",
+      "fieldType": "Float",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "dateFacture",
+      "fieldType": "LocalDate",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "dateEcheance",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "dateDecharge",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "statut",
+      "fieldType": "StatutFacture",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "Creation,Verification,Paiement,Decharge,Fin"
+    },
+    {
+      "fieldName": "clientId",
+      "fieldType": "Long",
+      "javadoc": "Cross-service FK → Client (projectService)"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "createdBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "createdByUserLogin",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "updatedBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "updatedByUserLogin",
+      "fieldType": "String"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "financeService",
+  "name": "Facture",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceClass"
+}

@@ -1,0 +1,36 @@
+{
+  "gpmGatewayApp": {
+    "projectServiceArticle": {
+      "home": {
+        "title": "Articles",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Article",
+        "createOrEditLabel": "Create or edit a Article",
+        "notFound": "No Articles found"
+      },
+      "delete": {
+        "question": "Are you sure you want to delete Article {{ id }}?"
+      },
+      "detail": {
+        "title": "Article"
+      },
+      "id": "ID",
+      "code": "Code",
+      "designation": "Designation",
+      "uniteMesure": "Unite Mesure",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "createdBy": "Created By",
+      "createdByUserLogin": "Created By User Login",
+      "updatedBy": "Updated By",
+      "updatedByUserLogin": "Updated By User Login"
+    }
+  },
+  "projectServiceApp": {
+    "projectServiceArticle": {
+      "created": "A new Article is created with identifier {{ param }}",
+      "updated": "A Article is updated with identifier {{ param }}",
+      "deleted": "A Article is deleted with identifier {{ param }}"
+    }
+  }
+}

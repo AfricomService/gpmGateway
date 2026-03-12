@@ -1,0 +1,117 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="jhi-facture-wo-heading"
+        data-cy="FactureWOCreateUpdateHeading"
+        jhiTranslate="gpmGatewayApp.financeServiceFactureWo.home.createOrEditLabel"
+      >
+        Créer ou éditer un Facture WO
+      </h2>
+
+      <div>
+        <jhi-alert-error></jhi-alert-error>
+
+        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
+          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
+          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceFactureWo.pourcentageFacture"
+            for="field_pourcentageFacture"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceFactureWo.help.pourcentageFacture' | translate"
+            >Pourcentage Facture</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="pourcentageFacture"
+            id="field_pourcentageFacture"
+            data-cy="pourcentageFacture"
+            formControlName="pourcentageFacture"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFactureWo.montantFacture" for="field_montantFacture"
+            >Montant Facture</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="montantFacture"
+            id="field_montantFacture"
+            data-cy="montantFacture"
+            formControlName="montantFacture"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFactureWo.remarque" for="field_remarque">Remarque</label>
+          <input type="text" class="form-control" name="remarque" id="field_remarque" data-cy="remarque" formControlName="remarque" />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceFactureWo.workOrderId"
+            for="field_workOrderId"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceFactureWo.help.workOrderId' | translate"
+            >Work Order Id</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="workOrderId"
+            id="field_workOrderId"
+            data-cy="workOrderId"
+            formControlName="workOrderId"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFactureWo.facture" for="field_facture">Facture</label>
+          <select
+            class="form-control"
+            id="field_facture"
+            data-cy="facture"
+            name="facture"
+            formControlName="facture"
+            [compareWith]="compareFacture"
+          >
+            <option *ngIf="!editForm.get('facture')!.value" [ngValue]="null" selected></option>
+            <option [ngValue]="factureOption" *ngFor="let factureOption of facturesSharedCollection">{{ factureOption.numFacture }}</option>
+          </select>
+        </div>
+        <div *ngIf="editForm.get(['facture'])!.invalid && (editForm.get(['facture'])!.dirty || editForm.get(['facture'])!.touched)">
+          <small
+            class="form-text text-danger"
+            *ngIf="editForm.get(['facture'])?.errors?.required"
+            jhiTranslate="entity.validation.required"
+          >
+            Ce champ est obligatoire.
+          </small>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

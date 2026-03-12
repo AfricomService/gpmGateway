@@ -1,0 +1,472 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="jhi-work-order-heading"
+        data-cy="WorkOrderCreateUpdateHeading"
+        jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.home.createOrEditLabel"
+      >
+        Créer ou éditer un Work Order
+      </h2>
+
+      <div>
+        <jhi-alert-error></jhi-alert-error>
+
+        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
+          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
+          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.clientId"
+            for="field_clientId"
+            [ngbTooltip]="'gpmGatewayApp.operationsServiceWorkOrder.help.clientId' | translate"
+            >Client Id</label
+          >
+          <input type="number" class="form-control" name="clientId" id="field_clientId" data-cy="clientId" formControlName="clientId" />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.affaireId"
+            for="field_affaireId"
+            [ngbTooltip]="'gpmGatewayApp.operationsServiceWorkOrder.help.affaireId' | translate"
+            >Affaire Id</label
+          >
+          <input type="number" class="form-control" name="affaireId" id="field_affaireId" data-cy="affaireId" formControlName="affaireId" />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.demandeurContactId"
+            for="field_demandeurContactId"
+            [ngbTooltip]="'gpmGatewayApp.operationsServiceWorkOrder.help.demandeurContactId' | translate"
+            >Demandeur Contact Id</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="demandeurContactId"
+            id="field_demandeurContactId"
+            data-cy="demandeurContactId"
+            formControlName="demandeurContactId"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.vehiculeId"
+            for="field_vehiculeId"
+            [ngbTooltip]="'gpmGatewayApp.operationsServiceWorkOrder.help.vehiculeId' | translate"
+            >Vehicule Id</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="vehiculeId"
+            id="field_vehiculeId"
+            data-cy="vehiculeId"
+            formControlName="vehiculeId"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.otExterneId"
+            for="field_otExterneId"
+            [ngbTooltip]="'gpmGatewayApp.operationsServiceWorkOrder.help.otExterneId' | translate"
+            >Ot Externe Id</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="otExterneId"
+            id="field_otExterneId"
+            data-cy="otExterneId"
+            formControlName="otExterneId"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.valideurId" for="field_valideurId"
+            >Valideur Id</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="valideurId"
+            id="field_valideurId"
+            data-cy="valideurId"
+            formControlName="valideurId"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.valideurUserLogin" for="field_valideurUserLogin"
+            >Valideur User Login</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="valideurUserLogin"
+            id="field_valideurUserLogin"
+            data-cy="valideurUserLogin"
+            formControlName="valideurUserLogin"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.dateHeureDebutPrev"
+            for="field_dateHeureDebutPrev"
+            >Date Heure Debut Prev</label
+          >
+          <div class="d-flex">
+            <input
+              id="field_dateHeureDebutPrev"
+              data-cy="dateHeureDebutPrev"
+              type="datetime-local"
+              class="form-control"
+              name="dateHeureDebutPrev"
+              formControlName="dateHeureDebutPrev"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+          <div
+            *ngIf="
+              editForm.get('dateHeureDebutPrev')!.invalid &&
+              (editForm.get('dateHeureDebutPrev')!.dirty || editForm.get('dateHeureDebutPrev')!.touched)
+            "
+          >
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('dateHeureDebutPrev')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+            <small
+              class="form-text text-danger"
+              [hidden]="!editForm.get('dateHeureDebutPrev')?.errors?.datetimelocal"
+              jhiTranslate="entity.validation.datetimelocal"
+            >
+              Ce champ doit être une date et une heure.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.dateHeureFinPrev" for="field_dateHeureFinPrev"
+            >Date Heure Fin Prev</label
+          >
+          <div class="d-flex">
+            <input
+              id="field_dateHeureFinPrev"
+              data-cy="dateHeureFinPrev"
+              type="datetime-local"
+              class="form-control"
+              name="dateHeureFinPrev"
+              formControlName="dateHeureFinPrev"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+          <div
+            *ngIf="
+              editForm.get('dateHeureFinPrev')!.invalid &&
+              (editForm.get('dateHeureFinPrev')!.dirty || editForm.get('dateHeureFinPrev')!.touched)
+            "
+          >
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('dateHeureFinPrev')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+            <small
+              class="form-text text-danger"
+              [hidden]="!editForm.get('dateHeureFinPrev')?.errors?.datetimelocal"
+              jhiTranslate="entity.validation.datetimelocal"
+            >
+              Ce champ doit être une date et une heure.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.dateHeureDebutReel"
+            for="field_dateHeureDebutReel"
+            >Date Heure Debut Reel</label
+          >
+          <div class="d-flex">
+            <input
+              id="field_dateHeureDebutReel"
+              data-cy="dateHeureDebutReel"
+              type="datetime-local"
+              class="form-control"
+              name="dateHeureDebutReel"
+              formControlName="dateHeureDebutReel"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.dateHeureFinReel" for="field_dateHeureFinReel"
+            >Date Heure Fin Reel</label
+          >
+          <div class="d-flex">
+            <input
+              id="field_dateHeureFinReel"
+              data-cy="dateHeureFinReel"
+              type="datetime-local"
+              class="form-control"
+              name="dateHeureFinReel"
+              formControlName="dateHeureFinReel"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.missionDeNuit" for="field_missionDeNuit"
+            >Mission De Nuit</label
+          >
+          <input
+            type="checkbox"
+            class="form-check"
+            name="missionDeNuit"
+            id="field_missionDeNuit"
+            data-cy="missionDeNuit"
+            formControlName="missionDeNuit"
+          />
+          <div
+            *ngIf="
+              editForm.get('missionDeNuit')!.invalid && (editForm.get('missionDeNuit')!.dirty || editForm.get('missionDeNuit')!.touched)
+            "
+          >
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('missionDeNuit')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.nombreNuits" for="field_nombreNuits"
+            >Nombre Nuits</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="nombreNuits"
+            id="field_nombreNuits"
+            data-cy="nombreNuits"
+            formControlName="nombreNuits"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.hebergement" for="field_hebergement"
+            >Hebergement</label
+          >
+          <input
+            type="checkbox"
+            class="form-check"
+            name="hebergement"
+            id="field_hebergement"
+            data-cy="hebergement"
+            formControlName="hebergement"
+          />
+          <div *ngIf="editForm.get('hebergement')!.invalid && (editForm.get('hebergement')!.dirty || editForm.get('hebergement')!.touched)">
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('hebergement')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.nombreHebergements"
+            for="field_nombreHebergements"
+            >Nombre Hebergements</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="nombreHebergements"
+            id="field_nombreHebergements"
+            data-cy="nombreHebergements"
+            formControlName="nombreHebergements"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.remarque" for="field_remarque">Remarque</label>
+          <input type="text" class="form-control" name="remarque" id="field_remarque" data-cy="remarque" formControlName="remarque" />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.numFicheIntervention"
+            for="field_numFicheIntervention"
+            >Num Fiche Intervention</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="numFicheIntervention"
+            id="field_numFicheIntervention"
+            data-cy="numFicheIntervention"
+            formControlName="numFicheIntervention"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.statut" for="field_statut">Statut</label>
+          <select class="form-control" name="statut" formControlName="statut" id="field_statut" data-cy="statut">
+            <option [ngValue]="null">{{ 'gpmGatewayApp.StatutWO.null' | translate }}</option>
+            <option *ngFor="let statutWO of statutWOValues" [value]="statutWO">
+              {{ 'gpmGatewayApp.StatutWO.' + statutWO | translate }}
+            </option>
+          </select>
+          <div *ngIf="editForm.get('statut')!.invalid && (editForm.get('statut')!.dirty || editForm.get('statut')!.touched)">
+            <small class="form-text text-danger" *ngIf="editForm.get('statut')?.errors?.required" jhiTranslate="entity.validation.required">
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.materielUtilise" for="field_materielUtilise"
+            >Materiel Utilise</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="materielUtilise"
+            id="field_materielUtilise"
+            data-cy="materielUtilise"
+            formControlName="materielUtilise"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.createdAt" for="field_createdAt"
+            >Created At</label
+          >
+          <div class="d-flex">
+            <input
+              id="field_createdAt"
+              data-cy="createdAt"
+              type="datetime-local"
+              class="form-control"
+              name="createdAt"
+              formControlName="createdAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.updatedAt" for="field_updatedAt"
+            >Updated At</label
+          >
+          <div class="d-flex">
+            <input
+              id="field_updatedAt"
+              data-cy="updatedAt"
+              type="datetime-local"
+              class="form-control"
+              name="updatedAt"
+              formControlName="updatedAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.createdBy" for="field_createdBy"
+            >Created By</label
+          >
+          <input type="text" class="form-control" name="createdBy" id="field_createdBy" data-cy="createdBy" formControlName="createdBy" />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.createdByUserLogin"
+            for="field_createdByUserLogin"
+            >Created By User Login</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="createdByUserLogin"
+            id="field_createdByUserLogin"
+            data-cy="createdByUserLogin"
+            formControlName="createdByUserLogin"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.updatedBy" for="field_updatedBy"
+            >Updated By</label
+          >
+          <input type="text" class="form-control" name="updatedBy" id="field_updatedBy" data-cy="updatedBy" formControlName="updatedBy" />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.updatedByUserLogin"
+            for="field_updatedByUserLogin"
+            >Updated By User Login</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="updatedByUserLogin"
+            id="field_updatedByUserLogin"
+            data-cy="updatedByUserLogin"
+            formControlName="updatedByUserLogin"
+          />
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

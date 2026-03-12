@@ -1,0 +1,42 @@
+{
+  "gpmGatewayApp": {
+    "financeServiceDemandeEspece": {
+      "home": {
+        "title": "Demande Especes",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Demande Espece",
+        "createOrEditLabel": "Create or edit a Demande Espece",
+        "notFound": "No Demande Especes found"
+      },
+      "delete": {
+        "question": "Are you sure you want to delete Demande Espece {{ id }}?"
+      },
+      "detail": {
+        "title": "Demande Espece"
+      },
+      "id": "ID",
+      "montant": "Montant",
+      "motif": "Motif",
+      "workOrderId": "Work Order Id",
+      "beneficiaireId": "Beneficiaire Id",
+      "beneficiaireUserLogin": "Beneficiaire User Login",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "createdBy": "Created By",
+      "createdByUserLogin": "Created By User Login",
+      "updatedBy": "Updated By",
+      "updatedByUserLogin": "Updated By User Login",
+      "help": {
+        "workOrderId": "Cross-service FK → WorkOrder (operationsService)",
+        "beneficiaireId": "Cross-service FK → Utilisateur (operationsService)"
+      }
+    }
+  },
+  "financeServiceApp": {
+    "financeServiceDemandeEspece": {
+      "created": "A new Demande Espece is created with identifier {{ param }}",
+      "updated": "A Demande Espece is updated with identifier {{ param }}",
+      "deleted": "A Demande Espece is deleted with identifier {{ param }}"
+    }
+  }
+}

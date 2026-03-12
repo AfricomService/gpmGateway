@@ -1,0 +1,45 @@
+{
+  "applications": ["gpmGateway", "financeService"],
+  "changelogDate": "20260312132840",
+  "clientRootFolder": "financeService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "facture_wo",
+  "fields": [
+    {
+      "fieldName": "pourcentageFacture",
+      "fieldType": "Float",
+      "javadoc": "ex: 75.0 pour 75%"
+    },
+    {
+      "fieldName": "montantFacture",
+      "fieldType": "Float"
+    },
+    {
+      "fieldName": "remarque",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "workOrderId",
+      "fieldType": "Long",
+      "javadoc": "Cross-service FK → WorkOrder (operationsService)"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "financeService",
+  "name": "FactureWO",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityField": "numFacture",
+      "otherEntityName": "facture",
+      "relationshipName": "facture",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "service": "serviceClass"
+}

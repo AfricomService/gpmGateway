@@ -1,0 +1,44 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="woSite">
+      <h2 data-cy="woSiteDetailsHeading"><span jhiTranslate="gpmGatewayApp.operationsServiceWoSite.detail.title">Wo Site</span></h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ woSite.id }}</span>
+        </dd>
+        <dt>
+          <span
+            jhiTranslate="gpmGatewayApp.operationsServiceWoSite.siteCode"
+            [ngbTooltip]="'gpmGatewayApp.operationsServiceWoSite.help.siteCode' | translate"
+            >Site Code</span
+          >
+        </dt>
+        <dd>
+          <span>{{ woSite.siteCode }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWoSite.workOrder">Work Order</span></dt>
+        <dd>
+          <div *ngIf="woSite.workOrder">
+            <a [routerLink]="['/work-order', woSite.workOrder.id, 'view']">{{ woSite.workOrder.id }}</a>
+          </div>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/wo-site', woSite.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

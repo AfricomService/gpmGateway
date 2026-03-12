@@ -1,0 +1,338 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="jhi-demande-achat-heading"
+        data-cy="DemandeAchatCreateUpdateHeading"
+        jhiTranslate="gpmGatewayApp.financeServiceDemandeAchat.home.createOrEditLabel"
+      >
+        Créer ou éditer un Demande Achat
+      </h2>
+
+      <div>
+        <jhi-alert-error></jhi-alert-error>
+
+        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
+          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
+          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceDemandeAchat.code"
+            for="field_code"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceDemandeAchat.help.code' | translate"
+            >Code</label
+          >
+          <input type="text" class="form-control" name="code" id="field_code" data-cy="code" formControlName="code" />
+          <div *ngIf="editForm.get('code')!.invalid && (editForm.get('code')!.dirty || editForm.get('code')!.touched)">
+            <small class="form-text text-danger" *ngIf="editForm.get('code')?.errors?.required" jhiTranslate="entity.validation.required">
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceDemandeAchat.statut" for="field_statut">Statut</label>
+          <select class="form-control" name="statut" formControlName="statut" id="field_statut" data-cy="statut">
+            <option [ngValue]="null">{{ 'gpmGatewayApp.StatutDemandeAchat.null' | translate }}</option>
+            <option *ngFor="let statutDemandeAchat of statutDemandeAchatValues" [value]="statutDemandeAchat">
+              {{ 'gpmGatewayApp.StatutDemandeAchat.' + statutDemandeAchat | translate }}
+            </option>
+          </select>
+          <div *ngIf="editForm.get('statut')!.invalid && (editForm.get('statut')!.dirty || editForm.get('statut')!.touched)">
+            <small class="form-text text-danger" *ngIf="editForm.get('statut')?.errors?.required" jhiTranslate="entity.validation.required">
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceDemandeAchat.type" for="field_type">Type</label>
+          <select class="form-control" name="type" formControlName="type" id="field_type" data-cy="type">
+            <option [ngValue]="null">{{ 'gpmGatewayApp.TypeDemandeAchat.null' | translate }}</option>
+            <option *ngFor="let typeDemandeAchat of typeDemandeAchatValues" [value]="typeDemandeAchat">
+              {{ 'gpmGatewayApp.TypeDemandeAchat.' + typeDemandeAchat | translate }}
+            </option>
+          </select>
+          <div *ngIf="editForm.get('type')!.invalid && (editForm.get('type')!.dirty || editForm.get('type')!.touched)">
+            <small class="form-text text-danger" *ngIf="editForm.get('type')?.errors?.required" jhiTranslate="entity.validation.required">
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceDemandeAchat.dateCreation" for="field_dateCreation"
+            >Date Creation</label
+          >
+          <div class="d-flex">
+            <input
+              id="field_dateCreation"
+              data-cy="dateCreation"
+              type="datetime-local"
+              class="form-control"
+              name="dateCreation"
+              formControlName="dateCreation"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+          <div
+            *ngIf="editForm.get('dateCreation')!.invalid && (editForm.get('dateCreation')!.dirty || editForm.get('dateCreation')!.touched)"
+          >
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('dateCreation')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+            <small
+              class="form-text text-danger"
+              [hidden]="!editForm.get('dateCreation')?.errors?.datetimelocal"
+              jhiTranslate="entity.validation.datetimelocal"
+            >
+              Ce champ doit être une date et une heure.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceDemandeAchat.dateMiseADisposition"
+            for="field_dateMiseADisposition"
+            >Date Mise A Disposition</label
+          >
+          <div class="input-group">
+            <input
+              id="field_dateMiseADisposition"
+              data-cy="dateMiseADisposition"
+              type="text"
+              class="form-control"
+              name="dateMiseADisposition"
+              ngbDatepicker
+              #dateMiseADispositionDp="ngbDatepicker"
+              formControlName="dateMiseADisposition"
+            />
+            <button type="button" class="btn btn-secondary" (click)="dateMiseADispositionDp.toggle()">
+              <fa-icon icon="calendar-alt"></fa-icon>
+            </button>
+          </div>
+          <div
+            *ngIf="
+              editForm.get('dateMiseADisposition')!.invalid &&
+              (editForm.get('dateMiseADisposition')!.dirty || editForm.get('dateMiseADisposition')!.touched)
+            "
+          >
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('dateMiseADisposition')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceDemandeAchat.workOrderId"
+            for="field_workOrderId"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceDemandeAchat.help.workOrderId' | translate"
+            >Work Order Id</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="workOrderId"
+            id="field_workOrderId"
+            data-cy="workOrderId"
+            formControlName="workOrderId"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceDemandeAchat.affaireId"
+            for="field_affaireId"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceDemandeAchat.help.affaireId' | translate"
+            >Affaire Id</label
+          >
+          <input type="number" class="form-control" name="affaireId" id="field_affaireId" data-cy="affaireId" formControlName="affaireId" />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceDemandeAchat.demandeurId"
+            for="field_demandeurId"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceDemandeAchat.help.demandeurId' | translate"
+            >Demandeur Id</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="demandeurId"
+            id="field_demandeurId"
+            data-cy="demandeurId"
+            formControlName="demandeurId"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceDemandeAchat.demandeurUserLogin"
+            for="field_demandeurUserLogin"
+            >Demandeur User Login</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="demandeurUserLogin"
+            id="field_demandeurUserLogin"
+            data-cy="demandeurUserLogin"
+            formControlName="demandeurUserLogin"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceDemandeAchat.validateurId"
+            for="field_validateurId"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceDemandeAchat.help.validateurId' | translate"
+            >Validateur Id</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="validateurId"
+            id="field_validateurId"
+            data-cy="validateurId"
+            formControlName="validateurId"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceDemandeAchat.validateurUserLogin"
+            for="field_validateurUserLogin"
+            >Validateur User Login</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="validateurUserLogin"
+            id="field_validateurUserLogin"
+            data-cy="validateurUserLogin"
+            formControlName="validateurUserLogin"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceDemandeAchat.createdAt" for="field_createdAt"
+            >Created At</label
+          >
+          <div class="d-flex">
+            <input
+              id="field_createdAt"
+              data-cy="createdAt"
+              type="datetime-local"
+              class="form-control"
+              name="createdAt"
+              formControlName="createdAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceDemandeAchat.updatedAt" for="field_updatedAt"
+            >Updated At</label
+          >
+          <div class="d-flex">
+            <input
+              id="field_updatedAt"
+              data-cy="updatedAt"
+              type="datetime-local"
+              class="form-control"
+              name="updatedAt"
+              formControlName="updatedAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceDemandeAchat.createdBy" for="field_createdBy"
+            >Created By</label
+          >
+          <input type="text" class="form-control" name="createdBy" id="field_createdBy" data-cy="createdBy" formControlName="createdBy" />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceDemandeAchat.createdByUserLogin"
+            for="field_createdByUserLogin"
+            >Created By User Login</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="createdByUserLogin"
+            id="field_createdByUserLogin"
+            data-cy="createdByUserLogin"
+            formControlName="createdByUserLogin"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceDemandeAchat.updatedBy" for="field_updatedBy"
+            >Updated By</label
+          >
+          <input type="text" class="form-control" name="updatedBy" id="field_updatedBy" data-cy="updatedBy" formControlName="updatedBy" />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceDemandeAchat.updatedByUserLogin"
+            for="field_updatedByUserLogin"
+            >Updated By User Login</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="updatedByUserLogin"
+            id="field_updatedByUserLogin"
+            data-cy="updatedByUserLogin"
+            formControlName="updatedByUserLogin"
+          />
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

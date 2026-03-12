@@ -1,0 +1,176 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2 id="jhi-site-heading" data-cy="SiteCreateUpdateHeading" jhiTranslate="gpmGatewayApp.projectServiceSite.home.createOrEditLabel">
+        Créer ou éditer un Site
+      </h2>
+
+      <div>
+        <jhi-alert-error></jhi-alert-error>
+
+        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
+          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
+          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceSite.code" for="field_code">Code</label>
+          <input type="text" class="form-control" name="code" id="field_code" data-cy="code" formControlName="code" />
+          <div *ngIf="editForm.get('code')!.invalid && (editForm.get('code')!.dirty || editForm.get('code')!.touched)">
+            <small class="form-text text-danger" *ngIf="editForm.get('code')?.errors?.required" jhiTranslate="entity.validation.required">
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceSite.designation" for="field_designation">Designation</label>
+          <input
+            type="text"
+            class="form-control"
+            name="designation"
+            id="field_designation"
+            data-cy="designation"
+            formControlName="designation"
+          />
+          <div *ngIf="editForm.get('designation')!.invalid && (editForm.get('designation')!.dirty || editForm.get('designation')!.touched)">
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('designation')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceSite.gpsX" for="field_gpsX">Gps X</label>
+          <input type="number" class="form-control" name="gpsX" id="field_gpsX" data-cy="gpsX" formControlName="gpsX" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceSite.gpsY" for="field_gpsY">Gps Y</label>
+          <input type="number" class="form-control" name="gpsY" id="field_gpsY" data-cy="gpsY" formControlName="gpsY" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceSite.createdAt" for="field_createdAt">Created At</label>
+          <div class="d-flex">
+            <input
+              id="field_createdAt"
+              data-cy="createdAt"
+              type="datetime-local"
+              class="form-control"
+              name="createdAt"
+              formControlName="createdAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceSite.updatedAt" for="field_updatedAt">Updated At</label>
+          <div class="d-flex">
+            <input
+              id="field_updatedAt"
+              data-cy="updatedAt"
+              type="datetime-local"
+              class="form-control"
+              name="updatedAt"
+              formControlName="updatedAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceSite.createdBy" for="field_createdBy">Created By</label>
+          <input type="text" class="form-control" name="createdBy" id="field_createdBy" data-cy="createdBy" formControlName="createdBy" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceSite.createdByUserLogin" for="field_createdByUserLogin"
+            >Created By User Login</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="createdByUserLogin"
+            id="field_createdByUserLogin"
+            data-cy="createdByUserLogin"
+            formControlName="createdByUserLogin"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceSite.updatedBy" for="field_updatedBy">Updated By</label>
+          <input type="text" class="form-control" name="updatedBy" id="field_updatedBy" data-cy="updatedBy" formControlName="updatedBy" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceSite.updatedByUserLogin" for="field_updatedByUserLogin"
+            >Updated By User Login</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="updatedByUserLogin"
+            id="field_updatedByUserLogin"
+            data-cy="updatedByUserLogin"
+            formControlName="updatedByUserLogin"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceSite.ville" for="field_ville">Ville</label>
+          <select class="form-control" id="field_ville" data-cy="ville" name="ville" formControlName="ville" [compareWith]="compareVille">
+            <option *ngIf="!editForm.get('ville')!.value" [ngValue]="null" selected></option>
+            <option [ngValue]="villeOption" *ngFor="let villeOption of villesSharedCollection">{{ villeOption.nom }}</option>
+          </select>
+        </div>
+        <div *ngIf="editForm.get(['ville'])!.invalid && (editForm.get(['ville'])!.dirty || editForm.get(['ville'])!.touched)">
+          <small class="form-text text-danger" *ngIf="editForm.get(['ville'])?.errors?.required" jhiTranslate="entity.validation.required">
+            Ce champ est obligatoire.
+          </small>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceSite.client" for="field_client">Client</label>
+          <select
+            class="form-control"
+            id="field_client"
+            data-cy="client"
+            name="client"
+            formControlName="client"
+            [compareWith]="compareClient"
+          >
+            <option *ngIf="editForm.get(['client'])!.value == null" [ngValue]="null" selected></option>
+            <option [ngValue]="clientOption" *ngFor="let clientOption of clientsSharedCollection">{{ clientOption.raisonSociale }}</option>
+          </select>
+        </div>
+        <div *ngIf="editForm.get(['client'])!.invalid && (editForm.get(['client'])!.dirty || editForm.get(['client'])!.touched)">
+          <small class="form-text text-danger" *ngIf="editForm.get(['client'])?.errors?.required" jhiTranslate="entity.validation.required">
+            Ce champ est obligatoire.
+          </small>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

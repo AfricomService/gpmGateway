@@ -1,0 +1,222 @@
+<div>
+  <h2 id="page-heading" data-cy="VehiculeHeading">
+    <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.home.title">Vehicules</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
+        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.home.refreshListLabel">Actualiser la liste</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-vehicule"
+        [routerLink]="['/vehicule/new']"
+      >
+        <fa-icon icon="plus"></fa-icon>
+        <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.home.createLabel"> Créer un nouveau Vehicule </span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error></jhi-alert-error>
+
+  <jhi-alert></jhi-alert>
+
+  <div class="alert alert-warning" id="no-result" *ngIf="vehicules?.length === 0">
+    <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.home.notFound">Aucun Vehicule trouvé</span>
+  </div>
+
+  <div class="table-responsive table-entities" id="entities" *ngIf="vehicules && vehicules.length > 0">
+    <table class="table table-striped" aria-describedby="page-heading">
+      <thead>
+        <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
+          <th scope="col" jhiSortBy="id">
+            <div class="d-flex">
+              <span jhiTranslate="global.field.id">ID</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="marque">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.marque">Marque</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="type">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.type">Type</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="matricule">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.matricule">Matricule</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="nbPlaces">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.nbPlaces">Nb Places</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="numCarteGrise">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.numCarteGrise">Num Carte Grise</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="dateCirculation">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.dateCirculation">Date Circulation</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="typeCarburant">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.typeCarburant">Type Carburant</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="chargeFixe">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.chargeFixe">Charge Fixe</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="tauxConsommation">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.tauxConsommation">Taux Consommation</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="statut">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.statut">Statut</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="createdAt">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.createdAt">Created At</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="updatedAt">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.updatedAt">Updated At</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="createdBy">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.createdBy">Created By</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="createdByUserLogin">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.createdByUserLogin">Created By User Login</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="updatedBy">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.updatedBy">Updated By</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="updatedByUserLogin">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.updatedByUserLogin">Updated By User Login</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="agence.designation">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.agence">Agence</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let vehicule of vehicules; trackBy: trackId" data-cy="entityTable">
+          <td>
+            <a [routerLink]="['/vehicule', vehicule.id, 'view']">{{ vehicule.id }}</a>
+          </td>
+          <td>{{ vehicule.marque }}</td>
+          <td>{{ vehicule.type }}</td>
+          <td>{{ vehicule.matricule }}</td>
+          <td>{{ vehicule.nbPlaces }}</td>
+          <td>{{ vehicule.numCarteGrise }}</td>
+          <td>{{ vehicule.dateCirculation | formatMediumDate }}</td>
+          <td>{{ vehicule.typeCarburant }}</td>
+          <td>{{ vehicule.chargeFixe }}</td>
+          <td>{{ vehicule.tauxConsommation }}</td>
+          <td jhiTranslate="{{ 'gpmGatewayApp.StatutVehicule.' + vehicule.statut }}">{{ vehicule.statut }}</td>
+          <td>{{ vehicule.createdAt | formatMediumDatetime }}</td>
+          <td>{{ vehicule.updatedAt | formatMediumDatetime }}</td>
+          <td>{{ vehicule.createdBy }}</td>
+          <td>{{ vehicule.createdByUserLogin }}</td>
+          <td>{{ vehicule.updatedBy }}</td>
+          <td>{{ vehicule.updatedByUserLogin }}</td>
+          <td>
+            <div *ngIf="vehicule.agence">
+              <a [routerLink]="['/agence', vehicule.agence.id, 'view']">{{ vehicule.agence.designation }}</a>
+            </div>
+          </td>
+          <td class="text-end">
+            <div class="btn-group">
+              <button
+                type="submit"
+                [routerLink]="['/vehicule', vehicule.id, 'view']"
+                class="btn btn-info btn-sm"
+                data-cy="entityDetailsButton"
+              >
+                <fa-icon icon="eye"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
+              </button>
+
+              <button
+                type="submit"
+                [routerLink]="['/vehicule', vehicule.id, 'edit']"
+                class="btn btn-primary btn-sm"
+                data-cy="entityEditButton"
+              >
+                <fa-icon icon="pencil-alt"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
+              </button>
+
+              <button type="submit" (click)="delete(vehicule)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                <fa-icon icon="times"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="vehicules && vehicules.length > 0">
+    <div class="d-flex justify-content-center">
+      <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+    </div>
+
+    <div class="d-flex justify-content-center">
+      <ngb-pagination
+        [collectionSize]="totalItems"
+        [page]="page"
+        [pageSize]="itemsPerPage"
+        [maxSize]="5"
+        [rotate]="true"
+        [boundaryLinks]="true"
+        (pageChange)="navigateToPage($event)"
+      ></ngb-pagination>
+    </div>
+  </div>
+</div>

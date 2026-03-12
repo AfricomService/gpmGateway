@@ -1,0 +1,133 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="jhi-article-demande-achat-heading"
+        data-cy="ArticleDemandeAchatCreateUpdateHeading"
+        jhiTranslate="gpmGatewayApp.financeServiceArticleDemandeAchat.home.createOrEditLabel"
+      >
+        Créer ou éditer un Article Demande Achat
+      </h2>
+
+      <div>
+        <jhi-alert-error></jhi-alert-error>
+
+        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
+          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
+          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceArticleDemandeAchat.qteDemandee" for="field_qteDemandee"
+            >Qte Demandee</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="qteDemandee"
+            id="field_qteDemandee"
+            data-cy="qteDemandee"
+            formControlName="qteDemandee"
+          />
+          <div *ngIf="editForm.get('qteDemandee')!.invalid && (editForm.get('qteDemandee')!.dirty || editForm.get('qteDemandee')!.touched)">
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('qteDemandee')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+            <small
+              class="form-text text-danger"
+              [hidden]="!editForm.get('qteDemandee')?.errors?.number"
+              jhiTranslate="entity.validation.number"
+            >
+              Ce champ doit être un nombre.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceArticleDemandeAchat.type" for="field_type">Type</label>
+          <select class="form-control" name="type" formControlName="type" id="field_type" data-cy="type">
+            <option [ngValue]="null">{{ 'gpmGatewayApp.TypeArticleDemandeAchat.null' | translate }}</option>
+            <option *ngFor="let typeArticleDemandeAchat of typeArticleDemandeAchatValues" [value]="typeArticleDemandeAchat">
+              {{ 'gpmGatewayApp.TypeArticleDemandeAchat.' + typeArticleDemandeAchat | translate }}
+            </option>
+          </select>
+          <div *ngIf="editForm.get('type')!.invalid && (editForm.get('type')!.dirty || editForm.get('type')!.touched)">
+            <small class="form-text text-danger" *ngIf="editForm.get('type')?.errors?.required" jhiTranslate="entity.validation.required">
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceArticleDemandeAchat.articleCode"
+            for="field_articleCode"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceArticleDemandeAchat.help.articleCode' | translate"
+            >Article Code</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="articleCode"
+            id="field_articleCode"
+            data-cy="articleCode"
+            formControlName="articleCode"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceArticleDemandeAchat.demandeAchat" for="field_demandeAchat"
+            >Demande Achat</label
+          >
+          <select
+            class="form-control"
+            id="field_demandeAchat"
+            data-cy="demandeAchat"
+            name="demandeAchat"
+            formControlName="demandeAchat"
+            [compareWith]="compareDemandeAchat"
+          >
+            <option *ngIf="!editForm.get('demandeAchat')!.value" [ngValue]="null" selected></option>
+            <option [ngValue]="demandeAchatOption" *ngFor="let demandeAchatOption of demandeAchatsSharedCollection">
+              {{ demandeAchatOption.code }}
+            </option>
+          </select>
+        </div>
+        <div
+          *ngIf="
+            editForm.get(['demandeAchat'])!.invalid && (editForm.get(['demandeAchat'])!.dirty || editForm.get(['demandeAchat'])!.touched)
+          "
+        >
+          <small
+            class="form-text text-danger"
+            *ngIf="editForm.get(['demandeAchat'])?.errors?.required"
+            jhiTranslate="entity.validation.required"
+          >
+            Ce champ est obligatoire.
+          </small>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

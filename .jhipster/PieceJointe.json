@@ -1,0 +1,51 @@
+{
+  "applications": ["gpmGateway", "projectService"],
+  "changelogDate": "20260312133640",
+  "clientRootFolder": "projectService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "piece_jointe",
+  "fields": [
+    {
+      "fieldName": "nomFichier",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "type",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "fichierURL",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "dateUpload",
+      "fieldType": "ZonedDateTime",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "workOrderId",
+      "fieldType": "Long",
+      "javadoc": "Cross-service FK → WorkOrder (operationsService)"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "projectService",
+  "name": "PieceJointe",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityField": "designationAffaire",
+      "otherEntityName": "affaire",
+      "relationshipName": "affaire",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "service": "serviceClass"
+}

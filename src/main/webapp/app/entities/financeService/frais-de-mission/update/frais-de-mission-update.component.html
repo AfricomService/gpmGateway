@@ -1,0 +1,431 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="jhi-frais-de-mission-heading"
+        data-cy="FraisDeMissionCreateUpdateHeading"
+        jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.home.createOrEditLabel"
+      >
+        Créer ou éditer un Frais De Mission
+      </h2>
+
+      <div>
+        <jhi-alert-error></jhi-alert-error>
+
+        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
+          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
+          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.dateDebut" for="field_dateDebut"
+            >Date Debut</label
+          >
+          <div class="input-group">
+            <input
+              id="field_dateDebut"
+              data-cy="dateDebut"
+              type="text"
+              class="form-control"
+              name="dateDebut"
+              ngbDatepicker
+              #dateDebutDp="ngbDatepicker"
+              formControlName="dateDebut"
+            />
+            <button type="button" class="btn btn-secondary" (click)="dateDebutDp.toggle()"><fa-icon icon="calendar-alt"></fa-icon></button>
+          </div>
+          <div *ngIf="editForm.get('dateDebut')!.invalid && (editForm.get('dateDebut')!.dirty || editForm.get('dateDebut')!.touched)">
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('dateDebut')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.dateFin" for="field_dateFin">Date Fin</label>
+          <div class="input-group">
+            <input
+              id="field_dateFin"
+              data-cy="dateFin"
+              type="text"
+              class="form-control"
+              name="dateFin"
+              ngbDatepicker
+              #dateFinDp="ngbDatepicker"
+              formControlName="dateFin"
+            />
+            <button type="button" class="btn btn-secondary" (click)="dateFinDp.toggle()"><fa-icon icon="calendar-alt"></fa-icon></button>
+          </div>
+          <div *ngIf="editForm.get('dateFin')!.invalid && (editForm.get('dateFin')!.dirty || editForm.get('dateFin')!.touched)">
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('dateFin')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.montantTotal" for="field_montantTotal"
+            >Montant Total</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="montantTotal"
+            id="field_montantTotal"
+            data-cy="montantTotal"
+            formControlName="montantTotal"
+          />
+          <div
+            *ngIf="editForm.get('montantTotal')!.invalid && (editForm.get('montantTotal')!.dirty || editForm.get('montantTotal')!.touched)"
+          >
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('montantTotal')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+            <small
+              class="form-text text-danger"
+              [hidden]="!editForm.get('montantTotal')?.errors?.number"
+              jhiTranslate="entity.validation.number"
+            >
+              Ce champ doit être un nombre.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.avanceRecue" for="field_avanceRecue"
+            >Avance Recue</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="avanceRecue"
+            id="field_avanceRecue"
+            data-cy="avanceRecue"
+            formControlName="avanceRecue"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.netAPayer" for="field_netAPayer"
+            >Net A Payer</label
+          >
+          <input type="number" class="form-control" name="netAPayer" id="field_netAPayer" data-cy="netAPayer" formControlName="netAPayer" />
+          <div *ngIf="editForm.get('netAPayer')!.invalid && (editForm.get('netAPayer')!.dirty || editForm.get('netAPayer')!.touched)">
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('netAPayer')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+            <small
+              class="form-text text-danger"
+              [hidden]="!editForm.get('netAPayer')?.errors?.number"
+              jhiTranslate="entity.validation.number"
+            >
+              Ce champ doit être un nombre.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.noteRendement"
+            for="field_noteRendement"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceFraisDeMission.help.noteRendement' | translate"
+            >Note Rendement</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="noteRendement"
+            id="field_noteRendement"
+            data-cy="noteRendement"
+            formControlName="noteRendement"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.noteQualite"
+            for="field_noteQualite"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceFraisDeMission.help.noteQualite' | translate"
+            >Note Qualite</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="noteQualite"
+            id="field_noteQualite"
+            data-cy="noteQualite"
+            formControlName="noteQualite"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.noteConduite"
+            for="field_noteConduite"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceFraisDeMission.help.noteConduite' | translate"
+            >Note Conduite</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="noteConduite"
+            id="field_noteConduite"
+            data-cy="noteConduite"
+            formControlName="noteConduite"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.noteTotale"
+            for="field_noteTotale"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceFraisDeMission.help.noteTotale' | translate"
+            >Note Totale</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="noteTotale"
+            id="field_noteTotale"
+            data-cy="noteTotale"
+            formControlName="noteTotale"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.bonusExtra" for="field_bonusExtra"
+            >Bonus Extra</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="bonusExtra"
+            id="field_bonusExtra"
+            data-cy="bonusExtra"
+            formControlName="bonusExtra"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.justificatifBonus"
+            for="field_justificatifBonus"
+            >Justificatif Bonus</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="justificatifBonus"
+            id="field_justificatifBonus"
+            data-cy="justificatifBonus"
+            formControlName="justificatifBonus"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.justificatifModification"
+            for="field_justificatifModification"
+            >Justificatif Modification</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="justificatifModification"
+            id="field_justificatifModification"
+            data-cy="justificatifModification"
+            formControlName="justificatifModification"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.statut" for="field_statut">Statut</label>
+          <select class="form-control" name="statut" formControlName="statut" id="field_statut" data-cy="statut">
+            <option [ngValue]="null">{{ 'gpmGatewayApp.StatutFraisDeMission.null' | translate }}</option>
+            <option *ngFor="let statutFraisDeMission of statutFraisDeMissionValues" [value]="statutFraisDeMission">
+              {{ 'gpmGatewayApp.StatutFraisDeMission.' + statutFraisDeMission | translate }}
+            </option>
+          </select>
+          <div *ngIf="editForm.get('statut')!.invalid && (editForm.get('statut')!.dirty || editForm.get('statut')!.touched)">
+            <small class="form-text text-danger" *ngIf="editForm.get('statut')?.errors?.required" jhiTranslate="entity.validation.required">
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.workOrderId"
+            for="field_workOrderId"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceFraisDeMission.help.workOrderId' | translate"
+            >Work Order Id</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="workOrderId"
+            id="field_workOrderId"
+            data-cy="workOrderId"
+            formControlName="workOrderId"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.beneficiaireId"
+            for="field_beneficiaireId"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceFraisDeMission.help.beneficiaireId' | translate"
+            >Beneficiaire Id</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="beneficiaireId"
+            id="field_beneficiaireId"
+            data-cy="beneficiaireId"
+            formControlName="beneficiaireId"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.beneficiaireUserLogin"
+            for="field_beneficiaireUserLogin"
+            >Beneficiaire User Login</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="beneficiaireUserLogin"
+            id="field_beneficiaireUserLogin"
+            data-cy="beneficiaireUserLogin"
+            formControlName="beneficiaireUserLogin"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.createdAt" for="field_createdAt"
+            >Created At</label
+          >
+          <div class="d-flex">
+            <input
+              id="field_createdAt"
+              data-cy="createdAt"
+              type="datetime-local"
+              class="form-control"
+              name="createdAt"
+              formControlName="createdAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.updatedAt" for="field_updatedAt"
+            >Updated At</label
+          >
+          <div class="d-flex">
+            <input
+              id="field_updatedAt"
+              data-cy="updatedAt"
+              type="datetime-local"
+              class="form-control"
+              name="updatedAt"
+              formControlName="updatedAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.createdBy" for="field_createdBy"
+            >Created By</label
+          >
+          <input type="text" class="form-control" name="createdBy" id="field_createdBy" data-cy="createdBy" formControlName="createdBy" />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.createdByUserLogin"
+            for="field_createdByUserLogin"
+            >Created By User Login</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="createdByUserLogin"
+            id="field_createdByUserLogin"
+            data-cy="createdByUserLogin"
+            formControlName="createdByUserLogin"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.updatedBy" for="field_updatedBy"
+            >Updated By</label
+          >
+          <input type="text" class="form-control" name="updatedBy" id="field_updatedBy" data-cy="updatedBy" formControlName="updatedBy" />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.updatedByUserLogin"
+            for="field_updatedByUserLogin"
+            >Updated By User Login</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="updatedByUserLogin"
+            id="field_updatedByUserLogin"
+            data-cy="updatedByUserLogin"
+            formControlName="updatedByUserLogin"
+          />
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

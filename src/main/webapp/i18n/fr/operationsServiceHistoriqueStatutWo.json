@@ -1,0 +1,34 @@
+{
+  "gpmGatewayApp": {
+    "operationsServiceHistoriqueStatutWo": {
+      "home": {
+        "title": "HistoriqueStatutWOS",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Historique Statut WO",
+        "createOrEditLabel": "Créer ou éditer un Historique Statut WO",
+        "notFound": "Aucun Historique Statut WO trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Historique Statut WO {{ id }} ?"
+      },
+      "detail": {
+        "title": "Historique Statut WO"
+      },
+      "id": "ID",
+      "ancienStatut": "Ancien Statut",
+      "nouveauStatut": "Nouveau Statut",
+      "dateChangement": "Date Changement",
+      "commentaire": "Commentaire",
+      "userId": "User Id",
+      "userLogin": "User Login",
+      "workOrder": "Work Order"
+    }
+  },
+  "operationsServiceApp": {
+    "operationsServiceHistoriqueStatutWo": {
+      "created": "Un nouveau Historique Statut WO a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Historique Statut WO avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Historique Statut WO avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

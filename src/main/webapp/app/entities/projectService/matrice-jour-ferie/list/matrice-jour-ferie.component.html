@@ -1,0 +1,128 @@
+<div>
+  <h2 id="page-heading" data-cy="MatriceJourFerieHeading">
+    <span jhiTranslate="gpmGatewayApp.projectServiceMatriceJourFerie.home.title">MatriceJourFeries</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
+        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        <span jhiTranslate="gpmGatewayApp.projectServiceMatriceJourFerie.home.refreshListLabel">Actualiser la liste</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-matrice-jour-ferie"
+        [routerLink]="['/matrice-jour-ferie/new']"
+      >
+        <fa-icon icon="plus"></fa-icon>
+        <span jhiTranslate="gpmGatewayApp.projectServiceMatriceJourFerie.home.createLabel"> Créer un nouveau Matrice Jour Ferie </span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error></jhi-alert-error>
+
+  <jhi-alert></jhi-alert>
+
+  <div class="alert alert-warning" id="no-result" *ngIf="matriceJourFeries?.length === 0">
+    <span jhiTranslate="gpmGatewayApp.projectServiceMatriceJourFerie.home.notFound">Aucun Matrice Jour Ferie trouvé</span>
+  </div>
+
+  <div class="table-responsive table-entities" id="entities" *ngIf="matriceJourFeries && matriceJourFeries.length > 0">
+    <table class="table table-striped" aria-describedby="page-heading">
+      <thead>
+        <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
+          <th scope="col" jhiSortBy="id">
+            <div class="d-flex">
+              <span jhiTranslate="global.field.id">ID</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="tarifApplique">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceMatriceJourFerie.tarifApplique">Tarif Applique</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="matrice.id">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceMatriceJourFerie.matrice">Matrice</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="jourFerie.designation">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceMatriceJourFerie.jourFerie">Jour Ferie</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let matriceJourFerie of matriceJourFeries; trackBy: trackId" data-cy="entityTable">
+          <td>
+            <a [routerLink]="['/matrice-jour-ferie', matriceJourFerie.id, 'view']">{{ matriceJourFerie.id }}</a>
+          </td>
+          <td>{{ matriceJourFerie.tarifApplique }}</td>
+          <td>
+            <div *ngIf="matriceJourFerie.matrice">
+              <a [routerLink]="['/matrice-facturation', matriceJourFerie.matrice.id, 'view']">{{ matriceJourFerie.matrice.id }}</a>
+            </div>
+          </td>
+          <td>
+            <div *ngIf="matriceJourFerie.jourFerie">
+              <a [routerLink]="['/jour-ferie', matriceJourFerie.jourFerie.id, 'view']">{{ matriceJourFerie.jourFerie.designation }}</a>
+            </div>
+          </td>
+          <td class="text-end">
+            <div class="btn-group">
+              <button
+                type="submit"
+                [routerLink]="['/matrice-jour-ferie', matriceJourFerie.id, 'view']"
+                class="btn btn-info btn-sm"
+                data-cy="entityDetailsButton"
+              >
+                <fa-icon icon="eye"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
+              </button>
+
+              <button
+                type="submit"
+                [routerLink]="['/matrice-jour-ferie', matriceJourFerie.id, 'edit']"
+                class="btn btn-primary btn-sm"
+                data-cy="entityEditButton"
+              >
+                <fa-icon icon="pencil-alt"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
+              </button>
+
+              <button type="submit" (click)="delete(matriceJourFerie)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                <fa-icon icon="times"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="matriceJourFeries && matriceJourFeries.length > 0">
+    <div class="d-flex justify-content-center">
+      <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+    </div>
+
+    <div class="d-flex justify-content-center">
+      <ngb-pagination
+        [collectionSize]="totalItems"
+        [page]="page"
+        [pageSize]="itemsPerPage"
+        [maxSize]="5"
+        [rotate]="true"
+        [boundaryLinks]="true"
+        (pageChange)="navigateToPage($event)"
+      ></ngb-pagination>
+    </div>
+  </div>
+</div>

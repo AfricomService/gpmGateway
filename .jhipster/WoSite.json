@@ -1,0 +1,31 @@
+{
+  "applications": ["gpmGateway", "operationsService"],
+  "changelogDate": "20260312134540",
+  "clientRootFolder": "operationsService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "wo_site",
+  "fields": [
+    {
+      "fieldName": "siteCode",
+      "fieldType": "String",
+      "javadoc": "Cross-service FK → Site (projectService)"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "operationsService",
+  "name": "WoSite",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityName": "workOrder",
+      "relationshipName": "workOrder",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "service": "serviceClass"
+}

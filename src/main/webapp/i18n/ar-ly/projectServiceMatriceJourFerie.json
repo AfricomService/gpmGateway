@@ -1,0 +1,30 @@
+{
+  "gpmGatewayApp": {
+    "projectServiceMatriceJourFerie": {
+      "home": {
+        "title": "Matrice Jour Feries",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Matrice Jour Ferie",
+        "createOrEditLabel": "Create or edit a Matrice Jour Ferie",
+        "notFound": "No Matrice Jour Feries found"
+      },
+      "delete": {
+        "question": "Are you sure you want to delete Matrice Jour Ferie {{ id }}?"
+      },
+      "detail": {
+        "title": "Matrice Jour Ferie"
+      },
+      "id": "ID",
+      "tarifApplique": "Tarif Applique",
+      "matrice": "Matrice",
+      "jourFerie": "Jour Ferie"
+    }
+  },
+  "projectServiceApp": {
+    "projectServiceMatriceJourFerie": {
+      "created": "A new Matrice Jour Ferie is created with identifier {{ param }}",
+      "updated": "A Matrice Jour Ferie is updated with identifier {{ param }}",
+      "deleted": "A Matrice Jour Ferie is deleted with identifier {{ param }}"
+    }
+  }
+}

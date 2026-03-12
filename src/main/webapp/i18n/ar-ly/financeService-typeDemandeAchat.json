@@ -1,0 +1,9 @@
+{
+  "gpmGatewayApp": {
+    "TypeDemandeAchat": {
+      "null": "",
+      "OffreDePrix": "OffreDePrix",
+      "Achat": "Achat"
+    }
+  }
+}

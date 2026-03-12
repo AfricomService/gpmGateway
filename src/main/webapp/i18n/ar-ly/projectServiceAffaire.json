@@ -1,0 +1,52 @@
+{
+  "gpmGatewayApp": {
+    "projectServiceAffaire": {
+      "home": {
+        "title": "Affaires",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Affaire",
+        "createOrEditLabel": "Create or edit a Affaire",
+        "notFound": "No Affaires found"
+      },
+      "delete": {
+        "question": "Are you sure you want to delete Affaire {{ id }}?"
+      },
+      "detail": {
+        "title": "Affaire"
+      },
+      "id": "ID",
+      "numAffaire": "Num Affaire",
+      "designationAffaire": "Designation Affaire",
+      "bonDeCommande": "Bon De Commande",
+      "montant": "Montant",
+      "devise": "Devise",
+      "dateDebut": "Date Debut",
+      "dateCloture": "Date Cloture",
+      "datePassageExecution": "Date Passage Execution",
+      "lieuMultipleParMission": "Lieu Multiple Par Mission",
+      "montantVente": "Montant Vente",
+      "montantBudgetaireMateriel": "Montant Budgetaire Materiel",
+      "montantBudgetaireService": "Montant Budgetaire Service",
+      "statut": "Statut",
+      "responsableProjetId": "Responsable Projet Id",
+      "responsableProjetUserLogin": "Responsable Projet User Login",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "createdBy": "Created By",
+      "createdByUserLogin": "Created By User Login",
+      "updatedBy": "Updated By",
+      "updatedByUserLogin": "Updated By User Login",
+      "client": "Client",
+      "help": {
+        "responsableProjetId": "Cross-service FK → Utilisateur (operationsService)"
+      }
+    }
+  },
+  "projectServiceApp": {
+    "projectServiceAffaire": {
+      "created": "A new Affaire is created with identifier {{ param }}",
+      "updated": "A Affaire is updated with identifier {{ param }}",
+      "deleted": "A Affaire is deleted with identifier {{ param }}"
+    }
+  }
+}

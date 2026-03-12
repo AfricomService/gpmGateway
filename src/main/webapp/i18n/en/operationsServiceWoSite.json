@@ -1,0 +1,32 @@
+{
+  "gpmGatewayApp": {
+    "operationsServiceWoSite": {
+      "home": {
+        "title": "Wo Sites",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Wo Site",
+        "createOrEditLabel": "Create or edit a Wo Site",
+        "notFound": "No Wo Sites found"
+      },
+      "delete": {
+        "question": "Are you sure you want to delete Wo Site {{ id }}?"
+      },
+      "detail": {
+        "title": "Wo Site"
+      },
+      "id": "ID",
+      "siteCode": "Site Code",
+      "workOrder": "Work Order",
+      "help": {
+        "siteCode": "Cross-service FK → Site (projectService)"
+      }
+    }
+  },
+  "operationsServiceApp": {
+    "operationsServiceWoSite": {
+      "created": "A new Wo Site is created with identifier {{ param }}",
+      "updated": "A Wo Site is updated with identifier {{ param }}",
+      "deleted": "A Wo Site is deleted with identifier {{ param }}"
+    }
+  }
+}

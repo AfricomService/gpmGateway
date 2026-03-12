@@ -1,0 +1,119 @@
+{
+  "applications": ["gpmGateway", "financeService"],
+  "changelogDate": "20260312132940",
+  "clientRootFolder": "financeService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "frais_de_mission",
+  "fields": [
+    {
+      "fieldName": "dateDebut",
+      "fieldType": "LocalDate",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "dateFin",
+      "fieldType": "LocalDate",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "montantTotal",
+      "fieldType": "Float",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "avanceRecue",
+      "fieldType": "Float"
+    },
+    {
+      "fieldName": "netAPayer",
+      "fieldType": "Float",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "noteRendement",
+      "fieldType": "Float",
+      "javadoc": "CHECK max 6"
+    },
+    {
+      "fieldName": "noteQualite",
+      "fieldType": "Float",
+      "javadoc": "CHECK max 6"
+    },
+    {
+      "fieldName": "noteConduite",
+      "fieldType": "Float",
+      "javadoc": "CHECK max 2"
+    },
+    {
+      "fieldName": "noteTotale",
+      "fieldType": "Float",
+      "javadoc": "CHECK max 14"
+    },
+    {
+      "fieldName": "bonusExtra",
+      "fieldType": "Float"
+    },
+    {
+      "fieldName": "justificatifBonus",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "justificatifModification",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "statut",
+      "fieldType": "StatutFraisDeMission",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "Creation,Verification,ValidationDirectionTechnique,Paiement,Fin"
+    },
+    {
+      "fieldName": "workOrderId",
+      "fieldType": "Long",
+      "javadoc": "Cross-service FK → WorkOrder (operationsService)"
+    },
+    {
+      "fieldName": "beneficiaireId",
+      "fieldType": "String",
+      "javadoc": "Cross-service FK → Utilisateur (operationsService)"
+    },
+    {
+      "fieldName": "beneficiaireUserLogin",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "createdBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "createdByUserLogin",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "updatedBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "updatedByUserLogin",
+      "fieldType": "String"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "financeService",
+  "name": "FraisDeMission",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceClass"
+}

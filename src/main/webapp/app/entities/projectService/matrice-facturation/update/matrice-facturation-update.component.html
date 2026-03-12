@@ -1,0 +1,249 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="jhi-matrice-facturation-heading"
+        data-cy="MatriceFacturationCreateUpdateHeading"
+        jhiTranslate="gpmGatewayApp.projectServiceMatriceFacturation.home.createOrEditLabel"
+      >
+        Créer ou éditer un Matrice Facturation
+      </h2>
+
+      <div>
+        <jhi-alert-error></jhi-alert-error>
+
+        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
+          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
+          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceMatriceFacturation.tarifBase" for="field_tarifBase"
+            >Tarif Base</label
+          >
+          <input type="number" class="form-control" name="tarifBase" id="field_tarifBase" data-cy="tarifBase" formControlName="tarifBase" />
+          <div *ngIf="editForm.get('tarifBase')!.invalid && (editForm.get('tarifBase')!.dirty || editForm.get('tarifBase')!.touched)">
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('tarifBase')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+            <small
+              class="form-text text-danger"
+              [hidden]="!editForm.get('tarifBase')?.errors?.number"
+              jhiTranslate="entity.validation.number"
+            >
+              Ce champ doit être un nombre.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.projectServiceMatriceFacturation.tarifMissionNuit"
+            for="field_tarifMissionNuit"
+            >Tarif Mission Nuit</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="tarifMissionNuit"
+            id="field_tarifMissionNuit"
+            data-cy="tarifMissionNuit"
+            formControlName="tarifMissionNuit"
+          />
+          <div
+            *ngIf="
+              editForm.get('tarifMissionNuit')!.invalid &&
+              (editForm.get('tarifMissionNuit')!.dirty || editForm.get('tarifMissionNuit')!.touched)
+            "
+          >
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('tarifMissionNuit')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+            <small
+              class="form-text text-danger"
+              [hidden]="!editForm.get('tarifMissionNuit')?.errors?.number"
+              jhiTranslate="entity.validation.number"
+            >
+              Ce champ doit être un nombre.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.projectServiceMatriceFacturation.tarifHebergement"
+            for="field_tarifHebergement"
+            >Tarif Hebergement</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="tarifHebergement"
+            id="field_tarifHebergement"
+            data-cy="tarifHebergement"
+            formControlName="tarifHebergement"
+          />
+          <div
+            *ngIf="
+              editForm.get('tarifHebergement')!.invalid &&
+              (editForm.get('tarifHebergement')!.dirty || editForm.get('tarifHebergement')!.touched)
+            "
+          >
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('tarifHebergement')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+            <small
+              class="form-text text-danger"
+              [hidden]="!editForm.get('tarifHebergement')?.errors?.number"
+              jhiTranslate="entity.validation.number"
+            >
+              Ce champ doit être un nombre.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceMatriceFacturation.tarifJourFerie" for="field_tarifJourFerie"
+            >Tarif Jour Ferie</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="tarifJourFerie"
+            id="field_tarifJourFerie"
+            data-cy="tarifJourFerie"
+            formControlName="tarifJourFerie"
+          />
+          <div
+            *ngIf="
+              editForm.get('tarifJourFerie')!.invalid && (editForm.get('tarifJourFerie')!.dirty || editForm.get('tarifJourFerie')!.touched)
+            "
+          >
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('tarifJourFerie')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+            <small
+              class="form-text text-danger"
+              [hidden]="!editForm.get('tarifJourFerie')?.errors?.number"
+              jhiTranslate="entity.validation.number"
+            >
+              Ce champ doit être un nombre.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceMatriceFacturation.tarifDimanche" for="field_tarifDimanche"
+            >Tarif Dimanche</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="tarifDimanche"
+            id="field_tarifDimanche"
+            data-cy="tarifDimanche"
+            formControlName="tarifDimanche"
+          />
+          <div
+            *ngIf="
+              editForm.get('tarifDimanche')!.invalid && (editForm.get('tarifDimanche')!.dirty || editForm.get('tarifDimanche')!.touched)
+            "
+          >
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('tarifDimanche')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+            <small
+              class="form-text text-danger"
+              [hidden]="!editForm.get('tarifDimanche')?.errors?.number"
+              jhiTranslate="entity.validation.number"
+            >
+              Ce champ doit être un nombre.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceMatriceFacturation.affaire" for="field_affaire"
+            >Affaire</label
+          >
+          <select
+            class="form-control"
+            id="field_affaire"
+            data-cy="affaire"
+            name="affaire"
+            formControlName="affaire"
+            [compareWith]="compareAffaire"
+          >
+            <option *ngIf="!editForm.get('affaire')!.value" [ngValue]="null" selected></option>
+            <option [ngValue]="affaireOption" *ngFor="let affaireOption of affairesSharedCollection">
+              {{ affaireOption.designationAffaire }}
+            </option>
+          </select>
+        </div>
+        <div *ngIf="editForm.get(['affaire'])!.invalid && (editForm.get(['affaire'])!.dirty || editForm.get(['affaire'])!.touched)">
+          <small
+            class="form-text text-danger"
+            *ngIf="editForm.get(['affaire'])?.errors?.required"
+            jhiTranslate="entity.validation.required"
+          >
+            Ce champ est obligatoire.
+          </small>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceMatriceFacturation.ville" for="field_ville">Ville</label>
+          <select class="form-control" id="field_ville" data-cy="ville" name="ville" formControlName="ville" [compareWith]="compareVille">
+            <option [ngValue]="null"></option>
+            <option [ngValue]="villeOption" *ngFor="let villeOption of villesSharedCollection">{{ villeOption.nom }}</option>
+          </select>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceMatriceFacturation.zone" for="field_zone">Zone</label>
+          <select class="form-control" id="field_zone" data-cy="zone" name="zone" formControlName="zone" [compareWith]="compareZone">
+            <option [ngValue]="null"></option>
+            <option [ngValue]="zoneOption" *ngFor="let zoneOption of zonesSharedCollection">{{ zoneOption.nom }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

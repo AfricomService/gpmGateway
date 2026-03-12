@@ -1,0 +1,39 @@
+{
+  "gpmGatewayApp": {
+    "projectServiceSite": {
+      "home": {
+        "title": "Sites",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Site",
+        "createOrEditLabel": "Créer ou éditer un Site",
+        "notFound": "Aucun Site trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Site {{ id }} ?"
+      },
+      "detail": {
+        "title": "Site"
+      },
+      "id": "ID",
+      "code": "Code",
+      "designation": "Designation",
+      "gpsX": "Gps X",
+      "gpsY": "Gps Y",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "createdBy": "Created By",
+      "createdByUserLogin": "Created By User Login",
+      "updatedBy": "Updated By",
+      "updatedByUserLogin": "Updated By User Login",
+      "ville": "Ville",
+      "client": "Client"
+    }
+  },
+  "projectServiceApp": {
+    "projectServiceSite": {
+      "created": "Un nouveau Site a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Site avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Site avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

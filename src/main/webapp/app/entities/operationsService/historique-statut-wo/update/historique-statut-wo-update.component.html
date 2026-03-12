@@ -1,0 +1,186 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="jhi-historique-statut-wo-heading"
+        data-cy="HistoriqueStatutWOCreateUpdateHeading"
+        jhiTranslate="gpmGatewayApp.operationsServiceHistoriqueStatutWo.home.createOrEditLabel"
+      >
+        Créer ou éditer un Historique Statut WO
+      </h2>
+
+      <div>
+        <jhi-alert-error></jhi-alert-error>
+
+        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
+          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
+          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceHistoriqueStatutWo.ancienStatut" for="field_ancienStatut"
+            >Ancien Statut</label
+          >
+          <select class="form-control" name="ancienStatut" formControlName="ancienStatut" id="field_ancienStatut" data-cy="ancienStatut">
+            <option [ngValue]="null">{{ 'gpmGatewayApp.StatutWO.null' | translate }}</option>
+            <option *ngFor="let statutWO of statutWOValues" [value]="statutWO">
+              {{ 'gpmGatewayApp.StatutWO.' + statutWO | translate }}
+            </option>
+          </select>
+          <div
+            *ngIf="editForm.get('ancienStatut')!.invalid && (editForm.get('ancienStatut')!.dirty || editForm.get('ancienStatut')!.touched)"
+          >
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('ancienStatut')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceHistoriqueStatutWo.nouveauStatut" for="field_nouveauStatut"
+            >Nouveau Statut</label
+          >
+          <select
+            class="form-control"
+            name="nouveauStatut"
+            formControlName="nouveauStatut"
+            id="field_nouveauStatut"
+            data-cy="nouveauStatut"
+          >
+            <option [ngValue]="null">{{ 'gpmGatewayApp.StatutWO.null' | translate }}</option>
+            <option *ngFor="let statutWO of statutWOValues" [value]="statutWO">
+              {{ 'gpmGatewayApp.StatutWO.' + statutWO | translate }}
+            </option>
+          </select>
+          <div
+            *ngIf="
+              editForm.get('nouveauStatut')!.invalid && (editForm.get('nouveauStatut')!.dirty || editForm.get('nouveauStatut')!.touched)
+            "
+          >
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('nouveauStatut')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.operationsServiceHistoriqueStatutWo.dateChangement"
+            for="field_dateChangement"
+            >Date Changement</label
+          >
+          <div class="d-flex">
+            <input
+              id="field_dateChangement"
+              data-cy="dateChangement"
+              type="datetime-local"
+              class="form-control"
+              name="dateChangement"
+              formControlName="dateChangement"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+          <div
+            *ngIf="
+              editForm.get('dateChangement')!.invalid && (editForm.get('dateChangement')!.dirty || editForm.get('dateChangement')!.touched)
+            "
+          >
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('dateChangement')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+            <small
+              class="form-text text-danger"
+              [hidden]="!editForm.get('dateChangement')?.errors?.datetimelocal"
+              jhiTranslate="entity.validation.datetimelocal"
+            >
+              Ce champ doit être une date et une heure.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceHistoriqueStatutWo.commentaire" for="field_commentaire"
+            >Commentaire</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="commentaire"
+            id="field_commentaire"
+            data-cy="commentaire"
+            formControlName="commentaire"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceHistoriqueStatutWo.userId" for="field_userId"
+            >User Id</label
+          >
+          <input type="text" class="form-control" name="userId" id="field_userId" data-cy="userId" formControlName="userId" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceHistoriqueStatutWo.userLogin" for="field_userLogin"
+            >User Login</label
+          >
+          <input type="text" class="form-control" name="userLogin" id="field_userLogin" data-cy="userLogin" formControlName="userLogin" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceHistoriqueStatutWo.workOrder" for="field_workOrder"
+            >Work Order</label
+          >
+          <select
+            class="form-control"
+            id="field_workOrder"
+            data-cy="workOrder"
+            name="workOrder"
+            formControlName="workOrder"
+            [compareWith]="compareWorkOrder"
+          >
+            <option *ngIf="!editForm.get('workOrder')!.value" [ngValue]="null" selected></option>
+            <option [ngValue]="workOrderOption" *ngFor="let workOrderOption of workOrdersSharedCollection">{{ workOrderOption.id }}</option>
+          </select>
+        </div>
+        <div *ngIf="editForm.get(['workOrder'])!.invalid && (editForm.get(['workOrder'])!.dirty || editForm.get(['workOrder'])!.touched)">
+          <small
+            class="form-text text-danger"
+            *ngIf="editForm.get(['workOrder'])?.errors?.required"
+            jhiTranslate="entity.validation.required"
+          >
+            Ce champ est obligatoire.
+          </small>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

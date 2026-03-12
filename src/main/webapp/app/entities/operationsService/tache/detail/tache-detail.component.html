@@ -1,0 +1,60 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="tache">
+      <h2 data-cy="tacheDetailsHeading"><span jhiTranslate="gpmGatewayApp.operationsServiceTache.detail.title">Tache</span></h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ tache.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceTache.roleDansLaMission">Role Dans La Mission</span></dt>
+        <dd>
+          <span>{{ tache.roleDansLaMission }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceTache.note">Note</span></dt>
+        <dd>
+          <span>{{ tache.note }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceTache.remboursement">Remboursement</span></dt>
+        <dd>
+          <span>{{ tache.remboursement }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceTache.executeurId">Executeur Id</span></dt>
+        <dd>
+          <span>{{ tache.executeurId }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceTache.executeurUserLogin">Executeur User Login</span></dt>
+        <dd>
+          <span>{{ tache.executeurUserLogin }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceTache.workOrder">Work Order</span></dt>
+        <dd>
+          <div *ngIf="tache.workOrder">
+            <a [routerLink]="['/work-order', tache.workOrder.id, 'view']">{{ tache.workOrder.id }}</a>
+          </div>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceTache.activite">Activite</span></dt>
+        <dd>
+          <div *ngIf="tache.activite">
+            <a [routerLink]="['/activite', tache.activite.id, 'view']">{{ tache.activite.designation }}</a>
+          </div>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/tache', tache.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,59 @@
+{
+  "gpmGatewayApp": {
+    "operationsServiceWorkOrder": {
+      "home": {
+        "title": "WorkOrders",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Work Order",
+        "createOrEditLabel": "Créer ou éditer un Work Order",
+        "notFound": "Aucun Work Order trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Work Order {{ id }} ?"
+      },
+      "detail": {
+        "title": "Work Order"
+      },
+      "id": "ID",
+      "clientId": "Client Id",
+      "affaireId": "Affaire Id",
+      "demandeurContactId": "Demandeur Contact Id",
+      "vehiculeId": "Vehicule Id",
+      "otExterneId": "Ot Externe Id",
+      "valideurId": "Valideur Id",
+      "valideurUserLogin": "Valideur User Login",
+      "dateHeureDebutPrev": "Date Heure Debut Prev",
+      "dateHeureFinPrev": "Date Heure Fin Prev",
+      "dateHeureDebutReel": "Date Heure Debut Reel",
+      "dateHeureFinReel": "Date Heure Fin Reel",
+      "missionDeNuit": "Mission De Nuit",
+      "nombreNuits": "Nombre Nuits",
+      "hebergement": "Hebergement",
+      "nombreHebergements": "Nombre Hebergements",
+      "remarque": "Remarque",
+      "numFicheIntervention": "Num Fiche Intervention",
+      "statut": "Statut",
+      "materielUtilise": "Materiel Utilise",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "createdBy": "Created By",
+      "createdByUserLogin": "Created By User Login",
+      "updatedBy": "Updated By",
+      "updatedByUserLogin": "Updated By User Login",
+      "help": {
+        "clientId": "Cross-service FK → Client (projectService)",
+        "affaireId": "Cross-service FK → Affaire (projectService)",
+        "demandeurContactId": "Cross-service FK → Contact (projectService)",
+        "vehiculeId": "Cross-service FK → Vehicule (projectService)",
+        "otExterneId": "Cross-service FK → OtExterne (financeService)"
+      }
+    }
+  },
+  "operationsServiceApp": {
+    "operationsServiceWorkOrder": {
+      "created": "Un nouveau Work Order a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Work Order avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Work Order avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

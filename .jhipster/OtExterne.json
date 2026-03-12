@@ -1,0 +1,64 @@
+{
+  "applications": ["gpmGateway", "financeService"],
+  "changelogDate": "20260312133540",
+  "clientRootFolder": "financeService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "ot_externe",
+  "fields": [
+    {
+      "fieldName": "reference",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "unique"]
+    },
+    {
+      "fieldName": "statut",
+      "fieldType": "StatutOtExterne",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "Creation,EnCours,Paiement,Fin"
+    },
+    {
+      "fieldName": "affaireId",
+      "fieldType": "Long",
+      "javadoc": "Cross-service FK → Affaire (projectService)"
+    },
+    {
+      "fieldName": "clientId",
+      "fieldType": "Long",
+      "javadoc": "Cross-service FK → Client (projectService)"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "createdBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "createdByUserLogin",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "updatedBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "updatedByUserLogin",
+      "fieldType": "String"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "financeService",
+  "name": "OtExterne",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceClass"
+}

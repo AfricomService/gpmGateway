@@ -1,0 +1,42 @@
+{
+  "gpmGatewayApp": {
+    "financeServiceDemandeEspece": {
+      "home": {
+        "title": "DemandeEspeces",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Demande Espece",
+        "createOrEditLabel": "Créer ou éditer un Demande Espece",
+        "notFound": "Aucun Demande Espece trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Demande Espece {{ id }} ?"
+      },
+      "detail": {
+        "title": "Demande Espece"
+      },
+      "id": "ID",
+      "montant": "Montant",
+      "motif": "Motif",
+      "workOrderId": "Work Order Id",
+      "beneficiaireId": "Beneficiaire Id",
+      "beneficiaireUserLogin": "Beneficiaire User Login",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "createdBy": "Created By",
+      "createdByUserLogin": "Created By User Login",
+      "updatedBy": "Updated By",
+      "updatedByUserLogin": "Updated By User Login",
+      "help": {
+        "workOrderId": "Cross-service FK → WorkOrder (operationsService)",
+        "beneficiaireId": "Cross-service FK → Utilisateur (operationsService)"
+      }
+    }
+  },
+  "financeServiceApp": {
+    "financeServiceDemandeEspece": {
+      "created": "Un nouveau Demande Espece a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Demande Espece avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Demande Espece avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

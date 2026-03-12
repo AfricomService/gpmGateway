@@ -1,0 +1,99 @@
+{
+  "applications": ["gpmGateway", "financeService"],
+  "changelogDate": "20260312132340",
+  "clientRootFolder": "financeService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "demande_achat",
+  "fields": [
+    {
+      "fieldName": "code",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "unique"],
+      "javadoc": "DA-YYYY-XXXX auto-generated"
+    },
+    {
+      "fieldName": "statut",
+      "fieldType": "StatutDemandeAchat",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "Soumis,Valide"
+    },
+    {
+      "fieldName": "type",
+      "fieldType": "TypeDemandeAchat",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "OffreDePrix,Achat"
+    },
+    {
+      "fieldName": "dateCreation",
+      "fieldType": "ZonedDateTime",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "dateMiseADisposition",
+      "fieldType": "LocalDate",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "workOrderId",
+      "fieldType": "Long",
+      "javadoc": "Cross-service FK → WorkOrder (operationsService)"
+    },
+    {
+      "fieldName": "affaireId",
+      "fieldType": "Long",
+      "javadoc": "Cross-service FK → Affaire (projectService)"
+    },
+    {
+      "fieldName": "demandeurId",
+      "fieldType": "String",
+      "javadoc": "Cross-service FK → Utilisateur (operationsService) — Demandeur"
+    },
+    {
+      "fieldName": "demandeurUserLogin",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "validateurId",
+      "fieldType": "String",
+      "javadoc": "Cross-service FK → Utilisateur (operationsService) — Validateur"
+    },
+    {
+      "fieldName": "validateurUserLogin",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "createdBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "createdByUserLogin",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "updatedBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "updatedByUserLogin",
+      "fieldType": "String"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "financeService",
+  "name": "DemandeAchat",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceClass"
+}

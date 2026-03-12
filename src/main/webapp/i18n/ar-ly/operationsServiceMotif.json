@@ -1,0 +1,34 @@
+{
+  "gpmGatewayApp": {
+    "operationsServiceMotif": {
+      "home": {
+        "title": "Motifs",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Motif",
+        "createOrEditLabel": "Create or edit a Motif",
+        "notFound": "No Motifs found"
+      },
+      "delete": {
+        "question": "Are you sure you want to delete Motif {{ id }}?"
+      },
+      "detail": {
+        "title": "Motif"
+      },
+      "id": "ID",
+      "designation": "Designation",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "createdBy": "Created By",
+      "createdByUserLogin": "Created By User Login",
+      "updatedBy": "Updated By",
+      "updatedByUserLogin": "Updated By User Login"
+    }
+  },
+  "operationsServiceApp": {
+    "operationsServiceMotif": {
+      "created": "A new Motif is created with identifier {{ param }}",
+      "updated": "A Motif is updated with identifier {{ param }}",
+      "deleted": "A Motif is deleted with identifier {{ param }}"
+    }
+  }
+}

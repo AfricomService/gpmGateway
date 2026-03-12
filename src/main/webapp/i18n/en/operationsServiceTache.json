@@ -1,0 +1,34 @@
+{
+  "gpmGatewayApp": {
+    "operationsServiceTache": {
+      "home": {
+        "title": "Taches",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Tache",
+        "createOrEditLabel": "Create or edit a Tache",
+        "notFound": "No Taches found"
+      },
+      "delete": {
+        "question": "Are you sure you want to delete Tache {{ id }}?"
+      },
+      "detail": {
+        "title": "Tache"
+      },
+      "id": "ID",
+      "roleDansLaMission": "Role Dans La Mission",
+      "note": "Note",
+      "remboursement": "Remboursement",
+      "executeurId": "Executeur Id",
+      "executeurUserLogin": "Executeur User Login",
+      "workOrder": "Work Order",
+      "activite": "Activite"
+    }
+  },
+  "operationsServiceApp": {
+    "operationsServiceTache": {
+      "created": "A new Tache is created with identifier {{ param }}",
+      "updated": "A Tache is updated with identifier {{ param }}",
+      "deleted": "A Tache is deleted with identifier {{ param }}"
+    }
+  }
+}

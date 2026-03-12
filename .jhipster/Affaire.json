@@ -1,0 +1,116 @@
+{
+  "applications": ["gpmGateway", "projectService"],
+  "changelogDate": "20260312131540",
+  "clientRootFolder": "projectService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "affaire",
+  "fields": [
+    {
+      "fieldName": "numAffaire",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["required", "unique"]
+    },
+    {
+      "fieldName": "designationAffaire",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "bonDeCommande",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "montant",
+      "fieldType": "Float"
+    },
+    {
+      "fieldName": "devise",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "dateDebut",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "dateCloture",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "datePassageExecution",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "lieuMultipleParMission",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "montantVente",
+      "fieldType": "Float"
+    },
+    {
+      "fieldName": "montantBudgetaireMateriel",
+      "fieldType": "Float"
+    },
+    {
+      "fieldName": "montantBudgetaireService",
+      "fieldType": "Float"
+    },
+    {
+      "fieldName": "statut",
+      "fieldType": "StatutAffaire",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "Brouillon,EtudeOpportunite,ExecutionDesTravaux,ClotureProjet,Fin"
+    },
+    {
+      "fieldName": "responsableProjetId",
+      "fieldType": "String",
+      "javadoc": "Cross-service FK → Utilisateur (operationsService)"
+    },
+    {
+      "fieldName": "responsableProjetUserLogin",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "createdBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "createdByUserLogin",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "updatedBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "updatedByUserLogin",
+      "fieldType": "String"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "projectService",
+  "name": "Affaire",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityField": "raisonSociale",
+      "otherEntityName": "client",
+      "relationshipName": "client",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "service": "serviceClass"
+}

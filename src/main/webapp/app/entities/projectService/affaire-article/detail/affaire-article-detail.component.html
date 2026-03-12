@@ -1,0 +1,50 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="affaireArticle">
+      <h2 data-cy="affaireArticleDetailsHeading">
+        <span jhiTranslate="gpmGatewayApp.projectServiceAffaireArticle.detail.title">Affaire Article</span>
+      </h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ affaireArticle.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaireArticle.quantiteContractuelle">Quantite Contractuelle</span></dt>
+        <dd>
+          <span>{{ affaireArticle.quantiteContractuelle }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaireArticle.quantiteRealisee">Quantite Realisee</span></dt>
+        <dd>
+          <span>{{ affaireArticle.quantiteRealisee }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaireArticle.affaire">Affaire</span></dt>
+        <dd>
+          <div *ngIf="affaireArticle.affaire">
+            <a [routerLink]="['/affaire', affaireArticle.affaire.id, 'view']">{{ affaireArticle.affaire.designationAffaire }}</a>
+          </div>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaireArticle.article">Article</span></dt>
+        <dd>
+          <div *ngIf="affaireArticle.article">
+            <a [routerLink]="['/article', affaireArticle.article.id, 'view']">{{ affaireArticle.article.code }}</a>
+          </div>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/affaire-article', affaireArticle.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

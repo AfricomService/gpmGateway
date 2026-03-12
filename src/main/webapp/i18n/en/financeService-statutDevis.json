@@ -1,0 +1,10 @@
+{
+  "gpmGatewayApp": {
+    "StatutDevis": {
+      "null": "",
+      "Creation": "Creation",
+      "ExecutionDesTravaux": "ExecutionDesTravaux",
+      "Fin": "Fin"
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "gpmGatewayApp": {
+    "financeServiceDepenseDiverse": {
+      "home": {
+        "title": "Depense Diverses",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Depense Diverse",
+        "createOrEditLabel": "Create or edit a Depense Diverse",
+        "notFound": "No Depense Diverses found"
+      },
+      "delete": {
+        "question": "Are you sure you want to delete Depense Diverse {{ id }}?"
+      },
+      "detail": {
+        "title": "Depense Diverse"
+      },
+      "id": "ID",
+      "motif": "Motif",
+      "montant": "Montant",
+      "date": "Date",
+      "justificatif": "Justificatif",
+      "workOrderId": "Work Order Id",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "createdBy": "Created By",
+      "createdByUserLogin": "Created By User Login",
+      "updatedBy": "Updated By",
+      "updatedByUserLogin": "Updated By User Login",
+      "help": {
+        "workOrderId": "Cross-service FK → WorkOrder (operationsService)"
+      }
+    }
+  },
+  "financeServiceApp": {
+    "financeServiceDepenseDiverse": {
+      "created": "A new Depense Diverse is created with identifier {{ param }}",
+      "updated": "A Depense Diverse is updated with identifier {{ param }}",
+      "deleted": "A Depense Diverse is deleted with identifier {{ param }}"
+    }
+  }
+}

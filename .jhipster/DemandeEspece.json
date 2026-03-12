@@ -1,0 +1,67 @@
+{
+  "applications": ["gpmGateway", "financeService"],
+  "changelogDate": "20260312132440",
+  "clientRootFolder": "financeService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "demande_espece",
+  "fields": [
+    {
+      "fieldName": "montant",
+      "fieldType": "Float",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "motif",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "workOrderId",
+      "fieldType": "Long",
+      "javadoc": "Cross-service FK → WorkOrder (operationsService)"
+    },
+    {
+      "fieldName": "beneficiaireId",
+      "fieldType": "String",
+      "javadoc": "Cross-service FK → Utilisateur (operationsService)"
+    },
+    {
+      "fieldName": "beneficiaireUserLogin",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "createdBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "createdByUserLogin",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "updatedBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "updatedByUserLogin",
+      "fieldType": "String"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "financeService",
+  "name": "DemandeEspece",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceClass"
+}

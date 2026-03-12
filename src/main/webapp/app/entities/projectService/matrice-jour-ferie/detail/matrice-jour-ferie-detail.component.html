@@ -1,0 +1,46 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="matriceJourFerie">
+      <h2 data-cy="matriceJourFerieDetailsHeading">
+        <span jhiTranslate="gpmGatewayApp.projectServiceMatriceJourFerie.detail.title">Matrice Jour Ferie</span>
+      </h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ matriceJourFerie.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceMatriceJourFerie.tarifApplique">Tarif Applique</span></dt>
+        <dd>
+          <span>{{ matriceJourFerie.tarifApplique }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceMatriceJourFerie.matrice">Matrice</span></dt>
+        <dd>
+          <div *ngIf="matriceJourFerie.matrice">
+            <a [routerLink]="['/matrice-facturation', matriceJourFerie.matrice.id, 'view']">{{ matriceJourFerie.matrice.id }}</a>
+          </div>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceMatriceJourFerie.jourFerie">Jour Ferie</span></dt>
+        <dd>
+          <div *ngIf="matriceJourFerie.jourFerie">
+            <a [routerLink]="['/jour-ferie', matriceJourFerie.jourFerie.id, 'view']">{{ matriceJourFerie.jourFerie.designation }}</a>
+          </div>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/matrice-jour-ferie', matriceJourFerie.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

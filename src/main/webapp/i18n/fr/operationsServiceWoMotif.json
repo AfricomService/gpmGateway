@@ -1,0 +1,29 @@
+{
+  "gpmGatewayApp": {
+    "operationsServiceWoMotif": {
+      "home": {
+        "title": "WoMotifs",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Wo Motif",
+        "createOrEditLabel": "Créer ou éditer un Wo Motif",
+        "notFound": "Aucun Wo Motif trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Wo Motif {{ id }} ?"
+      },
+      "detail": {
+        "title": "Wo Motif"
+      },
+      "id": "ID",
+      "workOrder": "Work Order",
+      "motif": "Motif"
+    }
+  },
+  "operationsServiceApp": {
+    "operationsServiceWoMotif": {
+      "created": "Un nouveau Wo Motif a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Wo Motif avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Wo Motif avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

@@ -1,0 +1,54 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="woUtilisateur">
+      <h2 data-cy="woUtilisateurDetailsHeading">
+        <span jhiTranslate="gpmGatewayApp.operationsServiceWoUtilisateur.detail.title">Wo Utilisateur</span>
+      </h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ woUtilisateur.id }}</span>
+        </dd>
+        <dt>
+          <span
+            jhiTranslate="gpmGatewayApp.operationsServiceWoUtilisateur.role"
+            [ngbTooltip]="'gpmGatewayApp.operationsServiceWoUtilisateur.help.role' | translate"
+            >Role</span
+          >
+        </dt>
+        <dd>
+          <span>{{ woUtilisateur.role }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWoUtilisateur.userId">User Id</span></dt>
+        <dd>
+          <span>{{ woUtilisateur.userId }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWoUtilisateur.userLogin">User Login</span></dt>
+        <dd>
+          <span>{{ woUtilisateur.userLogin }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWoUtilisateur.workOrder">Work Order</span></dt>
+        <dd>
+          <div *ngIf="woUtilisateur.workOrder">
+            <a [routerLink]="['/work-order', woUtilisateur.workOrder.id, 'view']">{{ woUtilisateur.workOrder.id }}</a>
+          </div>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/wo-utilisateur', woUtilisateur.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,38 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="zone">
+      <h2 data-cy="zoneDetailsHeading"><span jhiTranslate="gpmGatewayApp.projectServiceZone.detail.title">Zone</span></h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ zone.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceZone.nom">Nom</span></dt>
+        <dd>
+          <span>{{ zone.nom }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceZone.ville">Ville</span></dt>
+        <dd>
+          <div *ngIf="zone.ville">
+            <a [routerLink]="['/ville', zone.ville.id, 'view']">{{ zone.ville.nom }}</a>
+          </div>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/zone', zone.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

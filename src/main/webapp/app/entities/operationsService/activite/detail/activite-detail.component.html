@@ -1,0 +1,60 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="activite">
+      <h2 data-cy="activiteDetailsHeading"><span jhiTranslate="gpmGatewayApp.operationsServiceActivite.detail.title">Activite</span></h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ activite.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceActivite.code">Code</span></dt>
+        <dd>
+          <span>{{ activite.code }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceActivite.designation">Designation</span></dt>
+        <dd>
+          <span>{{ activite.designation }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceActivite.createdAt">Created At</span></dt>
+        <dd>
+          <span>{{ activite.createdAt | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceActivite.updatedAt">Updated At</span></dt>
+        <dd>
+          <span>{{ activite.updatedAt | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceActivite.createdBy">Created By</span></dt>
+        <dd>
+          <span>{{ activite.createdBy }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceActivite.createdByUserLogin">Created By User Login</span></dt>
+        <dd>
+          <span>{{ activite.createdByUserLogin }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceActivite.updatedBy">Updated By</span></dt>
+        <dd>
+          <span>{{ activite.updatedBy }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceActivite.updatedByUserLogin">Updated By User Login</span></dt>
+        <dd>
+          <span>{{ activite.updatedByUserLogin }}</span>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/activite', activite.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

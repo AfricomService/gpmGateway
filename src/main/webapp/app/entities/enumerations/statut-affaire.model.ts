@@ -1,0 +1,11 @@
+export enum StatutAffaire {
+  Brouillon = 'Brouillon',
+
+  EtudeOpportunite = 'EtudeOpportunite',
+
+  ExecutionDesTravaux = 'ExecutionDesTravaux',
+
+  ClotureProjet = 'ClotureProjet',
+
+  Fin = 'Fin',
+}

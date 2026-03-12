@@ -1,0 +1,130 @@
+{
+  "applications": ["gpmGateway", "operationsService"],
+  "changelogDate": "20260312134440",
+  "clientRootFolder": "operationsService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "work_order",
+  "fields": [
+    {
+      "fieldName": "clientId",
+      "fieldType": "Long",
+      "javadoc": "Cross-service FK → Client (projectService)"
+    },
+    {
+      "fieldName": "affaireId",
+      "fieldType": "Long",
+      "javadoc": "Cross-service FK → Affaire (projectService)"
+    },
+    {
+      "fieldName": "demandeurContactId",
+      "fieldType": "Long",
+      "javadoc": "Cross-service FK → Contact (projectService)"
+    },
+    {
+      "fieldName": "vehiculeId",
+      "fieldType": "Long",
+      "javadoc": "Cross-service FK → Vehicule (projectService)"
+    },
+    {
+      "fieldName": "otExterneId",
+      "fieldType": "Long",
+      "javadoc": "Cross-service FK → OtExterne (financeService)"
+    },
+    {
+      "fieldName": "valideurId",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "valideurUserLogin",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "dateHeureDebutPrev",
+      "fieldType": "ZonedDateTime",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "dateHeureFinPrev",
+      "fieldType": "ZonedDateTime",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "dateHeureDebutReel",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "dateHeureFinReel",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "missionDeNuit",
+      "fieldType": "Boolean",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "nombreNuits",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "hebergement",
+      "fieldType": "Boolean",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "nombreHebergements",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "remarque",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "numFicheIntervention",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "statut",
+      "fieldType": "StatutWO",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "Creation,ExecutionTravaux,VerificationWO,ValidationTechnique,ValidationRessources,Fin"
+    },
+    {
+      "fieldName": "materielUtilise",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "createdBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "createdByUserLogin",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "updatedBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "updatedByUserLogin",
+      "fieldType": "String"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "operationsService",
+  "name": "WorkOrder",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceClass"
+}

@@ -1,0 +1,58 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="articleDemandeAchat">
+      <h2 data-cy="articleDemandeAchatDetailsHeading">
+        <span jhiTranslate="gpmGatewayApp.financeServiceArticleDemandeAchat.detail.title">Article Demande Achat</span>
+      </h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ articleDemandeAchat.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceArticleDemandeAchat.qteDemandee">Qte Demandee</span></dt>
+        <dd>
+          <span>{{ articleDemandeAchat.qteDemandee }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceArticleDemandeAchat.type">Type</span></dt>
+        <dd>
+          <span jhiTranslate="{{ 'gpmGatewayApp.TypeArticleDemandeAchat.' + articleDemandeAchat.type }}">{{
+            articleDemandeAchat.type
+          }}</span>
+        </dd>
+        <dt>
+          <span
+            jhiTranslate="gpmGatewayApp.financeServiceArticleDemandeAchat.articleCode"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceArticleDemandeAchat.help.articleCode' | translate"
+            >Article Code</span
+          >
+        </dt>
+        <dd>
+          <span>{{ articleDemandeAchat.articleCode }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceArticleDemandeAchat.demandeAchat">Demande Achat</span></dt>
+        <dd>
+          <div *ngIf="articleDemandeAchat.demandeAchat">
+            <a [routerLink]="['/demande-achat', articleDemandeAchat.demandeAchat.id, 'view']">{{
+              articleDemandeAchat.demandeAchat.code
+            }}</a>
+          </div>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/article-demande-achat', articleDemandeAchat.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

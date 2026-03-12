@@ -1,0 +1,9 @@
+{
+  "gpmGatewayApp": {
+    "TypeArticleDemandeAchat": {
+      "null": "",
+      "Fourniture": "Fourniture",
+      "Service": "Service"
+    }
+  }
+}

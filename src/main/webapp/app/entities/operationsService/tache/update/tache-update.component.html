@@ -1,0 +1,154 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="jhi-tache-heading"
+        data-cy="TacheCreateUpdateHeading"
+        jhiTranslate="gpmGatewayApp.operationsServiceTache.home.createOrEditLabel"
+      >
+        Créer ou éditer un Tache
+      </h2>
+
+      <div>
+        <jhi-alert-error></jhi-alert-error>
+
+        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
+          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
+          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceTache.roleDansLaMission" for="field_roleDansLaMission"
+            >Role Dans La Mission</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="roleDansLaMission"
+            id="field_roleDansLaMission"
+            data-cy="roleDansLaMission"
+            formControlName="roleDansLaMission"
+          />
+          <div
+            *ngIf="
+              editForm.get('roleDansLaMission')!.invalid &&
+              (editForm.get('roleDansLaMission')!.dirty || editForm.get('roleDansLaMission')!.touched)
+            "
+          >
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('roleDansLaMission')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceTache.note" for="field_note">Note</label>
+          <input type="number" class="form-control" name="note" id="field_note" data-cy="note" formControlName="note" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceTache.remboursement" for="field_remboursement"
+            >Remboursement</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="remboursement"
+            id="field_remboursement"
+            data-cy="remboursement"
+            formControlName="remboursement"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceTache.executeurId" for="field_executeurId"
+            >Executeur Id</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="executeurId"
+            id="field_executeurId"
+            data-cy="executeurId"
+            formControlName="executeurId"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceTache.executeurUserLogin" for="field_executeurUserLogin"
+            >Executeur User Login</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="executeurUserLogin"
+            id="field_executeurUserLogin"
+            data-cy="executeurUserLogin"
+            formControlName="executeurUserLogin"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceTache.workOrder" for="field_workOrder">Work Order</label>
+          <select
+            class="form-control"
+            id="field_workOrder"
+            data-cy="workOrder"
+            name="workOrder"
+            formControlName="workOrder"
+            [compareWith]="compareWorkOrder"
+          >
+            <option *ngIf="!editForm.get('workOrder')!.value" [ngValue]="null" selected></option>
+            <option [ngValue]="workOrderOption" *ngFor="let workOrderOption of workOrdersSharedCollection">{{ workOrderOption.id }}</option>
+          </select>
+        </div>
+        <div *ngIf="editForm.get(['workOrder'])!.invalid && (editForm.get(['workOrder'])!.dirty || editForm.get(['workOrder'])!.touched)">
+          <small
+            class="form-text text-danger"
+            *ngIf="editForm.get(['workOrder'])?.errors?.required"
+            jhiTranslate="entity.validation.required"
+          >
+            Ce champ est obligatoire.
+          </small>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceTache.activite" for="field_activite">Activite</label>
+          <select
+            class="form-control"
+            id="field_activite"
+            data-cy="activite"
+            name="activite"
+            formControlName="activite"
+            [compareWith]="compareActivite"
+          >
+            <option [ngValue]="null"></option>
+            <option [ngValue]="activiteOption" *ngFor="let activiteOption of activitesSharedCollection">
+              {{ activiteOption.designation }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

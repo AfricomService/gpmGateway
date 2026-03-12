@@ -1,0 +1,40 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="woMotif">
+      <h2 data-cy="woMotifDetailsHeading"><span jhiTranslate="gpmGatewayApp.operationsServiceWoMotif.detail.title">Wo Motif</span></h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ woMotif.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWoMotif.workOrder">Work Order</span></dt>
+        <dd>
+          <div *ngIf="woMotif.workOrder">
+            <a [routerLink]="['/work-order', woMotif.workOrder.id, 'view']">{{ woMotif.workOrder.id }}</a>
+          </div>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWoMotif.motif">Motif</span></dt>
+        <dd>
+          <div *ngIf="woMotif.motif">
+            <a [routerLink]="['/motif', woMotif.motif.id, 'view']">{{ woMotif.motif.designation }}</a>
+          </div>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/wo-motif', woMotif.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

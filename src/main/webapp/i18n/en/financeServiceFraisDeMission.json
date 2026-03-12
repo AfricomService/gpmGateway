@@ -1,0 +1,57 @@
+{
+  "gpmGatewayApp": {
+    "financeServiceFraisDeMission": {
+      "home": {
+        "title": "Frais De Missions",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Frais De Mission",
+        "createOrEditLabel": "Create or edit a Frais De Mission",
+        "notFound": "No Frais De Missions found"
+      },
+      "delete": {
+        "question": "Are you sure you want to delete Frais De Mission {{ id }}?"
+      },
+      "detail": {
+        "title": "Frais De Mission"
+      },
+      "id": "ID",
+      "dateDebut": "Date Debut",
+      "dateFin": "Date Fin",
+      "montantTotal": "Montant Total",
+      "avanceRecue": "Avance Recue",
+      "netAPayer": "Net A Payer",
+      "noteRendement": "Note Rendement",
+      "noteQualite": "Note Qualite",
+      "noteConduite": "Note Conduite",
+      "noteTotale": "Note Totale",
+      "bonusExtra": "Bonus Extra",
+      "justificatifBonus": "Justificatif Bonus",
+      "justificatifModification": "Justificatif Modification",
+      "statut": "Statut",
+      "workOrderId": "Work Order Id",
+      "beneficiaireId": "Beneficiaire Id",
+      "beneficiaireUserLogin": "Beneficiaire User Login",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "createdBy": "Created By",
+      "createdByUserLogin": "Created By User Login",
+      "updatedBy": "Updated By",
+      "updatedByUserLogin": "Updated By User Login",
+      "help": {
+        "noteRendement": "CHECK max 6",
+        "noteQualite": "CHECK max 6",
+        "noteConduite": "CHECK max 2",
+        "noteTotale": "CHECK max 14",
+        "workOrderId": "Cross-service FK → WorkOrder (operationsService)",
+        "beneficiaireId": "Cross-service FK → Utilisateur (operationsService)"
+      }
+    }
+  },
+  "financeServiceApp": {
+    "financeServiceFraisDeMission": {
+      "created": "A new Frais De Mission is created with identifier {{ param }}",
+      "updated": "A Frais De Mission is updated with identifier {{ param }}",
+      "deleted": "A Frais De Mission is deleted with identifier {{ param }}"
+    }
+  }
+}

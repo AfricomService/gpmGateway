@@ -1,0 +1,30 @@
+{
+  "gpmGatewayApp": {
+    "projectServiceJourFerie": {
+      "home": {
+        "title": "Jour Feries",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Jour Ferie",
+        "createOrEditLabel": "Create or edit a Jour Ferie",
+        "notFound": "No Jour Feries found"
+      },
+      "delete": {
+        "question": "Are you sure you want to delete Jour Ferie {{ id }}?"
+      },
+      "detail": {
+        "title": "Jour Ferie"
+      },
+      "id": "ID",
+      "date": "Date",
+      "designation": "Designation",
+      "annee": "Annee"
+    }
+  },
+  "projectServiceApp": {
+    "projectServiceJourFerie": {
+      "created": "A new Jour Ferie is created with identifier {{ param }}",
+      "updated": "A Jour Ferie is updated with identifier {{ param }}",
+      "deleted": "A Jour Ferie is deleted with identifier {{ param }}"
+    }
+  }
+}

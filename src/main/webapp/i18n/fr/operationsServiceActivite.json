@@ -1,0 +1,35 @@
+{
+  "gpmGatewayApp": {
+    "operationsServiceActivite": {
+      "home": {
+        "title": "Activites",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Activite",
+        "createOrEditLabel": "Créer ou éditer un Activite",
+        "notFound": "Aucun Activite trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Activite {{ id }} ?"
+      },
+      "detail": {
+        "title": "Activite"
+      },
+      "id": "ID",
+      "code": "Code",
+      "designation": "Designation",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "createdBy": "Created By",
+      "createdByUserLogin": "Created By User Login",
+      "updatedBy": "Updated By",
+      "updatedByUserLogin": "Updated By User Login"
+    }
+  },
+  "operationsServiceApp": {
+    "operationsServiceActivite": {
+      "created": "Un nouveau Activite a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Activite avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Activite avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

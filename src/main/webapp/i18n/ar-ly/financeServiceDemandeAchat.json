@@ -1,0 +1,51 @@
+{
+  "gpmGatewayApp": {
+    "financeServiceDemandeAchat": {
+      "home": {
+        "title": "Demande Achats",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Demande Achat",
+        "createOrEditLabel": "Create or edit a Demande Achat",
+        "notFound": "No Demande Achats found"
+      },
+      "delete": {
+        "question": "Are you sure you want to delete Demande Achat {{ id }}?"
+      },
+      "detail": {
+        "title": "Demande Achat"
+      },
+      "id": "ID",
+      "code": "Code",
+      "statut": "Statut",
+      "type": "Type",
+      "dateCreation": "Date Creation",
+      "dateMiseADisposition": "Date Mise A Disposition",
+      "workOrderId": "Work Order Id",
+      "affaireId": "Affaire Id",
+      "demandeurId": "Demandeur Id",
+      "demandeurUserLogin": "Demandeur User Login",
+      "validateurId": "Validateur Id",
+      "validateurUserLogin": "Validateur User Login",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "createdBy": "Created By",
+      "createdByUserLogin": "Created By User Login",
+      "updatedBy": "Updated By",
+      "updatedByUserLogin": "Updated By User Login",
+      "help": {
+        "code": "DA-YYYY-XXXX auto-generated",
+        "workOrderId": "Cross-service FK → WorkOrder (operationsService)",
+        "affaireId": "Cross-service FK → Affaire (projectService)",
+        "demandeurId": "Cross-service FK → Utilisateur (operationsService) — Demandeur",
+        "validateurId": "Cross-service FK → Utilisateur (operationsService) — Validateur"
+      }
+    }
+  },
+  "financeServiceApp": {
+    "financeServiceDemandeAchat": {
+      "created": "A new Demande Achat is created with identifier {{ param }}",
+      "updated": "A Demande Achat is updated with identifier {{ param }}",
+      "deleted": "A Demande Achat is deleted with identifier {{ param }}"
+    }
+  }
+}

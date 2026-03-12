@@ -1,0 +1,90 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="facture">
+      <h2 data-cy="factureDetailsHeading"><span jhiTranslate="gpmGatewayApp.financeServiceFacture.detail.title">Facture</span></h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ facture.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFacture.numFacture">Num Facture</span></dt>
+        <dd>
+          <span>{{ facture.numFacture }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFacture.bonDeCommande">Bon De Commande</span></dt>
+        <dd>
+          <span>{{ facture.bonDeCommande }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFacture.montantFacture">Montant Facture</span></dt>
+        <dd>
+          <span>{{ facture.montantFacture }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFacture.dateFacture">Date Facture</span></dt>
+        <dd>
+          <span>{{ facture.dateFacture | formatMediumDate }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFacture.dateEcheance">Date Echeance</span></dt>
+        <dd>
+          <span>{{ facture.dateEcheance | formatMediumDate }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFacture.dateDecharge">Date Decharge</span></dt>
+        <dd>
+          <span>{{ facture.dateDecharge | formatMediumDate }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFacture.statut">Statut</span></dt>
+        <dd>
+          <span jhiTranslate="{{ 'gpmGatewayApp.StatutFacture.' + facture.statut }}">{{ facture.statut }}</span>
+        </dd>
+        <dt>
+          <span
+            jhiTranslate="gpmGatewayApp.financeServiceFacture.clientId"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceFacture.help.clientId' | translate"
+            >Client Id</span
+          >
+        </dt>
+        <dd>
+          <span>{{ facture.clientId }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFacture.createdAt">Created At</span></dt>
+        <dd>
+          <span>{{ facture.createdAt | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFacture.updatedAt">Updated At</span></dt>
+        <dd>
+          <span>{{ facture.updatedAt | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFacture.createdBy">Created By</span></dt>
+        <dd>
+          <span>{{ facture.createdBy }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFacture.createdByUserLogin">Created By User Login</span></dt>
+        <dd>
+          <span>{{ facture.createdByUserLogin }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFacture.updatedBy">Updated By</span></dt>
+        <dd>
+          <span>{{ facture.updatedBy }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFacture.updatedByUserLogin">Updated By User Login</span></dt>
+        <dd>
+          <span>{{ facture.updatedByUserLogin }}</span>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/facture', facture.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

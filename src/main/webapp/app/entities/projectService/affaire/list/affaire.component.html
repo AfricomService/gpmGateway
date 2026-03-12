@@ -1,0 +1,257 @@
+<div>
+  <h2 id="page-heading" data-cy="AffaireHeading">
+    <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.home.title">Affaires</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
+        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.home.refreshListLabel">Actualiser la liste</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-affaire"
+        [routerLink]="['/affaire/new']"
+      >
+        <fa-icon icon="plus"></fa-icon>
+        <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.home.createLabel"> Créer un nouveau Affaire </span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error></jhi-alert-error>
+
+  <jhi-alert></jhi-alert>
+
+  <div class="alert alert-warning" id="no-result" *ngIf="affaires?.length === 0">
+    <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.home.notFound">Aucun Affaire trouvé</span>
+  </div>
+
+  <div class="table-responsive table-entities" id="entities" *ngIf="affaires && affaires.length > 0">
+    <table class="table table-striped" aria-describedby="page-heading">
+      <thead>
+        <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
+          <th scope="col" jhiSortBy="id">
+            <div class="d-flex">
+              <span jhiTranslate="global.field.id">ID</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="numAffaire">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.numAffaire">Num Affaire</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="designationAffaire">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.designationAffaire">Designation Affaire</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="bonDeCommande">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.bonDeCommande">Bon De Commande</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="montant">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.montant">Montant</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="devise">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.devise">Devise</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="dateDebut">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.dateDebut">Date Debut</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="dateCloture">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.dateCloture">Date Cloture</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="datePassageExecution">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.datePassageExecution">Date Passage Execution</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="lieuMultipleParMission">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.lieuMultipleParMission">Lieu Multiple Par Mission</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="montantVente">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.montantVente">Montant Vente</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="montantBudgetaireMateriel">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.montantBudgetaireMateriel">Montant Budgetaire Materiel</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="montantBudgetaireService">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.montantBudgetaireService">Montant Budgetaire Service</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="statut">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.statut">Statut</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="responsableProjetId">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.responsableProjetId">Responsable Projet Id</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="responsableProjetUserLogin">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.responsableProjetUserLogin">Responsable Projet User Login</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="createdAt">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.createdAt">Created At</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="updatedAt">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.updatedAt">Updated At</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="createdBy">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.createdBy">Created By</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="createdByUserLogin">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.createdByUserLogin">Created By User Login</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="updatedBy">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.updatedBy">Updated By</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="updatedByUserLogin">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.updatedByUserLogin">Updated By User Login</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="client.raisonSociale">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.client">Client</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let affaire of affaires; trackBy: trackId" data-cy="entityTable">
+          <td>
+            <a [routerLink]="['/affaire', affaire.id, 'view']">{{ affaire.id }}</a>
+          </td>
+          <td>{{ affaire.numAffaire }}</td>
+          <td>{{ affaire.designationAffaire }}</td>
+          <td>{{ affaire.bonDeCommande }}</td>
+          <td>{{ affaire.montant }}</td>
+          <td>{{ affaire.devise }}</td>
+          <td>{{ affaire.dateDebut | formatMediumDate }}</td>
+          <td>{{ affaire.dateCloture | formatMediumDate }}</td>
+          <td>{{ affaire.datePassageExecution | formatMediumDate }}</td>
+          <td>{{ affaire.lieuMultipleParMission }}</td>
+          <td>{{ affaire.montantVente }}</td>
+          <td>{{ affaire.montantBudgetaireMateriel }}</td>
+          <td>{{ affaire.montantBudgetaireService }}</td>
+          <td jhiTranslate="{{ 'gpmGatewayApp.StatutAffaire.' + affaire.statut }}">{{ affaire.statut }}</td>
+          <td>{{ affaire.responsableProjetId }}</td>
+          <td>{{ affaire.responsableProjetUserLogin }}</td>
+          <td>{{ affaire.createdAt | formatMediumDatetime }}</td>
+          <td>{{ affaire.updatedAt | formatMediumDatetime }}</td>
+          <td>{{ affaire.createdBy }}</td>
+          <td>{{ affaire.createdByUserLogin }}</td>
+          <td>{{ affaire.updatedBy }}</td>
+          <td>{{ affaire.updatedByUserLogin }}</td>
+          <td>
+            <div *ngIf="affaire.client">
+              <a [routerLink]="['/client', affaire.client.id, 'view']">{{ affaire.client.raisonSociale }}</a>
+            </div>
+          </td>
+          <td class="text-end">
+            <div class="btn-group">
+              <button
+                type="submit"
+                [routerLink]="['/affaire', affaire.id, 'view']"
+                class="btn btn-info btn-sm"
+                data-cy="entityDetailsButton"
+              >
+                <fa-icon icon="eye"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
+              </button>
+
+              <button
+                type="submit"
+                [routerLink]="['/affaire', affaire.id, 'edit']"
+                class="btn btn-primary btn-sm"
+                data-cy="entityEditButton"
+              >
+                <fa-icon icon="pencil-alt"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
+              </button>
+
+              <button type="submit" (click)="delete(affaire)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                <fa-icon icon="times"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="affaires && affaires.length > 0">
+    <div class="d-flex justify-content-center">
+      <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+    </div>
+
+    <div class="d-flex justify-content-center">
+      <ngb-pagination
+        [collectionSize]="totalItems"
+        [page]="page"
+        [pageSize]="itemsPerPage"
+        [maxSize]="5"
+        [rotate]="true"
+        [boundaryLinks]="true"
+        (pageChange)="navigateToPage($event)"
+      ></ngb-pagination>
+    </div>
+  </div>
+</div>

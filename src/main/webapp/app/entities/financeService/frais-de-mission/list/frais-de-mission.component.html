@@ -1,0 +1,253 @@
+<div>
+  <h2 id="page-heading" data-cy="FraisDeMissionHeading">
+    <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.home.title">FraisDeMissions</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
+        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.home.refreshListLabel">Actualiser la liste</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-frais-de-mission"
+        [routerLink]="['/frais-de-mission/new']"
+      >
+        <fa-icon icon="plus"></fa-icon>
+        <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.home.createLabel"> Créer un nouveau Frais De Mission </span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error></jhi-alert-error>
+
+  <jhi-alert></jhi-alert>
+
+  <div class="alert alert-warning" id="no-result" *ngIf="fraisDeMissions?.length === 0">
+    <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.home.notFound">Aucun Frais De Mission trouvé</span>
+  </div>
+
+  <div class="table-responsive table-entities" id="entities" *ngIf="fraisDeMissions && fraisDeMissions.length > 0">
+    <table class="table table-striped" aria-describedby="page-heading">
+      <thead>
+        <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
+          <th scope="col" jhiSortBy="id">
+            <div class="d-flex">
+              <span jhiTranslate="global.field.id">ID</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="dateDebut">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.dateDebut">Date Debut</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="dateFin">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.dateFin">Date Fin</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="montantTotal">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.montantTotal">Montant Total</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="avanceRecue">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.avanceRecue">Avance Recue</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="netAPayer">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.netAPayer">Net A Payer</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="noteRendement">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.noteRendement">Note Rendement</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="noteQualite">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.noteQualite">Note Qualite</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="noteConduite">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.noteConduite">Note Conduite</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="noteTotale">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.noteTotale">Note Totale</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="bonusExtra">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.bonusExtra">Bonus Extra</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="justificatifBonus">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.justificatifBonus">Justificatif Bonus</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="justificatifModification">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.justificatifModification">Justificatif Modification</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="statut">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.statut">Statut</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="workOrderId">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.workOrderId">Work Order Id</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="beneficiaireId">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.beneficiaireId">Beneficiaire Id</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="beneficiaireUserLogin">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.beneficiaireUserLogin">Beneficiaire User Login</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="createdAt">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.createdAt">Created At</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="updatedAt">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.updatedAt">Updated At</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="createdBy">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.createdBy">Created By</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="createdByUserLogin">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.createdByUserLogin">Created By User Login</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="updatedBy">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.updatedBy">Updated By</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="updatedByUserLogin">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.updatedByUserLogin">Updated By User Login</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let fraisDeMission of fraisDeMissions; trackBy: trackId" data-cy="entityTable">
+          <td>
+            <a [routerLink]="['/frais-de-mission', fraisDeMission.id, 'view']">{{ fraisDeMission.id }}</a>
+          </td>
+          <td>{{ fraisDeMission.dateDebut | formatMediumDate }}</td>
+          <td>{{ fraisDeMission.dateFin | formatMediumDate }}</td>
+          <td>{{ fraisDeMission.montantTotal }}</td>
+          <td>{{ fraisDeMission.avanceRecue }}</td>
+          <td>{{ fraisDeMission.netAPayer }}</td>
+          <td>{{ fraisDeMission.noteRendement }}</td>
+          <td>{{ fraisDeMission.noteQualite }}</td>
+          <td>{{ fraisDeMission.noteConduite }}</td>
+          <td>{{ fraisDeMission.noteTotale }}</td>
+          <td>{{ fraisDeMission.bonusExtra }}</td>
+          <td>{{ fraisDeMission.justificatifBonus }}</td>
+          <td>{{ fraisDeMission.justificatifModification }}</td>
+          <td jhiTranslate="{{ 'gpmGatewayApp.StatutFraisDeMission.' + fraisDeMission.statut }}">{{ fraisDeMission.statut }}</td>
+          <td>{{ fraisDeMission.workOrderId }}</td>
+          <td>{{ fraisDeMission.beneficiaireId }}</td>
+          <td>{{ fraisDeMission.beneficiaireUserLogin }}</td>
+          <td>{{ fraisDeMission.createdAt | formatMediumDatetime }}</td>
+          <td>{{ fraisDeMission.updatedAt | formatMediumDatetime }}</td>
+          <td>{{ fraisDeMission.createdBy }}</td>
+          <td>{{ fraisDeMission.createdByUserLogin }}</td>
+          <td>{{ fraisDeMission.updatedBy }}</td>
+          <td>{{ fraisDeMission.updatedByUserLogin }}</td>
+          <td class="text-end">
+            <div class="btn-group">
+              <button
+                type="submit"
+                [routerLink]="['/frais-de-mission', fraisDeMission.id, 'view']"
+                class="btn btn-info btn-sm"
+                data-cy="entityDetailsButton"
+              >
+                <fa-icon icon="eye"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
+              </button>
+
+              <button
+                type="submit"
+                [routerLink]="['/frais-de-mission', fraisDeMission.id, 'edit']"
+                class="btn btn-primary btn-sm"
+                data-cy="entityEditButton"
+              >
+                <fa-icon icon="pencil-alt"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
+              </button>
+
+              <button type="submit" (click)="delete(fraisDeMission)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                <fa-icon icon="times"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="fraisDeMissions && fraisDeMissions.length > 0">
+    <div class="d-flex justify-content-center">
+      <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+    </div>
+
+    <div class="d-flex justify-content-center">
+      <ngb-pagination
+        [collectionSize]="totalItems"
+        [page]="page"
+        [pageSize]="itemsPerPage"
+        [maxSize]="5"
+        [rotate]="true"
+        [boundaryLinks]="true"
+        (pageChange)="navigateToPage($event)"
+      ></ngb-pagination>
+    </div>
+  </div>
+</div>

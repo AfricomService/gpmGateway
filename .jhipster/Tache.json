@@ -1,0 +1,53 @@
+{
+  "applications": ["gpmGateway", "operationsService"],
+  "changelogDate": "20260312134040",
+  "clientRootFolder": "operationsService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "tache",
+  "fields": [
+    {
+      "fieldName": "roleDansLaMission",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "note",
+      "fieldType": "Float"
+    },
+    {
+      "fieldName": "remboursement",
+      "fieldType": "Float"
+    },
+    {
+      "fieldName": "executeurId",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "executeurUserLogin",
+      "fieldType": "String"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "operationsService",
+  "name": "Tache",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityName": "workOrder",
+      "relationshipName": "workOrder",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    },
+    {
+      "otherEntityField": "designation",
+      "otherEntityName": "activite",
+      "relationshipName": "activite",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "service": "serviceClass"
+}

@@ -1,0 +1,96 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="societe">
+      <h2 data-cy="societeDetailsHeading"><span jhiTranslate="gpmGatewayApp.projectServiceSociete.detail.title">Societe</span></h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ societe.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSociete.raisonSociale">Raison Sociale</span></dt>
+        <dd>
+          <span>{{ societe.raisonSociale }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSociete.raisonSocialeAbrege">Raison Sociale Abrege</span></dt>
+        <dd>
+          <span>{{ societe.raisonSocialeAbrege }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSociete.identifiantUnique">Identifiant Unique</span></dt>
+        <dd>
+          <span>{{ societe.identifiantUnique }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSociete.registreCommerce">Registre Commerce</span></dt>
+        <dd>
+          <span>{{ societe.registreCommerce }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSociete.codeArticle">Code Article</span></dt>
+        <dd>
+          <span>{{ societe.codeArticle }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSociete.adresse">Adresse</span></dt>
+        <dd>
+          <span>{{ societe.adresse }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSociete.codePostal">Code Postal</span></dt>
+        <dd>
+          <span>{{ societe.codePostal }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSociete.pays">Pays</span></dt>
+        <dd>
+          <span>{{ societe.pays }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSociete.telephone">Telephone</span></dt>
+        <dd>
+          <span>{{ societe.telephone }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSociete.fax">Fax</span></dt>
+        <dd>
+          <span>{{ societe.fax }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSociete.email">Email</span></dt>
+        <dd>
+          <span>{{ societe.email }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSociete.createdAt">Created At</span></dt>
+        <dd>
+          <span>{{ societe.createdAt | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSociete.updatedAt">Updated At</span></dt>
+        <dd>
+          <span>{{ societe.updatedAt | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSociete.createdBy">Created By</span></dt>
+        <dd>
+          <span>{{ societe.createdBy }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSociete.createdByUserLogin">Created By User Login</span></dt>
+        <dd>
+          <span>{{ societe.createdByUserLogin }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSociete.updatedBy">Updated By</span></dt>
+        <dd>
+          <span>{{ societe.updatedBy }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSociete.updatedByUserLogin">Updated By User Login</span></dt>
+        <dd>
+          <span>{{ societe.updatedByUserLogin }}</span>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/societe', societe.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

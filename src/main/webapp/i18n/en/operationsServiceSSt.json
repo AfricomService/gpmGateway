@@ -1,0 +1,40 @@
+{
+  "gpmGatewayApp": {
+    "operationsServiceSSt": {
+      "home": {
+        "title": "SSTS",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new SST",
+        "createOrEditLabel": "Create or edit a SST",
+        "notFound": "No SSTS found"
+      },
+      "delete": {
+        "question": "Are you sure you want to delete SST {{ id }}?"
+      },
+      "detail": {
+        "title": "SST"
+      },
+      "id": "ID",
+      "label": "Label",
+      "date": "Date",
+      "importance": "Importance",
+      "commentaire": "Commentaire",
+      "incidentPresent": "Incident Present",
+      "arretTravail": "Arret Travail",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "createdBy": "Created By",
+      "createdByUserLogin": "Created By User Login",
+      "updatedBy": "Updated By",
+      "updatedByUserLogin": "Updated By User Login",
+      "workOrder": "Work Order"
+    }
+  },
+  "operationsServiceApp": {
+    "operationsServiceSSt": {
+      "created": "A new SST is created with identifier {{ param }}",
+      "updated": "A SST is updated with identifier {{ param }}",
+      "deleted": "A SST is deleted with identifier {{ param }}"
+    }
+  }
+}

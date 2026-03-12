@@ -1,0 +1,92 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="jhi-wo-utilisateur-heading"
+        data-cy="WoUtilisateurCreateUpdateHeading"
+        jhiTranslate="gpmGatewayApp.operationsServiceWoUtilisateur.home.createOrEditLabel"
+      >
+        Créer ou éditer un Wo Utilisateur
+      </h2>
+
+      <div>
+        <jhi-alert-error></jhi-alert-error>
+
+        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
+          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
+          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.operationsServiceWoUtilisateur.role"
+            for="field_role"
+            [ngbTooltip]="'gpmGatewayApp.operationsServiceWoUtilisateur.help.role' | translate"
+            >Role</label
+          >
+          <input type="text" class="form-control" name="role" id="field_role" data-cy="role" formControlName="role" />
+          <div *ngIf="editForm.get('role')!.invalid && (editForm.get('role')!.dirty || editForm.get('role')!.touched)">
+            <small class="form-text text-danger" *ngIf="editForm.get('role')?.errors?.required" jhiTranslate="entity.validation.required">
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWoUtilisateur.userId" for="field_userId">User Id</label>
+          <input type="text" class="form-control" name="userId" id="field_userId" data-cy="userId" formControlName="userId" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWoUtilisateur.userLogin" for="field_userLogin"
+            >User Login</label
+          >
+          <input type="text" class="form-control" name="userLogin" id="field_userLogin" data-cy="userLogin" formControlName="userLogin" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWoUtilisateur.workOrder" for="field_workOrder"
+            >Work Order</label
+          >
+          <select
+            class="form-control"
+            id="field_workOrder"
+            data-cy="workOrder"
+            name="workOrder"
+            formControlName="workOrder"
+            [compareWith]="compareWorkOrder"
+          >
+            <option *ngIf="!editForm.get('workOrder')!.value" [ngValue]="null" selected></option>
+            <option [ngValue]="workOrderOption" *ngFor="let workOrderOption of workOrdersSharedCollection">{{ workOrderOption.id }}</option>
+          </select>
+        </div>
+        <div *ngIf="editForm.get(['workOrder'])!.invalid && (editForm.get(['workOrder'])!.dirty || editForm.get(['workOrder'])!.touched)">
+          <small
+            class="form-text text-danger"
+            *ngIf="editForm.get(['workOrder'])?.errors?.required"
+            jhiTranslate="entity.validation.required"
+          >
+            Ce champ est obligatoire.
+          </small>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

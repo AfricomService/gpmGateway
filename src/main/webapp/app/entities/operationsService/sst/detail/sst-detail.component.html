@@ -1,0 +1,82 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="sST">
+      <h2 data-cy="sSTDetailsHeading"><span jhiTranslate="gpmGatewayApp.operationsServiceSSt.detail.title">SST</span></h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ sST.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceSSt.label">Label</span></dt>
+        <dd>
+          <span>{{ sST.label }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceSSt.date">Date</span></dt>
+        <dd>
+          <span>{{ sST.date | formatMediumDate }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceSSt.importance">Importance</span></dt>
+        <dd>
+          <span>{{ sST.importance }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceSSt.commentaire">Commentaire</span></dt>
+        <dd>
+          <span>{{ sST.commentaire }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceSSt.incidentPresent">Incident Present</span></dt>
+        <dd>
+          <span>{{ sST.incidentPresent }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceSSt.arretTravail">Arret Travail</span></dt>
+        <dd>
+          <span>{{ sST.arretTravail }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceSSt.createdAt">Created At</span></dt>
+        <dd>
+          <span>{{ sST.createdAt | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceSSt.updatedAt">Updated At</span></dt>
+        <dd>
+          <span>{{ sST.updatedAt | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceSSt.createdBy">Created By</span></dt>
+        <dd>
+          <span>{{ sST.createdBy }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceSSt.createdByUserLogin">Created By User Login</span></dt>
+        <dd>
+          <span>{{ sST.createdByUserLogin }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceSSt.updatedBy">Updated By</span></dt>
+        <dd>
+          <span>{{ sST.updatedBy }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceSSt.updatedByUserLogin">Updated By User Login</span></dt>
+        <dd>
+          <span>{{ sST.updatedByUserLogin }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceSSt.workOrder">Work Order</span></dt>
+        <dd>
+          <div *ngIf="sST.workOrder">
+            <a [routerLink]="['/work-order', sST.workOrder.id, 'view']">{{ sST.workOrder.id }}</a>
+          </div>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/sst', sST.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

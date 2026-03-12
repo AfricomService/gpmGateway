@@ -1,0 +1,31 @@
+{
+  "applications": ["gpmGateway", "projectService"],
+  "changelogDate": "20260312134240",
+  "clientRootFolder": "projectService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "ville",
+  "fields": [
+    {
+      "fieldName": "nom",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "projectService",
+  "name": "Ville",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityName": "zone",
+      "otherEntityRelationshipName": "ville",
+      "relationshipName": "zones",
+      "relationshipType": "one-to-many"
+    }
+  ],
+  "service": "serviceClass"
+}

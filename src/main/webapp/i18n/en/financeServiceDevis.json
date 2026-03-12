@@ -1,0 +1,42 @@
+{
+  "gpmGatewayApp": {
+    "financeServiceDevis": {
+      "home": {
+        "title": "Devis",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Devis",
+        "createOrEditLabel": "Create or edit a Devis",
+        "notFound": "No Devis found"
+      },
+      "delete": {
+        "question": "Are you sure you want to delete Devis {{ id }}?"
+      },
+      "detail": {
+        "title": "Devis"
+      },
+      "id": "ID",
+      "reference": "Reference",
+      "montant": "Montant",
+      "date": "Date",
+      "statut": "Statut",
+      "workOrderId": "Work Order Id",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "createdBy": "Created By",
+      "createdByUserLogin": "Created By User Login",
+      "updatedBy": "Updated By",
+      "updatedByUserLogin": "Updated By User Login",
+      "facture": "Facture",
+      "help": {
+        "workOrderId": "Cross-service FK → WorkOrder (operationsService)"
+      }
+    }
+  },
+  "financeServiceApp": {
+    "financeServiceDevis": {
+      "created": "A new Devis is created with identifier {{ param }}",
+      "updated": "A Devis is updated with identifier {{ param }}",
+      "deleted": "A Devis is deleted with identifier {{ param }}"
+    }
+  }
+}

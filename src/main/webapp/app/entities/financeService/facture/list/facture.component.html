@@ -1,0 +1,197 @@
+<div>
+  <h2 id="page-heading" data-cy="FactureHeading">
+    <span jhiTranslate="gpmGatewayApp.financeServiceFacture.home.title">Factures</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
+        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        <span jhiTranslate="gpmGatewayApp.financeServiceFacture.home.refreshListLabel">Actualiser la liste</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-facture"
+        [routerLink]="['/facture/new']"
+      >
+        <fa-icon icon="plus"></fa-icon>
+        <span jhiTranslate="gpmGatewayApp.financeServiceFacture.home.createLabel"> Créer un nouveau Facture </span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error></jhi-alert-error>
+
+  <jhi-alert></jhi-alert>
+
+  <div class="alert alert-warning" id="no-result" *ngIf="factures?.length === 0">
+    <span jhiTranslate="gpmGatewayApp.financeServiceFacture.home.notFound">Aucun Facture trouvé</span>
+  </div>
+
+  <div class="table-responsive table-entities" id="entities" *ngIf="factures && factures.length > 0">
+    <table class="table table-striped" aria-describedby="page-heading">
+      <thead>
+        <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
+          <th scope="col" jhiSortBy="id">
+            <div class="d-flex">
+              <span jhiTranslate="global.field.id">ID</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="numFacture">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.numFacture">Num Facture</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="bonDeCommande">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.bonDeCommande">Bon De Commande</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="montantFacture">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.montantFacture">Montant Facture</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="dateFacture">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.dateFacture">Date Facture</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="dateEcheance">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.dateEcheance">Date Echeance</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="dateDecharge">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.dateDecharge">Date Decharge</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="statut">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.statut">Statut</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="clientId">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.clientId">Client Id</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="createdAt">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.createdAt">Created At</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="updatedAt">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.updatedAt">Updated At</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="createdBy">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.createdBy">Created By</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="createdByUserLogin">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.createdByUserLogin">Created By User Login</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="updatedBy">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.updatedBy">Updated By</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="updatedByUserLogin">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.updatedByUserLogin">Updated By User Login</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let facture of factures; trackBy: trackId" data-cy="entityTable">
+          <td>
+            <a [routerLink]="['/facture', facture.id, 'view']">{{ facture.id }}</a>
+          </td>
+          <td>{{ facture.numFacture }}</td>
+          <td>{{ facture.bonDeCommande }}</td>
+          <td>{{ facture.montantFacture }}</td>
+          <td>{{ facture.dateFacture | formatMediumDate }}</td>
+          <td>{{ facture.dateEcheance | formatMediumDate }}</td>
+          <td>{{ facture.dateDecharge | formatMediumDate }}</td>
+          <td jhiTranslate="{{ 'gpmGatewayApp.StatutFacture.' + facture.statut }}">{{ facture.statut }}</td>
+          <td>{{ facture.clientId }}</td>
+          <td>{{ facture.createdAt | formatMediumDatetime }}</td>
+          <td>{{ facture.updatedAt | formatMediumDatetime }}</td>
+          <td>{{ facture.createdBy }}</td>
+          <td>{{ facture.createdByUserLogin }}</td>
+          <td>{{ facture.updatedBy }}</td>
+          <td>{{ facture.updatedByUserLogin }}</td>
+          <td class="text-end">
+            <div class="btn-group">
+              <button
+                type="submit"
+                [routerLink]="['/facture', facture.id, 'view']"
+                class="btn btn-info btn-sm"
+                data-cy="entityDetailsButton"
+              >
+                <fa-icon icon="eye"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
+              </button>
+
+              <button
+                type="submit"
+                [routerLink]="['/facture', facture.id, 'edit']"
+                class="btn btn-primary btn-sm"
+                data-cy="entityEditButton"
+              >
+                <fa-icon icon="pencil-alt"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
+              </button>
+
+              <button type="submit" (click)="delete(facture)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                <fa-icon icon="times"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="factures && factures.length > 0">
+    <div class="d-flex justify-content-center">
+      <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+    </div>
+
+    <div class="d-flex justify-content-center">
+      <ngb-pagination
+        [collectionSize]="totalItems"
+        [page]="page"
+        [pageSize]="itemsPerPage"
+        [maxSize]="5"
+        [rotate]="true"
+        [boundaryLinks]="true"
+        (pageChange)="navigateToPage($event)"
+      ></ngb-pagination>
+    </div>
+  </div>
+</div>

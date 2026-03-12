@@ -1,0 +1,57 @@
+{
+  "gpmGatewayApp": {
+    "financeServiceFraisDeMission": {
+      "home": {
+        "title": "FraisDeMissions",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Frais De Mission",
+        "createOrEditLabel": "Créer ou éditer un Frais De Mission",
+        "notFound": "Aucun Frais De Mission trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Frais De Mission {{ id }} ?"
+      },
+      "detail": {
+        "title": "Frais De Mission"
+      },
+      "id": "ID",
+      "dateDebut": "Date Debut",
+      "dateFin": "Date Fin",
+      "montantTotal": "Montant Total",
+      "avanceRecue": "Avance Recue",
+      "netAPayer": "Net A Payer",
+      "noteRendement": "Note Rendement",
+      "noteQualite": "Note Qualite",
+      "noteConduite": "Note Conduite",
+      "noteTotale": "Note Totale",
+      "bonusExtra": "Bonus Extra",
+      "justificatifBonus": "Justificatif Bonus",
+      "justificatifModification": "Justificatif Modification",
+      "statut": "Statut",
+      "workOrderId": "Work Order Id",
+      "beneficiaireId": "Beneficiaire Id",
+      "beneficiaireUserLogin": "Beneficiaire User Login",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "createdBy": "Created By",
+      "createdByUserLogin": "Created By User Login",
+      "updatedBy": "Updated By",
+      "updatedByUserLogin": "Updated By User Login",
+      "help": {
+        "noteRendement": "CHECK max 6",
+        "noteQualite": "CHECK max 6",
+        "noteConduite": "CHECK max 2",
+        "noteTotale": "CHECK max 14",
+        "workOrderId": "Cross-service FK → WorkOrder (operationsService)",
+        "beneficiaireId": "Cross-service FK → Utilisateur (operationsService)"
+      }
+    }
+  },
+  "financeServiceApp": {
+    "financeServiceFraisDeMission": {
+      "created": "Un nouveau Frais De Mission a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Frais De Mission avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Frais De Mission avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

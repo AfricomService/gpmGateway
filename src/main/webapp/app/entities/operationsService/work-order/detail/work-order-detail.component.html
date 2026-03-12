@@ -1,0 +1,160 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="workOrder">
+      <h2 data-cy="workOrderDetailsHeading">
+        <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.detail.title">Work Order</span>
+      </h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ workOrder.id }}</span>
+        </dd>
+        <dt>
+          <span
+            jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.clientId"
+            [ngbTooltip]="'gpmGatewayApp.operationsServiceWorkOrder.help.clientId' | translate"
+            >Client Id</span
+          >
+        </dt>
+        <dd>
+          <span>{{ workOrder.clientId }}</span>
+        </dd>
+        <dt>
+          <span
+            jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.affaireId"
+            [ngbTooltip]="'gpmGatewayApp.operationsServiceWorkOrder.help.affaireId' | translate"
+            >Affaire Id</span
+          >
+        </dt>
+        <dd>
+          <span>{{ workOrder.affaireId }}</span>
+        </dd>
+        <dt>
+          <span
+            jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.demandeurContactId"
+            [ngbTooltip]="'gpmGatewayApp.operationsServiceWorkOrder.help.demandeurContactId' | translate"
+            >Demandeur Contact Id</span
+          >
+        </dt>
+        <dd>
+          <span>{{ workOrder.demandeurContactId }}</span>
+        </dd>
+        <dt>
+          <span
+            jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.vehiculeId"
+            [ngbTooltip]="'gpmGatewayApp.operationsServiceWorkOrder.help.vehiculeId' | translate"
+            >Vehicule Id</span
+          >
+        </dt>
+        <dd>
+          <span>{{ workOrder.vehiculeId }}</span>
+        </dd>
+        <dt>
+          <span
+            jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.otExterneId"
+            [ngbTooltip]="'gpmGatewayApp.operationsServiceWorkOrder.help.otExterneId' | translate"
+            >Ot Externe Id</span
+          >
+        </dt>
+        <dd>
+          <span>{{ workOrder.otExterneId }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.valideurId">Valideur Id</span></dt>
+        <dd>
+          <span>{{ workOrder.valideurId }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.valideurUserLogin">Valideur User Login</span></dt>
+        <dd>
+          <span>{{ workOrder.valideurUserLogin }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.dateHeureDebutPrev">Date Heure Debut Prev</span></dt>
+        <dd>
+          <span>{{ workOrder.dateHeureDebutPrev | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.dateHeureFinPrev">Date Heure Fin Prev</span></dt>
+        <dd>
+          <span>{{ workOrder.dateHeureFinPrev | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.dateHeureDebutReel">Date Heure Debut Reel</span></dt>
+        <dd>
+          <span>{{ workOrder.dateHeureDebutReel | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.dateHeureFinReel">Date Heure Fin Reel</span></dt>
+        <dd>
+          <span>{{ workOrder.dateHeureFinReel | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.missionDeNuit">Mission De Nuit</span></dt>
+        <dd>
+          <span>{{ workOrder.missionDeNuit }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.nombreNuits">Nombre Nuits</span></dt>
+        <dd>
+          <span>{{ workOrder.nombreNuits }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.hebergement">Hebergement</span></dt>
+        <dd>
+          <span>{{ workOrder.hebergement }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.nombreHebergements">Nombre Hebergements</span></dt>
+        <dd>
+          <span>{{ workOrder.nombreHebergements }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.remarque">Remarque</span></dt>
+        <dd>
+          <span>{{ workOrder.remarque }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.numFicheIntervention">Num Fiche Intervention</span></dt>
+        <dd>
+          <span>{{ workOrder.numFicheIntervention }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.statut">Statut</span></dt>
+        <dd>
+          <span jhiTranslate="{{ 'gpmGatewayApp.StatutWO.' + workOrder.statut }}">{{ workOrder.statut }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.materielUtilise">Materiel Utilise</span></dt>
+        <dd>
+          <span>{{ workOrder.materielUtilise }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.createdAt">Created At</span></dt>
+        <dd>
+          <span>{{ workOrder.createdAt | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.updatedAt">Updated At</span></dt>
+        <dd>
+          <span>{{ workOrder.updatedAt | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.createdBy">Created By</span></dt>
+        <dd>
+          <span>{{ workOrder.createdBy }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.createdByUserLogin">Created By User Login</span></dt>
+        <dd>
+          <span>{{ workOrder.createdByUserLogin }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.updatedBy">Updated By</span></dt>
+        <dd>
+          <span>{{ workOrder.updatedBy }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.updatedByUserLogin">Updated By User Login</span></dt>
+        <dd>
+          <span>{{ workOrder.updatedByUserLogin }}</span>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/work-order', workOrder.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

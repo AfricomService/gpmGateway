@@ -1,0 +1,11 @@
+{
+  "gpmGatewayApp": {
+    "StatutOtExterne": {
+      "null": "",
+      "Creation": "Creation",
+      "EnCours": "EnCours",
+      "Paiement": "Paiement",
+      "Fin": "Fin"
+    }
+  }
+}

@@ -1,0 +1,62 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="factureWO">
+      <h2 data-cy="factureWODetailsHeading"><span jhiTranslate="gpmGatewayApp.financeServiceFactureWo.detail.title">Facture WO</span></h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ factureWO.id }}</span>
+        </dd>
+        <dt>
+          <span
+            jhiTranslate="gpmGatewayApp.financeServiceFactureWo.pourcentageFacture"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceFactureWo.help.pourcentageFacture' | translate"
+            >Pourcentage Facture</span
+          >
+        </dt>
+        <dd>
+          <span>{{ factureWO.pourcentageFacture }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFactureWo.montantFacture">Montant Facture</span></dt>
+        <dd>
+          <span>{{ factureWO.montantFacture }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFactureWo.remarque">Remarque</span></dt>
+        <dd>
+          <span>{{ factureWO.remarque }}</span>
+        </dd>
+        <dt>
+          <span
+            jhiTranslate="gpmGatewayApp.financeServiceFactureWo.workOrderId"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceFactureWo.help.workOrderId' | translate"
+            >Work Order Id</span
+          >
+        </dt>
+        <dd>
+          <span>{{ factureWO.workOrderId }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFactureWo.facture">Facture</span></dt>
+        <dd>
+          <div *ngIf="factureWO.facture">
+            <a [routerLink]="['/facture', factureWO.facture.id, 'view']">{{ factureWO.facture.numFacture }}</a>
+          </div>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/facture-wo', factureWO.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

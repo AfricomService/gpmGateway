@@ -1,0 +1,154 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="fraisDeMission">
+      <h2 data-cy="fraisDeMissionDetailsHeading">
+        <span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.detail.title">Frais De Mission</span>
+      </h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ fraisDeMission.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.dateDebut">Date Debut</span></dt>
+        <dd>
+          <span>{{ fraisDeMission.dateDebut | formatMediumDate }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.dateFin">Date Fin</span></dt>
+        <dd>
+          <span>{{ fraisDeMission.dateFin | formatMediumDate }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.montantTotal">Montant Total</span></dt>
+        <dd>
+          <span>{{ fraisDeMission.montantTotal }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.avanceRecue">Avance Recue</span></dt>
+        <dd>
+          <span>{{ fraisDeMission.avanceRecue }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.netAPayer">Net A Payer</span></dt>
+        <dd>
+          <span>{{ fraisDeMission.netAPayer }}</span>
+        </dd>
+        <dt>
+          <span
+            jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.noteRendement"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceFraisDeMission.help.noteRendement' | translate"
+            >Note Rendement</span
+          >
+        </dt>
+        <dd>
+          <span>{{ fraisDeMission.noteRendement }}</span>
+        </dd>
+        <dt>
+          <span
+            jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.noteQualite"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceFraisDeMission.help.noteQualite' | translate"
+            >Note Qualite</span
+          >
+        </dt>
+        <dd>
+          <span>{{ fraisDeMission.noteQualite }}</span>
+        </dd>
+        <dt>
+          <span
+            jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.noteConduite"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceFraisDeMission.help.noteConduite' | translate"
+            >Note Conduite</span
+          >
+        </dt>
+        <dd>
+          <span>{{ fraisDeMission.noteConduite }}</span>
+        </dd>
+        <dt>
+          <span
+            jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.noteTotale"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceFraisDeMission.help.noteTotale' | translate"
+            >Note Totale</span
+          >
+        </dt>
+        <dd>
+          <span>{{ fraisDeMission.noteTotale }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.bonusExtra">Bonus Extra</span></dt>
+        <dd>
+          <span>{{ fraisDeMission.bonusExtra }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.justificatifBonus">Justificatif Bonus</span></dt>
+        <dd>
+          <span>{{ fraisDeMission.justificatifBonus }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.justificatifModification">Justificatif Modification</span></dt>
+        <dd>
+          <span>{{ fraisDeMission.justificatifModification }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.statut">Statut</span></dt>
+        <dd>
+          <span jhiTranslate="{{ 'gpmGatewayApp.StatutFraisDeMission.' + fraisDeMission.statut }}">{{ fraisDeMission.statut }}</span>
+        </dd>
+        <dt>
+          <span
+            jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.workOrderId"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceFraisDeMission.help.workOrderId' | translate"
+            >Work Order Id</span
+          >
+        </dt>
+        <dd>
+          <span>{{ fraisDeMission.workOrderId }}</span>
+        </dd>
+        <dt>
+          <span
+            jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.beneficiaireId"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceFraisDeMission.help.beneficiaireId' | translate"
+            >Beneficiaire Id</span
+          >
+        </dt>
+        <dd>
+          <span>{{ fraisDeMission.beneficiaireId }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.beneficiaireUserLogin">Beneficiaire User Login</span></dt>
+        <dd>
+          <span>{{ fraisDeMission.beneficiaireUserLogin }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.createdAt">Created At</span></dt>
+        <dd>
+          <span>{{ fraisDeMission.createdAt | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.updatedAt">Updated At</span></dt>
+        <dd>
+          <span>{{ fraisDeMission.updatedAt | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.createdBy">Created By</span></dt>
+        <dd>
+          <span>{{ fraisDeMission.createdBy }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.createdByUserLogin">Created By User Login</span></dt>
+        <dd>
+          <span>{{ fraisDeMission.createdByUserLogin }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.updatedBy">Updated By</span></dt>
+        <dd>
+          <span>{{ fraisDeMission.updatedBy }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceFraisDeMission.updatedByUserLogin">Updated By User Login</span></dt>
+        <dd>
+          <span>{{ fraisDeMission.updatedByUserLogin }}</span>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/frais-de-mission', fraisDeMission.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

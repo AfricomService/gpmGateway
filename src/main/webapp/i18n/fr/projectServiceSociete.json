@@ -1,0 +1,45 @@
+{
+  "gpmGatewayApp": {
+    "projectServiceSociete": {
+      "home": {
+        "title": "Societes",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Societe",
+        "createOrEditLabel": "Créer ou éditer un Societe",
+        "notFound": "Aucun Societe trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Societe {{ id }} ?"
+      },
+      "detail": {
+        "title": "Societe"
+      },
+      "id": "ID",
+      "raisonSociale": "Raison Sociale",
+      "raisonSocialeAbrege": "Raison Sociale Abrege",
+      "identifiantUnique": "Identifiant Unique",
+      "registreCommerce": "Registre Commerce",
+      "codeArticle": "Code Article",
+      "adresse": "Adresse",
+      "codePostal": "Code Postal",
+      "pays": "Pays",
+      "telephone": "Telephone",
+      "fax": "Fax",
+      "email": "Email",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "createdBy": "Created By",
+      "createdByUserLogin": "Created By User Login",
+      "updatedBy": "Updated By",
+      "updatedByUserLogin": "Updated By User Login",
+      "agences": "Agences"
+    }
+  },
+  "projectServiceApp": {
+    "projectServiceSociete": {
+      "created": "Un nouveau Societe a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Societe avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Societe avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

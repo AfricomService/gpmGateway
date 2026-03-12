@@ -1,0 +1,124 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="affaire">
+      <h2 data-cy="affaireDetailsHeading"><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.detail.title">Affaire</span></h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ affaire.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.numAffaire">Num Affaire</span></dt>
+        <dd>
+          <span>{{ affaire.numAffaire }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.designationAffaire">Designation Affaire</span></dt>
+        <dd>
+          <span>{{ affaire.designationAffaire }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.bonDeCommande">Bon De Commande</span></dt>
+        <dd>
+          <span>{{ affaire.bonDeCommande }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.montant">Montant</span></dt>
+        <dd>
+          <span>{{ affaire.montant }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.devise">Devise</span></dt>
+        <dd>
+          <span>{{ affaire.devise }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.dateDebut">Date Debut</span></dt>
+        <dd>
+          <span>{{ affaire.dateDebut | formatMediumDate }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.dateCloture">Date Cloture</span></dt>
+        <dd>
+          <span>{{ affaire.dateCloture | formatMediumDate }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.datePassageExecution">Date Passage Execution</span></dt>
+        <dd>
+          <span>{{ affaire.datePassageExecution | formatMediumDate }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.lieuMultipleParMission">Lieu Multiple Par Mission</span></dt>
+        <dd>
+          <span>{{ affaire.lieuMultipleParMission }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.montantVente">Montant Vente</span></dt>
+        <dd>
+          <span>{{ affaire.montantVente }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.montantBudgetaireMateriel">Montant Budgetaire Materiel</span></dt>
+        <dd>
+          <span>{{ affaire.montantBudgetaireMateriel }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.montantBudgetaireService">Montant Budgetaire Service</span></dt>
+        <dd>
+          <span>{{ affaire.montantBudgetaireService }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.statut">Statut</span></dt>
+        <dd>
+          <span jhiTranslate="{{ 'gpmGatewayApp.StatutAffaire.' + affaire.statut }}">{{ affaire.statut }}</span>
+        </dd>
+        <dt>
+          <span
+            jhiTranslate="gpmGatewayApp.projectServiceAffaire.responsableProjetId"
+            [ngbTooltip]="'gpmGatewayApp.projectServiceAffaire.help.responsableProjetId' | translate"
+            >Responsable Projet Id</span
+          >
+        </dt>
+        <dd>
+          <span>{{ affaire.responsableProjetId }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.responsableProjetUserLogin">Responsable Projet User Login</span></dt>
+        <dd>
+          <span>{{ affaire.responsableProjetUserLogin }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.createdAt">Created At</span></dt>
+        <dd>
+          <span>{{ affaire.createdAt | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.updatedAt">Updated At</span></dt>
+        <dd>
+          <span>{{ affaire.updatedAt | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.createdBy">Created By</span></dt>
+        <dd>
+          <span>{{ affaire.createdBy }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.createdByUserLogin">Created By User Login</span></dt>
+        <dd>
+          <span>{{ affaire.createdByUserLogin }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.updatedBy">Updated By</span></dt>
+        <dd>
+          <span>{{ affaire.updatedBy }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.updatedByUserLogin">Updated By User Login</span></dt>
+        <dd>
+          <span>{{ affaire.updatedByUserLogin }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.client">Client</span></dt>
+        <dd>
+          <div *ngIf="affaire.client">
+            <a [routerLink]="['/client', affaire.client.id, 'view']">{{ affaire.client.raisonSociale }}</a>
+          </div>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/affaire', affaire.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,36 @@
+{
+  "gpmGatewayApp": {
+    "projectServicePieceJointe": {
+      "home": {
+        "title": "PieceJointes",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Piece Jointe",
+        "createOrEditLabel": "Créer ou éditer un Piece Jointe",
+        "notFound": "Aucun Piece Jointe trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Piece Jointe {{ id }} ?"
+      },
+      "detail": {
+        "title": "Piece Jointe"
+      },
+      "id": "ID",
+      "nomFichier": "Nom Fichier",
+      "type": "Type",
+      "fichierURL": "Fichier URL",
+      "dateUpload": "Date Upload",
+      "workOrderId": "Work Order Id",
+      "affaire": "Affaire",
+      "help": {
+        "workOrderId": "Cross-service FK → WorkOrder (operationsService)"
+      }
+    }
+  },
+  "projectServiceApp": {
+    "projectServicePieceJointe": {
+      "created": "Un nouveau Piece Jointe a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Piece Jointe avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Piece Jointe avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

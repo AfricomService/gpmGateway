@@ -1,0 +1,34 @@
+{
+  "gpmGatewayApp": {
+    "financeServiceArticleDemandeAchat": {
+      "home": {
+        "title": "ArticleDemandeAchats",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Article Demande Achat",
+        "createOrEditLabel": "Créer ou éditer un Article Demande Achat",
+        "notFound": "Aucun Article Demande Achat trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Article Demande Achat {{ id }} ?"
+      },
+      "detail": {
+        "title": "Article Demande Achat"
+      },
+      "id": "ID",
+      "qteDemandee": "Qte Demandee",
+      "type": "Type",
+      "articleCode": "Article Code",
+      "demandeAchat": "Demande Achat",
+      "help": {
+        "articleCode": "Cross-service FK → Article (projectService)"
+      }
+    }
+  },
+  "financeServiceApp": {
+    "financeServiceArticleDemandeAchat": {
+      "created": "Un nouveau Article Demande Achat a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Article Demande Achat avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Article Demande Achat avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "applications": ["gpmGateway", "projectService"],
+  "changelogDate": "20260312131640",
+  "clientRootFolder": "projectService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "affaire_article",
+  "fields": [
+    {
+      "fieldName": "quantiteContractuelle",
+      "fieldType": "Float"
+    },
+    {
+      "fieldName": "quantiteRealisee",
+      "fieldType": "Float"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "projectService",
+  "name": "AffaireArticle",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityField": "designationAffaire",
+      "otherEntityName": "affaire",
+      "relationshipName": "affaire",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    },
+    {
+      "otherEntityField": "code",
+      "otherEntityName": "article",
+      "relationshipName": "article",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "service": "serviceClass"
+}

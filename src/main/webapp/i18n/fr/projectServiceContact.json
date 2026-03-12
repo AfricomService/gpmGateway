@@ -1,0 +1,40 @@
+{
+  "gpmGatewayApp": {
+    "projectServiceContact": {
+      "home": {
+        "title": "Contacts",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Contact",
+        "createOrEditLabel": "Créer ou éditer un Contact",
+        "notFound": "Aucun Contact trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Contact {{ id }} ?"
+      },
+      "detail": {
+        "title": "Contact"
+      },
+      "id": "ID",
+      "raisonSociale": "Raison Sociale",
+      "identifiantUnique": "Identifiant Unique",
+      "adresse": "Adresse",
+      "telephone": "Telephone",
+      "fax": "Fax",
+      "email": "Email",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "createdBy": "Created By",
+      "createdByUserLogin": "Created By User Login",
+      "updatedBy": "Updated By",
+      "updatedByUserLogin": "Updated By User Login",
+      "client": "Client"
+    }
+  },
+  "projectServiceApp": {
+    "projectServiceContact": {
+      "created": "Un nouveau Contact a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Contact avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Contact avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

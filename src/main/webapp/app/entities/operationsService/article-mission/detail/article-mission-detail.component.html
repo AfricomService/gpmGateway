@@ -1,0 +1,58 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="articleMission">
+      <h2 data-cy="articleMissionDetailsHeading">
+        <span jhiTranslate="gpmGatewayApp.operationsServiceArticleMission.detail.title">Article Mission</span>
+      </h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ articleMission.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceArticleMission.item">Item</span></dt>
+        <dd>
+          <span>{{ articleMission.item }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceArticleMission.quantitePlanifiee">Quantite Planifiee</span></dt>
+        <dd>
+          <span>{{ articleMission.quantitePlanifiee }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceArticleMission.quantiteRealisee">Quantite Realisee</span></dt>
+        <dd>
+          <span>{{ articleMission.quantiteRealisee }}</span>
+        </dd>
+        <dt>
+          <span
+            jhiTranslate="gpmGatewayApp.operationsServiceArticleMission.articleCode"
+            [ngbTooltip]="'gpmGatewayApp.operationsServiceArticleMission.help.articleCode' | translate"
+            >Article Code</span
+          >
+        </dt>
+        <dd>
+          <span>{{ articleMission.articleCode }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceArticleMission.workOrder">Work Order</span></dt>
+        <dd>
+          <div *ngIf="articleMission.workOrder">
+            <a [routerLink]="['/work-order', articleMission.workOrder.id, 'view']">{{ articleMission.workOrder.id }}</a>
+          </div>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/article-mission', articleMission.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

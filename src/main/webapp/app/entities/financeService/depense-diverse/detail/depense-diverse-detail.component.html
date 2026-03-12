@@ -1,0 +1,80 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="depenseDiverse">
+      <h2 data-cy="depenseDiverseDetailsHeading">
+        <span jhiTranslate="gpmGatewayApp.financeServiceDepenseDiverse.detail.title">Depense Diverse</span>
+      </h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ depenseDiverse.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceDepenseDiverse.motif">Motif</span></dt>
+        <dd>
+          <span>{{ depenseDiverse.motif }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceDepenseDiverse.montant">Montant</span></dt>
+        <dd>
+          <span>{{ depenseDiverse.montant }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceDepenseDiverse.date">Date</span></dt>
+        <dd>
+          <span>{{ depenseDiverse.date | formatMediumDate }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceDepenseDiverse.justificatif">Justificatif</span></dt>
+        <dd>
+          <span>{{ depenseDiverse.justificatif }}</span>
+        </dd>
+        <dt>
+          <span
+            jhiTranslate="gpmGatewayApp.financeServiceDepenseDiverse.workOrderId"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceDepenseDiverse.help.workOrderId' | translate"
+            >Work Order Id</span
+          >
+        </dt>
+        <dd>
+          <span>{{ depenseDiverse.workOrderId }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceDepenseDiverse.createdAt">Created At</span></dt>
+        <dd>
+          <span>{{ depenseDiverse.createdAt | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceDepenseDiverse.updatedAt">Updated At</span></dt>
+        <dd>
+          <span>{{ depenseDiverse.updatedAt | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceDepenseDiverse.createdBy">Created By</span></dt>
+        <dd>
+          <span>{{ depenseDiverse.createdBy }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceDepenseDiverse.createdByUserLogin">Created By User Login</span></dt>
+        <dd>
+          <span>{{ depenseDiverse.createdByUserLogin }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceDepenseDiverse.updatedBy">Updated By</span></dt>
+        <dd>
+          <span>{{ depenseDiverse.updatedBy }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceDepenseDiverse.updatedByUserLogin">Updated By User Login</span></dt>
+        <dd>
+          <span>{{ depenseDiverse.updatedByUserLogin }}</span>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/depense-diverse', depenseDiverse.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

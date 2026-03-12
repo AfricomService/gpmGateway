@@ -1,0 +1,380 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="jhi-affaire-heading"
+        data-cy="AffaireCreateUpdateHeading"
+        jhiTranslate="gpmGatewayApp.projectServiceAffaire.home.createOrEditLabel"
+      >
+        Créer ou éditer un Affaire
+      </h2>
+
+      <div>
+        <jhi-alert-error></jhi-alert-error>
+
+        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
+          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
+          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAffaire.numAffaire" for="field_numAffaire">Num Affaire</label>
+          <input
+            type="number"
+            class="form-control"
+            name="numAffaire"
+            id="field_numAffaire"
+            data-cy="numAffaire"
+            formControlName="numAffaire"
+          />
+          <div *ngIf="editForm.get('numAffaire')!.invalid && (editForm.get('numAffaire')!.dirty || editForm.get('numAffaire')!.touched)">
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('numAffaire')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+            <small
+              class="form-text text-danger"
+              [hidden]="!editForm.get('numAffaire')?.errors?.number"
+              jhiTranslate="entity.validation.number"
+            >
+              Ce champ doit être un nombre.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAffaire.designationAffaire" for="field_designationAffaire"
+            >Designation Affaire</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="designationAffaire"
+            id="field_designationAffaire"
+            data-cy="designationAffaire"
+            formControlName="designationAffaire"
+          />
+          <div
+            *ngIf="
+              editForm.get('designationAffaire')!.invalid &&
+              (editForm.get('designationAffaire')!.dirty || editForm.get('designationAffaire')!.touched)
+            "
+          >
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('designationAffaire')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAffaire.bonDeCommande" for="field_bonDeCommande"
+            >Bon De Commande</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="bonDeCommande"
+            id="field_bonDeCommande"
+            data-cy="bonDeCommande"
+            formControlName="bonDeCommande"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAffaire.montant" for="field_montant">Montant</label>
+          <input type="number" class="form-control" name="montant" id="field_montant" data-cy="montant" formControlName="montant" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAffaire.devise" for="field_devise">Devise</label>
+          <input type="text" class="form-control" name="devise" id="field_devise" data-cy="devise" formControlName="devise" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAffaire.dateDebut" for="field_dateDebut">Date Debut</label>
+          <div class="input-group">
+            <input
+              id="field_dateDebut"
+              data-cy="dateDebut"
+              type="text"
+              class="form-control"
+              name="dateDebut"
+              ngbDatepicker
+              #dateDebutDp="ngbDatepicker"
+              formControlName="dateDebut"
+            />
+            <button type="button" class="btn btn-secondary" (click)="dateDebutDp.toggle()"><fa-icon icon="calendar-alt"></fa-icon></button>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAffaire.dateCloture" for="field_dateCloture"
+            >Date Cloture</label
+          >
+          <div class="input-group">
+            <input
+              id="field_dateCloture"
+              data-cy="dateCloture"
+              type="text"
+              class="form-control"
+              name="dateCloture"
+              ngbDatepicker
+              #dateClotureDp="ngbDatepicker"
+              formControlName="dateCloture"
+            />
+            <button type="button" class="btn btn-secondary" (click)="dateClotureDp.toggle()">
+              <fa-icon icon="calendar-alt"></fa-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAffaire.datePassageExecution" for="field_datePassageExecution"
+            >Date Passage Execution</label
+          >
+          <div class="input-group">
+            <input
+              id="field_datePassageExecution"
+              data-cy="datePassageExecution"
+              type="text"
+              class="form-control"
+              name="datePassageExecution"
+              ngbDatepicker
+              #datePassageExecutionDp="ngbDatepicker"
+              formControlName="datePassageExecution"
+            />
+            <button type="button" class="btn btn-secondary" (click)="datePassageExecutionDp.toggle()">
+              <fa-icon icon="calendar-alt"></fa-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.projectServiceAffaire.lieuMultipleParMission"
+            for="field_lieuMultipleParMission"
+            >Lieu Multiple Par Mission</label
+          >
+          <input
+            type="checkbox"
+            class="form-check"
+            name="lieuMultipleParMission"
+            id="field_lieuMultipleParMission"
+            data-cy="lieuMultipleParMission"
+            formControlName="lieuMultipleParMission"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAffaire.montantVente" for="field_montantVente"
+            >Montant Vente</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="montantVente"
+            id="field_montantVente"
+            data-cy="montantVente"
+            formControlName="montantVente"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.projectServiceAffaire.montantBudgetaireMateriel"
+            for="field_montantBudgetaireMateriel"
+            >Montant Budgetaire Materiel</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="montantBudgetaireMateriel"
+            id="field_montantBudgetaireMateriel"
+            data-cy="montantBudgetaireMateriel"
+            formControlName="montantBudgetaireMateriel"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.projectServiceAffaire.montantBudgetaireService"
+            for="field_montantBudgetaireService"
+            >Montant Budgetaire Service</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="montantBudgetaireService"
+            id="field_montantBudgetaireService"
+            data-cy="montantBudgetaireService"
+            formControlName="montantBudgetaireService"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAffaire.statut" for="field_statut">Statut</label>
+          <select class="form-control" name="statut" formControlName="statut" id="field_statut" data-cy="statut">
+            <option [ngValue]="null">{{ 'gpmGatewayApp.StatutAffaire.null' | translate }}</option>
+            <option *ngFor="let statutAffaire of statutAffaireValues" [value]="statutAffaire">
+              {{ 'gpmGatewayApp.StatutAffaire.' + statutAffaire | translate }}
+            </option>
+          </select>
+          <div *ngIf="editForm.get('statut')!.invalid && (editForm.get('statut')!.dirty || editForm.get('statut')!.touched)">
+            <small class="form-text text-danger" *ngIf="editForm.get('statut')?.errors?.required" jhiTranslate="entity.validation.required">
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.projectServiceAffaire.responsableProjetId"
+            for="field_responsableProjetId"
+            [ngbTooltip]="'gpmGatewayApp.projectServiceAffaire.help.responsableProjetId' | translate"
+            >Responsable Projet Id</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="responsableProjetId"
+            id="field_responsableProjetId"
+            data-cy="responsableProjetId"
+            formControlName="responsableProjetId"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.projectServiceAffaire.responsableProjetUserLogin"
+            for="field_responsableProjetUserLogin"
+            >Responsable Projet User Login</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="responsableProjetUserLogin"
+            id="field_responsableProjetUserLogin"
+            data-cy="responsableProjetUserLogin"
+            formControlName="responsableProjetUserLogin"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAffaire.createdAt" for="field_createdAt">Created At</label>
+          <div class="d-flex">
+            <input
+              id="field_createdAt"
+              data-cy="createdAt"
+              type="datetime-local"
+              class="form-control"
+              name="createdAt"
+              formControlName="createdAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAffaire.updatedAt" for="field_updatedAt">Updated At</label>
+          <div class="d-flex">
+            <input
+              id="field_updatedAt"
+              data-cy="updatedAt"
+              type="datetime-local"
+              class="form-control"
+              name="updatedAt"
+              formControlName="updatedAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAffaire.createdBy" for="field_createdBy">Created By</label>
+          <input type="text" class="form-control" name="createdBy" id="field_createdBy" data-cy="createdBy" formControlName="createdBy" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAffaire.createdByUserLogin" for="field_createdByUserLogin"
+            >Created By User Login</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="createdByUserLogin"
+            id="field_createdByUserLogin"
+            data-cy="createdByUserLogin"
+            formControlName="createdByUserLogin"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAffaire.updatedBy" for="field_updatedBy">Updated By</label>
+          <input type="text" class="form-control" name="updatedBy" id="field_updatedBy" data-cy="updatedBy" formControlName="updatedBy" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAffaire.updatedByUserLogin" for="field_updatedByUserLogin"
+            >Updated By User Login</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="updatedByUserLogin"
+            id="field_updatedByUserLogin"
+            data-cy="updatedByUserLogin"
+            formControlName="updatedByUserLogin"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAffaire.client" for="field_client">Client</label>
+          <select
+            class="form-control"
+            id="field_client"
+            data-cy="client"
+            name="client"
+            formControlName="client"
+            [compareWith]="compareClient"
+          >
+            <option *ngIf="!editForm.get('client')!.value" [ngValue]="null" selected></option>
+            <option [ngValue]="clientOption" *ngFor="let clientOption of clientsSharedCollection">{{ clientOption.raisonSociale }}</option>
+          </select>
+        </div>
+        <div *ngIf="editForm.get(['client'])!.invalid && (editForm.get(['client'])!.dirty || editForm.get(['client'])!.touched)">
+          <small class="form-text text-danger" *ngIf="editForm.get(['client'])?.errors?.required" jhiTranslate="entity.validation.required">
+            Ce champ est obligatoire.
+          </small>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

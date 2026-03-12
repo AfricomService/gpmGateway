@@ -1,0 +1,41 @@
+{
+  "gpmGatewayApp": {
+    "financeServiceOtExterne": {
+      "home": {
+        "title": "OtExternes",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Ot Externe",
+        "createOrEditLabel": "Créer ou éditer un Ot Externe",
+        "notFound": "Aucun Ot Externe trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Ot Externe {{ id }} ?"
+      },
+      "detail": {
+        "title": "Ot Externe"
+      },
+      "id": "ID",
+      "reference": "Reference",
+      "statut": "Statut",
+      "affaireId": "Affaire Id",
+      "clientId": "Client Id",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "createdBy": "Created By",
+      "createdByUserLogin": "Created By User Login",
+      "updatedBy": "Updated By",
+      "updatedByUserLogin": "Updated By User Login",
+      "help": {
+        "affaireId": "Cross-service FK → Affaire (projectService)",
+        "clientId": "Cross-service FK → Client (projectService)"
+      }
+    }
+  },
+  "financeServiceApp": {
+    "financeServiceOtExterne": {
+      "created": "Un nouveau Ot Externe a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Ot Externe avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Ot Externe avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

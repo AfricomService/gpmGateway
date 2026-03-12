@@ -1,0 +1,38 @@
+{
+  "applications": ["gpmGateway", "projectService"],
+  "changelogDate": "20260312133340",
+  "clientRootFolder": "projectService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "matrice_jour_ferie",
+  "fields": [
+    {
+      "fieldName": "tarifApplique",
+      "fieldType": "Float",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "projectService",
+  "name": "MatriceJourFerie",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityName": "matriceFacturation",
+      "relationshipName": "matrice",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    },
+    {
+      "otherEntityField": "designation",
+      "otherEntityName": "jourFerie",
+      "relationshipName": "jourFerie",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "service": "serviceClass"
+}

@@ -1,0 +1,99 @@
+{
+  "applications": ["gpmGateway", "projectService"],
+  "changelogDate": "20260312134140",
+  "clientRootFolder": "projectService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "vehicule",
+  "fields": [
+    {
+      "fieldName": "marque",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "type",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "matricule",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "unique"]
+    },
+    {
+      "fieldName": "nbPlaces",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "numCarteGrise",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "dateCirculation",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "typeCarburant",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "chargeFixe",
+      "fieldType": "Float"
+    },
+    {
+      "fieldName": "tauxConsommation",
+      "fieldType": "Float"
+    },
+    {
+      "fieldName": "statut",
+      "fieldType": "StatutVehicule",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "Disponible,EnMission,EnMaintenance,HorsService"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "createdBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "createdByUserLogin",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "updatedBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "updatedByUserLogin",
+      "fieldType": "String"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "projectService",
+  "name": "Vehicule",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityField": "designation",
+      "otherEntityName": "agence",
+      "otherEntityRelationshipName": "vehicules",
+      "relationshipName": "agence",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "service": "serviceClass"
+}

@@ -1,0 +1,34 @@
+{
+  "gpmGatewayApp": {
+    "operationsServiceWoUtilisateur": {
+      "home": {
+        "title": "Wo Utilisateurs",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Wo Utilisateur",
+        "createOrEditLabel": "Create or edit a Wo Utilisateur",
+        "notFound": "No Wo Utilisateurs found"
+      },
+      "delete": {
+        "question": "Are you sure you want to delete Wo Utilisateur {{ id }}?"
+      },
+      "detail": {
+        "title": "Wo Utilisateur"
+      },
+      "id": "ID",
+      "role": "Role",
+      "userId": "User Id",
+      "userLogin": "User Login",
+      "workOrder": "Work Order",
+      "help": {
+        "role": "ResponsableMission | Coordinateur | Membre"
+      }
+    }
+  },
+  "operationsServiceApp": {
+    "operationsServiceWoUtilisateur": {
+      "created": "A new Wo Utilisateur is created with identifier {{ param }}",
+      "updated": "A Wo Utilisateur is updated with identifier {{ param }}",
+      "deleted": "A Wo Utilisateur is deleted with identifier {{ param }}"
+    }
+  }
+}

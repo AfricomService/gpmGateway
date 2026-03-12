@@ -1,0 +1,64 @@
+{
+  "applications": ["gpmGateway", "projectService"],
+  "changelogDate": "20260312133240",
+  "clientRootFolder": "projectService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "matrice_facturation",
+  "fields": [
+    {
+      "fieldName": "tarifBase",
+      "fieldType": "Float",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "tarifMissionNuit",
+      "fieldType": "Float",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "tarifHebergement",
+      "fieldType": "Float",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "tarifJourFerie",
+      "fieldType": "Float",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "tarifDimanche",
+      "fieldType": "Float",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "projectService",
+  "name": "MatriceFacturation",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityField": "designationAffaire",
+      "otherEntityName": "affaire",
+      "relationshipName": "affaire",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    },
+    {
+      "otherEntityField": "nom",
+      "otherEntityName": "ville",
+      "relationshipName": "ville",
+      "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityField": "nom",
+      "otherEntityName": "zone",
+      "relationshipName": "zone",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "service": "serviceClass"
+}

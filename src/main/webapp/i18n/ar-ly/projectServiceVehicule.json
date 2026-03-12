@@ -1,0 +1,44 @@
+{
+  "gpmGatewayApp": {
+    "projectServiceVehicule": {
+      "home": {
+        "title": "Vehicules",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Vehicule",
+        "createOrEditLabel": "Create or edit a Vehicule",
+        "notFound": "No Vehicules found"
+      },
+      "delete": {
+        "question": "Are you sure you want to delete Vehicule {{ id }}?"
+      },
+      "detail": {
+        "title": "Vehicule"
+      },
+      "id": "ID",
+      "marque": "Marque",
+      "type": "Type",
+      "matricule": "Matricule",
+      "nbPlaces": "Nb Places",
+      "numCarteGrise": "Num Carte Grise",
+      "dateCirculation": "Date Circulation",
+      "typeCarburant": "Type Carburant",
+      "chargeFixe": "Charge Fixe",
+      "tauxConsommation": "Taux Consommation",
+      "statut": "Statut",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "createdBy": "Created By",
+      "createdByUserLogin": "Created By User Login",
+      "updatedBy": "Updated By",
+      "updatedByUserLogin": "Updated By User Login",
+      "agence": "Agence"
+    }
+  },
+  "projectServiceApp": {
+    "projectServiceVehicule": {
+      "created": "A new Vehicule is created with identifier {{ param }}",
+      "updated": "A Vehicule is updated with identifier {{ param }}",
+      "deleted": "A Vehicule is deleted with identifier {{ param }}"
+    }
+  }
+}

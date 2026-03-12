@@ -1,0 +1,273 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="jhi-facture-heading"
+        data-cy="FactureCreateUpdateHeading"
+        jhiTranslate="gpmGatewayApp.financeServiceFacture.home.createOrEditLabel"
+      >
+        Créer ou éditer un Facture
+      </h2>
+
+      <div>
+        <jhi-alert-error></jhi-alert-error>
+
+        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
+          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
+          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFacture.numFacture" for="field_numFacture">Num Facture</label>
+          <input
+            type="text"
+            class="form-control"
+            name="numFacture"
+            id="field_numFacture"
+            data-cy="numFacture"
+            formControlName="numFacture"
+          />
+          <div *ngIf="editForm.get('numFacture')!.invalid && (editForm.get('numFacture')!.dirty || editForm.get('numFacture')!.touched)">
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('numFacture')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFacture.bonDeCommande" for="field_bonDeCommande"
+            >Bon De Commande</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="bonDeCommande"
+            id="field_bonDeCommande"
+            data-cy="bonDeCommande"
+            formControlName="bonDeCommande"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFacture.montantFacture" for="field_montantFacture"
+            >Montant Facture</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="montantFacture"
+            id="field_montantFacture"
+            data-cy="montantFacture"
+            formControlName="montantFacture"
+          />
+          <div
+            *ngIf="
+              editForm.get('montantFacture')!.invalid && (editForm.get('montantFacture')!.dirty || editForm.get('montantFacture')!.touched)
+            "
+          >
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('montantFacture')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+            <small
+              class="form-text text-danger"
+              [hidden]="!editForm.get('montantFacture')?.errors?.number"
+              jhiTranslate="entity.validation.number"
+            >
+              Ce champ doit être un nombre.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFacture.dateFacture" for="field_dateFacture"
+            >Date Facture</label
+          >
+          <div class="input-group">
+            <input
+              id="field_dateFacture"
+              data-cy="dateFacture"
+              type="text"
+              class="form-control"
+              name="dateFacture"
+              ngbDatepicker
+              #dateFactureDp="ngbDatepicker"
+              formControlName="dateFacture"
+            />
+            <button type="button" class="btn btn-secondary" (click)="dateFactureDp.toggle()">
+              <fa-icon icon="calendar-alt"></fa-icon>
+            </button>
+          </div>
+          <div *ngIf="editForm.get('dateFacture')!.invalid && (editForm.get('dateFacture')!.dirty || editForm.get('dateFacture')!.touched)">
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('dateFacture')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFacture.dateEcheance" for="field_dateEcheance"
+            >Date Echeance</label
+          >
+          <div class="input-group">
+            <input
+              id="field_dateEcheance"
+              data-cy="dateEcheance"
+              type="text"
+              class="form-control"
+              name="dateEcheance"
+              ngbDatepicker
+              #dateEcheanceDp="ngbDatepicker"
+              formControlName="dateEcheance"
+            />
+            <button type="button" class="btn btn-secondary" (click)="dateEcheanceDp.toggle()">
+              <fa-icon icon="calendar-alt"></fa-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFacture.dateDecharge" for="field_dateDecharge"
+            >Date Decharge</label
+          >
+          <div class="input-group">
+            <input
+              id="field_dateDecharge"
+              data-cy="dateDecharge"
+              type="text"
+              class="form-control"
+              name="dateDecharge"
+              ngbDatepicker
+              #dateDechargeDp="ngbDatepicker"
+              formControlName="dateDecharge"
+            />
+            <button type="button" class="btn btn-secondary" (click)="dateDechargeDp.toggle()">
+              <fa-icon icon="calendar-alt"></fa-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFacture.statut" for="field_statut">Statut</label>
+          <select class="form-control" name="statut" formControlName="statut" id="field_statut" data-cy="statut">
+            <option [ngValue]="null">{{ 'gpmGatewayApp.StatutFacture.null' | translate }}</option>
+            <option *ngFor="let statutFacture of statutFactureValues" [value]="statutFacture">
+              {{ 'gpmGatewayApp.StatutFacture.' + statutFacture | translate }}
+            </option>
+          </select>
+          <div *ngIf="editForm.get('statut')!.invalid && (editForm.get('statut')!.dirty || editForm.get('statut')!.touched)">
+            <small class="form-text text-danger" *ngIf="editForm.get('statut')?.errors?.required" jhiTranslate="entity.validation.required">
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label
+            class="form-label"
+            jhiTranslate="gpmGatewayApp.financeServiceFacture.clientId"
+            for="field_clientId"
+            [ngbTooltip]="'gpmGatewayApp.financeServiceFacture.help.clientId' | translate"
+            >Client Id</label
+          >
+          <input type="number" class="form-control" name="clientId" id="field_clientId" data-cy="clientId" formControlName="clientId" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFacture.createdAt" for="field_createdAt">Created At</label>
+          <div class="d-flex">
+            <input
+              id="field_createdAt"
+              data-cy="createdAt"
+              type="datetime-local"
+              class="form-control"
+              name="createdAt"
+              formControlName="createdAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFacture.updatedAt" for="field_updatedAt">Updated At</label>
+          <div class="d-flex">
+            <input
+              id="field_updatedAt"
+              data-cy="updatedAt"
+              type="datetime-local"
+              class="form-control"
+              name="updatedAt"
+              formControlName="updatedAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFacture.createdBy" for="field_createdBy">Created By</label>
+          <input type="text" class="form-control" name="createdBy" id="field_createdBy" data-cy="createdBy" formControlName="createdBy" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFacture.createdByUserLogin" for="field_createdByUserLogin"
+            >Created By User Login</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="createdByUserLogin"
+            id="field_createdByUserLogin"
+            data-cy="createdByUserLogin"
+            formControlName="createdByUserLogin"
+          />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFacture.updatedBy" for="field_updatedBy">Updated By</label>
+          <input type="text" class="form-control" name="updatedBy" id="field_updatedBy" data-cy="updatedBy" formControlName="updatedBy" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceFacture.updatedByUserLogin" for="field_updatedByUserLogin"
+            >Updated By User Login</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="updatedByUserLogin"
+            id="field_updatedByUserLogin"
+            data-cy="updatedByUserLogin"
+            formControlName="updatedByUserLogin"
+          />
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

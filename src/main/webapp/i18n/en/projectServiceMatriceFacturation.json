@@ -1,0 +1,35 @@
+{
+  "gpmGatewayApp": {
+    "projectServiceMatriceFacturation": {
+      "home": {
+        "title": "Matrice Facturations",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Matrice Facturation",
+        "createOrEditLabel": "Create or edit a Matrice Facturation",
+        "notFound": "No Matrice Facturations found"
+      },
+      "delete": {
+        "question": "Are you sure you want to delete Matrice Facturation {{ id }}?"
+      },
+      "detail": {
+        "title": "Matrice Facturation"
+      },
+      "id": "ID",
+      "tarifBase": "Tarif Base",
+      "tarifMissionNuit": "Tarif Mission Nuit",
+      "tarifHebergement": "Tarif Hebergement",
+      "tarifJourFerie": "Tarif Jour Ferie",
+      "tarifDimanche": "Tarif Dimanche",
+      "affaire": "Affaire",
+      "ville": "Ville",
+      "zone": "Zone"
+    }
+  },
+  "projectServiceApp": {
+    "projectServiceMatriceFacturation": {
+      "created": "A new Matrice Facturation is created with identifier {{ param }}",
+      "updated": "A Matrice Facturation is updated with identifier {{ param }}",
+      "deleted": "A Matrice Facturation is deleted with identifier {{ param }}"
+    }
+  }
+}

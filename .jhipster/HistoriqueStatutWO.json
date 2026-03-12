@@ -1,0 +1,55 @@
+{
+  "applications": ["gpmGateway", "operationsService"],
+  "changelogDate": "20260312133040",
+  "clientRootFolder": "operationsService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "historique_statut_wo",
+  "fields": [
+    {
+      "fieldName": "ancienStatut",
+      "fieldType": "StatutWO",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "Creation,ExecutionTravaux,VerificationWO,ValidationTechnique,ValidationRessources,Fin"
+    },
+    {
+      "fieldName": "nouveauStatut",
+      "fieldType": "StatutWO",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "Creation,ExecutionTravaux,VerificationWO,ValidationTechnique,ValidationRessources,Fin"
+    },
+    {
+      "fieldName": "dateChangement",
+      "fieldType": "ZonedDateTime",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "commentaire",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "userId",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "userLogin",
+      "fieldType": "String"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "operationsService",
+  "name": "HistoriqueStatutWO",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityName": "workOrder",
+      "relationshipName": "workOrder",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "service": "serviceClass"
+}

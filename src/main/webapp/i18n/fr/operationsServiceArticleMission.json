@@ -1,0 +1,35 @@
+{
+  "gpmGatewayApp": {
+    "operationsServiceArticleMission": {
+      "home": {
+        "title": "ArticleMissions",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Article Mission",
+        "createOrEditLabel": "Créer ou éditer un Article Mission",
+        "notFound": "Aucun Article Mission trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Article Mission {{ id }} ?"
+      },
+      "detail": {
+        "title": "Article Mission"
+      },
+      "id": "ID",
+      "item": "Item",
+      "quantitePlanifiee": "Quantite Planifiee",
+      "quantiteRealisee": "Quantite Realisee",
+      "articleCode": "Article Code",
+      "workOrder": "Work Order",
+      "help": {
+        "articleCode": "Cross-service FK → Article (projectService)"
+      }
+    }
+  },
+  "operationsServiceApp": {
+    "operationsServiceArticleMission": {
+      "created": "Un nouveau Article Mission a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Article Mission avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Article Mission avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}
