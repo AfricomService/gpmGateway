@@ -2,6 +2,69 @@
 Main page styles
 ========================================================================== */
 
+:host {
+  --bg-primary: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-sidebar: #f1f5f9;
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+}
+
+.home-container {
+  height: 90vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, var(--bg-primary) 0%, #e2e8f0 100%);
+}
+
+.hero-card {
+  background: var(--bg-card);
+  padding: 3rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 480px;
+  width: 100%;
+
+  .logo-placeholder {
+    margin-bottom: 2rem;
+
+    .app-logo {
+      width: 300px;
+    }
+  }
+
+  .welcome-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1rem;
+  }
+
+  .welcome-subtitle {
+    font-size: 1.125rem;
+    color: #64748b;
+    margin-bottom: 2.5rem;
+  }
+
+  .login-btn {
+    background-color: var(--color-primary);
+    border: none;
+    padding: 0.75rem 2rem;
+    font-size: 1.125rem;
+    color: white;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+    width: 100%;
+
+    &:hover {
+      background-color: var(--color-primary-hover);
+    }
+  }
+}
+
 .hipster {
   display: inline-block;
   width: 347px;

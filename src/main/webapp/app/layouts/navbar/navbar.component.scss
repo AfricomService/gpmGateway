@@ -6,31 +6,59 @@
 Navbar
 ========================================================================== */
 
-.navbar-version {
-  font-size: 0.65em;
-  color: $navbar-dark-color;
-}
-
-.profile-image {
-  height: 1.75em;
-  width: 1.75em;
-}
-
 .navbar {
-  padding: 0.2rem 1rem;
-  .dropdown-item.active,
-  .dropdown-item.active:focus,
-  .dropdown-item.active:hover {
-    background-color: $dark;
+  padding: 0.5rem 1rem;
+  /* Removed white background to let bg-primary take over */
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+  /* Navigation Links */
+  .nav-item {
+    margin: 0 2px;
   }
 
   a.nav-link {
-    font-weight: 400;
+    font-weight: 500;
+    /* Removed fixed gray color to let navbar-dark handle it */
+    border-radius: 0.375rem; /* Rounded corners */
+    padding: 0.6rem 1rem;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1); /* Light white overlay on hover for dark theme */
+    }
+  }
+
+  /* Active State */
+  .nav-item.active > a.nav-link {
+    background-color: rgba(255, 255, 255, 0.2) !important; /* Stronger white overlay for active */
+    font-weight: 600;
+  }
+
+  /* Remove caret/arrow from dropdowns */
+  .dropdown-toggle::after {
+    display: none !important;
+  }
+
+  /* Icon spacing */
+  fa-icon {
+    margin-right: 0.4rem;
+  }
+
+  /* Dropdown consistency */
+  .dropdown-item.active,
+  .dropdown-item.active:focus,
+  .dropdown-item.active:hover {
+    background-color: #2563eb;
+    color: white;
   }
 
   .navbar-toggler {
-    &:hover {
-      color: $navbar-dark-hover-color;
+    border: none;
+    padding: 0.5rem;
+    &:focus {
+      box-shadow: none;
     }
   }
 }
