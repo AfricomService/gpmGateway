@@ -14,6 +14,7 @@ import { ClientDeleteDialogComponent } from '../delete/client-delete-dialog.comp
 @Component({
   selector: 'jhi-client',
   templateUrl: './client.component.html',
+  styleUrls: ['./client.component.scss'],
 })
 export class ClientComponent implements OnInit {
   clients?: IClient[];

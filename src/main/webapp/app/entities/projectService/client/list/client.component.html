@@ -1,159 +1,94 @@
-<div>
-  <h2 id="page-heading" data-cy="ClientHeading">
-    <span jhiTranslate="gpmGatewayApp.projectServiceClient.home.title">Clients</span>
-
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
-        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
-        <span jhiTranslate="gpmGatewayApp.projectServiceClient.home.refreshListLabel">Actualiser la liste</span>
-      </button>
-
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-client"
-        [routerLink]="['/client/new']"
-      >
-        <fa-icon icon="plus"></fa-icon>
-        <span jhiTranslate="gpmGatewayApp.projectServiceClient.home.createLabel"> Créer un nouveau Client </span>
-      </button>
+<div style="padding-top: 4em">
+  <!-- 🔢 STATS -->
+  <div class="row g-3 mb-4">
+    <div
+      class="col-md-3"
+      *ngFor="
+        let stat of [
+          { label: 'Clients', value: totalItems, icon: 'users', color: 'text-primary' },
+          { label: 'Affaires liées', value: 10, icon: 'briefcase', color: 'text-info' },
+          { label: 'Missions liées', value: 18, icon: 'tasks', color: 'text-warning' },
+          { label: 'Agences', value: 5, icon: 'building', color: 'text-success' }
+        ]
+      "
+    >
+      <div class="card shadow-sm border-0 rounded-4 p-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <small class="text-muted">{{ stat.label }}</small>
+            <h4 class="fw-bold mb-0">{{ stat.value }}</h4>
+          </div>
+          <!--          <div class="icon-box bg-light rounded-3 p-2">-->
+          <!--            <fa-icon [icon]="stat.icon" class="{{ stat.color }}"></fa-icon>-->
+          <!--          </div>-->
+        </div>
+      </div>
     </div>
-  </h2>
-
-  <jhi-alert-error></jhi-alert-error>
-
-  <jhi-alert></jhi-alert>
-
-  <div class="alert alert-warning" id="no-result" *ngIf="clients?.length === 0">
-    <span jhiTranslate="gpmGatewayApp.projectServiceClient.home.notFound">Aucun Client trouvé</span>
   </div>
 
-  <div class="table-responsive table-entities" id="entities" *ngIf="clients && clients.length > 0">
-    <table class="table table-striped" aria-describedby="page-heading">
-      <thead>
-        <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
-          <th scope="col" jhiSortBy="id">
-            <div class="d-flex">
-              <span jhiTranslate="global.field.id">ID</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="raisonSociale">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceClient.raisonSociale">Raison Sociale</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="identifiantUnique">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceClient.identifiantUnique">Identifiant Unique</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="adresse">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceClient.adresse">Adresse</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="telephone">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceClient.telephone">Telephone</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="fax">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceClient.fax">Fax</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="email">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceClient.email">Email</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdAt">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceClient.createdAt">Created At</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedAt">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceClient.updatedAt">Updated At</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdBy">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceClient.createdBy">Created By</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdByUserLogin">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceClient.createdByUserLogin">Created By User Login</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedBy">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceClient.updatedBy">Updated By</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedByUserLogin">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceClient.updatedByUserLogin">Updated By User Login</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let client of clients; trackBy: trackId" data-cy="entityTable">
-          <td>
-            <a [routerLink]="['/client', client.id, 'view']">{{ client.id }}</a>
-          </td>
-          <td>{{ client.raisonSociale }}</td>
-          <td>{{ client.identifiantUnique }}</td>
-          <td>{{ client.adresse }}</td>
-          <td>{{ client.telephone }}</td>
-          <td>{{ client.fax }}</td>
-          <td>{{ client.email }}</td>
-          <td>{{ client.createdAt | formatMediumDatetime }}</td>
-          <td>{{ client.updatedAt | formatMediumDatetime }}</td>
-          <td>{{ client.createdBy }}</td>
-          <td>{{ client.createdByUserLogin }}</td>
-          <td>{{ client.updatedBy }}</td>
-          <td>{{ client.updatedByUserLogin }}</td>
-          <td class="text-end">
-            <div class="btn-group">
-              <button type="submit" [routerLink]="['/client', client.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
-                <fa-icon icon="eye"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
-              </button>
+  <!-- 🔍 HEADER + SEARCH -->
+  <div class="d-flex justify-content-between align-items-center mb-5">
+    <h4 class="fw-bold mb-0">Clients</h4>
 
-              <button type="submit" [routerLink]="['/client', client.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
-                <fa-icon icon="pencil-alt"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
-              </button>
+    <div class="d-flex align-items-center gap-2">
+      <!-- Search -->
+      <div class="input-group">
+        <span class="input-group-text">Recherche</span>
+        <input type="text" class="form-control" placeholder="Rechercher..." />
+      </div>
 
-              <button type="submit" (click)="delete(client)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                <fa-icon icon="times"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+      <!-- Toggle -->
+      <!--      <button class="btn btn-light border rounded-3">-->
+      <!--        Vue-->
+      <!--      </button>-->
+
+      <!-- Create -->
+      <button class="btn btn-primary rounded-3 w-60" [routerLink]="['/client/new']">Nouveau Client</button>
+    </div>
   </div>
 
-  <div *ngIf="clients && clients.length > 0">
+  <!-- ⚠️ NO RESULT -->
+  <div class="alert alert-warning" *ngIf="clients?.length === 0">Aucun Client trouvé</div>
+
+  <!-- 🧾 CLIENT CARDS -->
+  <div class="row g-4" *ngIf="clients && clients.length > 0">
+    <div class="col-xl-4 col-md-6 col-12" *ngFor="let client of clients; trackBy: trackId">
+      <div class="card border-2 shadow-sm rounded-4 h-100 p-3 client-card">
+        <!-- Title -->
+        <h5 class="fw-bold mb-1">
+          {{ client.raisonSociale }}
+        </h5>
+
+        <!-- Email -->
+        <div class="text-muted small mb-1">
+          {{ client.email }}
+        </div>
+
+        <!-- Phone -->
+        <div class="text-muted small mb-3">
+          {{ client.telephone }}
+        </div>
+
+        <!-- Stats -->
+        <div class="d-flex gap-3 small text-muted mb-3">
+          <span>2 affaire(s)</span>
+          <span>6 mission(s)</span>
+        </div>
+
+        <!-- Actions -->
+        <div class="d-flex justify-content-end gap-2 mt-auto">
+          <button class="btn btn-light btn-sm rounded-3" [routerLink]="['/client', client.id, 'view']">Consulter</button>
+
+          <button class="btn btn-light btn-sm rounded-3" [routerLink]="['/client', client.id, 'edit']">Éditer</button>
+
+          <button class="btn btn-light btn-sm rounded-3 text-danger" (click)="delete(client)">Supprimer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📄 PAGINATION -->
+  <div *ngIf="clients && clients.length > 0" class="mt-4">
     <div class="d-flex justify-content-center">
       <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
     </div>

@@ -1,76 +1,199 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
-    <div *ngIf="client">
-      <h2 data-cy="clientDetailsHeading"><span jhiTranslate="gpmGatewayApp.projectServiceClient.detail.title">Client</span></h2>
+<div class="container py-4 bg-light">
+  <!-- 🔝 HEADER -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold mb-0">{{ client?.raisonSociale }}</h3>
+      <small class="text-muted">Client details</small>
+    </div>
 
-      <hr />
+    <div class="d-flex gap-2">
+      <button (click)="previousState()" class="btn btn-light rounded-3">Retour</button>
 
-      <jhi-alert-error></jhi-alert-error>
+      <button [routerLink]="['/client', client?.id, 'edit']" class="btn btn-primary rounded-3">Éditer</button>
+    </div>
+  </div>
 
-      <jhi-alert></jhi-alert>
+  <!-- ⚠️ ALERTS -->
+  <jhi-alert-error></jhi-alert-error>
+  <jhi-alert></jhi-alert>
 
-      <dl class="row-md jh-entity-details">
-        <dt><span jhiTranslate="global.field.id">ID</span></dt>
-        <dd>
-          <span>{{ client.id }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceClient.raisonSociale">Raison Sociale</span></dt>
-        <dd>
-          <span>{{ client.raisonSociale }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceClient.identifiantUnique">Identifiant Unique</span></dt>
-        <dd>
-          <span>{{ client.identifiantUnique }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceClient.adresse">Adresse</span></dt>
-        <dd>
-          <span>{{ client.adresse }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceClient.telephone">Telephone</span></dt>
-        <dd>
-          <span>{{ client.telephone }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceClient.fax">Fax</span></dt>
-        <dd>
-          <span>{{ client.fax }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceClient.email">Email</span></dt>
-        <dd>
-          <span>{{ client.email }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceClient.createdAt">Created At</span></dt>
-        <dd>
-          <span>{{ client.createdAt | formatMediumDatetime }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceClient.updatedAt">Updated At</span></dt>
-        <dd>
-          <span>{{ client.updatedAt | formatMediumDatetime }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceClient.createdBy">Created By</span></dt>
-        <dd>
-          <span>{{ client.createdBy }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceClient.createdByUserLogin">Created By User Login</span></dt>
-        <dd>
-          <span>{{ client.createdByUserLogin }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceClient.updatedBy">Updated By</span></dt>
-        <dd>
-          <span>{{ client.updatedBy }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceClient.updatedByUserLogin">Updated By User Login</span></dt>
-        <dd>
-          <span>{{ client.updatedByUserLogin }}</span>
-        </dd>
-      </dl>
+  <!-- 📂 ACCORDION -->
+  <div class="accordion" id="clientAccordion">
+    <!-- 📌 INFORMATIONS -->
+    <div class="accordion-item border-0 shadow-sm rounded-4 mb-3">
+      <h2 class="accordion-header">
+        <button class="accordion-button rounded-4" type="button" data-bs-toggle="collapse" data-bs-target="#info">Informations</button>
+      </h2>
 
-      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
-        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
-      </button>
+      <div id="info" class="accordion-collapse collapse show">
+        <div class="accordion-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <small class="text-muted">Raison Sociale</small>
+              <div class="fw-semibold">{{ client?.raisonSociale }}</div>
+            </div>
 
-      <button type="button" [routerLink]="['/client', client.id, 'edit']" class="btn btn-primary">
-        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
-      </button>
+            <div class="col-md-6">
+              <small class="text-muted">Identifiant Unique</small>
+              <div>{{ client?.identifiantUnique }}</div>
+            </div>
+
+            <div class="col-md-6">
+              <small class="text-muted">Adresse</small>
+              <div>{{ client?.adresse }}</div>
+            </div>
+
+            <div class="col-md-6">
+              <small class="text-muted">Téléphone</small>
+              <div>{{ client?.telephone }}</div>
+            </div>
+
+            <div class="col-md-6">
+              <small class="text-muted">Email</small>
+              <div>{{ client?.email }}</div>
+            </div>
+
+            <div class="col-md-6">
+              <small class="text-muted">Fax</small>
+              <div>{{ client?.fax }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 👥 CONTACTS -->
+    <div class="accordion-item border-0 shadow-sm rounded-4 mb-3">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#contacts">Contacts</button>
+      </h2>
+
+      <div id="contacts" class="accordion-collapse collapse">
+        <div class="accordion-body">
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead class="text-muted small">
+                <tr>
+                  <th>Nom</th>
+                  <th>Téléphone</th>
+                  <th>Email</th>
+                  <th>Adresse</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let c of contacts">
+                  <td>{{ c.nom }}</td>
+                  <td>{{ c.telephone }}</td>
+                  <td>{{ c.email }}</td>
+                  <td>{{ c.adresse }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 📍 SITES -->
+    <div class="accordion-item border-0 shadow-sm rounded-4 mb-3">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#sites">Sites</button>
+      </h2>
+
+      <div id="sites" class="accordion-collapse collapse">
+        <div class="accordion-body">
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead class="text-muted small">
+                <tr>
+                  <th>Code</th>
+                  <th>Désignation</th>
+                  <th>Ville</th>
+                  <th>Lat</th>
+                  <th>Lon</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of sites">
+                  <td>{{ s.code }}</td>
+                  <td>{{ s.designation }}</td>
+                  <td>{{ s.ville }}</td>
+                  <td>{{ s.lat }}</td>
+                  <td>{{ s.lon }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 💼 AFFAIRES -->
+    <div class="accordion-item border-0 shadow-sm rounded-4 mb-3">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#affaires">Affaires</button>
+      </h2>
+
+      <div id="affaires" class="accordion-collapse collapse">
+        <div class="accordion-body">
+          <table class="table align-middle">
+            <thead class="text-muted small">
+              <tr>
+                <th>#</th>
+                <th>Désignation</th>
+                <th>Statut</th>
+                <th>Montant</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let a of affaires">
+                <td>{{ a.id }}</td>
+                <td>{{ a.designation }}</td>
+                <td>
+                  <span class="badge bg-warning-subtle text-warning">
+                    {{ a.statut }}
+                  </span>
+                </td>
+                <td>{{ a.montant }} DT</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🧾 FACTURES -->
+    <div class="accordion-item border-0 shadow-sm rounded-4 mb-3">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#factures">Factures</button>
+      </h2>
+
+      <div id="factures" class="accordion-collapse collapse">
+        <div class="accordion-body">
+          <table class="table align-middle">
+            <thead class="text-muted small">
+              <tr>
+                <th>N°</th>
+                <th>Montant</th>
+                <th>Date</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let f of factures">
+                <td>{{ f.numero }}</td>
+                <td>{{ f.montant }} DT</td>
+                <td>{{ f.date }}</td>
+                <td>
+                  <span class="badge bg-success-subtle text-success">
+                    {{ f.statut }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 </div>
