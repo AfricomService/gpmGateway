@@ -1,39 +1,39 @@
 <div style="padding-top: 4em">
   <!-- 🔢 STATS -->
-  <div class="row g-3 mb-4">
-    <div
-      class="col-md-3"
-      *ngFor="
-        let stat of [
-          { label: 'Clients', value: totalItems, icon: 'users', color: 'text-primary' },
-          { label: 'Affaires liées', value: 10, icon: 'briefcase', color: 'text-info' },
-          { label: 'Missions liées', value: 18, icon: 'tasks', color: 'text-warning' },
-          { label: 'Agences', value: 5, icon: 'building', color: 'text-success' }
-        ]
-      "
-    >
-      <div class="card shadow-sm border-0 rounded-4 p-3">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <small class="text-muted">{{ stat.label }}</small>
-            <h4 class="fw-bold mb-0">{{ stat.value }}</h4>
-          </div>
-          <!--          <div class="icon-box bg-light rounded-3 p-2">-->
-          <!--            <fa-icon [icon]="stat.icon" class="{{ stat.color }}"></fa-icon>-->
-          <!--          </div>-->
-        </div>
-      </div>
-    </div>
-  </div>
+  <!--  <div class="row g-3 mb-4">-->
+  <!--    <div-->
+  <!--      class="col-md-3"-->
+  <!--      *ngFor="-->
+  <!--        let stat of [-->
+  <!--          { label: 'Clients', value: totalItems, icon: 'users', color: 'text-primary' },-->
+  <!--          { label: 'Affaires liées', value: 10, icon: 'briefcase', color: 'text-info' },-->
+  <!--          { label: 'Missions liées', value: 18, icon: 'tasks', color: 'text-warning' },-->
+  <!--          { label: 'Agences', value: 5, icon: 'building', color: 'text-success' }-->
+  <!--        ]-->
+  <!--      "-->
+  <!--    >-->
+  <!--      <div class="card shadow-sm border-0 rounded-4 p-3">-->
+  <!--        <div class="d-flex justify-content-between align-items-center">-->
+  <!--          <div>-->
+  <!--            <small class="text-muted">{{ stat.label }}</small>-->
+  <!--            <h4 class="fw-bold mb-0">{{ stat.value }}</h4>-->
+  <!--          </div>-->
+  <!--          &lt;!&ndash;          <div class="icon-box bg-light rounded-3 p-2">&ndash;&gt;-->
+  <!--          &lt;!&ndash;            <fa-icon [icon]="stat.icon" class="{{ stat.color }}"></fa-icon>&ndash;&gt;-->
+  <!--          &lt;!&ndash;          </div>&ndash;&gt;-->
+  <!--        </div>-->
+  <!--      </div>-->
+  <!--    </div>-->
+  <!--  </div>-->
 
   <!-- 🔍 HEADER + SEARCH -->
   <div class="d-flex justify-content-between align-items-center mb-5">
-    <h4 class="fw-bold mb-0">Clients</h4>
+    <h4 class="fw-bold mb-0 text-uppercase">Clients</h4>
 
     <div class="d-flex align-items-center gap-2">
       <!-- Search -->
       <div class="input-group">
-        <span class="input-group-text">Recherche</span>
+        <!--        <span class="input-group-text">Recherche</span>-->
         <input type="text" class="form-control" placeholder="Rechercher..." />
       </div>
 
@@ -43,7 +43,7 @@
       <!--      </button>-->
 
       <!-- Create -->
-      <button class="btn btn-primary rounded-3 w-60" [routerLink]="['/client/new']">Nouveau Client</button>
+      <button class="btn btn-primary rounded-3 w-100" [routerLink]="['/client/new']">Nouveau Client</button>
     </div>
   </div>
 

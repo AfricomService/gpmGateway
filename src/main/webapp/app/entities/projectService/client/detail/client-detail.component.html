@@ -1,4 +1,4 @@
-<div class="container py-4 bg-light">
+<div class="py-5">
   <!-- 🔝 HEADER -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
@@ -18,182 +18,187 @@
   <jhi-alert></jhi-alert>
 
   <!-- 📂 ACCORDION -->
-  <div class="accordion" id="clientAccordion">
+  <ngb-accordion [closeOthers]="false" activeIds="info" class="shadow-sm rounded-4 overflow-hidden">
     <!-- 📌 INFORMATIONS -->
-    <div class="accordion-item border-0 shadow-sm rounded-4 mb-3">
-      <h2 class="accordion-header">
-        <button class="accordion-button rounded-4" type="button" data-bs-toggle="collapse" data-bs-target="#info">Informations</button>
-      </h2>
+    <ngb-panel id="info">
+      <ng-template ngbPanelTitle>
+        <div class="d-flex align-items-center text-primary">
+          <!--          <fa-icon icon="info-circle" class="me-2"></fa-icon>-->
+          <span class="fw-bold">Informations</span>
+        </div>
+      </ng-template>
 
-      <div id="info" class="accordion-collapse collapse show">
-        <div class="accordion-body">
-          <div class="row g-3">
-            <div class="col-md-6">
-              <small class="text-muted">Raison Sociale</small>
-              <div class="fw-semibold">{{ client?.raisonSociale }}</div>
-            </div>
+      <ng-template ngbPanelContent>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <small class="text-muted">Raison Sociale</small>
+            <div class="fw-semibold">{{ client?.raisonSociale }}</div>
+          </div>
 
-            <div class="col-md-6">
-              <small class="text-muted">Identifiant Unique</small>
-              <div>{{ client?.identifiantUnique }}</div>
-            </div>
+          <div class="col-md-6">
+            <small class="text-muted">Identifiant Unique</small>
+            <div>{{ client?.identifiantUnique }}</div>
+          </div>
 
-            <div class="col-md-6">
-              <small class="text-muted">Adresse</small>
-              <div>{{ client?.adresse }}</div>
-            </div>
+          <div class="col-md-6">
+            <small class="text-muted">Adresse</small>
+            <div>{{ client?.adresse }}</div>
+          </div>
 
-            <div class="col-md-6">
-              <small class="text-muted">Téléphone</small>
-              <div>{{ client?.telephone }}</div>
-            </div>
+          <div class="col-md-6">
+            <small class="text-muted">Téléphone</small>
+            <div>{{ client?.telephone }}</div>
+          </div>
 
-            <div class="col-md-6">
-              <small class="text-muted">Email</small>
-              <div>{{ client?.email }}</div>
-            </div>
+          <div class="col-md-6">
+            <small class="text-muted">Email</small>
+            <div>{{ client?.email }}</div>
+          </div>
 
-            <div class="col-md-6">
-              <small class="text-muted">Fax</small>
-              <div>{{ client?.fax }}</div>
-            </div>
+          <div class="col-md-6">
+            <small class="text-muted">Fax</small>
+            <div>{{ client?.fax }}</div>
           </div>
         </div>
-      </div>
-    </div>
+      </ng-template>
+    </ngb-panel>
 
     <!-- 👥 CONTACTS -->
-    <div class="accordion-item border-0 shadow-sm rounded-4 mb-3">
-      <h2 class="accordion-header">
-        <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#contacts">Contacts</button>
-      </h2>
-
-      <div id="contacts" class="accordion-collapse collapse">
-        <div class="accordion-body">
-          <div class="table-responsive">
-            <table class="table align-middle">
-              <thead class="text-muted small">
-                <tr>
-                  <th>Nom</th>
-                  <th>Téléphone</th>
-                  <th>Email</th>
-                  <th>Adresse</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let c of contacts">
-                  <td>{{ c.nom }}</td>
-                  <td>{{ c.telephone }}</td>
-                  <td>{{ c.email }}</td>
-                  <td>{{ c.adresse }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+    <ngb-panel id="contacts">
+      <ng-template ngbPanelTitle>
+        <div class="d-flex align-items-center text-primary">
+          <!--          <fa-icon icon="users" class="me-2"></fa-icon>-->
+          <span class="fw-bold">Contacts</span>
         </div>
-      </div>
-    </div>
+      </ng-template>
+
+      <ng-template ngbPanelContent>
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead class="text-muted small">
+              <tr>
+                <th>Nom</th>
+                <th>Téléphone</th>
+                <th>Email</th>
+                <th>Adresse</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of contacts">
+                <td>{{ c.nom }}</td>
+                <td>{{ c.telephone }}</td>
+                <td>{{ c.email }}</td>
+                <td>{{ c.adresse }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-template>
+    </ngb-panel>
 
     <!-- 📍 SITES -->
-    <div class="accordion-item border-0 shadow-sm rounded-4 mb-3">
-      <h2 class="accordion-header">
-        <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#sites">Sites</button>
-      </h2>
-
-      <div id="sites" class="accordion-collapse collapse">
-        <div class="accordion-body">
-          <div class="table-responsive">
-            <table class="table align-middle">
-              <thead class="text-muted small">
-                <tr>
-                  <th>Code</th>
-                  <th>Désignation</th>
-                  <th>Ville</th>
-                  <th>Lat</th>
-                  <th>Lon</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let s of sites">
-                  <td>{{ s.code }}</td>
-                  <td>{{ s.designation }}</td>
-                  <td>{{ s.ville }}</td>
-                  <td>{{ s.lat }}</td>
-                  <td>{{ s.lon }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+    <ngb-panel id="sites">
+      <ng-template ngbPanelTitle>
+        <div class="d-flex align-items-center text-primary">
+          <!--          <fa-icon icon="building" class="me-2"></fa-icon>-->
+          <span class="fw-bold">Sites</span>
         </div>
-      </div>
-    </div>
+      </ng-template>
+
+      <ng-template ngbPanelContent>
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead class="text-muted small">
+              <tr>
+                <th>Code</th>
+                <th>Désignation</th>
+                <th>Ville</th>
+                <th>Lat</th>
+                <th>Lon</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of sites">
+                <td>{{ s.code }}</td>
+                <td>{{ s.designation }}</td>
+                <td>{{ s.ville }}</td>
+                <td>{{ s.lat }}</td>
+                <td>{{ s.lon }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-template>
+    </ngb-panel>
 
     <!-- 💼 AFFAIRES -->
-    <div class="accordion-item border-0 shadow-sm rounded-4 mb-3">
-      <h2 class="accordion-header">
-        <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#affaires">Affaires</button>
-      </h2>
-
-      <div id="affaires" class="accordion-collapse collapse">
-        <div class="accordion-body">
-          <table class="table align-middle">
-            <thead class="text-muted small">
-              <tr>
-                <th>#</th>
-                <th>Désignation</th>
-                <th>Statut</th>
-                <th>Montant</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let a of affaires">
-                <td>{{ a.id }}</td>
-                <td>{{ a.designation }}</td>
-                <td>
-                  <span class="badge bg-warning-subtle text-warning">
-                    {{ a.statut }}
-                  </span>
-                </td>
-                <td>{{ a.montant }} DT</td>
-              </tr>
-            </tbody>
-          </table>
+    <ngb-panel id="affaires">
+      <ng-template ngbPanelTitle>
+        <div class="d-flex align-items-center text-primary">
+          <!--          <fa-icon icon="briefcase" class="me-2"></fa-icon>-->
+          <span class="fw-bold">Affaires</span>
         </div>
-      </div>
-    </div>
+      </ng-template>
+
+      <ng-template ngbPanelContent>
+        <table class="table align-middle mb-0">
+          <thead class="text-muted small">
+            <tr>
+              <th>#</th>
+              <th>Désignation</th>
+              <th>Statut</th>
+              <th>Montant</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let a of affaires">
+              <td>{{ a.id }}</td>
+              <td>{{ a.designation }}</td>
+              <td>
+                <span class="badge bg-warning-subtle text-warning">
+                  {{ a.statut }}
+                </span>
+              </td>
+              <td>{{ a.montant }} DT</td>
+            </tr>
+          </tbody>
+        </table>
+      </ng-template>
+    </ngb-panel>
 
     <!-- 🧾 FACTURES -->
-    <div class="accordion-item border-0 shadow-sm rounded-4 mb-3">
-      <h2 class="accordion-header">
-        <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#factures">Factures</button>
-      </h2>
-
-      <div id="factures" class="accordion-collapse collapse">
-        <div class="accordion-body">
-          <table class="table align-middle">
-            <thead class="text-muted small">
-              <tr>
-                <th>N°</th>
-                <th>Montant</th>
-                <th>Date</th>
-                <th>Statut</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let f of factures">
-                <td>{{ f.numero }}</td>
-                <td>{{ f.montant }} DT</td>
-                <td>{{ f.date }}</td>
-                <td>
-                  <span class="badge bg-success-subtle text-success">
-                    {{ f.statut }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+    <ngb-panel id="factures">
+      <ng-template ngbPanelTitle>
+        <div class="d-flex align-items-center text-primary">
+          <!--          <fa-icon icon="file-invoice-dollar" class="me-2"></fa-icon>-->
+          <span class="fw-bold">Factures</span>
         </div>
-      </div>
-    </div>
-  </div>
+      </ng-template>
+
+      <ng-template ngbPanelContent>
+        <table class="table align-middle mb-0">
+          <thead class="text-muted small">
+            <tr>
+              <th>N°</th>
+              <th>Montant</th>
+              <th>Date</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let f of factures">
+              <td>{{ f.numero }}</td>
+              <td>{{ f.montant }} DT</td>
+              <td>{{ f.date }}</td>
+              <td>
+                <span class="badge bg-success-subtle text-success">
+                  {{ f.statut }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </ng-template>
+    </ngb-panel>
+  </ngb-accordion>
 </div>
