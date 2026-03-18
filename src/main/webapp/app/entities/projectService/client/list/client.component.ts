@@ -18,6 +18,7 @@ import { ClientDeleteDialogComponent } from '../delete/client-delete-dialog.comp
 })
 export class ClientComponent implements OnInit {
   clients?: IClient[];
+  filteredClients?: IClient[];
   isLoading = false;
 
   predicate = 'id';
@@ -26,6 +27,9 @@ export class ClientComponent implements OnInit {
   itemsPerPage = ITEMS_PER_PAGE;
   totalItems = 0;
   page = 1;
+
+  searchTerm = '';
+  viewMode: 'grid' | 'list' = 'grid';
 
   constructor(
     protected clientService: ClientService,
@@ -38,6 +42,24 @@ export class ClientComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+  }
+
+  filterClients(): void {
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    let result = this.clients ?? [];
+    const term = this.searchTerm.trim().toLowerCase();
+    if (term) {
+      result = result.filter(
+        c =>
+          (c.raisonSociale ?? '').toLowerCase().includes(term) ||
+          (c.identifiantUnique ?? '').toLowerCase().includes(term) ||
+          (c.email ?? '').toLowerCase().includes(term)
+      );
+    }
+    this.filteredClients = result;
   }
 
   delete(client: IClient): void {
@@ -91,6 +113,7 @@ export class ClientComponent implements OnInit {
     this.fillComponentAttributesFromResponseHeader(response.headers);
     const dataFromBody = this.fillComponentAttributesFromResponseBody(response.body);
     this.clients = dataFromBody;
+    this.applyFilters();
   }
 
   protected fillComponentAttributesFromResponseBody(data: IClient[] | null): IClient[] {

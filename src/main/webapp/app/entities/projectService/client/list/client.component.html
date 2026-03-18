@@ -1,107 +1,186 @@
-<div style="padding-top: 4em">
-  <!-- 🔢 STATS -->
-  <!--  <div class="row g-3 mb-4">-->
-  <!--    <div-->
-  <!--      class="col-md-3"-->
-  <!--      *ngFor="-->
-  <!--        let stat of [-->
-  <!--          { label: 'Clients', value: totalItems, icon: 'users', color: 'text-primary' },-->
-  <!--          { label: 'Affaires liées', value: 10, icon: 'briefcase', color: 'text-info' },-->
-  <!--          { label: 'Missions liées', value: 18, icon: 'tasks', color: 'text-warning' },-->
-  <!--          { label: 'Agences', value: 5, icon: 'building', color: 'text-success' }-->
-  <!--        ]-->
-  <!--      "-->
-  <!--    >-->
-  <!--      <div class="card shadow-sm border-0 rounded-4 p-3">-->
-  <!--        <div class="d-flex justify-content-between align-items-center">-->
-  <!--          <div>-->
-  <!--            <small class="text-muted">{{ stat.label }}</small>-->
-  <!--            <h4 class="fw-bold mb-0">{{ stat.value }}</h4>-->
-  <!--          </div>-->
-  <!--          &lt;!&ndash;          <div class="icon-box bg-light rounded-3 p-2">&ndash;&gt;-->
-  <!--          &lt;!&ndash;            <fa-icon [icon]="stat.icon" class="{{ stat.color }}"></fa-icon>&ndash;&gt;-->
-  <!--          &lt;!&ndash;          </div>&ndash;&gt;-->
-  <!--        </div>-->
-  <!--      </div>-->
-  <!--    </div>-->
-  <!--  </div>-->
+<div class="clients-container">
+  <!-- Header -->
+  <div class="clients-header">
+    <h2 data-cy="ClientHeading" id="page-heading">
+      <span class="text-uppercase">Clients</span>
+    </h2>
+    <div class="header-actions">
+      <button [routerLink]="['/client/new']" class="btn btn-primary" data-cy="entityCreateButton" id="jh-create-entity">
+        <fa-icon icon="plus"></fa-icon>
+        <span>Nouveau client</span>
+      </button>
+    </div>
+  </div>
 
-  <!-- 🔍 HEADER + SEARCH -->
-  <div class="d-flex justify-content-between align-items-center mb-5">
-    <h4 class="fw-bold mb-0 text-uppercase">Clients</h4>
+  <jhi-alert-error></jhi-alert-error>
+  <jhi-alert></jhi-alert>
 
-    <div class="d-flex align-items-center gap-2">
-      <!-- Search -->
+  <!-- Toolbar: Search + View Toggle -->
+  <div class="clients-toolbar">
+    <div class="toolbar-left">
       <div class="input-group">
-        <!--        <span class="input-group-text">Recherche</span>-->
-        <input type="text" class="form-control" placeholder="Rechercher..." />
+        <input (ngModelChange)="filterClients()" [(ngModel)]="searchTerm" class="form-control" placeholder="Rechercher..." type="text" />
+      </div>
+    </div>
+
+    <!--    <div class="toolbar-right">-->
+    <!--      <span class="results-count">{{ filteredClients?.length ?? 0 }} résultat(s)</span>-->
+    <!--      <div class="view-toggle">-->
+    <!--        <button class="view-btn" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Grille">-->
+    <!--          <fa-icon icon="th"></fa-icon>-->
+    <!--        </button>-->
+    <!--        <button class="view-btn" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'" title="Liste">-->
+    <!--          <fa-icon icon="list"></fa-icon>-->
+    <!--        </button>-->
+    <!--      </div>-->
+    <!--    </div>-->
+  </div>
+
+  <!-- No result -->
+  <div *ngIf="filteredClients?.length === 0" class="alert alert-warning" id="no-result">
+    <span jhiTranslate="gpmGatewayApp.projectServiceClient.home.notFound">Aucun Client trouvé</span>
+  </div>
+
+  <!-- Card Grid -->
+  <div *ngIf="filteredClients && filteredClients.length > 0 && viewMode === 'grid'" class="clients-grid" id="entities">
+    <div *ngFor="let client of filteredClients; trackBy: trackId" class="client-card" data-cy="entityTable">
+      <!-- Card Header -->
+      <div class="card-header">
+        <a [routerLink]="['/client', client.id, 'view']" class="client-num">#{{ client.identifiantUnique || client.id }}</a>
       </div>
 
-      <!-- Toggle -->
-      <!--      <button class="btn btn-light border rounded-3">-->
-      <!--        Vue-->
-      <!--      </button>-->
+      <!-- Card Body -->
+      <div class="card-body">
+        <h3 class="client-title">
+          <a [routerLink]="['/client', client.id, 'view']">{{ client.raisonSociale }}</a>
+        </h3>
+        <div class="client-details">
+          <div *ngIf="client.email">
+            <fa-icon icon="envelope" class="text-muted"></fa-icon>
+            <span>{{ client.email }}</span>
+          </div>
+          <div *ngIf="client.telephone">
+            <fa-icon icon="phone" class="text-muted"></fa-icon>
+            <span>{{ client.telephone }}</span>
+          </div>
+        </div>
+      </div>
 
-      <!-- Create -->
-      <button class="btn btn-primary rounded-3 w-100" [routerLink]="['/client/new']">Nouveau Client</button>
+      <!-- Card Footer -->
+      <div class="card-footer">
+        <div class="card-actions">
+          <button
+            [routerLink]="['/client', client.id, 'view']"
+            class="action-btn btn-view"
+            data-cy="entityDetailsButton"
+            title="Voir"
+            type="button"
+          >
+            <fa-icon icon="eye"></fa-icon>
+          </button>
+          <button
+            [routerLink]="['/client', client.id, 'edit']"
+            class="action-btn btn-edit"
+            data-cy="entityEditButton"
+            title="Éditer"
+            type="button"
+          >
+            <fa-icon icon="pencil-alt"></fa-icon>
+          </button>
+          <button (click)="delete(client)" class="action-btn btn-delete" data-cy="entityDeleteButton" title="Supprimer" type="button">
+            <fa-icon icon="times"></fa-icon>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- ⚠️ NO RESULT -->
-  <div class="alert alert-warning" *ngIf="clients?.length === 0">Aucun Client trouvé</div>
-
-  <!-- 🧾 CLIENT CARDS -->
-  <div class="row g-4" *ngIf="clients && clients.length > 0">
-    <div class="col-xl-4 col-md-6 col-12" *ngFor="let client of clients; trackBy: trackId">
-      <div class="card border-2 shadow-sm rounded-4 h-100 p-3 client-card">
-        <!-- Title -->
-        <h5 class="fw-bold mb-1">
-          {{ client.raisonSociale }}
-        </h5>
-
-        <!-- Email -->
-        <div class="text-muted small mb-1">
-          {{ client.email }}
-        </div>
-
-        <!-- Phone -->
-        <div class="text-muted small mb-3">
-          {{ client.telephone }}
-        </div>
-
-        <!-- Stats -->
-        <div class="d-flex gap-3 small text-muted mb-3">
-          <span>2 affaire(s)</span>
-          <span>6 mission(s)</span>
-        </div>
-
-        <!-- Actions -->
-        <div class="d-flex justify-content-end gap-2 mt-auto">
-          <button class="btn btn-light btn-sm rounded-3" [routerLink]="['/client', client.id, 'view']">Consulter</button>
-
-          <button class="btn btn-light btn-sm rounded-3" [routerLink]="['/client', client.id, 'edit']">Éditer</button>
-
-          <button class="btn btn-light btn-sm rounded-3 text-danger" (click)="delete(client)">Supprimer</button>
-        </div>
-      </div>
-    </div>
+  <!-- List View (table fallback) -->
+  <div
+    *ngIf="filteredClients && filteredClients.length > 0 && viewMode === 'list'"
+    class="table-responsive table-entities"
+    id="entities-list"
+  >
+    <table aria-describedby="page-heading" class="table table-striped">
+      <thead>
+        <tr (sortChange)="navigateToWithComponentValues()" [(ascending)]="ascending" [(predicate)]="predicate" jhiSort>
+          <th jhiSortBy="id" scope="col">
+            <div class="d-flex">
+              <span>ID</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th jhiSortBy="raisonSociale" scope="col">
+            <div class="d-flex">
+              <span>Raison Sociale</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th jhiSortBy="identifiantUnique" scope="col">
+            <div class="d-flex">
+              <span>Identifiant Unique</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th jhiSortBy="email" scope="col">
+            <div class="d-flex">
+              <span>Email</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th jhiSortBy="telephone" scope="col">
+            <div class="d-flex">
+              <span>Telephone</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let client of filteredClients; trackBy: trackId" data-cy="entityTable">
+          <td>
+            <a [routerLink]="['/client', client.id, 'view']">{{ client.id }}</a>
+          </td>
+          <td>{{ client.raisonSociale }}</td>
+          <td>{{ client.identifiantUnique }}</td>
+          <td>{{ client.email }}</td>
+          <td>{{ client.telephone }}</td>
+          <td class="text-end">
+            <div class="btn-group">
+              <button [routerLink]="['/client', client.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton" type="submit">
+                <fa-icon icon="eye"></fa-icon>
+                <span class="d-none d-md-inline">Voir</span>
+              </button>
+              <button [routerLink]="['/client', client.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton" type="submit">
+                <fa-icon icon="pencil-alt"></fa-icon>
+                <span class="d-none d-md-inline">Éditer</span>
+              </button>
+              <button (click)="delete(client)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton" type="submit">
+                <fa-icon icon="times"></fa-icon>
+                <span class="d-none d-md-inline">Supprimer</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
-  <!-- 📄 PAGINATION -->
-  <div *ngIf="clients && clients.length > 0" class="mt-4">
+  <!-- Pagination -->
+  <div *ngIf="filteredClients && filteredClients.length > 0">
     <div class="d-flex justify-content-center">
       <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
     </div>
-
     <div class="d-flex justify-content-center">
       <ngb-pagination
-        [collectionSize]="totalItems"
-        [page]="page"
-        [pageSize]="itemsPerPage"
-        [maxSize]="5"
-        [rotate]="true"
-        [boundaryLinks]="true"
         (pageChange)="navigateToPage($event)"
+        [boundaryLinks]="true"
+        [collectionSize]="totalItems"
+        [maxSize]="5"
+        [pageSize]="itemsPerPage"
+        [page]="page"
+        [rotate]="true"
       ></ngb-pagination>
     </div>
   </div>

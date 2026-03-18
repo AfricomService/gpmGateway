@@ -1,24 +1,312 @@
-body {
-  background-color: #f8fafc;
+// ─── Variables ────────────────────────────────────────────────────────────────
+$primary: #2c3e50;
+$primary-light: #eff6ff;
+$gray-50: #f8fafc;
+$gray-100: #f1f5f9;
+$gray-200: #e2e8f0;
+$gray-400: #94a3b8;
+$gray-600: #475569;
+$gray-800: #1e293b;
+$white: #ffffff;
+$radius-sm: 6px;
+$radius-md: 10px;
+$radius-lg: 14px;
+$shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+$shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
+$transition: all 0.18s ease;
+
+// ─── Container ────────────────────────────────────────────────────────────────
+.clients-container {
+  padding-top: 4em;
+  min-height: 100vh;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
-.client-card {
-  transition: all 0.2s ease;
-}
-
-.client-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-}
-
-.icon-box {
-  width: 40px;
-  height: 40px;
+// ─── Header ───────────────────────────────────────────────────────────────────
+.clients-header {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+
+  h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: $gray-800;
+    margin: 0;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
 }
 
-.cursor-pointer {
-  cursor: pointer;
+// ─── Toolbar ──────────────────────────────────────────────────────────────────
+.clients-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+
+  .toolbar-left {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+// ─── Search ───────────────────────────────────────────────────────────────────
+.search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    color: $gray-400;
+    font-size: 0.875rem;
+    pointer-events: none;
+  }
+
+  .search-input {
+    padding: 8px 12px 8px 32px;
+    border: 1px solid $gray-200;
+    border-radius: $radius-sm;
+    font-size: 0.875rem;
+    color: $gray-800;
+    background: $white;
+    width: 240px;
+    transition: $transition;
+    outline: none;
+
+    &::placeholder {
+      color: $gray-400;
+    }
+    &:focus {
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, 0.1);
+    }
+  }
+}
+
+// ─── Results count + view toggle ─────────────────────────────────────────────
+.results-count {
+  font-size: 0.8125rem;
+  color: $gray-400;
+  white-space: nowrap;
+}
+
+.view-toggle {
+  display: flex;
+  border: 1px solid $gray-200;
+  border-radius: $radius-sm;
+  overflow: hidden;
+
+  .view-btn {
+    padding: 7px 10px;
+    background: $white;
+    border: none;
+    border-right: 1px solid $gray-200;
+    color: $gray-400;
+    cursor: pointer;
+    transition: $transition;
+    font-size: 0.875rem;
+    line-height: 1;
+
+    &:last-child {
+      border-right: none;
+    }
+    &:hover:not(.active) {
+      background: $gray-100;
+    }
+    &.active {
+      background: $primary-light;
+      color: $primary;
+    }
+  }
+}
+
+// ─── Card Grid ────────────────────────────────────────────────────────────────
+.clients-grid {
+  padding-top: 2em;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+  gap: 16px;
+}
+
+// ─── Card ─────────────────────────────────────────────────────────────────────
+.client-card {
+  background: $white;
+  border: 1px solid $gray-200;
+  border-radius: $radius-lg;
+  padding: 18px 20px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: $shadow-card;
+  transition: $transition;
+  cursor: default;
+
+  &:hover {
+    box-shadow: $shadow-hover;
+    transform: translateY(-2px);
+    border-color: darken($gray-200, 5%);
+  }
+
+  // ── Card Header ─────────────────────────────────────────���───────────────────
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0;
+    background: transparent;
+    border: none;
+  }
+
+  .client-num {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: $primary;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  // ── Card Body ───────────────────────────────────────────────────────────────
+  .card-body {
+    padding: 0;
+    flex: 1;
+  }
+
+  .client-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: $gray-800;
+    margin: 0 0 4px;
+    line-height: 1.35;
+
+    a {
+      color: inherit;
+      text-decoration: none;
+      &:hover {
+        color: $primary;
+      }
+    }
+  }
+
+  .client-details {
+    font-size: 0.8125rem;
+    color: $gray-400;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    div {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+  }
+
+  // ── Card Footer ──────────────────────────��──────────────────────────────────
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 10px 0 0;
+    border-top: 1px solid $gray-100;
+    background: transparent;
+    border-radius: 0;
+  }
+
+  .card-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  &:hover .card-actions {
+    opacity: 1;
+  }
+
+  .action-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: $radius-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: $transition;
+
+    &.btn-view {
+      background: #eff6ff;
+      color: $primary;
+      &:hover {
+        background: $primary;
+        color: $white;
+      }
+    }
+    &.btn-edit {
+      background: #f0fdf4;
+      color: #16a34a;
+      &:hover {
+        background: #16a34a;
+        color: $white;
+      }
+    }
+    &.btn-delete {
+      background: #fef2f2;
+      color: #dc2626;
+      &:hover {
+        background: #dc2626;
+        color: $white;
+      }
+    }
+  }
+}
+
+// ─── Responsive ───────────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .clients-container {
+    padding: 16px;
+  }
+
+  .clients-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .clients-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .search-input {
+    width: 100% !important;
+  }
+
+  .clients-grid {
+    grid-template-columns: 1fr;
+  }
 }
