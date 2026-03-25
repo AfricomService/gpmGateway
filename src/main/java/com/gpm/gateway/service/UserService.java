@@ -271,4 +271,15 @@ public class UserService {
         user.setActivated(activated);
         return user;
     }
+
+    public Mono<String> getCurrentUserId() {
+        return SecurityUtils
+            .getCurrentUserLogin()
+            .flatMap(login -> getUserWithAuthoritiesByLogin(login))
+            .map(user -> {
+                String userId = user.getId();
+                return userId != null ? userId : "";
+            })
+            .switchIfEmpty(Mono.error(new RuntimeException("User not found")));
+    }
 }

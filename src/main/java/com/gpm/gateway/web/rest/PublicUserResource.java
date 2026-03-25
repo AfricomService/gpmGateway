@@ -60,4 +60,9 @@ public class PublicUserResource {
     public Mono<List<String>> getAuthorities() {
         return userService.getAuthorities().collectList();
     }
+
+    @GetMapping("/getCurrentUserId")
+    public Mono<String> getCurrentUserId() {
+        return userService.getCurrentUserId().switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE)));
+    }
 }
