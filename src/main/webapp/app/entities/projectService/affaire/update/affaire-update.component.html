@@ -29,11 +29,6 @@
             </div>
             <div class="card-body">
               <div class="row">
-                <div class="col-md-12 mb-3" *ngIf="editForm.controls.id.value !== null">
-                  <label class="form-label font-weight-bold" jhiTranslate="global.field.id" for="field_id">ID</label>
-                  <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
-                </div>
-
                 <div class="col-md-12 mb-3">
                   <label
                     class="form-label font-weight-bold"
@@ -371,38 +366,20 @@
             <div class="card-body">
               <div class="row">
                 <div class="col-md-12 mb-3">
-                  <label
-                    class="form-label font-weight-bold"
-                    jhiTranslate="gpmGatewayApp.projectServiceAffaire.responsableProjetId"
-                    for="field_responsableProjetId"
-                    [ngbTooltip]="'gpmGatewayApp.projectServiceAffaire.help.responsableProjetId' | translate"
-                    >Responsable Projet Id</label
+                  <label class="form-label font-weight-bold" for="field_responsable">Responsable Projet</label>
+                  <!-- The user selection updates a standalone model, which gets merged to the main form upon save -->
+                  <ng-select
+                    id="field_responsable"
+                    name="responsable"
+                    [items]="usersSharedCollection"
+                    bindLabel="login"
+                    [searchable]="true"
+                    [(ngModel)]="selectedResponsable"
+                    [ngModelOptions]="{ standalone: true }"
+                    class="custom-ng-select"
+                    placeholder="Rechercher un responsable..."
                   >
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="responsableProjetId"
-                    id="field_responsableProjetId"
-                    data-cy="responsableProjetId"
-                    formControlName="responsableProjetId"
-                  />
-                </div>
-
-                <div class="col-md-12 mb-3">
-                  <label
-                    class="form-label font-weight-bold"
-                    jhiTranslate="gpmGatewayApp.projectServiceAffaire.responsableProjetUserLogin"
-                    for="field_responsableProjetUserLogin"
-                    >Responsable Projet User Login</label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="responsableProjetUserLogin"
-                    id="field_responsableProjetUserLogin"
-                    data-cy="responsableProjetUserLogin"
-                    formControlName="responsableProjetUserLogin"
-                  />
+                  </ng-select>
                 </div>
               </div>
             </div>

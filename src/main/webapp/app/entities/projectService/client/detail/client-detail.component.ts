@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { IClient } from '../client.model';
+import { ClientService } from '../service/client.service';
+import { IContact } from '../../contact/contact.model';
 
 @Component({
   selector: 'jhi-client-detail',
@@ -11,13 +13,13 @@ import { IClient } from '../client.model';
 export class ClientDetailComponent implements OnInit {
   client: IClient | null = null;
 
-  constructor(protected activatedRoute: ActivatedRoute) {}
+  constructor(protected activatedRoute: ActivatedRoute, protected clientService: ClientService) {}
 
   previousState(): void {
     window.history.back();
   }
 
-  contacts: any[] = [];
+  contacts: IContact[] = [];
   sites: any[] = [];
   affaires: any[] = [];
   factures: any[] = [];
@@ -25,28 +27,14 @@ export class ClientDetailComponent implements OnInit {
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ client }) => {
       this.client = client;
+      if (client && client.id) {
+        this.clientService.getContactsByClientId(client.id).subscribe(res => {
+          this.contacts = res.body ?? [];
+        });
+      }
     });
     // 👥 CONTACTS
-    this.contacts = [
-      {
-        nom: 'Ben Salah Nizar',
-        telephone: '+216 98 200 100',
-        email: 'nizar.bensalah@tunisietelecom.tn',
-        adresse: 'Rue de Russie, Tunis',
-      },
-      {
-        nom: 'Hamdi Sonia',
-        telephone: '+216 97 300 200',
-        email: 'sonia.hamdi@tunisietelecom.tn',
-        adresse: 'Rue de Russie, Tunis',
-      },
-      {
-        nom: 'Ben Fredj Tarek',
-        telephone: '+216 98 112 233',
-        email: 'tarek.benfredj@tunisietelecom.tn',
-        adresse: 'Rue de Russie, Tunis',
-      },
-    ];
+    // Fake data replaced by API call
 
     // 📍 SITES
     this.sites = [

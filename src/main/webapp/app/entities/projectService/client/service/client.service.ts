@@ -69,6 +69,12 @@ export class ClientService {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }
 
+  getContactsByClientId(clientId: number): Observable<HttpResponse<any[]>> {
+    return this.http.get<any[]>(`${this.applicationConfigService.getEndpointFor('api/contacts/client', 'projectservice')}/${clientId}`, {
+      observe: 'response',
+    });
+  }
+
   getClientIdentifier(client: Pick<IClient, 'id'>): number {
     return client.id;
   }

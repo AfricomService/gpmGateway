@@ -10,6 +10,8 @@ import { AffaireService } from '../service/affaire.service';
 import { IClient } from 'app/entities/projectService/client/client.model';
 import { ClientService } from 'app/entities/projectService/client/service/client.service';
 import { StatutAffaire } from 'app/entities/enumerations/statut-affaire.model';
+import { IUser } from 'app/entities/user/user.model';
+import { UserService } from 'app/entities/user/user.service';
 
 @Component({
   selector: 'jhi-affaire-update',
@@ -21,6 +23,8 @@ export class AffaireUpdateComponent implements OnInit {
   statutAffaireValues = Object.keys(StatutAffaire);
 
   clientsSharedCollection: IClient[] = [];
+  usersSharedCollection: IUser[] = [];
+  selectedResponsable: IUser | null = null;
 
   editForm: AffaireFormGroup = this.affaireFormService.createAffaireFormGroup();
 
@@ -28,6 +32,7 @@ export class AffaireUpdateComponent implements OnInit {
     protected affaireService: AffaireService,
     protected affaireFormService: AffaireFormService,
     protected clientService: ClientService,
+    protected userService: UserService,
     protected activatedRoute: ActivatedRoute
   ) {}
 
@@ -50,6 +55,14 @@ export class AffaireUpdateComponent implements OnInit {
 
   save(): void {
     this.isSaving = true;
+
+    if (this.selectedResponsable) {
+      this.editForm.patchValue({
+        responsableProjetId: this.selectedResponsable.id,
+        responsableProjetUserLogin: this.selectedResponsable.login,
+      });
+    }
+
     const affaire = this.affaireFormService.getAffaire(this.editForm);
     if (affaire.id !== null) {
       this.subscribeToSaveResponse(this.affaireService.update(affaire));
@@ -81,6 +94,13 @@ export class AffaireUpdateComponent implements OnInit {
     this.affaire = affaire;
     this.affaireFormService.resetForm(this.editForm, affaire);
 
+    if (affaire.responsableProjetId && affaire.responsableProjetUserLogin) {
+      this.selectedResponsable = {
+        id: affaire.responsableProjetId,
+        login: affaire.responsableProjetUserLogin,
+      };
+    }
+
     this.clientsSharedCollection = this.clientService.addClientToCollectionIfMissing<IClient>(this.clientsSharedCollection, affaire.client);
   }
 
@@ -90,5 +110,15 @@ export class AffaireUpdateComponent implements OnInit {
       .pipe(map((res: HttpResponse<IClient[]>) => res.body ?? []))
       .pipe(map((clients: IClient[]) => this.clientService.addClientToCollectionIfMissing<IClient>(clients, this.affaire?.client)))
       .subscribe((clients: IClient[]) => (this.clientsSharedCollection = clients));
+
+    this.userService
+      .query()
+      .pipe(map((res: HttpResponse<IUser[]>) => res.body ?? []))
+      .subscribe((users: IUser[]) => {
+        this.usersSharedCollection = users;
+        if (this.selectedResponsable && !this.usersSharedCollection.find(u => u.id === this.selectedResponsable?.id)) {
+          this.usersSharedCollection = [this.selectedResponsable, ...this.usersSharedCollection];
+        }
+      });
   }
 }
