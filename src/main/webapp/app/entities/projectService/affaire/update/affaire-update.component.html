@@ -301,17 +301,17 @@
                   </div>
                 </div>
 
-                <div class="col-md-12 mb-3 ps-4">
+                <div class="col-md-12 mb-3 d-flex align-items-center">
                   <label
-                    style="padding-right: 1em"
-                    class="form-check-label font-weight-bold"
+                    class="form-check-label font-weight-bold me-3"
                     jhiTranslate="gpmGatewayApp.projectServiceAffaire.lieuMultipleParMission"
                     for="field_lieuMultipleParMission"
                     >Lieu Multiple Par Mission</label
                   >
                   <input
                     type="checkbox"
-                    class="form-check-input"
+                    class="form-check-input m-0"
+                    style="width: 1.8rem; height: 1.8rem; cursor: pointer"
                     name="lieuMultipleParMission"
                     id="field_lieuMultipleParMission"
                     data-cy="lieuMultipleParMission"
@@ -323,11 +323,12 @@
           </div>
         </div>
 
-        <!-- Section: Responsable & Client -->
-        <div class="col-lg-6 mb-4">
-          <div class="card shadow-sm h-100">
+        <!-- Split Section: Client & Responsable -->
+        <div class="col-lg-6 mb-4 d-flex flex-column" style="gap: 1.5rem">
+          <!-- Section: Client -->
+          <div class="card shadow-sm bg-white">
             <div class="card-header bg-light">
-              <h5 class="mb-0">Responsable & Client</h5>
+              <h5 class="mb-0">Client</h5>
             </div>
             <div class="card-body">
               <div class="row">
@@ -335,19 +336,21 @@
                   <label class="form-label font-weight-bold" jhiTranslate="gpmGatewayApp.projectServiceAffaire.client" for="field_client"
                     >Client</label
                   >
-                  <select
-                    class="form-control"
+                  <ng-select
                     id="field_client"
                     data-cy="client"
                     name="client"
                     formControlName="client"
+                    [searchable]="true"
                     [compareWith]="compareClient"
+                    class="custom-ng-select"
+                    placeholder="Rechercher un client..."
                   >
-                    <option *ngIf="!editForm.get('client')!.value" [ngValue]="null" selected></option>
-                    <option [ngValue]="clientOption" *ngFor="let clientOption of clientsSharedCollection">
+                    <ng-option [value]="null" *ngIf="!editForm.get('client')!.value"></ng-option>
+                    <ng-option [value]="clientOption" *ngFor="let clientOption of clientsSharedCollection">
                       {{ clientOption.raisonSociale }}
-                    </option>
-                  </select>
+                    </ng-option>
+                  </ng-select>
                   <div *ngIf="editForm.get(['client'])!.invalid && (editForm.get(['client'])!.dirty || editForm.get(['client'])!.touched)">
                     <small
                       class="form-text text-danger"
@@ -358,7 +361,17 @@
                     </small>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
 
+          <!-- Section: Responsable -->
+          <div class="card shadow-sm bg-white flex-grow-1">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">Responsable</h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
                 <div class="col-md-12 mb-3">
                   <label
                     class="form-label font-weight-bold"

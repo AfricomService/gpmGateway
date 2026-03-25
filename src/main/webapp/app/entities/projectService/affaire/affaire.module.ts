@@ -5,9 +5,10 @@ import { AffaireDetailComponent } from './detail/affaire-detail.component';
 import { AffaireUpdateComponent } from './update/affaire-update.component';
 import { AffaireDeleteDialogComponent } from './delete/affaire-delete-dialog.component';
 import { AffaireRoutingModule } from './route/affaire-routing.module';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 @NgModule({
-  imports: [SharedModule, AffaireRoutingModule],
+  imports: [SharedModule, AffaireRoutingModule, NgSelectModule],
   declarations: [AffaireComponent, AffaireDetailComponent, AffaireUpdateComponent, AffaireDeleteDialogComponent],
 })
 export class ProjectServiceAffaireModule {}
