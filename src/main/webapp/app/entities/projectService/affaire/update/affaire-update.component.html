@@ -341,15 +341,13 @@
                     data-cy="client"
                     name="client"
                     formControlName="client"
+                    [items]="clientsSharedCollection"
+                    bindLabel="raisonSociale"
                     [searchable]="true"
                     [compareWith]="compareClient"
                     class="custom-ng-select"
                     placeholder="Rechercher un client..."
                   >
-                    <ng-option [value]="null" *ngIf="!editForm.get('client')!.value"></ng-option>
-                    <ng-option [value]="clientOption" *ngFor="let clientOption of clientsSharedCollection">
-                      {{ clientOption.raisonSociale }}
-                    </ng-option>
                   </ng-select>
                   <div *ngIf="editForm.get(['client'])!.invalid && (editForm.get(['client'])!.dirty || editForm.get(['client'])!.touched)">
                     <small
