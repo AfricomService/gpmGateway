@@ -1,124 +1,205 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
-    <div *ngIf="affaire">
-      <h2 data-cy="affaireDetailsHeading"><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.detail.title">Affaire</span></h2>
+<div class="py-5">
+  <!-- 🔝 HEADER -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold mb-0">Affaire - {{ affaire?.designationAffaire }}</h3>
+      <small class="text-muted">Affaire details</small>
+    </div>
 
-      <hr />
+    <div class="d-flex gap-2">
+      <button (click)="previousState()" class="btn btn-light rounded-3">Retour</button>
 
-      <jhi-alert-error></jhi-alert-error>
-
-      <jhi-alert></jhi-alert>
-
-      <dl class="row-md jh-entity-details">
-        <dt><span jhiTranslate="global.field.id">ID</span></dt>
-        <dd>
-          <span>{{ affaire.id }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.numAffaire">Num Affaire</span></dt>
-        <dd>
-          <span>{{ affaire.numAffaire }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.designationAffaire">Designation Affaire</span></dt>
-        <dd>
-          <span>{{ affaire.designationAffaire }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.bonDeCommande">Bon De Commande</span></dt>
-        <dd>
-          <span>{{ affaire.bonDeCommande }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.montant">Montant</span></dt>
-        <dd>
-          <span>{{ affaire.montant }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.devise">Devise</span></dt>
-        <dd>
-          <span>{{ affaire.devise }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.dateDebut">Date Debut</span></dt>
-        <dd>
-          <span>{{ affaire.dateDebut | formatMediumDate }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.dateCloture">Date Cloture</span></dt>
-        <dd>
-          <span>{{ affaire.dateCloture | formatMediumDate }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.datePassageExecution">Date Passage Execution</span></dt>
-        <dd>
-          <span>{{ affaire.datePassageExecution | formatMediumDate }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.lieuMultipleParMission">Lieu Multiple Par Mission</span></dt>
-        <dd>
-          <span>{{ affaire.lieuMultipleParMission }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.montantVente">Montant Vente</span></dt>
-        <dd>
-          <span>{{ affaire.montantVente }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.montantBudgetaireMateriel">Montant Budgetaire Materiel</span></dt>
-        <dd>
-          <span>{{ affaire.montantBudgetaireMateriel }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.montantBudgetaireService">Montant Budgetaire Service</span></dt>
-        <dd>
-          <span>{{ affaire.montantBudgetaireService }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.statut">Statut</span></dt>
-        <dd>
-          <span jhiTranslate="{{ 'gpmGatewayApp.StatutAffaire.' + affaire.statut }}">{{ affaire.statut }}</span>
-        </dd>
-        <dt>
-          <span
-            jhiTranslate="gpmGatewayApp.projectServiceAffaire.responsableProjetId"
-            [ngbTooltip]="'gpmGatewayApp.projectServiceAffaire.help.responsableProjetId' | translate"
-            >Responsable Projet Id</span
-          >
-        </dt>
-        <dd>
-          <span>{{ affaire.responsableProjetId }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.responsableProjetUserLogin">Responsable Projet User Login</span></dt>
-        <dd>
-          <span>{{ affaire.responsableProjetUserLogin }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.createdAt">Created At</span></dt>
-        <dd>
-          <span>{{ affaire.createdAt | formatMediumDatetime }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.updatedAt">Updated At</span></dt>
-        <dd>
-          <span>{{ affaire.updatedAt | formatMediumDatetime }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.createdBy">Created By</span></dt>
-        <dd>
-          <span>{{ affaire.createdBy }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.createdByUserLogin">Created By User Login</span></dt>
-        <dd>
-          <span>{{ affaire.createdByUserLogin }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.updatedBy">Updated By</span></dt>
-        <dd>
-          <span>{{ affaire.updatedBy }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.updatedByUserLogin">Updated By User Login</span></dt>
-        <dd>
-          <span>{{ affaire.updatedByUserLogin }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceAffaire.client">Client</span></dt>
-        <dd>
-          <div *ngIf="affaire.client">
-            <a [routerLink]="['/client', affaire.client.id, 'view']">{{ affaire.client.raisonSociale }}</a>
-          </div>
-        </dd>
-      </dl>
-
-      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
-        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
-      </button>
-
-      <button type="button" [routerLink]="['/affaire', affaire.id, 'edit']" class="btn btn-primary">
-        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
-      </button>
+      <button [routerLink]="['/affaire', affaire?.id, 'edit']" class="btn btn-primary rounded-3">Éditer</button>
     </div>
   </div>
+
+  <!-- ⚠️ ALERTS -->
+  <jhi-alert-error></jhi-alert-error>
+  <jhi-alert></jhi-alert>
+
+  <!-- 📂 ACCORDION -->
+  <ngb-accordion [closeOthers]="false" activeIds="info" class="shadow-sm rounded-4 overflow-hidden">
+    <!-- 🔹 INFORMATIONS -->
+    <ngb-panel id="info">
+      <ng-template ngbPanelTitle>
+        <div class="d-flex align-items-center text-primary">
+          <span class="fw-bold">Informations</span>
+        </div>
+      </ng-template>
+
+      <ng-template ngbPanelContent>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <small class="text-muted">N° Affaire</small>
+            <div class="fw-semibold">{{ affaire?.numAffaire }}</div>
+          </div>
+
+          <div class="col-md-6">
+            <small class="text-muted">Désignation</small>
+            <div>{{ affaire?.designationAffaire }}</div>
+          </div>
+
+          <div class="col-md-6">
+            <small class="text-muted">Bon de commande</small>
+            <div>{{ affaire?.bonDeCommande }}</div>
+          </div>
+
+          <div class="col-md-6">
+            <small class="text-muted">Montant</small>
+            <div>{{ affaire?.montant }} {{ affaire?.devise }}</div>
+          </div>
+
+          <div class="col-md-6">
+            <small class="text-muted">Date début</small>
+            <div>{{ affaire?.dateDebut | formatMediumDate }}</div>
+          </div>
+
+          <div class="col-md-6">
+            <small class="text-muted">Date clôture</small>
+            <div>{{ affaire?.dateCloture | formatMediumDate }}</div>
+          </div>
+
+          <div class="col-md-6">
+            <small class="text-muted">Client</small>
+            <div>{{ affaire?.client?.raisonSociale }}</div>
+          </div>
+
+          <div class="col-md-6">
+            <small class="text-muted">Responsable</small>
+            <div>{{ affaire?.responsableProjetUserLogin }}</div>
+          </div>
+
+          <div class="col-md-6">
+            <small class="text-muted">Statut</small>
+            <div>{{ affaire?.statut }}</div>
+          </div>
+
+          <div class="col-md-6">
+            <small class="text-muted">Multi-sites</small>
+            <div>{{ affaire?.lieuMultipleParMission ? 'Oui' : 'Non' }}</div>
+          </div>
+        </div>
+      </ng-template>
+    </ngb-panel>
+
+    <!-- 🔹 ARTICLES -->
+    <ngb-panel id="articles">
+      <ng-template ngbPanelTitle>
+        <div class="d-flex align-items-center text-primary">
+          <span class="fw-bold">Articles</span>
+        </div>
+      </ng-template>
+
+      <ng-template ngbPanelContent>
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead class="text-muted small">
+              <tr>
+                <th>Code</th>
+                <th>Désignation</th>
+                <th>Unité</th>
+                <th>Contractuelle</th>
+                <th>Réalisée</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let a of articles">
+                <td>{{ a.code }}</td>
+                <td>{{ a.designation }}</td>
+                <td>{{ a.unite }}</td>
+                <td>{{ a.contractuelle }}</td>
+                <td>{{ a.realisee }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-template>
+    </ngb-panel>
+
+    <!-- 🔹 MATRICE -->
+    <ngb-panel id="matrice">
+      <ng-template ngbPanelTitle>
+        <div class="d-flex align-items-center text-primary">
+          <span class="fw-bold">Matrice</span>
+        </div>
+      </ng-template>
+
+      <ng-template ngbPanelContent>
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead class="text-muted small">
+              <tr>
+                <th>Ville</th>
+                <th>Zone</th>
+                <th>Tarif Base</th>
+                <th>Tarif Nuit</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let m of matrice">
+                <td>{{ m.ville }}</td>
+                <td>{{ m.zone }}</td>
+                <td>{{ m.base }} DT</td>
+                <td>{{ m.nuit }} DT</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-template>
+    </ngb-panel>
+
+    <!-- 🔹 DOCUMENTS -->
+    <ngb-panel id="docs">
+      <ng-template ngbPanelTitle>
+        <div class="d-flex align-items-center text-primary">
+          <span class="fw-bold">Documents</span>
+        </div>
+      </ng-template>
+
+      <ng-template ngbPanelContent>
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead class="text-muted small">
+              <tr>
+                <th>Nom</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let d of documents">
+                <td>{{ d.name }}</td>
+                <td><fa-icon icon="download"></fa-icon></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-template>
+    </ngb-panel>
+
+    <!-- 🔹 BUDGET -->
+    <ngb-panel id="budget">
+      <ng-template ngbPanelTitle>
+        <div class="d-flex align-items-center text-primary">
+          <span class="fw-bold">Budget</span>
+        </div>
+      </ng-template>
+
+      <ng-template ngbPanelContent>
+        <div class="row text-center">
+          <div class="col-md-4">
+            <small class="text-muted">Vente</small>
+            <div class="text-primary fw-bold">{{ affaire?.montantVente }} DT</div>
+          </div>
+          <div class="col-md-4">
+            <small class="text-muted">Matériel</small>
+            <div class="text-warning fw-bold">{{ affaire?.montantBudgetaireMateriel }} DT</div>
+          </div>
+          <div class="col-md-4">
+            <small class="text-muted">Service</small>
+            <div class="text-success fw-bold">{{ affaire?.montantBudgetaireService }} DT</div>
+          </div>
+        </div>
+      </ng-template>
+    </ngb-panel>
+  </ngb-accordion>
 </div>
