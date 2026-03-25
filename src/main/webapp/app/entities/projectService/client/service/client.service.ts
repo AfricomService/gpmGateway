@@ -8,6 +8,9 @@ import { isPresent } from 'app/core/util/operators';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { IClient, NewClient } from '../client.model';
+import { ISite } from 'app/entities/projectService/site/site.model';
+import { IAffaire } from 'app/entities/projectService/affaire/affaire.model';
+import { IFacture } from 'app/entities/financeService/facture/facture.model';
 
 export type PartialUpdateClient = Partial<IClient> & Pick<IClient, 'id'>;
 
@@ -73,6 +76,26 @@ export class ClientService {
     return this.http.get<any[]>(`${this.applicationConfigService.getEndpointFor('api/contacts/client', 'projectservice')}/${clientId}`, {
       observe: 'response',
     });
+  }
+
+  getSitesByClientId(clientId: number): Observable<HttpResponse<ISite[]>> {
+    return this.http.get<ISite[]>(`${this.applicationConfigService.getEndpointFor('api/sites/client', 'projectservice')}/${clientId}`, {
+      observe: 'response',
+    });
+  }
+
+  getAffairesByClientId(clientId: number): Observable<HttpResponse<IAffaire[]>> {
+    return this.http.get<IAffaire[]>(
+      `${this.applicationConfigService.getEndpointFor('api/affaires/client', 'projectservice')}/${clientId}`,
+      { observe: 'response' }
+    );
+  }
+
+  getFacturesByClientId(clientId: number): Observable<HttpResponse<IFacture[]>> {
+    return this.http.get<IFacture[]>(
+      `${this.applicationConfigService.getEndpointFor('api/factures/client', 'financeservice')}/${clientId}`,
+      { observe: 'response' }
+    );
   }
 
   getClientIdentifier(client: Pick<IClient, 'id'>): number {
