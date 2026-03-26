@@ -104,11 +104,11 @@
             </thead>
             <tbody>
               <tr *ngFor="let a of articles">
-                <td>{{ a.code }}</td>
-                <td>{{ a.designation }}</td>
-                <td>{{ a.unite }}</td>
-                <td>{{ a.contractuelle }}</td>
-                <td>{{ a.realisee }}</td>
+                <td>{{ a.article?.code }}</td>
+                <td>{{ a.article?.designation || '' }}</td>
+                <td>{{ a.article?.uniteMesure || '' }}</td>
+                <td>{{ a.quantiteContractuelle }}</td>
+                <td>{{ a.quantiteRealisee }}</td>
               </tr>
             </tbody>
           </table>

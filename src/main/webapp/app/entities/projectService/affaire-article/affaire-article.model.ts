@@ -6,7 +6,7 @@ export interface IAffaireArticle {
   quantiteContractuelle?: number | null;
   quantiteRealisee?: number | null;
   affaire?: Pick<IAffaire, 'id' | 'designationAffaire'> | null;
-  article?: Pick<IArticle, 'id' | 'code'> | null;
+  article?: Pick<IArticle, 'id' | 'code' | 'designation' | 'uniteMesure'> | null;
 }
 
 export type NewAffaireArticle = Omit<IAffaireArticle, 'id'> & { id: null };

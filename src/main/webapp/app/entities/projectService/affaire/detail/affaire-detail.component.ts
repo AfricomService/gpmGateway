@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { IAffaire } from '../affaire.model';
+import { IAffaireArticle } from 'app/entities/projectService/affaire-article/affaire-article.model';
+import { AffaireArticleService } from 'app/entities/projectService/affaire-article/service/affaire-article.service';
 
 @Component({
   selector: 'jhi-affaire-detail',
@@ -10,21 +12,19 @@ import { IAffaire } from '../affaire.model';
 })
 export class AffaireDetailComponent implements OnInit {
   affaire: IAffaire | null = null;
-  articles: any[] = [];
+  articles: IAffaireArticle[] = [];
   matrice: any[] = [];
   documents: any[] = [];
 
-  constructor(protected activatedRoute: ActivatedRoute) {}
+  constructor(protected activatedRoute: ActivatedRoute, protected affaireArticleService: AffaireArticleService) {}
 
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ affaire }) => {
       this.affaire = affaire;
+      if (affaire && affaire.id) {
+        this.loadArticles(affaire.id);
+      }
     });
-
-    this.articles = [
-      { code: 'ART-001', designation: 'Câble fibre optique', unite: 'm', contractuelle: 50000, realisee: 42000 },
-      { code: 'ART-002', designation: 'Connecteur SC/APC', unite: 'pièce', contractuelle: 2000, realisee: 1750 },
-    ];
 
     this.matrice = [
       { ville: 'Tunis', zone: 'Nord', base: 50, nuit: 0 },
@@ -32,6 +32,12 @@ export class AffaireDetailComponent implements OnInit {
     ];
 
     this.documents = [{ name: 'etude_faisabilite.pdf' }, { name: 'cahier_charges.pdf' }, { name: 'bon_commande.pdf' }];
+  }
+
+  loadArticles(affaireId: number): void {
+    this.affaireArticleService.findByAffaireId(affaireId).subscribe(res => {
+      this.articles = res.body || [];
+    });
   }
 
   previousState(): void {
