@@ -84,7 +84,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let c of contacts">
+              <tr *ngFor="let c of contacts" style="cursor: pointer" (click)="openInNewWindow('contact', c.id!)">
                 <td>{{ c.raisonSociale }}</td>
                 <td>{{ c.telephone }}</td>
                 <td>{{ c.email }}</td>
@@ -118,7 +118,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let s of sites">
+              <tr *ngFor="let s of sites" style="cursor: pointer" (click)="openInNewWindow('site', s.id!)">
                 <td>{{ s.code }}</td>
                 <td>{{ s.designation }}</td>
                 <td>{{ s.ville?.nom }}</td>
@@ -151,7 +151,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let a of affaires">
+            <tr *ngFor="let a of affaires" style="cursor: pointer" (click)="openInNewWindow('affaire', a.id!)">
               <td>{{ a.id }}</td>
               <td>{{ a.designationAffaire }}</td>
               <td>
@@ -186,7 +186,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let f of factures">
+            <tr *ngFor="let f of factures" style="cursor: pointer" (click)="openInNewWindow('facture', f.id!)">
               <td>{{ f.numFacture }}</td>
               <td>{{ f.montantFacture }} DT</td>
               <td>{{ f.dateFacture | formatMediumDate }}</td>

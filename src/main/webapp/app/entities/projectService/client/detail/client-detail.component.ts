@@ -14,6 +14,10 @@ import { IFacture } from 'app/entities/financeService/facture/facture.model';
 })
 export class ClientDetailComponent implements OnInit {
   client: IClient | null = null;
+  contacts: any[] = [];
+  sites: ISite[] = [];
+  affaires: IAffaire[] = [];
+  factures: IFacture[] = [];
 
   constructor(protected activatedRoute: ActivatedRoute, protected clientService: ClientService) {}
 
@@ -21,15 +25,14 @@ export class ClientDetailComponent implements OnInit {
     window.history.back();
   }
 
-  contacts: any[] = [];
-  sites: ISite[] = [];
-  affaires: IAffaire[] = [];
-  factures: IFacture[] = [];
+  openInNewWindow(entity: string, id: number): void {
+    window.open(`/${entity}/${id}/view`, '_blank');
+  }
 
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ client }) => {
       this.client = client;
-      if (client && client.id) {
+      if (client?.id) {
         this.clientService.getContactsByClientId(client.id).subscribe(res => {
           this.contacts = res.body ?? [];
         });
