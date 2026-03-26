@@ -29,6 +29,22 @@ body {
   background-color: #f8fafc;
 }
 
+.table-responsive {
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.table th {
+  border-top: none;
+  font-weight: 600;
+  background-color: #f8f9fa;
+}
+
+.hover-row:hover {
+  background-color: #f1f3f5;
+  transition: background-color 0.2s ease-in-out;
+}
+
 .badge {
   padding: 6px 10px;
   border-radius: 10px;

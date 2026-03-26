@@ -6,6 +6,7 @@ import { IAffaireArticle } from 'app/entities/projectService/affaire-article/aff
 import { AffaireArticleService } from 'app/entities/projectService/affaire-article/service/affaire-article.service';
 import { IMatriceFacturation } from 'app/entities/projectService/matrice-facturation/matrice-facturation.model';
 import { MatriceFacturationService } from 'app/entities/projectService/matrice-facturation/service/matrice-facturation.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'jhi-affaire-detail',
@@ -21,7 +22,8 @@ export class AffaireDetailComponent implements OnInit {
   constructor(
     protected activatedRoute: ActivatedRoute,
     protected affaireArticleService: AffaireArticleService,
-    protected matriceFacturationService: MatriceFacturationService
+    protected matriceFacturationService: MatriceFacturationService,
+    protected router: Router
   ) {}
 
   ngOnInit(): void {
@@ -46,6 +48,20 @@ export class AffaireDetailComponent implements OnInit {
     this.matriceFacturationService.findMatriceByAffaireId(affaireId).subscribe(res => {
       this.matrice = res.body || [];
     });
+  }
+
+  navigateToArticle(articleId: number | undefined | null): void {
+    if (articleId) {
+      const url = this.router.serializeUrl(this.router.createUrlTree(['/article', articleId, 'view']));
+      window.open(url, '_blank');
+    }
+  }
+
+  navigateToMatrice(matriceId: number | undefined | null): void {
+    if (matriceId) {
+      const url = this.router.serializeUrl(this.router.createUrlTree(['/matrice-facturation', matriceId, 'view']));
+      window.open(url, '_blank');
+    }
   }
 
   previousState(): void {

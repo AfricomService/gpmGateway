@@ -103,7 +103,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let a of articles">
+              <tr *ngFor="let a of articles" (click)="navigateToArticle(a.article?.id)" style="cursor: pointer" class="hover-row">
                 <td>{{ a.article?.code }}</td>
                 <td>{{ a.article?.designation || '' }}</td>
                 <td>{{ a.article?.uniteMesure || '' }}</td>
@@ -136,7 +136,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let m of matrice">
+              <tr *ngFor="let m of matrice" (click)="navigateToMatrice(m.id)" style="cursor: pointer" class="hover-row">
                 <td>{{ m.ville?.nom }}</td>
                 <td>{{ m.zone?.nom }}</td>
                 <td>{{ m.tarifBase }} DT</td>
