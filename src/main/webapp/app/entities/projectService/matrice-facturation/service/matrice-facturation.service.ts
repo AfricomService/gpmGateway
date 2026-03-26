@@ -42,6 +42,10 @@ export class MatriceFacturationService {
     return this.http.get<IMatriceFacturation>(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }
 
+  findMatriceByAffaireId(affaireId: number): Observable<EntityArrayResponseType> {
+    return this.http.get<IMatriceFacturation[]>(`${this.resourceUrl}/affaire/${affaireId}`, { observe: 'response' });
+  }
+
   query(req?: any): Observable<EntityArrayResponseType> {
     const options = createRequestOption(req);
     return this.http.get<IMatriceFacturation[]>(this.resourceUrl, { params: options, observe: 'response' });

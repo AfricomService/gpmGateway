@@ -137,10 +137,10 @@
             </thead>
             <tbody>
               <tr *ngFor="let m of matrice">
-                <td>{{ m.ville }}</td>
-                <td>{{ m.zone }}</td>
-                <td>{{ m.base }} DT</td>
-                <td>{{ m.nuit }} DT</td>
+                <td>{{ m.ville?.nom }}</td>
+                <td>{{ m.zone?.nom }}</td>
+                <td>{{ m.tarifBase }} DT</td>
+                <td>{{ m.tarifMissionNuit }} DT</td>
               </tr>
             </tbody>
           </table>
