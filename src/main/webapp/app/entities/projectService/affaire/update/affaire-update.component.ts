@@ -13,6 +13,11 @@ import { StatutAffaire } from 'app/entities/enumerations/statut-affaire.model';
 import { IUser } from 'app/entities/user/user.model';
 import { UserService } from 'app/entities/user/user.service';
 
+import { IArticle } from 'app/entities/projectService/article/article.model';
+import { ArticleService } from 'app/entities/projectService/article/service/article.service';
+import { IMatriceFacturation } from 'app/entities/projectService/matrice-facturation/matrice-facturation.model';
+import { MatriceFacturationService } from 'app/entities/projectService/matrice-facturation/service/matrice-facturation.service';
+
 @Component({
   selector: 'jhi-affaire-update',
   templateUrl: './affaire-update.component.html',
@@ -26,6 +31,12 @@ export class AffaireUpdateComponent implements OnInit {
   usersSharedCollection: IUser[] = [];
   selectedResponsable: IUser | null = null;
 
+  allArticles: IArticle[] = [];
+  selectedArticles: IArticle[] = [];
+
+  allMatrices: IMatriceFacturation[] = [];
+  selectedMatrices: IMatriceFacturation[] = [];
+
   editForm: AffaireFormGroup = this.affaireFormService.createAffaireFormGroup();
 
   constructor(
@@ -33,6 +44,8 @@ export class AffaireUpdateComponent implements OnInit {
     protected affaireFormService: AffaireFormService,
     protected clientService: ClientService,
     protected userService: UserService,
+    protected articleService: ArticleService,
+    protected matriceFacturationService: MatriceFacturationService,
     protected activatedRoute: ActivatedRoute
   ) {}
 
@@ -120,5 +133,45 @@ export class AffaireUpdateComponent implements OnInit {
           this.usersSharedCollection = [this.selectedResponsable, ...this.usersSharedCollection];
         }
       });
+
+    this.articleService
+      .query()
+      .pipe(map((res: HttpResponse<IArticle[]>) => res.body ?? []))
+      .subscribe((articles: IArticle[]) => {
+        this.allArticles = articles;
+      });
+
+    this.matriceFacturationService
+      .query()
+      .pipe(map((res: HttpResponse<IMatriceFacturation[]>) => res.body ?? []))
+      .subscribe((matrices: IMatriceFacturation[]) => {
+        this.allMatrices = matrices;
+      });
+  }
+
+  toggleArticleSelection(article: IArticle): void {
+    const index = this.selectedArticles.findIndex(a => a.id === article.id);
+    if (index > -1) {
+      this.selectedArticles.splice(index, 1);
+    } else {
+      this.selectedArticles.push(article);
+    }
+  }
+
+  isArticleSelected(article: IArticle): boolean {
+    return this.selectedArticles.findIndex(a => a.id === article.id) > -1;
+  }
+
+  toggleMatriceSelection(matrice: IMatriceFacturation): void {
+    const index = this.selectedMatrices.findIndex(m => m.id === matrice.id);
+    if (index > -1) {
+      this.selectedMatrices.splice(index, 1);
+    } else {
+      this.selectedMatrices.push(matrice);
+    }
+  }
+
+  isMatriceSelected(matrice: IMatriceFacturation): boolean {
+    return this.selectedMatrices.findIndex(m => m.id === matrice.id) > -1;
   }
 }
