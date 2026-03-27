@@ -387,38 +387,82 @@
         </div>
 
         <!-- Section: Articles -->
+        <!-- Section: Articles -->
         <div class="col-lg-6 mb-4">
           <div class="card shadow-sm h-100">
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
               <h5 class="mb-0">Articles</h5>
-              <input
-                type="text"
-                class="form-control form-control-sm w-50"
-                placeholder="Rechercher un article..."
-                [(ngModel)]="articleSearchTerm"
-                [ngModelOptions]="{ standalone: true }"
-              />
+
+              <button type="button" class="btn btn-sm btn-primary fw-bold" (click)="openArticleModal()">Gérer</button>
             </div>
-            <div class="card-body" style="max-height: 300px; overflow-y: auto">
-              <div class="list-group">
-                <div class="list-group-item d-flex align-items-center" *ngFor="let article of filteredArticles">
-                  <input
-                    type="checkbox"
-                    class="form-check-input me-3"
-                    style="width: 1.5rem; height: 1.5rem; cursor: pointer; margin-top: 0"
-                    [id]="'article_' + article.id"
-                    [checked]="isArticleSelected(article)"
-                    (change)="toggleArticleSelection(article)"
-                  />
-                  <label class="form-check-label font-weight-bold mb-0" [for]="'article_' + article.id" style="cursor: pointer">
-                    {{ article.code }} - {{ article.designation }}
-                  </label>
+
+            <div class="card-body">
+              <!-- Selected Articles (Chips) -->
+              <div *ngIf="selectedArticles.length > 0; else noArticles" style="display: flex; flex-direction: column; gap: 1.5em">
+                <div
+                  class="badge bg-light d-flex align-items-center px-3 py-2 shadow-sm"
+                  style="
+                    color: black;
+                    border-radius: 20px;
+                    font-size: 1rem;
+                    display: flex;
+                    justify-content: space-between;
+                    font-weight: 700;
+                  "
+                  *ngFor="let article of selectedArticles"
+                >
+                  {{ article.code }} - {{ article.designation }}
+
+                  <span class="ms-2 text-danger fw-bold" style="cursor: pointer; font-size: 1rem" (click)="removeArticle(article)">
+                    ✕
+                  </span>
                 </div>
               </div>
-              <div *ngIf="filteredArticles.length === 0" class="text-muted mt-2">Aucun article trouvé.</div>
+
+              <ng-template #noArticles>
+                <div class="text-muted text-center py-3">Aucun article sélectionné</div>
+              </ng-template>
             </div>
           </div>
         </div>
+
+        <!-- Modal -->
+        <ng-template #articleModal let-modal>
+          <div class="modal-header">
+            <h5 class="modal-title">Sélection des Articles</h5>
+            <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+          </div>
+
+          <div class="modal-body">
+            <input
+              type="text"
+              class="form-control mb-3"
+              placeholder="Rechercher un article..."
+              [(ngModel)]="articleSearchTerm"
+              [ngModelOptions]="{ standalone: true }"
+            />
+
+            <div style="max-height: 350px; overflow-y: auto">
+              <div *ngFor="let article of filteredArticles" class="form-check mb-2">
+                <input
+                  type="checkbox"
+                  class="form-check-input"
+                  [id]="'modal_article_' + article.id"
+                  [checked]="isArticleSelected(article)"
+                  (change)="toggleArticleSelection(article)"
+                />
+                <label class="form-check-label" [for]="'modal_article_' + article.id">
+                  {{ article.code }} - {{ article.designation }}
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
+            <button class="btn btn-primary" (click)="modal.close()">Confirmer</button>
+          </div>
+        </ng-template>
 
         <!-- Section: Matrices -->
         <div class="col-lg-6 mb-4">

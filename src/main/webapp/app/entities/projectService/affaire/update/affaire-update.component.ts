@@ -20,11 +20,15 @@ import { MatriceFacturationService } from 'app/entities/projectService/matrice-f
 import { AffaireArticleService } from 'app/entities/projectService/affaire-article/service/affaire-article.service';
 import { IAffaireArticle } from 'app/entities/projectService/affaire-article/affaire-article.model';
 
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ViewChild, TemplateRef } from '@angular/core';
+
 @Component({
   selector: 'jhi-affaire-update',
   templateUrl: './affaire-update.component.html',
 })
 export class AffaireUpdateComponent implements OnInit {
+  @ViewChild('articleModal') articleModal!: TemplateRef<any>;
   isSaving = false;
   affaire: IAffaire | null = null;
   statutAffaireValues = Object.keys(StatutAffaire);
@@ -52,8 +56,21 @@ export class AffaireUpdateComponent implements OnInit {
     protected articleService: ArticleService,
     protected affaireArticleService: AffaireArticleService,
     protected matriceFacturationService: MatriceFacturationService,
-    protected activatedRoute: ActivatedRoute
+    protected activatedRoute: ActivatedRoute,
+    protected modalService: NgbModal
   ) {}
+
+  openArticleModal(): void {
+    this.modalService.open(this.articleModal, {
+      size: 'lg',
+      backdrop: 'static',
+      centered: true,
+    });
+  }
+
+  removeArticle(article: IArticle): void {
+    this.selectedArticles = this.selectedArticles.filter(a => a.id !== article.id);
+  }
 
   compareClient = (o1: IClient | null, o2: IClient | null): boolean => this.clientService.compareClient(o1, o2);
 
