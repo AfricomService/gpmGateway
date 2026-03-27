@@ -17,6 +17,8 @@ import { IArticle } from 'app/entities/projectService/article/article.model';
 import { ArticleService } from 'app/entities/projectService/article/service/article.service';
 import { IMatriceFacturation } from 'app/entities/projectService/matrice-facturation/matrice-facturation.model';
 import { MatriceFacturationService } from 'app/entities/projectService/matrice-facturation/service/matrice-facturation.service';
+import { AffaireArticleService } from 'app/entities/projectService/affaire-article/service/affaire-article.service';
+import { IAffaireArticle } from 'app/entities/projectService/affaire-article/affaire-article.model';
 
 @Component({
   selector: 'jhi-affaire-update',
@@ -48,6 +50,7 @@ export class AffaireUpdateComponent implements OnInit {
     protected clientService: ClientService,
     protected userService: UserService,
     protected articleService: ArticleService,
+    protected affaireArticleService: AffaireArticleService,
     protected matriceFacturationService: MatriceFacturationService,
     protected activatedRoute: ActivatedRoute
   ) {}
@@ -63,6 +66,55 @@ export class AffaireUpdateComponent implements OnInit {
 
       this.loadRelationshipsOptions();
     });
+  }
+
+  toggleArticleSelection(article: IArticle): void {
+    const index = this.selectedArticles.findIndex(a => a.id === article.id);
+    if (index > -1) {
+      this.selectedArticles.splice(index, 1);
+    } else {
+      this.selectedArticles.push(article);
+    }
+  }
+
+  isArticleSelected(article: IArticle): boolean {
+    return this.selectedArticles.findIndex(a => a.id === article.id) > -1;
+  }
+
+  toggleMatriceSelection(matrice: IMatriceFacturation): void {
+    const index = this.selectedMatrices.findIndex(m => m.id === matrice.id);
+    if (index > -1) {
+      this.selectedMatrices.splice(index, 1);
+    } else {
+      this.selectedMatrices.push(matrice);
+    }
+  }
+
+  isMatriceSelected(matrice: IMatriceFacturation): boolean {
+    return this.selectedMatrices.findIndex(m => m.id === matrice.id) > -1;
+  }
+
+  get filteredArticles(): IArticle[] {
+    if (!this.articleSearchTerm) {
+      return this.allArticles;
+    }
+    const term = this.articleSearchTerm.toLowerCase();
+    return this.allArticles.filter(
+      article => (article.code?.toLowerCase() ?? '').includes(term) || (article.designation?.toLowerCase() ?? '').includes(term)
+    );
+  }
+
+  get filteredMatrices(): IMatriceFacturation[] {
+    if (!this.matriceSearchTerm) {
+      return this.allMatrices;
+    }
+    const term = this.matriceSearchTerm.toLowerCase();
+    return this.allMatrices.filter(
+      matrice =>
+        (matrice.affaire?.designationAffaire?.toLowerCase() ?? '').includes(term) ||
+        (matrice.ville?.nom?.toLowerCase() ?? '').includes(term) ||
+        (matrice.zone?.nom?.toLowerCase() ?? '').includes(term)
+    );
   }
 
   previousState(): void {
@@ -118,6 +170,19 @@ export class AffaireUpdateComponent implements OnInit {
     }
 
     this.clientsSharedCollection = this.clientService.addClientToCollectionIfMissing<IClient>(this.clientsSharedCollection, affaire.client);
+
+    if (affaire.id) {
+      this.affaireArticleService.findByAffaireId(affaire.id).subscribe((res: HttpResponse<IAffaireArticle[]>) => {
+        const affaireArticles = res.body ?? [];
+        this.selectedArticles = affaireArticles.filter(aa => aa.article).map(aa => aa.article as IArticle);
+      });
+
+      this.matriceFacturationService.findMatriceByAffaireId(affaire.id).subscribe((res: HttpResponse<IMatriceFacturation[]>) => {
+        const matrices = res.body ?? [];
+        // We might need to map them back, or directly assign if they are the objects.
+        this.selectedMatrices = matrices;
+      });
+    }
   }
 
   protected loadRelationshipsOptions(): void {
@@ -150,54 +215,5 @@ export class AffaireUpdateComponent implements OnInit {
       .subscribe((matrices: IMatriceFacturation[]) => {
         this.allMatrices = matrices;
       });
-  }
-
-  toggleArticleSelection(article: IArticle): void {
-    const index = this.selectedArticles.findIndex(a => a.id === article.id);
-    if (index > -1) {
-      this.selectedArticles.splice(index, 1);
-    } else {
-      this.selectedArticles.push(article);
-    }
-  }
-
-  isArticleSelected(article: IArticle): boolean {
-    return this.selectedArticles.findIndex(a => a.id === article.id) > -1;
-  }
-
-  toggleMatriceSelection(matrice: IMatriceFacturation): void {
-    const index = this.selectedMatrices.findIndex(m => m.id === matrice.id);
-    if (index > -1) {
-      this.selectedMatrices.splice(index, 1);
-    } else {
-      this.selectedMatrices.push(matrice);
-    }
-  }
-
-  isMatriceSelected(matrice: IMatriceFacturation): boolean {
-    return this.selectedMatrices.findIndex(m => m.id === matrice.id) > -1;
-  }
-
-  get filteredArticles(): IArticle[] {
-    if (!this.articleSearchTerm) {
-      return this.allArticles;
-    }
-    const term = this.articleSearchTerm.toLowerCase();
-    return this.allArticles.filter(
-      article => (article.code?.toLowerCase() ?? '').includes(term) || (article.designation?.toLowerCase() ?? '').includes(term)
-    );
-  }
-
-  get filteredMatrices(): IMatriceFacturation[] {
-    if (!this.matriceSearchTerm) {
-      return this.allMatrices;
-    }
-    const term = this.matriceSearchTerm.toLowerCase();
-    return this.allMatrices.filter(
-      matrice =>
-        (matrice.affaire?.designationAffaire?.toLowerCase() ?? '').includes(term) ||
-        (matrice.ville?.nom?.toLowerCase() ?? '').includes(term) ||
-        (matrice.zone?.nom?.toLowerCase() ?? '').includes(term)
-    );
   }
 }
