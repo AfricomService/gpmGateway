@@ -189,7 +189,9 @@ export class AffaireComponent implements OnInit {
   }
 
   protected getSortQueryParam(predicate = this.predicate, ascending = this.ascending): string[] {
-    if (predicate === '') return [];
+    if (predicate === '') {
+      return [];
+    }
     return [`${predicate},${ascending ? ASC : DESC}`];
   }
 }
