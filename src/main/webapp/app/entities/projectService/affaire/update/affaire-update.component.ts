@@ -39,6 +39,7 @@ export class AffaireUpdateComponent implements OnInit {
 
   allArticles: IArticle[] = [];
   selectedArticles: IArticle[] = [];
+  tempSelectedArticles: IArticle[] = [];
 
   allMatrices: IMatriceFacturation[] = [];
   selectedMatrices: IMatriceFacturation[] = [];
@@ -61,6 +62,7 @@ export class AffaireUpdateComponent implements OnInit {
   ) {}
 
   openArticleModal(): void {
+    this.tempSelectedArticles = [...this.selectedArticles];
     this.modalService.open(this.articleModal, {
       size: 'lg',
       backdrop: 'static',
@@ -85,17 +87,22 @@ export class AffaireUpdateComponent implements OnInit {
     });
   }
 
-  toggleArticleSelection(article: IArticle): void {
-    const index = this.selectedArticles.findIndex(a => a.id === article.id);
+  toggleTempArticleSelection(article: IArticle): void {
+    const index = this.tempSelectedArticles.findIndex(a => a.id === article.id);
     if (index > -1) {
-      this.selectedArticles.splice(index, 1);
+      this.tempSelectedArticles.splice(index, 1);
     } else {
-      this.selectedArticles.push(article);
+      this.tempSelectedArticles.push(article);
     }
   }
 
-  isArticleSelected(article: IArticle): boolean {
-    return this.selectedArticles.findIndex(a => a.id === article.id) > -1;
+  isTempArticleSelected(article: IArticle): boolean {
+    return this.tempSelectedArticles.findIndex(a => a.id === article.id) > -1;
+  }
+
+  confirmArticleSelection(modal: any): void {
+    this.selectedArticles = [...this.tempSelectedArticles];
+    modal.close();
   }
 
   toggleMatriceSelection(matrice: IMatriceFacturation): void {

@@ -443,13 +443,14 @@
             />
 
             <div style="max-height: 350px; overflow-y: auto">
-              <div *ngFor="let article of filteredArticles" class="form-check mb-2">
+              <div *ngFor="let article of filteredArticles" class="form-check mb-3">
                 <input
                   type="checkbox"
-                  class="form-check-input"
+                  class="form-check-input me-3"
+                  style="width: 1.5rem; height: 1.5rem; cursor: pointer; margin-top: 0"
                   [id]="'modal_article_' + article.id"
-                  [checked]="isArticleSelected(article)"
-                  (change)="toggleArticleSelection(article)"
+                  [checked]="isTempArticleSelected(article)"
+                  (change)="toggleTempArticleSelection(article)"
                 />
                 <label class="form-check-label" [for]="'modal_article_' + article.id">
                   {{ article.code }} - {{ article.designation }}
@@ -460,7 +461,7 @@
 
           <div class="modal-footer">
             <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
-            <button class="btn btn-primary" (click)="modal.close()">Confirmer</button>
+            <button class="btn btn-primary" (click)="confirmArticleSelection(modal)">Confirmer</button>
           </div>
         </ng-template>
 
