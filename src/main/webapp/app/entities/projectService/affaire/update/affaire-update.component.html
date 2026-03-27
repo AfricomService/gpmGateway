@@ -389,12 +389,19 @@
         <!-- Section: Articles -->
         <div class="col-lg-6 mb-4">
           <div class="card shadow-sm h-100">
-            <div class="card-header bg-light">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
               <h5 class="mb-0">Articles</h5>
+              <input
+                type="text"
+                class="form-control form-control-sm w-50"
+                placeholder="Rechercher un article..."
+                [(ngModel)]="articleSearchTerm"
+                [ngModelOptions]="{ standalone: true }"
+              />
             </div>
             <div class="card-body" style="max-height: 300px; overflow-y: auto">
               <div class="list-group">
-                <div class="list-group-item d-flex align-items-center" *ngFor="let article of allArticles">
+                <div class="list-group-item d-flex align-items-center" *ngFor="let article of filteredArticles">
                   <input
                     type="checkbox"
                     class="form-check-input me-3"
@@ -408,7 +415,7 @@
                   </label>
                 </div>
               </div>
-              <div *ngIf="allArticles.length === 0" class="text-muted mt-2">Aucun article trouvé.</div>
+              <div *ngIf="filteredArticles.length === 0" class="text-muted mt-2">Aucun article trouvé.</div>
             </div>
           </div>
         </div>
@@ -416,12 +423,19 @@
         <!-- Section: Matrices -->
         <div class="col-lg-6 mb-4">
           <div class="card shadow-sm h-100">
-            <div class="card-header bg-light">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
               <h5 class="mb-0">Matrices de Facturation</h5>
+              <input
+                type="text"
+                class="form-control form-control-sm w-50"
+                placeholder="Rechercher une matrice..."
+                [(ngModel)]="matriceSearchTerm"
+                [ngModelOptions]="{ standalone: true }"
+              />
             </div>
             <div class="card-body" style="max-height: 300px; overflow-y: auto">
               <div class="list-group">
-                <div class="list-group-item d-flex align-items-center" *ngFor="let matrice of allMatrices">
+                <div class="list-group-item d-flex align-items-center" *ngFor="let matrice of filteredMatrices">
                   <input
                     type="checkbox"
                     class="form-check-input me-3"
@@ -436,7 +450,7 @@
                   </label>
                 </div>
               </div>
-              <div *ngIf="allMatrices.length === 0" class="text-muted mt-2">Aucune matrice trouvée.</div>
+              <div *ngIf="filteredMatrices.length === 0" class="text-muted mt-2">Aucune matrice trouvée.</div>
             </div>
           </div>
         </div>

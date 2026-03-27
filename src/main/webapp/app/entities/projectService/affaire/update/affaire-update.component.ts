@@ -37,6 +37,9 @@ export class AffaireUpdateComponent implements OnInit {
   allMatrices: IMatriceFacturation[] = [];
   selectedMatrices: IMatriceFacturation[] = [];
 
+  articleSearchTerm = '';
+  matriceSearchTerm = '';
+
   editForm: AffaireFormGroup = this.affaireFormService.createAffaireFormGroup();
 
   constructor(
@@ -173,5 +176,28 @@ export class AffaireUpdateComponent implements OnInit {
 
   isMatriceSelected(matrice: IMatriceFacturation): boolean {
     return this.selectedMatrices.findIndex(m => m.id === matrice.id) > -1;
+  }
+
+  get filteredArticles(): IArticle[] {
+    if (!this.articleSearchTerm) {
+      return this.allArticles;
+    }
+    const term = this.articleSearchTerm.toLowerCase();
+    return this.allArticles.filter(
+      article => (article.code?.toLowerCase() ?? '').includes(term) || (article.designation?.toLowerCase() ?? '').includes(term)
+    );
+  }
+
+  get filteredMatrices(): IMatriceFacturation[] {
+    if (!this.matriceSearchTerm) {
+      return this.allMatrices;
+    }
+    const term = this.matriceSearchTerm.toLowerCase();
+    return this.allMatrices.filter(
+      matrice =>
+        (matrice.affaire?.designationAffaire?.toLowerCase() ?? '').includes(term) ||
+        (matrice.ville?.nom?.toLowerCase() ?? '').includes(term) ||
+        (matrice.zone?.nom?.toLowerCase() ?? '').includes(term)
+    );
   }
 }
