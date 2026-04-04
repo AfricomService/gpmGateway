@@ -15,10 +15,14 @@ import { UserService } from 'app/entities/user/user.service';
 
 import { IArticle } from 'app/entities/projectService/article/article.model';
 import { ArticleService } from 'app/entities/projectService/article/service/article.service';
-import { IMatriceFacturation } from 'app/entities/projectService/matrice-facturation/matrice-facturation.model';
+import { IMatriceFacturation, NewMatriceFacturation } from 'app/entities/projectService/matrice-facturation/matrice-facturation.model';
 import { MatriceFacturationService } from 'app/entities/projectService/matrice-facturation/service/matrice-facturation.service';
 import { AffaireArticleService } from 'app/entities/projectService/affaire-article/service/affaire-article.service';
 import { IAffaireArticle } from 'app/entities/projectService/affaire-article/affaire-article.model';
+import { IVille } from 'app/entities/projectService/ville/ville.model';
+import { VilleService } from 'app/entities/projectService/ville/service/ville.service';
+import { IZone } from 'app/entities/projectService/zone/zone.model';
+import { ZoneService } from 'app/entities/projectService/zone/service/zone.service';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ViewChild, TemplateRef } from '@angular/core';
@@ -29,6 +33,8 @@ import { ViewChild, TemplateRef } from '@angular/core';
 })
 export class AffaireUpdateComponent implements OnInit {
   @ViewChild('articleModal') articleModal!: TemplateRef<any>;
+  @ViewChild('matriceModal') matriceModal!: TemplateRef<any>;
+
   isSaving = false;
   affaire: IAffaire | null = null;
   statutAffaireValues = Object.keys(StatutAffaire);
@@ -41,11 +47,12 @@ export class AffaireUpdateComponent implements OnInit {
   selectedArticles: IArticle[] = [];
   tempSelectedArticles: IArticle[] = [];
 
-  allMatrices: IMatriceFacturation[] = [];
   selectedMatrices: IMatriceFacturation[] = [];
+  allVilles: IVille[] = [];
+  allZones: IZone[] = [];
+  newMatrice: Partial<NewMatriceFacturation> = {};
 
   articleSearchTerm = '';
-  matriceSearchTerm = '';
 
   editForm: AffaireFormGroup = this.affaireFormService.createAffaireFormGroup();
 
@@ -57,34 +64,20 @@ export class AffaireUpdateComponent implements OnInit {
     protected articleService: ArticleService,
     protected affaireArticleService: AffaireArticleService,
     protected matriceFacturationService: MatriceFacturationService,
+    protected villeService: VilleService,
+    protected zoneService: ZoneService,
     protected activatedRoute: ActivatedRoute,
     protected modalService: NgbModal
   ) {}
 
+  // ── Article modal ──────────────────────────────────────────────
   openArticleModal(): void {
     this.tempSelectedArticles = [...this.selectedArticles];
-    this.modalService.open(this.articleModal, {
-      size: 'lg',
-      backdrop: 'static',
-      centered: true,
-    });
+    this.modalService.open(this.articleModal, { size: 'lg', backdrop: 'static', centered: true });
   }
 
   removeArticle(article: IArticle): void {
     this.selectedArticles = this.selectedArticles.filter(a => a.id !== article.id);
-  }
-
-  compareClient = (o1: IClient | null, o2: IClient | null): boolean => this.clientService.compareClient(o1, o2);
-
-  ngOnInit(): void {
-    this.activatedRoute.data.subscribe(({ affaire }) => {
-      this.affaire = affaire;
-      if (affaire) {
-        this.updateForm(affaire);
-      }
-
-      this.loadRelationshipsOptions();
-    });
   }
 
   toggleTempArticleSelection(article: IArticle): void {
@@ -105,44 +98,64 @@ export class AffaireUpdateComponent implements OnInit {
     modal.close();
   }
 
-  toggleMatriceSelection(matrice: IMatriceFacturation): void {
-    const index = this.selectedMatrices.findIndex(m => m.id === matrice.id);
-    if (index > -1) {
-      this.selectedMatrices.splice(index, 1);
-    } else {
-      this.selectedMatrices.push(matrice);
-    }
-  }
-
-  isMatriceSelected(matrice: IMatriceFacturation): boolean {
-    return this.selectedMatrices.findIndex(m => m.id === matrice.id) > -1;
-  }
-
   get filteredArticles(): IArticle[] {
-    if (!this.articleSearchTerm) {
-      return this.allArticles;
-    }
+    if (!this.articleSearchTerm) return this.allArticles;
     const term = this.articleSearchTerm.toLowerCase();
     return this.allArticles.filter(
-      article => (article.code?.toLowerCase() ?? '').includes(term) || (article.designation?.toLowerCase() ?? '').includes(term)
+      a => (a.code?.toLowerCase() ?? '').includes(term) || (a.designation?.toLowerCase() ?? '').includes(term)
     );
   }
 
-  get filteredMatrices(): IMatriceFacturation[] {
-    if (!this.matriceSearchTerm) {
-      return this.allMatrices;
-    }
-    const term = this.matriceSearchTerm.toLowerCase();
-    return this.allMatrices.filter(
-      matrice =>
-        (matrice.affaire?.designationAffaire?.toLowerCase() ?? '').includes(term) ||
-        (matrice.ville?.nom?.toLowerCase() ?? '').includes(term) ||
-        (matrice.zone?.nom?.toLowerCase() ?? '').includes(term)
-    );
+  // ── Matrice modal ──────────────────────────────────────────────
+  openMatriceModal(): void {
+    this.newMatrice = {};
+    this.modalService.open(this.matriceModal, { size: 'lg', backdrop: 'static', centered: true });
   }
+
+  deleteMatrice(matrice: IMatriceFacturation): void {
+    if (matrice.id) {
+      this.matriceFacturationService.delete(matrice.id).subscribe(() => {
+        this.selectedMatrices = this.selectedMatrices.filter(m => m.id !== matrice.id);
+      });
+    }
+  }
+
+  saveNewMatrice(modal: any): void {
+    const toCreate: NewMatriceFacturation = {
+      id: null,
+      tarifBase: this.newMatrice.tarifBase ?? null,
+      tarifMissionNuit: this.newMatrice.tarifMissionNuit ?? null,
+      tarifHebergement: this.newMatrice.tarifHebergement ?? null,
+      tarifJourFerie: this.newMatrice.tarifJourFerie ?? null,
+      tarifDimanche: this.newMatrice.tarifDimanche ?? null,
+      affaire: this.affaire,
+      ville: this.newMatrice.ville ?? null,
+      zone: this.newMatrice.zone ?? null,
+    };
+
+    this.matriceFacturationService.create(toCreate).subscribe((res: HttpResponse<IMatriceFacturation>) => {
+      if (res.body) {
+        this.selectedMatrices = [...this.selectedMatrices, res.body];
+      }
+      modal.close();
+    });
+  }
+
+  // ── Shared ─────────────────────────────────────────────────────
+  compareClient = (o1: IClient | null, o2: IClient | null): boolean => this.clientService.compareClient(o1, o2);
 
   previousState(): void {
     window.history.back();
+  }
+
+  ngOnInit(): void {
+    this.activatedRoute.data.subscribe(({ affaire }) => {
+      this.affaire = affaire;
+      if (affaire) {
+        this.updateForm(affaire);
+      }
+      this.loadRelationshipsOptions();
+    });
   }
 
   save(): void {
@@ -173,11 +186,7 @@ export class AffaireUpdateComponent implements OnInit {
   protected onSaveSuccess(): void {
     this.previousState();
   }
-
-  protected onSaveError(): void {
-    // Api for inheritance.
-  }
-
+  protected onSaveError(): void {}
   protected onSaveFinalize(): void {
     this.isSaving = false;
   }
@@ -202,9 +211,7 @@ export class AffaireUpdateComponent implements OnInit {
       });
 
       this.matriceFacturationService.findMatriceByAffaireId(affaire.id).subscribe((res: HttpResponse<IMatriceFacturation[]>) => {
-        const matrices = res.body ?? [];
-        // We might need to map them back, or directly assign if they are the objects.
-        this.selectedMatrices = matrices;
+        this.selectedMatrices = res.body ?? [];
       });
     }
   }
@@ -229,15 +236,16 @@ export class AffaireUpdateComponent implements OnInit {
     this.articleService
       .query()
       .pipe(map((res: HttpResponse<IArticle[]>) => res.body ?? []))
-      .subscribe((articles: IArticle[]) => {
-        this.allArticles = articles;
-      });
+      .subscribe((articles: IArticle[]) => (this.allArticles = articles));
 
-    this.matriceFacturationService
+    this.villeService
       .query()
-      .pipe(map((res: HttpResponse<IMatriceFacturation[]>) => res.body ?? []))
-      .subscribe((matrices: IMatriceFacturation[]) => {
-        this.allMatrices = matrices;
-      });
+      .pipe(map((res: HttpResponse<IVille[]>) => res.body ?? []))
+      .subscribe((villes: IVille[]) => (this.allVilles = villes));
+
+    this.zoneService
+      .query()
+      .pipe(map((res: HttpResponse<IZone[]>) => res.body ?? []))
+      .subscribe((zones: IZone[]) => (this.allZones = zones));
   }
 }

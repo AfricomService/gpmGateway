@@ -420,7 +420,7 @@
               </div>
 
               <ng-template #noArticles>
-                <div class="text-muted text-center py-3">Aucun article sélectionné</div>
+                <div class="text-center py-3">Aucun article sélectionné</div>
               </ng-template>
             </div>
           </div>
@@ -466,39 +466,120 @@
         </ng-template>
 
         <!-- Section: Matrices -->
+        <!-- Section: Matrices de Facturation -->
         <div class="col-lg-6 mb-4">
           <div class="card shadow-sm h-100">
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
               <h5 class="mb-0">Matrices de Facturation</h5>
-              <input
-                type="text"
-                class="form-control form-control-sm w-50"
-                placeholder="Rechercher une matrice..."
-                [(ngModel)]="matriceSearchTerm"
-                [ngModelOptions]="{ standalone: true }"
-              />
+              <button type="button" class="btn btn-sm btn-primary fw-bold" (click)="openMatriceModal()">Gérer</button>
             </div>
-            <div class="card-body" style="max-height: 300px; overflow-y: auto">
-              <div class="list-group">
-                <div class="list-group-item d-flex align-items-center" *ngFor="let matrice of filteredMatrices">
-                  <input
-                    type="checkbox"
-                    class="form-check-input me-3"
-                    style="width: 1.5rem; height: 1.5rem; cursor: pointer; margin-top: 0"
-                    [id]="'matrice_' + matrice.id"
-                    [checked]="isMatriceSelected(matrice)"
-                    (change)="toggleMatriceSelection(matrice)"
-                  />
-                  <label class="form-check-label font-weight-bold mb-0" [for]="'matrice_' + matrice.id" style="cursor: pointer">
-                    Affaire: {{ matrice.affaire?.designationAffaire || 'N/A' }} | Ville: {{ matrice.ville?.nom || 'N/A' }} | Zone:
-                    {{ matrice.zone?.nom || 'N/A' }} (Base: {{ matrice.tarifBase }})
-                  </label>
+            <div class="card-body" style="max-height: 400px; overflow-y: auto">
+              <div *ngIf="selectedMatrices.length > 0; else noMatrices" class="row g-2">
+                <div class="col-4" *ngFor="let matrice of selectedMatrices">
+                  <div class="card border h-100">
+                    <div class="card-body pb-2">
+                      <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                          <span class="badge bg-black me-1">{{ matrice.ville?.nom || 'N/A' }}</span>
+                          <span class="badge bg-info">{{ matrice.zone?.nom || 'N/A' }}</span>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger" (click)="deleteMatrice(matrice)">
+                          <fa-icon icon="times"></fa-icon>
+                        </button>
+                      </div>
+                      <div style="color: black" class="small d-flex flex-column gap-1">
+                        <div class="d-flex gap-1">
+                          <span style="font-weight: 700">Tarif Base:</span>
+                          <strong>{{ matrice.tarifBase }} <small class="fw-normal">TND</small></strong>
+                        </div>
+                        <div class="d-flex gap-1">
+                          <span style="font-weight: 700">Dimanche:</span>
+                          <strong>{{ matrice.tarifDimanche }} <small class="fw-normal">TND</small></strong>
+                        </div>
+                        <div class="d-flex gap-1">
+                          <span style="font-weight: 700">Hébergement:</span>
+                          <strong>{{ matrice.tarifHebergement }} <small class="fw-normal">TND</small></strong>
+                        </div>
+                        <div class="d-flex gap-1">
+                          <span style="font-weight: 700">Jour Férié:</span>
+                          <strong>{{ matrice.tarifJourFerie }} <small class="fw-normal">TND</small></strong>
+                        </div>
+                        <div class="d-flex gap-1">
+                          <span style="font-weight: 700">Mission Nuit:</span>
+                          <strong>{{ matrice.tarifMissionNuit }} <small class="fw-normal">TND</small></strong>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div *ngIf="filteredMatrices.length === 0" class="text-muted mt-2">Aucune matrice trouvée.</div>
+
+              <ng-template #noMatrices>
+                <div class="text-center py-3">Aucune matrice associée</div>
+              </ng-template>
             </div>
           </div>
         </div>
+
+        <!-- Matrice Creation Modal -->
+        <ng-template #matriceModal let-modal>
+          <div class="modal-header">
+            <h5 class="modal-title">Nouvelle Matrice de Facturation</h5>
+            <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Ville</label>
+                <select class="form-control" [(ngModel)]="newMatrice.ville" [ngModelOptions]="{ standalone: true }">
+                  <option [ngValue]="null">-- Sélectionner --</option>
+                  <option *ngFor="let v of allVilles" [ngValue]="v">{{ v.nom }}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Zone</label>
+                <select class="form-control" [(ngModel)]="newMatrice.zone" [ngModelOptions]="{ standalone: true }">
+                  <option [ngValue]="null">-- Sélectionner --</option>
+                  <option *ngFor="let z of allZones" [ngValue]="z">{{ z.nom }}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Tarif Base</label>
+                <input type="number" class="form-control" [(ngModel)]="newMatrice.tarifBase" [ngModelOptions]="{ standalone: true }" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Tarif Mission Nuit</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  [(ngModel)]="newMatrice.tarifMissionNuit"
+                  [ngModelOptions]="{ standalone: true }"
+                />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Tarif Hébergement</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  [(ngModel)]="newMatrice.tarifHebergement"
+                  [ngModelOptions]="{ standalone: true }"
+                />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Tarif Jour Férié</label>
+                <input type="number" class="form-control" [(ngModel)]="newMatrice.tarifJourFerie" [ngModelOptions]="{ standalone: true }" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Tarif Dimanche</label>
+                <input type="number" class="form-control" [(ngModel)]="newMatrice.tarifDimanche" [ngModelOptions]="{ standalone: true }" />
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
+            <button class="btn btn-primary" (click)="saveNewMatrice(modal)">Créer</button>
+          </div>
+        </ng-template>
       </div>
 
       <div class="d-flex justify-content-end mb-4">
