@@ -1,0 +1,22 @@
+<div class="ressources-shell">
+  <aside class="ressources-sidebar" aria-label="Menu Ressources">
+    <h6 class="ressources-title">Ressources</h6>
+
+    <nav class="nav flex-column">
+      <a
+        *ngFor="let item of navItems"
+        class="nav-link"
+        [routerLink]="[item.route]"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <fa-icon [icon]="item.icon" class="me-2"></fa-icon>
+        <span>{{ item.label }}</span>
+      </a>
+    </nav>
+  </aside>
+
+  <section class="ressources-content">
+    <router-outlet></router-outlet>
+  </section>
+</div>

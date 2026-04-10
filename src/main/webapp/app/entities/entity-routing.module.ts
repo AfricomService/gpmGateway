@@ -5,6 +5,10 @@ import { RouterModule } from '@angular/router';
   imports: [
     RouterModule.forChild([
       {
+        path: 'ressources',
+        loadChildren: () => import('app/ressources/ressources.module').then(m => m.RessourcesModule),
+      },
+      {
         path: 'activite',
         data: { pageTitle: 'gpmGatewayApp.operationsServiceActivite.home.title' },
         loadChildren: () => import('./operationsService/activite/activite.module').then(m => m.OperationsServiceActiviteModule),
@@ -22,8 +26,18 @@ import { RouterModule } from '@angular/router';
       },
       {
         path: 'agence',
+        pathMatch: 'full',
+        redirectTo: 'ressources/agences',
+      },
+      {
+        path: 'agence',
         data: { pageTitle: 'gpmGatewayApp.projectServiceAgence.home.title' },
         loadChildren: () => import('./projectService/agence/agence.module').then(m => m.ProjectServiceAgenceModule),
+      },
+      {
+        path: 'article',
+        pathMatch: 'full',
+        redirectTo: 'ressources/articles',
       },
       {
         path: 'article',
@@ -133,6 +147,11 @@ import { RouterModule } from '@angular/router';
       },
       {
         path: 'site',
+        pathMatch: 'full',
+        redirectTo: 'ressources/sites',
+      },
+      {
+        path: 'site',
         data: { pageTitle: 'gpmGatewayApp.projectServiceSite.home.title' },
         loadChildren: () => import('./projectService/site/site.module').then(m => m.ProjectServiceSiteModule),
       },
@@ -150,6 +169,11 @@ import { RouterModule } from '@angular/router';
         path: 'tache',
         data: { pageTitle: 'gpmGatewayApp.operationsServiceTache.home.title' },
         loadChildren: () => import('./operationsService/tache/tache.module').then(m => m.OperationsServiceTacheModule),
+      },
+      {
+        path: 'vehicule',
+        pathMatch: 'full',
+        redirectTo: 'ressources/vehicules',
       },
       {
         path: 'vehicule',
@@ -181,6 +205,11 @@ import { RouterModule } from '@angular/router';
         data: { pageTitle: 'gpmGatewayApp.operationsServiceWoUtilisateur.home.title' },
         loadChildren: () =>
           import('./operationsService/wo-utilisateur/wo-utilisateur.module').then(m => m.OperationsServiceWoUtilisateurModule),
+      },
+      {
+        path: 'zone',
+        pathMatch: 'full',
+        redirectTo: 'ressources/zones',
       },
       {
         path: 'zone',
