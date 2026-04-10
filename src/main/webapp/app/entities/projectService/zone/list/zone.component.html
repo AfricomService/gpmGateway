@@ -28,8 +28,8 @@
     <span jhiTranslate="gpmGatewayApp.projectServiceZone.home.notFound">Aucun Zone trouvé</span>
   </div>
 
-  <div class="table-responsive table-entities" id="entities" *ngIf="zones && zones.length > 0">
-    <table class="table table-striped" aria-describedby="page-heading">
+  <div class="table-responsive table-entities bg-white border rounded-3 shadow-sm" id="entities" *ngIf="zones && zones.length > 0">
+    <table class="table table-hover align-middle mb-0" aria-describedby="page-heading">
       <thead>
         <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
           <th scope="col" jhiSortBy="id">

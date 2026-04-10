@@ -28,8 +28,8 @@
     <span jhiTranslate="gpmGatewayApp.projectServiceSite.home.notFound">Aucun Site trouvé</span>
   </div>
 
-  <div class="table-responsive table-entities" id="entities" *ngIf="sites && sites.length > 0">
-    <table class="table table-striped" aria-describedby="page-heading">
+  <div class="table-responsive table-entities bg-white border rounded-3 shadow-sm" id="entities" *ngIf="sites && sites.length > 0">
+    <table class="table table-hover align-middle mb-0" aria-describedby="page-heading">
       <thead>
         <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
           <th scope="col" jhiSortBy="id">
@@ -47,54 +47,6 @@
           <th scope="col" jhiSortBy="designation">
             <div class="d-flex">
               <span jhiTranslate="gpmGatewayApp.projectServiceSite.designation">Designation</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="gpsX">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceSite.gpsX">Gps X</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="gpsY">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceSite.gpsY">Gps Y</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdAt">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceSite.createdAt">Created At</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedAt">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceSite.updatedAt">Updated At</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdBy">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceSite.createdBy">Created By</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdByUserLogin">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceSite.createdByUserLogin">Created By User Login</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedBy">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceSite.updatedBy">Updated By</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedByUserLogin">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceSite.updatedByUserLogin">Updated By User Login</span>
               <fa-icon class="p-1" icon="sort"></fa-icon>
             </div>
           </th>
@@ -120,14 +72,6 @@
           </td>
           <td>{{ site.code }}</td>
           <td>{{ site.designation }}</td>
-          <td>{{ site.gpsX }}</td>
-          <td>{{ site.gpsY }}</td>
-          <td>{{ site.createdAt | formatMediumDatetime }}</td>
-          <td>{{ site.updatedAt | formatMediumDatetime }}</td>
-          <td>{{ site.createdBy }}</td>
-          <td>{{ site.createdByUserLogin }}</td>
-          <td>{{ site.updatedBy }}</td>
-          <td>{{ site.updatedByUserLogin }}</td>
           <td>
             <div *ngIf="site.ville">
               <a [routerLink]="['/ville', site.ville.id, 'view']">{{ site.ville.nom }}</a>

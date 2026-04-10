@@ -28,8 +28,8 @@
     <span jhiTranslate="gpmGatewayApp.projectServiceArticle.home.notFound">Aucun Article trouvé</span>
   </div>
 
-  <div class="table-responsive table-entities" id="entities" *ngIf="articles && articles.length > 0">
-    <table class="table table-striped" aria-describedby="page-heading">
+  <div class="table-responsive table-entities bg-white border rounded-3 shadow-sm" id="entities" *ngIf="articles && articles.length > 0">
+    <table class="table table-hover align-middle mb-0" aria-describedby="page-heading">
       <thead>
         <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
           <th scope="col" jhiSortBy="id">
@@ -56,39 +56,9 @@
               <fa-icon class="p-1" icon="sort"></fa-icon>
             </div>
           </th>
-          <th scope="col" jhiSortBy="createdAt">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceArticle.createdAt">Created At</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
           <th scope="col" jhiSortBy="updatedAt">
             <div class="d-flex">
               <span jhiTranslate="gpmGatewayApp.projectServiceArticle.updatedAt">Updated At</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdBy">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceArticle.createdBy">Created By</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdByUserLogin">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceArticle.createdByUserLogin">Created By User Login</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedBy">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceArticle.updatedBy">Updated By</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedByUserLogin">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceArticle.updatedByUserLogin">Updated By User Login</span>
               <fa-icon class="p-1" icon="sort"></fa-icon>
             </div>
           </th>
@@ -103,12 +73,7 @@
           <td>{{ article.code }}</td>
           <td>{{ article.designation }}</td>
           <td>{{ article.uniteMesure }}</td>
-          <td>{{ article.createdAt | formatMediumDatetime }}</td>
           <td>{{ article.updatedAt | formatMediumDatetime }}</td>
-          <td>{{ article.createdBy }}</td>
-          <td>{{ article.createdByUserLogin }}</td>
-          <td>{{ article.updatedBy }}</td>
-          <td>{{ article.updatedByUserLogin }}</td>
           <td class="text-end">
             <div class="btn-group">
               <button

@@ -28,8 +28,8 @@
     <span jhiTranslate="gpmGatewayApp.projectServiceAgence.home.notFound">Aucun Agence trouvé</span>
   </div>
 
-  <div class="table-responsive table-entities" id="entities" *ngIf="agences && agences.length > 0">
-    <table class="table table-striped" aria-describedby="page-heading">
+  <div class="table-responsive table-entities bg-white border rounded-3 shadow-sm" id="entities" *ngIf="agences && agences.length > 0">
+    <table class="table table-hover align-middle mb-0" aria-describedby="page-heading">
       <thead>
         <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
           <th scope="col" jhiSortBy="id">
@@ -44,12 +44,6 @@
               <fa-icon class="p-1" icon="sort"></fa-icon>
             </div>
           </th>
-          <th scope="col" jhiSortBy="adresse">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceAgence.adresse">Adresse</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
           <th scope="col" jhiSortBy="ville">
             <div class="d-flex">
               <span jhiTranslate="gpmGatewayApp.projectServiceAgence.ville">Ville</span>
@@ -59,42 +53,6 @@
           <th scope="col" jhiSortBy="pays">
             <div class="d-flex">
               <span jhiTranslate="gpmGatewayApp.projectServiceAgence.pays">Pays</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdAt">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceAgence.createdAt">Created At</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedAt">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceAgence.updatedAt">Updated At</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdBy">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceAgence.createdBy">Created By</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdByUserLogin">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceAgence.createdByUserLogin">Created By User Login</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedBy">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceAgence.updatedBy">Updated By</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedByUserLogin">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceAgence.updatedByUserLogin">Updated By User Login</span>
               <fa-icon class="p-1" icon="sort"></fa-icon>
             </div>
           </th>
@@ -113,15 +71,8 @@
             <a [routerLink]="['/agence', agence.id, 'view']">{{ agence.id }}</a>
           </td>
           <td>{{ agence.designation }}</td>
-          <td>{{ agence.adresse }}</td>
           <td>{{ agence.ville }}</td>
           <td>{{ agence.pays }}</td>
-          <td>{{ agence.createdAt | formatMediumDatetime }}</td>
-          <td>{{ agence.updatedAt | formatMediumDatetime }}</td>
-          <td>{{ agence.createdBy }}</td>
-          <td>{{ agence.createdByUserLogin }}</td>
-          <td>{{ agence.updatedBy }}</td>
-          <td>{{ agence.updatedByUserLogin }}</td>
           <td>
             <div *ngIf="agence.societe">
               <a [routerLink]="['/societe', agence.societe.id, 'view']">{{ agence.societe.raisonSociale }}</a>
