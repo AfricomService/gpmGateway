@@ -7,20 +7,25 @@ import { finalize } from 'rxjs/operators';
 import { ClientFormService, ClientFormGroup } from './client-form.service';
 import { IClient } from '../client.model';
 import { ClientService } from '../service/client.service';
-import { IContact } from 'app/entities/projectService/contact/contact.model';
+import { IContact, NewContact } from 'app/entities/projectService/contact/contact.model';
 import { ContactService } from 'app/entities/projectService/contact/service/contact.service';
-import { ISite } from 'app/entities/projectService/site/site.model';
+import { ISite, NewSite } from 'app/entities/projectService/site/site.model';
 import { SiteService } from 'app/entities/projectService/site/service/site.service';
 import { IAffaire } from 'app/entities/projectService/affaire/affaire.model';
 import { AffaireService } from 'app/entities/projectService/affaire/service/affaire.service';
 import { IFacture } from 'app/entities/financeService/facture/facture.model';
 import { FactureService } from 'app/entities/financeService/facture/service/facture.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { TemplateRef, ViewChild } from '@angular/core';
 
 @Component({
   selector: 'jhi-client-update',
   templateUrl: './client-update.component.html',
 })
 export class ClientUpdateComponent implements OnInit {
+  @ViewChild('contactModal') contactModal!: TemplateRef<unknown>;
+  @ViewChild('siteModal') siteModal!: TemplateRef<unknown>;
+
   isSaving = false;
   client: IClient | null = null;
 
@@ -36,6 +41,9 @@ export class ClientUpdateComponent implements OnInit {
   allFactures: IFacture[] = [];
   selectedFactures: IFacture[] = [];
 
+  newContact: Partial<NewContact> = {};
+  newSite: Partial<NewSite> = {};
+
   editForm: ClientFormGroup = this.clientFormService.createClientFormGroup();
 
   constructor(
@@ -45,7 +53,8 @@ export class ClientUpdateComponent implements OnInit {
     protected siteService: SiteService,
     protected affaireService: AffaireService,
     protected factureService: FactureService,
-    protected activatedRoute: ActivatedRoute
+    protected activatedRoute: ActivatedRoute,
+    protected modalService: NgbModal
   ) {}
 
   ngOnInit(): void {
@@ -85,52 +94,70 @@ export class ClientUpdateComponent implements OnInit {
     });
   }
 
-  toggleContactSelection(contact: IContact): void {
-    const index = this.selectedContacts.findIndex(c => c.id === contact.id);
-    if (index > -1) {
-      this.selectedContacts.splice(index, 1);
-    } else {
-      this.selectedContacts.push(contact);
-    }
-  }
-  isContactSelected(contact: IContact): boolean {
-    return this.selectedContacts.findIndex(c => c.id === contact.id) > -1;
+  openContactModal(): void {
+    this.newContact = {};
+    this.modalService.open(this.contactModal, { size: 'lg', backdrop: 'static', centered: true });
   }
 
-  toggleSiteSelection(site: ISite): void {
-    const index = this.selectedSites.findIndex(s => s.id === site.id);
-    if (index > -1) {
-      this.selectedSites.splice(index, 1);
-    } else {
-      this.selectedSites.push(site);
+  saveNewContact(modal: any): void {
+    const clientRef = this.client ? { id: this.client.id, raisonSociale: this.client.raisonSociale } : null;
+    if (!clientRef || !this.newContact.raisonSociale?.trim()) {
+      return;
     }
-  }
-  isSiteSelected(site: ISite): boolean {
-    return this.selectedSites.findIndex(s => s.id === site.id) > -1;
+
+    const createdContact: IContact = {
+      id: this.generateTempId(),
+      raisonSociale: this.newContact.raisonSociale.trim(),
+      identifiantUnique: this.newContact.identifiantUnique ?? null,
+      adresse: this.newContact.adresse ?? null,
+      telephone: this.newContact.telephone ?? null,
+      fax: this.newContact.fax ?? null,
+      email: this.newContact.email ?? null,
+      client: clientRef,
+    };
+
+    this.selectedContacts = [...this.selectedContacts, createdContact];
+    modal.close();
   }
 
-  toggleAffaireSelection(affaire: IAffaire): void {
-    const index = this.selectedAffaires.findIndex(a => a.id === affaire.id);
-    if (index > -1) {
-      this.selectedAffaires.splice(index, 1);
-    } else {
-      this.selectedAffaires.push(affaire);
-    }
-  }
-  isAffaireSelected(affaire: IAffaire): boolean {
-    return this.selectedAffaires.findIndex(a => a.id === affaire.id) > -1;
+  openSiteModal(): void {
+    this.newSite = {};
+    this.modalService.open(this.siteModal, { size: 'lg', backdrop: 'static', centered: true });
   }
 
-  toggleFactureSelection(facture: IFacture): void {
-    const index = this.selectedFactures.findIndex(f => f.id === facture.id);
-    if (index > -1) {
-      this.selectedFactures.splice(index, 1);
-    } else {
-      this.selectedFactures.push(facture);
+  saveNewSite(modal: any): void {
+    const clientRef = this.client ? { id: this.client.id, raisonSociale: this.client.raisonSociale } : null;
+    if (!clientRef || !this.newSite.code?.trim() || !this.newSite.designation?.trim()) {
+      return;
     }
+
+    const createdSite: ISite = {
+      id: this.generateTempId(),
+      code: this.newSite.code.trim(),
+      designation: this.newSite.designation.trim(),
+      gpsX: this.newSite.gpsX ?? null,
+      gpsY: this.newSite.gpsY ?? null,
+      client: clientRef,
+    };
+
+    this.selectedSites = [...this.selectedSites, createdSite];
+    modal.close();
   }
-  isFactureSelected(facture: IFacture): boolean {
-    return this.selectedFactures.findIndex(f => f.id === facture.id) > -1;
+
+  unlinkContact(): void {
+    // Placeholder: unlink flow will be implemented later.
+  }
+
+  unlinkSite(): void {
+    // Placeholder: unlink flow will be implemented later.
+  }
+
+  unlinkAffaire(): void {
+    // Placeholder: unlink flow will be implemented later.
+  }
+
+  unlinkFacture(): void {
+    // Placeholder: unlink flow will be implemented later.
   }
 
   previousState(): void {
@@ -169,5 +196,9 @@ export class ClientUpdateComponent implements OnInit {
   protected updateForm(client: IClient): void {
     this.client = client;
     this.clientFormService.resetForm(this.editForm, client);
+  }
+
+  protected generateTempId(): number {
+    return -Math.floor(Math.random() * 1000000000) - 1;
   }
 }

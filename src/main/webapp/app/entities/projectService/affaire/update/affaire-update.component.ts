@@ -53,6 +53,7 @@ export class AffaireUpdateComponent implements OnInit {
   newMatrice: Partial<NewMatriceFacturation> = {};
 
   articleSearchTerm = '';
+  clientIdFromQuery: number | null = null;
 
   editForm: AffaireFormGroup = this.affaireFormService.createAffaireFormGroup();
 
@@ -99,7 +100,9 @@ export class AffaireUpdateComponent implements OnInit {
   }
 
   get filteredArticles(): IArticle[] {
-    if (!this.articleSearchTerm) return this.allArticles;
+    if (!this.articleSearchTerm) {
+      return this.allArticles;
+    }
     const term = this.articleSearchTerm.toLowerCase();
     return this.allArticles.filter(
       a => (a.code?.toLowerCase() ?? '').includes(term) || (a.designation?.toLowerCase() ?? '').includes(term)
@@ -149,6 +152,13 @@ export class AffaireUpdateComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.activatedRoute.queryParamMap.subscribe(params => {
+      const rawClientId = params.get('clientId');
+      const parsedClientId = rawClientId ? Number(rawClientId) : null;
+      this.clientIdFromQuery = parsedClientId !== null && !Number.isNaN(parsedClientId) ? parsedClientId : null;
+      this.applyClientFromQueryParam();
+    });
+
     this.activatedRoute.data.subscribe(({ affaire }) => {
       this.affaire = affaire;
       if (affaire) {
@@ -186,7 +196,9 @@ export class AffaireUpdateComponent implements OnInit {
   protected onSaveSuccess(): void {
     this.previousState();
   }
-  protected onSaveError(): void {}
+  protected onSaveError(): void {
+    // Intentionally left blank for component extension hooks.
+  }
   protected onSaveFinalize(): void {
     this.isSaving = false;
   }
@@ -221,7 +233,10 @@ export class AffaireUpdateComponent implements OnInit {
       .query()
       .pipe(map((res: HttpResponse<IClient[]>) => res.body ?? []))
       .pipe(map((clients: IClient[]) => this.clientService.addClientToCollectionIfMissing<IClient>(clients, this.affaire?.client)))
-      .subscribe((clients: IClient[]) => (this.clientsSharedCollection = clients));
+      .subscribe((clients: IClient[]) => {
+        this.clientsSharedCollection = clients;
+        this.applyClientFromQueryParam();
+      });
 
     this.userService
       .query()
@@ -247,5 +262,16 @@ export class AffaireUpdateComponent implements OnInit {
       .query()
       .pipe(map((res: HttpResponse<IZone[]>) => res.body ?? []))
       .subscribe((zones: IZone[]) => (this.allZones = zones));
+  }
+
+  protected applyClientFromQueryParam(): void {
+    if (this.clientIdFromQuery === null || this.editForm.controls.id.value !== null) {
+      return;
+    }
+
+    const queryClient = this.clientsSharedCollection.find(client => client.id === this.clientIdFromQuery);
+    if (queryClient) {
+      this.editForm.patchValue({ client: queryClient });
+    }
   }
 }

@@ -17,6 +17,7 @@ export class FactureUpdateComponent implements OnInit {
   isSaving = false;
   facture: IFacture | null = null;
   statutFactureValues = Object.keys(StatutFacture);
+  clientIdFromQuery: number | null = null;
 
   editForm: FactureFormGroup = this.factureFormService.createFactureFormGroup();
 
@@ -27,11 +28,20 @@ export class FactureUpdateComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.activatedRoute.queryParamMap.subscribe(params => {
+      const rawClientId = params.get('clientId');
+      const parsedClientId = rawClientId ? Number(rawClientId) : null;
+      this.clientIdFromQuery = parsedClientId !== null && !Number.isNaN(parsedClientId) ? parsedClientId : null;
+      this.applyClientIdFromQueryParam();
+    });
+
     this.activatedRoute.data.subscribe(({ facture }) => {
       this.facture = facture;
       if (facture) {
         this.updateForm(facture);
       }
+
+      this.applyClientIdFromQueryParam();
     });
   }
 
@@ -71,5 +81,13 @@ export class FactureUpdateComponent implements OnInit {
   protected updateForm(facture: IFacture): void {
     this.facture = facture;
     this.factureFormService.resetForm(this.editForm, facture);
+  }
+
+  protected applyClientIdFromQueryParam(): void {
+    if (this.clientIdFromQuery === null || this.editForm.controls.id.value !== null) {
+      return;
+    }
+
+    this.editForm.patchValue({ clientId: this.clientIdFromQuery });
   }
 }
