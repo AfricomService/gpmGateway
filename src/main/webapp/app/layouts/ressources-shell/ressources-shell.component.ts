@@ -13,6 +13,8 @@ interface RessourceNavItem {
   styleUrls: ['./ressources-shell.component.scss'],
 })
 export class RessourcesShellComponent {
+  isSidebarCollapsed = false;
+
   navItems: RessourceNavItem[] = [
     { label: 'Vehicules', route: 'vehicules', icon: ['fas', 'truck'] },
     { label: 'Articles', route: 'articles', icon: ['fas', 'th-list'] },
@@ -20,4 +22,8 @@ export class RessourcesShellComponent {
     { label: 'Sites', route: 'sites', icon: ['fas', 'road'] },
     { label: 'Zones', route: 'zones', icon: ['fas', 'th'] },
   ];
+
+  toggleSidebar(): void {
+    this.isSidebarCollapsed = !this.isSidebarCollapsed;
+  }
 }

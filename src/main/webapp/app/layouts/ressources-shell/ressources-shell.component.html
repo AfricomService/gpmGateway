@@ -1,6 +1,16 @@
 <div class="ressources-shell">
-  <aside class="ressources-sidebar" aria-label="Menu Ressources">
-    <h6 class="ressources-title">Ressources</h6>
+  <aside class="ressources-sidebar" [class.is-collapsed]="isSidebarCollapsed" aria-label="Menu Ressources">
+    <div class="ressources-header">
+      <h6 class="ressources-title" *ngIf="!isSidebarCollapsed">Ressources</h6>
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-secondary sidebar-toggle"
+        (click)="toggleSidebar()"
+        [attr.aria-label]="isSidebarCollapsed ? 'Agrandir la barre laterale' : 'Reduire la barre laterale'"
+      >
+        <fa-icon icon="bars"></fa-icon>
+      </button>
+    </div>
 
     <nav class="nav flex-column">
       <a
@@ -11,7 +21,7 @@
         [routerLinkActiveOptions]="{ exact: true }"
       >
         <fa-icon [icon]="item.icon" class="me-2"></fa-icon>
-        <span>{{ item.label }}</span>
+        <span *ngIf="!isSidebarCollapsed">{{ item.label }}</span>
       </a>
     </nav>
   </aside>

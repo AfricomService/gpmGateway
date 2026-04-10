@@ -1,7 +1,10 @@
 .ressources-shell {
+  padding-top: 4.5em;
   display: flex;
   gap: 1rem;
   min-height: calc(100vh - 180px);
+  padding-right: 0.5em;
+  padding-left: 0.5em;
 }
 
 .ressources-sidebar {
@@ -11,9 +14,20 @@
   padding-right: 0.75rem;
 }
 
+.ressources-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
 .ressources-title {
   font-weight: 600;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0;
+}
+
+.sidebar-toggle {
+  padding: 0.2rem 0.45rem;
 }
 
 .ressources-sidebar .nav-link {
@@ -22,6 +36,24 @@
   margin-bottom: 0.25rem;
   display: flex;
   align-items: center;
+}
+
+.ressources-sidebar.is-collapsed {
+  width: 72px;
+}
+
+.ressources-sidebar.is-collapsed .ressources-header {
+  justify-content: center;
+}
+
+.ressources-sidebar.is-collapsed .nav-link {
+  justify-content: center;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.ressources-sidebar.is-collapsed .nav-link fa-icon {
+  margin-right: 0 !important;
 }
 
 .ressources-sidebar .nav-link:hover {
@@ -49,6 +81,10 @@
     border-bottom: 1px solid #dee2e6;
     padding-right: 0;
     padding-bottom: 0.75rem;
+  }
+
+  .ressources-sidebar.is-collapsed {
+    width: 100%;
   }
 
   .ressources-sidebar .nav {
