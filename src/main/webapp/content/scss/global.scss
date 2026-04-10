@@ -41,7 +41,7 @@ Generic styles
 /* other generic styles */
 
 .jh-card {
-  padding: 1.5%;
+  padding: 0;
   margin-top: 20px;
   border: none;
 }
@@ -205,6 +205,184 @@ angular-cli removes postcss-rtl processed inline css, processed rules must be ad
     .nav-item {
       margin-left: 0.5em;
     }
+  }
+}
+
+/* ==========================================================================
+Shared modern entity list layout (ressources pages)
+========================================================================== */
+
+.entity-modern-container {
+  //padding-top: 4em;
+  min-height: 100vh;
+}
+
+.entity-modern-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.entity-modern-header h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.entity-modern-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.entity-modern-toolbar .toolbar-left {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  gap: 12px;
+}
+
+.view-toggle {
+  display: flex;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.view-toggle .view-btn {
+  padding: 7px 10px;
+  background: #fff;
+  border: none;
+  border-right: 1px solid #e2e8f0;
+  color: #94a3b8;
+}
+
+.view-toggle .view-btn:last-child {
+  border-right: none;
+}
+
+.view-toggle .view-btn.active {
+  background: #eff6ff;
+  color: #2c3e50;
+}
+
+.entity-modern-grid {
+  padding-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 16px;
+}
+
+.entity-modern-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 18px 20px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.18s ease;
+}
+
+.entity-modern-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+.entity-modern-card .card-header,
+.entity-modern-card .card-body,
+.entity-modern-card .card-footer {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.entity-modern-card .card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.entity-modern-num {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #2c3e50;
+  text-decoration: none;
+}
+
+.entity-modern-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 4px;
+  line-height: 1.35;
+}
+
+.entity-modern-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.entity-modern-title a:hover,
+.entity-modern-num:hover {
+  text-decoration: underline;
+}
+
+.entity-modern-details {
+  font-size: 0.8125rem;
+  color: #64748b;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.entity-modern-card .card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-top: 10px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.entity-modern-card .card-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.entity-modern-card .action-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+}
+
+.entity-modern-card .action-btn.btn-view {
+  background: #eff6ff;
+  color: #2c3e50;
+}
+
+.entity-modern-card .action-btn.btn-edit {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.entity-modern-card .action-btn.btn-delete {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+@media (max-width: 768px) {
+  .entity-modern-grid {
+    grid-template-columns: 1fr;
   }
 }
 /* jhipster-needle-scss-add-main JHipster will add new css style */

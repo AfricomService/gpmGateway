@@ -1,84 +1,108 @@
-<div>
-  <h2 id="page-heading" data-cy="VehiculeHeading">
-    <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.home.title">Vehicules</span>
-
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
-        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
-        <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.home.refreshListLabel">Actualiser la liste</span>
-      </button>
-
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-vehicule"
-        [routerLink]="['/vehicule/new']"
-      >
+<div class="entity-modern-container">
+  <div class="entity-modern-header">
+    <h2 id="page-heading" data-cy="VehiculeHeading">
+      <span>Vehicules</span>
+    </h2>
+    <div class="header-actions">
+      <button id="jh-create-entity" data-cy="entityCreateButton" class="btn btn-primary" [routerLink]="['/vehicule/new']">
         <fa-icon icon="plus"></fa-icon>
-        <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.home.createLabel"> Créer un nouveau Vehicule </span>
+        <span>Nouveau vehicule</span>
       </button>
     </div>
-  </h2>
-
-  <jhi-alert-error></jhi-alert-error>
-
-  <jhi-alert></jhi-alert>
-
-  <div class="alert alert-warning" id="no-result" *ngIf="vehicules?.length === 0">
-    <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.home.notFound">Aucun Vehicule trouvé</span>
   </div>
 
-  <div class="table-responsive table-entities bg-white border rounded-3 shadow-sm" id="entities" *ngIf="vehicules && vehicules.length > 0">
-    <table class="table table-hover align-middle mb-0" aria-describedby="page-heading">
+  <jhi-alert-error></jhi-alert-error>
+  <jhi-alert></jhi-alert>
+
+  <div class="entity-modern-toolbar">
+    <div class="toolbar-left">
+      <div class="input-group">
+        <input [(ngModel)]="searchTerm" (ngModelChange)="filterVehicules()" class="form-control" placeholder="Rechercher..." type="text" />
+      </div>
+    </div>
+
+    <div class="toolbar-right">
+      <div class="view-toggle">
+        <button class="view-btn" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Grille" type="button">
+          <fa-icon icon="th"></fa-icon>
+        </button>
+        <button class="view-btn" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'" title="Liste" type="button">
+          <fa-icon icon="list"></fa-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-warning" id="no-result" *ngIf="filteredVehicules?.length === 0">
+    <span>Aucun Vehicule trouve</span>
+  </div>
+
+  <div *ngIf="filteredVehicules && filteredVehicules.length > 0 && viewMode === 'grid'" class="entity-modern-grid" id="entities">
+    <div *ngFor="let vehicule of filteredVehicules; trackBy: trackId" class="entity-modern-card" data-cy="entityTable">
+      <div class="card-header">
+        <a [routerLink]="['/vehicule', vehicule.id, 'view']" class="entity-modern-num">#{{ vehicule.id }}</a>
+        <span class="small text-muted">{{ vehicule.statut || '-' }}</span>
+      </div>
+
+      <div class="card-body">
+        <h3 class="entity-modern-title">
+          <a [routerLink]="['/vehicule', vehicule.id, 'view']">{{ vehicule.marque || 'Sans marque' }}</a>
+        </h3>
+        <div class="entity-modern-details">
+          <div><strong>Matricule:</strong> {{ vehicule.matricule || '-' }}</div>
+          <div><strong>Type:</strong> {{ vehicule.type || '-' }}</div>
+          <div><strong>Carburant:</strong> {{ vehicule.typeCarburant || '-' }}</div>
+          <div><strong>Agence:</strong> {{ vehicule.agence?.designation || '-' }}</div>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <div class="card-actions">
+          <button
+            [routerLink]="['/vehicule', vehicule.id, 'view']"
+            class="action-btn btn-view"
+            data-cy="entityDetailsButton"
+            title="Voir"
+            type="button"
+          >
+            <fa-icon icon="eye"></fa-icon>
+          </button>
+          <button
+            [routerLink]="['/vehicule', vehicule.id, 'edit']"
+            class="action-btn btn-edit"
+            data-cy="entityEditButton"
+            title="Editer"
+            type="button"
+          >
+            <fa-icon icon="pencil-alt"></fa-icon>
+          </button>
+          <button (click)="delete(vehicule)" class="action-btn btn-delete" data-cy="entityDeleteButton" title="Supprimer" type="button">
+            <fa-icon icon="times"></fa-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    *ngIf="filteredVehicules && filteredVehicules.length > 0 && viewMode === 'list'"
+    class="table-responsive table-entities"
+    id="entities-list"
+  >
+    <table class="table table-hover align-middle bg-white border rounded-3 shadow-sm mb-0" aria-describedby="page-heading">
       <thead>
         <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
-          <th scope="col" jhiSortBy="id">
-            <div class="d-flex">
-              <span jhiTranslate="global.field.id">ID</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="marque">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.marque">Marque</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="matricule">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.matricule">Matricule</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="type">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.type">Type</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="typeCarburant">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.typeCarburant">Type Carburant</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="statut">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.statut">Statut</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="agence.designation">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.agence">Agence</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
+          <th scope="col" jhiSortBy="id"><span>ID</span></th>
+          <th scope="col" jhiSortBy="marque"><span>Marque</span></th>
+          <th scope="col" jhiSortBy="matricule"><span>Matricule</span></th>
+          <th scope="col" jhiSortBy="type"><span>Type</span></th>
+          <th scope="col" jhiSortBy="typeCarburant"><span>Carburant</span></th>
+          <th scope="col" jhiSortBy="agence.designation"><span>Agence</span></th>
           <th scope="col"></th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let vehicule of vehicules; trackBy: trackId" data-cy="entityTable">
+        <tr *ngFor="let vehicule of filteredVehicules; trackBy: trackId" data-cy="entityTable">
           <td>
             <a [routerLink]="['/vehicule', vehicule.id, 'view']">{{ vehicule.id }}</a>
           </td>
@@ -86,37 +110,27 @@
           <td>{{ vehicule.matricule }}</td>
           <td>{{ vehicule.type }}</td>
           <td>{{ vehicule.typeCarburant }}</td>
-          <td jhiTranslate="{{ 'gpmGatewayApp.StatutVehicule.' + vehicule.statut }}">{{ vehicule.statut }}</td>
-          <td>
-            <div *ngIf="vehicule.agence">
-              <a [routerLink]="['/agence', vehicule.agence.id, 'view']">{{ vehicule.agence.designation }}</a>
-            </div>
-          </td>
+          <td>{{ vehicule.agence?.designation || '-' }}</td>
           <td class="text-end">
             <div class="btn-group">
               <button
-                type="submit"
                 [routerLink]="['/vehicule', vehicule.id, 'view']"
                 class="btn btn-info btn-sm"
                 data-cy="entityDetailsButton"
+                type="button"
               >
                 <fa-icon icon="eye"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
               </button>
-
               <button
-                type="submit"
                 [routerLink]="['/vehicule', vehicule.id, 'edit']"
                 class="btn btn-primary btn-sm"
                 data-cy="entityEditButton"
+                type="button"
               >
                 <fa-icon icon="pencil-alt"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
               </button>
-
-              <button type="submit" (click)="delete(vehicule)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+              <button (click)="delete(vehicule)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton" type="button">
                 <fa-icon icon="times"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
               </button>
             </div>
           </td>
@@ -125,7 +139,7 @@
     </table>
   </div>
 
-  <div *ngIf="vehicules && vehicules.length > 0">
+  <div *ngIf="filteredVehicules && filteredVehicules.length > 0">
     <div class="d-flex justify-content-center">
       <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
     </div>

@@ -17,6 +17,7 @@ import { VehiculeDeleteDialogComponent } from '../delete/vehicule-delete-dialog.
 })
 export class VehiculeComponent implements OnInit {
   vehicules?: IVehicule[];
+  filteredVehicules?: IVehicule[];
   isLoading = false;
 
   predicate = 'id';
@@ -25,6 +26,9 @@ export class VehiculeComponent implements OnInit {
   itemsPerPage = ITEMS_PER_PAGE;
   totalItems = 0;
   page = 1;
+
+  searchTerm = '';
+  viewMode: 'grid' | 'list' = 'grid';
 
   constructor(
     protected vehiculeService: VehiculeService,
@@ -71,6 +75,27 @@ export class VehiculeComponent implements OnInit {
     this.handleNavigation(page, this.predicate, this.ascending);
   }
 
+  filterVehicules(): void {
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    let result = this.vehicules ?? [];
+    const term = this.searchTerm.trim().toLowerCase();
+
+    if (term) {
+      result = result.filter(
+        v =>
+          (v.marque ?? '').toLowerCase().includes(term) ||
+          (v.matricule ?? '').toLowerCase().includes(term) ||
+          (v.type ?? '').toLowerCase().includes(term) ||
+          (v.agence?.designation ?? '').toLowerCase().includes(term)
+      );
+    }
+
+    this.filteredVehicules = result;
+  }
+
   protected loadFromBackendWithRouteInformations(): Observable<EntityArrayResponseType> {
     return combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data]).pipe(
       tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
@@ -90,6 +115,7 @@ export class VehiculeComponent implements OnInit {
     this.fillComponentAttributesFromResponseHeader(response.headers);
     const dataFromBody = this.fillComponentAttributesFromResponseBody(response.body);
     this.vehicules = dataFromBody;
+    this.applyFilters();
   }
 
   protected fillComponentAttributesFromResponseBody(data: IVehicule[] | null): IVehicule[] {

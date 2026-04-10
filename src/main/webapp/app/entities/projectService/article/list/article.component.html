@@ -1,72 +1,105 @@
-<div>
-  <h2 id="page-heading" data-cy="ArticleHeading">
-    <span jhiTranslate="gpmGatewayApp.projectServiceArticle.home.title">Articles</span>
-
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
-        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
-        <span jhiTranslate="gpmGatewayApp.projectServiceArticle.home.refreshListLabel">Actualiser la liste</span>
-      </button>
-
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-article"
-        [routerLink]="['/article/new']"
-      >
+<div class="entity-modern-container">
+  <div class="entity-modern-header">
+    <h2 id="page-heading" data-cy="ArticleHeading">
+      <span>Articles</span>
+    </h2>
+    <div class="header-actions">
+      <button id="jh-create-entity" data-cy="entityCreateButton" class="btn btn-primary" [routerLink]="['/article/new']">
         <fa-icon icon="plus"></fa-icon>
-        <span jhiTranslate="gpmGatewayApp.projectServiceArticle.home.createLabel"> Créer un nouveau Article </span>
+        <span>Nouvel article</span>
       </button>
     </div>
-  </h2>
-
-  <jhi-alert-error></jhi-alert-error>
-
-  <jhi-alert></jhi-alert>
-
-  <div class="alert alert-warning" id="no-result" *ngIf="articles?.length === 0">
-    <span jhiTranslate="gpmGatewayApp.projectServiceArticle.home.notFound">Aucun Article trouvé</span>
   </div>
 
-  <div class="table-responsive table-entities bg-white border rounded-3 shadow-sm" id="entities" *ngIf="articles && articles.length > 0">
-    <table class="table table-hover align-middle mb-0" aria-describedby="page-heading">
+  <jhi-alert-error></jhi-alert-error>
+  <jhi-alert></jhi-alert>
+
+  <div class="entity-modern-toolbar">
+    <div class="toolbar-left">
+      <div class="input-group">
+        <input [(ngModel)]="searchTerm" (ngModelChange)="filterArticles()" class="form-control" placeholder="Rechercher..." type="text" />
+      </div>
+    </div>
+
+    <div class="toolbar-right">
+      <div class="view-toggle">
+        <button class="view-btn" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Grille" type="button">
+          <fa-icon icon="th"></fa-icon>
+        </button>
+        <button class="view-btn" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'" title="Liste" type="button">
+          <fa-icon icon="list"></fa-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-warning" id="no-result" *ngIf="filteredArticles?.length === 0">
+    <span>Aucun Article trouve</span>
+  </div>
+
+  <div *ngIf="filteredArticles && filteredArticles.length > 0 && viewMode === 'grid'" class="entity-modern-grid" id="entities">
+    <div *ngFor="let article of filteredArticles; trackBy: trackId" class="entity-modern-card" data-cy="entityTable">
+      <div class="card-header">
+        <a [routerLink]="['/article', article.id, 'view']" class="entity-modern-num">#{{ article.id }}</a>
+      </div>
+
+      <div class="card-body">
+        <h3 class="entity-modern-title">
+          <a [routerLink]="['/article', article.id, 'view']">{{ article.designation || 'Sans designation' }}</a>
+        </h3>
+        <div class="entity-modern-details">
+          <div><strong>Code:</strong> {{ article.code || '-' }}</div>
+          <div><strong>Unite:</strong> {{ article.uniteMesure || '-' }}</div>
+          <div><strong>Maj:</strong> {{ article.updatedAt | formatMediumDatetime }}</div>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <div class="card-actions">
+          <button
+            [routerLink]="['/article', article.id, 'view']"
+            class="action-btn btn-view"
+            data-cy="entityDetailsButton"
+            title="Voir"
+            type="button"
+          >
+            <fa-icon icon="eye"></fa-icon>
+          </button>
+          <button
+            [routerLink]="['/article', article.id, 'edit']"
+            class="action-btn btn-edit"
+            data-cy="entityEditButton"
+            title="Editer"
+            type="button"
+          >
+            <fa-icon icon="pencil-alt"></fa-icon>
+          </button>
+          <button (click)="delete(article)" class="action-btn btn-delete" data-cy="entityDeleteButton" title="Supprimer" type="button">
+            <fa-icon icon="times"></fa-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    *ngIf="filteredArticles && filteredArticles.length > 0 && viewMode === 'list'"
+    class="table-responsive table-entities"
+    id="entities-list"
+  >
+    <table class="table table-hover align-middle bg-white border rounded-3 shadow-sm mb-0" aria-describedby="page-heading">
       <thead>
         <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
-          <th scope="col" jhiSortBy="id">
-            <div class="d-flex">
-              <span jhiTranslate="global.field.id">ID</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="code">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceArticle.code">Code</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="designation">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceArticle.designation">Designation</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="uniteMesure">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceArticle.uniteMesure">Unite Mesure</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedAt">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceArticle.updatedAt">Updated At</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
+          <th scope="col" jhiSortBy="id"><span>ID</span></th>
+          <th scope="col" jhiSortBy="code"><span>Code</span></th>
+          <th scope="col" jhiSortBy="designation"><span>Designation</span></th>
+          <th scope="col" jhiSortBy="uniteMesure"><span>Unite</span></th>
+          <th scope="col" jhiSortBy="updatedAt"><span>Maj</span></th>
           <th scope="col"></th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let article of articles; trackBy: trackId" data-cy="entityTable">
+        <tr *ngFor="let article of filteredArticles; trackBy: trackId" data-cy="entityTable">
           <td>
             <a [routerLink]="['/article', article.id, 'view']">{{ article.id }}</a>
           </td>
@@ -77,28 +110,23 @@
           <td class="text-end">
             <div class="btn-group">
               <button
-                type="submit"
                 [routerLink]="['/article', article.id, 'view']"
                 class="btn btn-info btn-sm"
                 data-cy="entityDetailsButton"
+                type="button"
               >
                 <fa-icon icon="eye"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
               </button>
-
               <button
-                type="submit"
                 [routerLink]="['/article', article.id, 'edit']"
                 class="btn btn-primary btn-sm"
                 data-cy="entityEditButton"
+                type="button"
               >
                 <fa-icon icon="pencil-alt"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
               </button>
-
-              <button type="submit" (click)="delete(article)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+              <button (click)="delete(article)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton" type="button">
                 <fa-icon icon="times"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
               </button>
             </div>
           </td>
@@ -107,7 +135,7 @@
     </table>
   </div>
 
-  <div *ngIf="articles && articles.length > 0">
+  <div *ngIf="filteredArticles && filteredArticles.length > 0">
     <div class="d-flex justify-content-center">
       <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
     </div>

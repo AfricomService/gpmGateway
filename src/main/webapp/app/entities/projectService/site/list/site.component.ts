@@ -17,6 +17,7 @@ import { SiteDeleteDialogComponent } from '../delete/site-delete-dialog.componen
 })
 export class SiteComponent implements OnInit {
   sites?: ISite[];
+  filteredSites?: ISite[];
   isLoading = false;
 
   predicate = 'id';
@@ -25,6 +26,9 @@ export class SiteComponent implements OnInit {
   itemsPerPage = ITEMS_PER_PAGE;
   totalItems = 0;
   page = 1;
+
+  searchTerm = '';
+  viewMode: 'grid' | 'list' = 'grid';
 
   constructor(
     protected siteService: SiteService,
@@ -71,6 +75,27 @@ export class SiteComponent implements OnInit {
     this.handleNavigation(page, this.predicate, this.ascending);
   }
 
+  filterSites(): void {
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    let result = this.sites ?? [];
+    const term = this.searchTerm.trim().toLowerCase();
+
+    if (term) {
+      result = result.filter(
+        s =>
+          (s.code ?? '').toLowerCase().includes(term) ||
+          (s.designation ?? '').toLowerCase().includes(term) ||
+          (s.ville?.nom ?? '').toLowerCase().includes(term) ||
+          (s.client?.raisonSociale ?? '').toLowerCase().includes(term)
+      );
+    }
+
+    this.filteredSites = result;
+  }
+
   protected loadFromBackendWithRouteInformations(): Observable<EntityArrayResponseType> {
     return combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data]).pipe(
       tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
@@ -90,6 +115,7 @@ export class SiteComponent implements OnInit {
     this.fillComponentAttributesFromResponseHeader(response.headers);
     const dataFromBody = this.fillComponentAttributesFromResponseBody(response.body);
     this.sites = dataFromBody;
+    this.applyFilters();
   }
 
   protected fillComponentAttributesFromResponseBody(data: ISite[] | null): ISite[] {

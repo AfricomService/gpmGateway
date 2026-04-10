@@ -17,6 +17,7 @@ import { ArticleDeleteDialogComponent } from '../delete/article-delete-dialog.co
 })
 export class ArticleComponent implements OnInit {
   articles?: IArticle[];
+  filteredArticles?: IArticle[];
   isLoading = false;
 
   predicate = 'id';
@@ -25,6 +26,9 @@ export class ArticleComponent implements OnInit {
   itemsPerPage = ITEMS_PER_PAGE;
   totalItems = 0;
   page = 1;
+
+  searchTerm = '';
+  viewMode: 'grid' | 'list' = 'grid';
 
   constructor(
     protected articleService: ArticleService,
@@ -71,6 +75,26 @@ export class ArticleComponent implements OnInit {
     this.handleNavigation(page, this.predicate, this.ascending);
   }
 
+  filterArticles(): void {
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    let result = this.articles ?? [];
+    const term = this.searchTerm.trim().toLowerCase();
+
+    if (term) {
+      result = result.filter(
+        a =>
+          (a.code ?? '').toLowerCase().includes(term) ||
+          (a.designation ?? '').toLowerCase().includes(term) ||
+          (a.uniteMesure ?? '').toLowerCase().includes(term)
+      );
+    }
+
+    this.filteredArticles = result;
+  }
+
   protected loadFromBackendWithRouteInformations(): Observable<EntityArrayResponseType> {
     return combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data]).pipe(
       tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
@@ -90,6 +114,7 @@ export class ArticleComponent implements OnInit {
     this.fillComponentAttributesFromResponseHeader(response.headers);
     const dataFromBody = this.fillComponentAttributesFromResponseBody(response.body);
     this.articles = dataFromBody;
+    this.applyFilters();
   }
 
   protected fillComponentAttributesFromResponseBody(data: IArticle[] | null): IArticle[] {

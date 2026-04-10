@@ -17,6 +17,7 @@ import { AgenceDeleteDialogComponent } from '../delete/agence-delete-dialog.comp
 })
 export class AgenceComponent implements OnInit {
   agences?: IAgence[];
+  filteredAgences?: IAgence[];
   isLoading = false;
 
   predicate = 'id';
@@ -25,6 +26,9 @@ export class AgenceComponent implements OnInit {
   itemsPerPage = ITEMS_PER_PAGE;
   totalItems = 0;
   page = 1;
+
+  searchTerm = '';
+  viewMode: 'grid' | 'list' = 'grid';
 
   constructor(
     protected agenceService: AgenceService,
@@ -71,6 +75,27 @@ export class AgenceComponent implements OnInit {
     this.handleNavigation(page, this.predicate, this.ascending);
   }
 
+  filterAgences(): void {
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    let result = this.agences ?? [];
+    const term = this.searchTerm.trim().toLowerCase();
+
+    if (term) {
+      result = result.filter(
+        a =>
+          (a.designation ?? '').toLowerCase().includes(term) ||
+          (a.ville ?? '').toLowerCase().includes(term) ||
+          (a.pays ?? '').toLowerCase().includes(term) ||
+          (a.societe?.raisonSociale ?? '').toLowerCase().includes(term)
+      );
+    }
+
+    this.filteredAgences = result;
+  }
+
   protected loadFromBackendWithRouteInformations(): Observable<EntityArrayResponseType> {
     return combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data]).pipe(
       tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
@@ -90,6 +115,7 @@ export class AgenceComponent implements OnInit {
     this.fillComponentAttributesFromResponseHeader(response.headers);
     const dataFromBody = this.fillComponentAttributesFromResponseBody(response.body);
     this.agences = dataFromBody;
+    this.applyFilters();
   }
 
   protected fillComponentAttributesFromResponseBody(data: IAgence[] | null): IAgence[] {

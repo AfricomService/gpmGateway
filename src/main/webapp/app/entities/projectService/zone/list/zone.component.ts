@@ -17,6 +17,7 @@ import { ZoneDeleteDialogComponent } from '../delete/zone-delete-dialog.componen
 })
 export class ZoneComponent implements OnInit {
   zones?: IZone[];
+  filteredZones?: IZone[];
   isLoading = false;
 
   predicate = 'id';
@@ -25,6 +26,9 @@ export class ZoneComponent implements OnInit {
   itemsPerPage = ITEMS_PER_PAGE;
   totalItems = 0;
   page = 1;
+
+  searchTerm = '';
+  viewMode: 'grid' | 'list' = 'grid';
 
   constructor(
     protected zoneService: ZoneService,
@@ -71,6 +75,21 @@ export class ZoneComponent implements OnInit {
     this.handleNavigation(page, this.predicate, this.ascending);
   }
 
+  filterZones(): void {
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    let result = this.zones ?? [];
+    const term = this.searchTerm.trim().toLowerCase();
+
+    if (term) {
+      result = result.filter(z => (z.nom ?? '').toLowerCase().includes(term) || (z.ville?.nom ?? '').toLowerCase().includes(term));
+    }
+
+    this.filteredZones = result;
+  }
+
   protected loadFromBackendWithRouteInformations(): Observable<EntityArrayResponseType> {
     return combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data]).pipe(
       tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
@@ -90,6 +109,7 @@ export class ZoneComponent implements OnInit {
     this.fillComponentAttributesFromResponseHeader(response.headers);
     const dataFromBody = this.fillComponentAttributesFromResponseBody(response.body);
     this.zones = dataFromBody;
+    this.applyFilters();
   }
 
   protected fillComponentAttributesFromResponseBody(data: IZone[] | null): IZone[] {

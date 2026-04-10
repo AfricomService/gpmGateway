@@ -13,7 +13,7 @@ interface RessourceNavItem {
   styleUrls: ['./ressources-shell.component.scss'],
 })
 export class RessourcesShellComponent {
-  isSidebarCollapsed = false;
+  isSidebarCollapsed = true;
 
   navItems: RessourceNavItem[] = [
     { label: 'Vehicules', route: 'vehicules', icon: ['fas', 'truck'] },

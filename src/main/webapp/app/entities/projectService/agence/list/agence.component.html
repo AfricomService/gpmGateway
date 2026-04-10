@@ -1,98 +1,122 @@
-<div>
-  <h2 id="page-heading" data-cy="AgenceHeading">
-    <span jhiTranslate="gpmGatewayApp.projectServiceAgence.home.title">Agences</span>
-
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
-        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
-        <span jhiTranslate="gpmGatewayApp.projectServiceAgence.home.refreshListLabel">Actualiser la liste</span>
-      </button>
-
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-agence"
-        [routerLink]="['/agence/new']"
-      >
+<div class="entity-modern-container">
+  <div class="entity-modern-header">
+    <h2 id="page-heading" data-cy="AgenceHeading">
+      <span>Agences</span>
+    </h2>
+    <div class="header-actions">
+      <button id="jh-create-entity" data-cy="entityCreateButton" class="btn btn-primary" [routerLink]="['/agence/new']">
         <fa-icon icon="plus"></fa-icon>
-        <span jhiTranslate="gpmGatewayApp.projectServiceAgence.home.createLabel"> Créer un nouveau Agence </span>
+        <span>Nouvelle agence</span>
       </button>
     </div>
-  </h2>
-
-  <jhi-alert-error></jhi-alert-error>
-
-  <jhi-alert></jhi-alert>
-
-  <div class="alert alert-warning" id="no-result" *ngIf="agences?.length === 0">
-    <span jhiTranslate="gpmGatewayApp.projectServiceAgence.home.notFound">Aucun Agence trouvé</span>
   </div>
 
-  <div class="table-responsive table-entities bg-white border rounded-3 shadow-sm" id="entities" *ngIf="agences && agences.length > 0">
-    <table class="table table-hover align-middle mb-0" aria-describedby="page-heading">
+  <jhi-alert-error></jhi-alert-error>
+  <jhi-alert></jhi-alert>
+
+  <div class="entity-modern-toolbar">
+    <div class="toolbar-left">
+      <div class="input-group">
+        <input [(ngModel)]="searchTerm" (ngModelChange)="filterAgences()" class="form-control" placeholder="Rechercher..." type="text" />
+      </div>
+    </div>
+
+    <div class="toolbar-right">
+      <div class="view-toggle">
+        <button class="view-btn" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Grille" type="button">
+          <fa-icon icon="th"></fa-icon>
+        </button>
+        <button class="view-btn" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'" title="Liste" type="button">
+          <fa-icon icon="list"></fa-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-warning" id="no-result" *ngIf="filteredAgences?.length === 0">
+    <span>Aucune agence trouvee</span>
+  </div>
+
+  <div *ngIf="filteredAgences && filteredAgences.length > 0 && viewMode === 'grid'" class="entity-modern-grid" id="entities">
+    <div *ngFor="let agence of filteredAgences; trackBy: trackId" class="entity-modern-card" data-cy="entityTable">
+      <div class="card-header">
+        <a [routerLink]="['/agence', agence.id, 'view']" class="entity-modern-num">#{{ agence.id }}</a>
+      </div>
+
+      <div class="card-body">
+        <h3 class="entity-modern-title">
+          <a [routerLink]="['/agence', agence.id, 'view']">{{ agence.designation || 'Sans designation' }}</a>
+        </h3>
+        <div class="entity-modern-details">
+          <div><strong>Ville:</strong> {{ agence.ville || '-' }}</div>
+          <div><strong>Pays:</strong> {{ agence.pays || '-' }}</div>
+          <div><strong>Societe:</strong> {{ agence.societe?.raisonSociale || '-' }}</div>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <div class="card-actions">
+          <button
+            [routerLink]="['/agence', agence.id, 'view']"
+            class="action-btn btn-view"
+            data-cy="entityDetailsButton"
+            title="Voir"
+            type="button"
+          >
+            <fa-icon icon="eye"></fa-icon>
+          </button>
+          <button
+            [routerLink]="['/agence', agence.id, 'edit']"
+            class="action-btn btn-edit"
+            data-cy="entityEditButton"
+            title="Editer"
+            type="button"
+          >
+            <fa-icon icon="pencil-alt"></fa-icon>
+          </button>
+          <button (click)="delete(agence)" class="action-btn btn-delete" data-cy="entityDeleteButton" title="Supprimer" type="button">
+            <fa-icon icon="times"></fa-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    *ngIf="filteredAgences && filteredAgences.length > 0 && viewMode === 'list'"
+    class="table-responsive table-entities"
+    id="entities-list"
+  >
+    <table class="table table-hover align-middle bg-white border rounded-3 shadow-sm mb-0" aria-describedby="page-heading">
       <thead>
         <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
-          <th scope="col" jhiSortBy="id">
-            <div class="d-flex">
-              <span jhiTranslate="global.field.id">ID</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="designation">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceAgence.designation">Designation</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="ville">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceAgence.ville">Ville</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="pays">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceAgence.pays">Pays</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="societe.raisonSociale">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceAgence.societe">Societe</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
+          <th scope="col" jhiSortBy="id"><span>ID</span></th>
+          <th scope="col" jhiSortBy="designation"><span>Designation</span></th>
+          <th scope="col" jhiSortBy="ville"><span>Ville</span></th>
+          <th scope="col" jhiSortBy="pays"><span>Pays</span></th>
+          <th scope="col" jhiSortBy="societe.raisonSociale"><span>Societe</span></th>
           <th scope="col"></th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let agence of agences; trackBy: trackId" data-cy="entityTable">
+        <tr *ngFor="let agence of filteredAgences; trackBy: trackId" data-cy="entityTable">
           <td>
             <a [routerLink]="['/agence', agence.id, 'view']">{{ agence.id }}</a>
           </td>
           <td>{{ agence.designation }}</td>
           <td>{{ agence.ville }}</td>
           <td>{{ agence.pays }}</td>
-          <td>
-            <div *ngIf="agence.societe">
-              <a [routerLink]="['/societe', agence.societe.id, 'view']">{{ agence.societe.raisonSociale }}</a>
-            </div>
-          </td>
+          <td>{{ agence.societe?.raisonSociale || '-' }}</td>
           <td class="text-end">
             <div class="btn-group">
-              <button type="submit" [routerLink]="['/agence', agence.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+              <button [routerLink]="['/agence', agence.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton" type="button">
                 <fa-icon icon="eye"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
               </button>
-
-              <button type="submit" [routerLink]="['/agence', agence.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+              <button [routerLink]="['/agence', agence.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton" type="button">
                 <fa-icon icon="pencil-alt"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
               </button>
-
-              <button type="submit" (click)="delete(agence)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+              <button (click)="delete(agence)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton" type="button">
                 <fa-icon icon="times"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
               </button>
             </div>
           </td>
@@ -101,7 +125,7 @@
     </table>
   </div>
 
-  <div *ngIf="agences && agences.length > 0">
+  <div *ngIf="filteredAgences && filteredAgences.length > 0">
     <div class="d-flex justify-content-center">
       <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
     </div>
