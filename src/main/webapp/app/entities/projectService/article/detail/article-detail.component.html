@@ -1,64 +1,70 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
-    <div *ngIf="article">
-      <h2 data-cy="articleDetailsHeading"><span jhiTranslate="gpmGatewayApp.projectServiceArticle.detail.title">Article</span></h2>
+<div class="entity-detail-page py-4" *ngIf="article as a">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold mb-0">{{ a.designation || 'Article' }}</h3>
+      <small class="text-muted">Details article</small>
+    </div>
 
-      <hr />
-
-      <jhi-alert-error></jhi-alert-error>
-
-      <jhi-alert></jhi-alert>
-
-      <dl class="row-md jh-entity-details">
-        <dt><span jhiTranslate="global.field.id">ID</span></dt>
-        <dd>
-          <span>{{ article.id }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceArticle.code">Code</span></dt>
-        <dd>
-          <span>{{ article.code }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceArticle.designation">Designation</span></dt>
-        <dd>
-          <span>{{ article.designation }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceArticle.uniteMesure">Unite Mesure</span></dt>
-        <dd>
-          <span>{{ article.uniteMesure }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceArticle.createdAt">Created At</span></dt>
-        <dd>
-          <span>{{ article.createdAt | formatMediumDatetime }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceArticle.updatedAt">Updated At</span></dt>
-        <dd>
-          <span>{{ article.updatedAt | formatMediumDatetime }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceArticle.createdBy">Created By</span></dt>
-        <dd>
-          <span>{{ article.createdBy }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceArticle.createdByUserLogin">Created By User Login</span></dt>
-        <dd>
-          <span>{{ article.createdByUserLogin }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceArticle.updatedBy">Updated By</span></dt>
-        <dd>
-          <span>{{ article.updatedBy }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceArticle.updatedByUserLogin">Updated By User Login</span></dt>
-        <dd>
-          <span>{{ article.updatedByUserLogin }}</span>
-        </dd>
-      </dl>
-
-      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
-        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
-      </button>
-
-      <button type="button" [routerLink]="['/article', article.id, 'edit']" class="btn btn-primary">
-        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
-      </button>
+    <div class="d-flex gap-2">
+      <button type="button" (click)="previousState()" class="btn btn-light rounded-3" data-cy="entityDetailsBackButton">Retour</button>
+      <button type="button" [routerLink]="['/article', a.id, 'edit']" class="btn btn-primary rounded-3">Editer</button>
     </div>
   </div>
+
+  <jhi-alert-error></jhi-alert-error>
+  <jhi-alert></jhi-alert>
+
+  <ngb-accordion [closeOthers]="false" activeIds="article-main" class="shadow-sm rounded-4 overflow-hidden">
+    <ngb-panel id="article-main">
+      <ng-template ngbPanelTitle>
+        <div class="d-flex align-items-center text-primary"><span class="fw-bold">Informations</span></div>
+      </ng-template>
+      <ng-template ngbPanelContent>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <small class="text-muted">ID</small>
+            <div class="fw-semibold">{{ a.id }}</div>
+          </div>
+          <div class="col-md-4">
+            <small class="text-muted">Code</small>
+            <div>{{ a.code || '-' }}</div>
+          </div>
+          <div class="col-md-4">
+            <small class="text-muted">Unite de mesure</small>
+            <div>{{ a.uniteMesure || '-' }}</div>
+          </div>
+          <div class="col-md-12">
+            <small class="text-muted">Designation</small>
+            <div>{{ a.designation || '-' }}</div>
+          </div>
+        </div>
+      </ng-template>
+    </ngb-panel>
+
+    <ngb-panel id="article-audit">
+      <ng-template ngbPanelTitle>
+        <div class="d-flex align-items-center text-primary"><span class="fw-bold">Audit</span></div>
+      </ng-template>
+      <ng-template ngbPanelContent>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <small class="text-muted">Cree le</small>
+            <div>{{ a.createdAt | formatMediumDatetime }}</div>
+          </div>
+          <div class="col-md-6">
+            <small class="text-muted">Mis a jour le</small>
+            <div>{{ a.updatedAt | formatMediumDatetime }}</div>
+          </div>
+          <div class="col-md-6">
+            <small class="text-muted">Cree par</small>
+            <div>{{ a.createdByUserLogin || a.createdBy || '-' }}</div>
+          </div>
+          <div class="col-md-6">
+            <small class="text-muted">Mis a jour par</small>
+            <div>{{ a.updatedByUserLogin || a.updatedBy || '-' }}</div>
+          </div>
+        </div>
+      </ng-template>
+    </ngb-panel>
+  </ngb-accordion>
 </div>

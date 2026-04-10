@@ -1,98 +1,109 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
-    <div *ngIf="vehicule">
-      <h2 data-cy="vehiculeDetailsHeading"><span jhiTranslate="gpmGatewayApp.projectServiceVehicule.detail.title">Vehicule</span></h2>
+<div class="entity-detail-page py-4" *ngIf="vehicule as v">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold mb-0">{{ v.marque || 'Vehicule' }}</h3>
+      <small class="text-muted">Details vehicule</small>
+    </div>
 
-      <hr />
-
-      <jhi-alert-error></jhi-alert-error>
-
-      <jhi-alert></jhi-alert>
-
-      <dl class="row-md jh-entity-details">
-        <dt><span jhiTranslate="global.field.id">ID</span></dt>
-        <dd>
-          <span>{{ vehicule.id }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceVehicule.marque">Marque</span></dt>
-        <dd>
-          <span>{{ vehicule.marque }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceVehicule.type">Type</span></dt>
-        <dd>
-          <span>{{ vehicule.type }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceVehicule.matricule">Matricule</span></dt>
-        <dd>
-          <span>{{ vehicule.matricule }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceVehicule.nbPlaces">Nb Places</span></dt>
-        <dd>
-          <span>{{ vehicule.nbPlaces }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceVehicule.numCarteGrise">Num Carte Grise</span></dt>
-        <dd>
-          <span>{{ vehicule.numCarteGrise }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceVehicule.dateCirculation">Date Circulation</span></dt>
-        <dd>
-          <span>{{ vehicule.dateCirculation | formatMediumDate }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceVehicule.typeCarburant">Type Carburant</span></dt>
-        <dd>
-          <span>{{ vehicule.typeCarburant }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceVehicule.chargeFixe">Charge Fixe</span></dt>
-        <dd>
-          <span>{{ vehicule.chargeFixe }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceVehicule.tauxConsommation">Taux Consommation</span></dt>
-        <dd>
-          <span>{{ vehicule.tauxConsommation }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceVehicule.statut">Statut</span></dt>
-        <dd>
-          <span jhiTranslate="{{ 'gpmGatewayApp.StatutVehicule.' + vehicule.statut }}">{{ vehicule.statut }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceVehicule.createdAt">Created At</span></dt>
-        <dd>
-          <span>{{ vehicule.createdAt | formatMediumDatetime }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceVehicule.updatedAt">Updated At</span></dt>
-        <dd>
-          <span>{{ vehicule.updatedAt | formatMediumDatetime }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceVehicule.createdBy">Created By</span></dt>
-        <dd>
-          <span>{{ vehicule.createdBy }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceVehicule.createdByUserLogin">Created By User Login</span></dt>
-        <dd>
-          <span>{{ vehicule.createdByUserLogin }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceVehicule.updatedBy">Updated By</span></dt>
-        <dd>
-          <span>{{ vehicule.updatedBy }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceVehicule.updatedByUserLogin">Updated By User Login</span></dt>
-        <dd>
-          <span>{{ vehicule.updatedByUserLogin }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceVehicule.agence">Agence</span></dt>
-        <dd>
-          <div *ngIf="vehicule.agence">
-            <a [routerLink]="['/agence', vehicule.agence.id, 'view']">{{ vehicule.agence.designation }}</a>
-          </div>
-        </dd>
-      </dl>
-
-      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
-        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
-      </button>
-
-      <button type="button" [routerLink]="['/vehicule', vehicule.id, 'edit']" class="btn btn-primary">
-        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
-      </button>
+    <div class="d-flex gap-2">
+      <button type="button" (click)="previousState()" class="btn btn-light rounded-3" data-cy="entityDetailsBackButton">Retour</button>
+      <button type="button" [routerLink]="['/vehicule', v.id, 'edit']" class="btn btn-primary rounded-3">Editer</button>
     </div>
   </div>
+
+  <jhi-alert-error></jhi-alert-error>
+  <jhi-alert></jhi-alert>
+
+  <ngb-accordion [closeOthers]="false" activeIds="vehicule-main" class="shadow-sm rounded-4 overflow-hidden">
+    <ngb-panel id="vehicule-main">
+      <ng-template ngbPanelTitle>
+        <div class="d-flex align-items-center text-primary">
+          <span class="fw-bold">Informations principales</span>
+        </div>
+      </ng-template>
+      <ng-template ngbPanelContent>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <small class="text-muted">ID</small>
+            <div class="fw-semibold">{{ v.id }}</div>
+          </div>
+          <div class="col-md-4">
+            <small class="text-muted">Marque</small>
+            <div>{{ v.marque || '-' }}</div>
+          </div>
+          <div class="col-md-4">
+            <small class="text-muted">Matricule</small>
+            <div>{{ v.matricule || '-' }}</div>
+          </div>
+          <div class="col-md-4">
+            <small class="text-muted">Type</small>
+            <div>{{ v.type || '-' }}</div>
+          </div>
+          <div class="col-md-4">
+            <small class="text-muted">Type carburant</small>
+            <div>{{ v.typeCarburant || '-' }}</div>
+          </div>
+          <div class="col-md-4">
+            <small class="text-muted">Statut</small>
+            <div>{{ v.statut || '-' }}</div>
+          </div>
+          <div class="col-md-4">
+            <small class="text-muted">Nb places</small>
+            <div>{{ v.nbPlaces || '-' }}</div>
+          </div>
+          <div class="col-md-4">
+            <small class="text-muted">Carte grise</small>
+            <div>{{ v.numCarteGrise || '-' }}</div>
+          </div>
+          <div class="col-md-4">
+            <small class="text-muted">Date circulation</small>
+            <div>{{ v.dateCirculation | formatMediumDate }}</div>
+          </div>
+        </div>
+      </ng-template>
+    </ngb-panel>
+
+    <ngb-panel id="vehicule-relations">
+      <ng-template ngbPanelTitle>
+        <div class="d-flex align-items-center text-primary">
+          <span class="fw-bold">Relations et audit</span>
+        </div>
+      </ng-template>
+      <ng-template ngbPanelContent>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <small class="text-muted">Agence</small>
+            <div *ngIf="v.agence; else noAgence">
+              <a [routerLink]="['/agence', v.agence.id, 'view']">{{ v.agence.designation }}</a>
+            </div>
+            <ng-template #noAgence><div>-</div></ng-template>
+          </div>
+          <div class="col-md-6">
+            <small class="text-muted">Charge fixe</small>
+            <div>{{ v.chargeFixe || '-' }}</div>
+          </div>
+          <div class="col-md-6">
+            <small class="text-muted">Taux consommation</small>
+            <div>{{ v.tauxConsommation || '-' }}</div>
+          </div>
+          <div class="col-md-6">
+            <small class="text-muted">Cree le</small>
+            <div>{{ v.createdAt | formatMediumDatetime }}</div>
+          </div>
+          <div class="col-md-6">
+            <small class="text-muted">Mis a jour le</small>
+            <div>{{ v.updatedAt | formatMediumDatetime }}</div>
+          </div>
+          <div class="col-md-6">
+            <small class="text-muted">Cree par</small>
+            <div>{{ v.createdByUserLogin || v.createdBy || '-' }}</div>
+          </div>
+          <div class="col-md-6">
+            <small class="text-muted">Mis a jour par</small>
+            <div>{{ v.updatedByUserLogin || v.updatedBy || '-' }}</div>
+          </div>
+        </div>
+      </ng-template>
+    </ngb-panel>
+  </ngb-accordion>
 </div>

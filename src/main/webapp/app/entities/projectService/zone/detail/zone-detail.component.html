@@ -1,38 +1,43 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
-    <div *ngIf="zone">
-      <h2 data-cy="zoneDetailsHeading"><span jhiTranslate="gpmGatewayApp.projectServiceZone.detail.title">Zone</span></h2>
+<div class="entity-detail-page py-4" *ngIf="zone as z">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold mb-0">{{ z.nom || 'Zone' }}</h3>
+      <small class="text-muted">Details zone</small>
+    </div>
 
-      <hr />
-
-      <jhi-alert-error></jhi-alert-error>
-
-      <jhi-alert></jhi-alert>
-
-      <dl class="row-md jh-entity-details">
-        <dt><span jhiTranslate="global.field.id">ID</span></dt>
-        <dd>
-          <span>{{ zone.id }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceZone.nom">Nom</span></dt>
-        <dd>
-          <span>{{ zone.nom }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceZone.ville">Ville</span></dt>
-        <dd>
-          <div *ngIf="zone.ville">
-            <a [routerLink]="['/ville', zone.ville.id, 'view']">{{ zone.ville.nom }}</a>
-          </div>
-        </dd>
-      </dl>
-
-      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
-        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
-      </button>
-
-      <button type="button" [routerLink]="['/zone', zone.id, 'edit']" class="btn btn-primary">
-        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
-      </button>
+    <div class="d-flex gap-2">
+      <button type="button" (click)="previousState()" class="btn btn-light rounded-3" data-cy="entityDetailsBackButton">Retour</button>
+      <button type="button" [routerLink]="['/zone', z.id, 'edit']" class="btn btn-primary rounded-3">Editer</button>
     </div>
   </div>
+
+  <jhi-alert-error></jhi-alert-error>
+  <jhi-alert></jhi-alert>
+
+  <ngb-accordion [closeOthers]="false" activeIds="zone-main" class="shadow-sm rounded-4 overflow-hidden">
+    <ngb-panel id="zone-main">
+      <ng-template ngbPanelTitle>
+        <div class="d-flex align-items-center text-primary"><span class="fw-bold">Informations</span></div>
+      </ng-template>
+      <ng-template ngbPanelContent>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <small class="text-muted">ID</small>
+            <div class="fw-semibold">{{ z.id }}</div>
+          </div>
+          <div class="col-md-4">
+            <small class="text-muted">Nom</small>
+            <div>{{ z.nom || '-' }}</div>
+          </div>
+          <div class="col-md-4">
+            <small class="text-muted">Ville</small>
+            <div *ngIf="z.ville; else noVille">
+              <a [routerLink]="['/ville', z.ville.id, 'view']">{{ z.ville.nom }}</a>
+            </div>
+            <ng-template #noVille><div>-</div></ng-template>
+          </div>
+        </div>
+      </ng-template>
+    </ngb-panel>
+  </ngb-accordion>
 </div>

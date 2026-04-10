@@ -1,32 +1,36 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
-    <div *ngIf="ville">
-      <h2 data-cy="villeDetailsHeading"><span jhiTranslate="gpmGatewayApp.projectServiceVille.detail.title">Ville</span></h2>
+<div class="entity-detail-page py-4" *ngIf="ville as v">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold mb-0">{{ v.nom || 'Ville' }}</h3>
+      <small class="text-muted">Details ville</small>
+    </div>
 
-      <hr />
-
-      <jhi-alert-error></jhi-alert-error>
-
-      <jhi-alert></jhi-alert>
-
-      <dl class="row-md jh-entity-details">
-        <dt><span jhiTranslate="global.field.id">ID</span></dt>
-        <dd>
-          <span>{{ ville.id }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceVille.nom">Nom</span></dt>
-        <dd>
-          <span>{{ ville.nom }}</span>
-        </dd>
-      </dl>
-
-      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
-        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
-      </button>
-
-      <button type="button" [routerLink]="['/ville', ville.id, 'edit']" class="btn btn-primary">
-        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
-      </button>
+    <div class="d-flex gap-2">
+      <button type="button" (click)="previousState()" class="btn btn-light rounded-3" data-cy="entityDetailsBackButton">Retour</button>
+      <button type="button" [routerLink]="['/ville', v.id, 'edit']" class="btn btn-primary rounded-3">Editer</button>
     </div>
   </div>
+
+  <jhi-alert-error></jhi-alert-error>
+  <jhi-alert></jhi-alert>
+
+  <ngb-accordion [closeOthers]="false" activeIds="ville-main" class="shadow-sm rounded-4 overflow-hidden">
+    <ngb-panel id="ville-main">
+      <ng-template ngbPanelTitle>
+        <div class="d-flex align-items-center text-primary"><span class="fw-bold">Informations</span></div>
+      </ng-template>
+      <ng-template ngbPanelContent>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <small class="text-muted">ID</small>
+            <div class="fw-semibold">{{ v.id }}</div>
+          </div>
+          <div class="col-md-6">
+            <small class="text-muted">Nom</small>
+            <div>{{ v.nom || '-' }}</div>
+          </div>
+        </div>
+      </ng-template>
+    </ngb-panel>
+  </ngb-accordion>
 </div>

@@ -1,80 +1,88 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
-    <div *ngIf="site">
-      <h2 data-cy="siteDetailsHeading"><span jhiTranslate="gpmGatewayApp.projectServiceSite.detail.title">Site</span></h2>
+<div class="entity-detail-page py-4" *ngIf="site as s">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold mb-0">{{ s.designation || 'Site' }}</h3>
+      <small class="text-muted">Details site</small>
+    </div>
 
-      <hr />
-
-      <jhi-alert-error></jhi-alert-error>
-
-      <jhi-alert></jhi-alert>
-
-      <dl class="row-md jh-entity-details">
-        <dt><span jhiTranslate="global.field.id">ID</span></dt>
-        <dd>
-          <span>{{ site.id }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSite.code">Code</span></dt>
-        <dd>
-          <span>{{ site.code }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSite.designation">Designation</span></dt>
-        <dd>
-          <span>{{ site.designation }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSite.gpsX">Gps X</span></dt>
-        <dd>
-          <span>{{ site.gpsX }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSite.gpsY">Gps Y</span></dt>
-        <dd>
-          <span>{{ site.gpsY }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSite.createdAt">Created At</span></dt>
-        <dd>
-          <span>{{ site.createdAt | formatMediumDatetime }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSite.updatedAt">Updated At</span></dt>
-        <dd>
-          <span>{{ site.updatedAt | formatMediumDatetime }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSite.createdBy">Created By</span></dt>
-        <dd>
-          <span>{{ site.createdBy }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSite.createdByUserLogin">Created By User Login</span></dt>
-        <dd>
-          <span>{{ site.createdByUserLogin }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSite.updatedBy">Updated By</span></dt>
-        <dd>
-          <span>{{ site.updatedBy }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSite.updatedByUserLogin">Updated By User Login</span></dt>
-        <dd>
-          <span>{{ site.updatedByUserLogin }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSite.ville">Ville</span></dt>
-        <dd>
-          <div *ngIf="site.ville">
-            <a [routerLink]="['/ville', site.ville.id, 'view']">{{ site.ville.nom }}</a>
-          </div>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.projectServiceSite.client">Client</span></dt>
-        <dd>
-          <div *ngIf="site.client">
-            <a [routerLink]="['/client', site.client.id, 'view']">{{ site.client.raisonSociale }}</a>
-          </div>
-        </dd>
-      </dl>
-
-      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
-        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
-      </button>
-
-      <button type="button" [routerLink]="['/site', site.id, 'edit']" class="btn btn-primary">
-        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
-      </button>
+    <div class="d-flex gap-2">
+      <button type="button" (click)="previousState()" class="btn btn-light rounded-3" data-cy="entityDetailsBackButton">Retour</button>
+      <button type="button" [routerLink]="['/site', s.id, 'edit']" class="btn btn-primary rounded-3">Editer</button>
     </div>
   </div>
+
+  <jhi-alert-error></jhi-alert-error>
+  <jhi-alert></jhi-alert>
+
+  <ngb-accordion [closeOthers]="false" activeIds="site-main" class="shadow-sm rounded-4 overflow-hidden">
+    <ngb-panel id="site-main">
+      <ng-template ngbPanelTitle>
+        <div class="d-flex align-items-center text-primary"><span class="fw-bold">Informations principales</span></div>
+      </ng-template>
+      <ng-template ngbPanelContent>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <small class="text-muted">ID</small>
+            <div class="fw-semibold">{{ s.id }}</div>
+          </div>
+          <div class="col-md-4">
+            <small class="text-muted">Code</small>
+            <div>{{ s.code || '-' }}</div>
+          </div>
+          <div class="col-md-4">
+            <small class="text-muted">Designation</small>
+            <div>{{ s.designation || '-' }}</div>
+          </div>
+          <div class="col-md-4">
+            <small class="text-muted">GPS X</small>
+            <div>{{ s.gpsX || '-' }}</div>
+          </div>
+          <div class="col-md-4">
+            <small class="text-muted">GPS Y</small>
+            <div>{{ s.gpsY || '-' }}</div>
+          </div>
+          <div class="col-md-4">
+            <small class="text-muted">Ville</small>
+            <div *ngIf="s.ville; else noVille">
+              <a [routerLink]="['/ville', s.ville.id, 'view']">{{ s.ville.nom }}</a>
+            </div>
+            <ng-template #noVille><div>-</div></ng-template>
+          </div>
+          <div class="col-md-12">
+            <small class="text-muted">Client</small>
+            <div *ngIf="s.client; else noClient">
+              <a [routerLink]="['/client', s.client.id, 'view']">{{ s.client.raisonSociale }}</a>
+            </div>
+            <ng-template #noClient><div>-</div></ng-template>
+          </div>
+        </div>
+      </ng-template>
+    </ngb-panel>
+
+    <ngb-panel id="site-audit">
+      <ng-template ngbPanelTitle>
+        <div class="d-flex align-items-center text-primary"><span class="fw-bold">Audit</span></div>
+      </ng-template>
+      <ng-template ngbPanelContent>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <small class="text-muted">Cree le</small>
+            <div>{{ s.createdAt | formatMediumDatetime }}</div>
+          </div>
+          <div class="col-md-6">
+            <small class="text-muted">Mis a jour le</small>
+            <div>{{ s.updatedAt | formatMediumDatetime }}</div>
+          </div>
+          <div class="col-md-6">
+            <small class="text-muted">Cree par</small>
+            <div>{{ s.createdByUserLogin || s.createdBy || '-' }}</div>
+          </div>
+          <div class="col-md-6">
+            <small class="text-muted">Mis a jour par</small>
+            <div>{{ s.updatedByUserLogin || s.updatedBy || '-' }}</div>
+          </div>
+        </div>
+      </ng-template>
+    </ngb-panel>
+  </ngb-accordion>
 </div>

@@ -385,4 +385,31 @@ Shared modern entity list layout (ressources pages)
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+Shared entity detail layout (client-like)
+========================================================================== */
+
+.entity-detail-page .accordion-item {
+  overflow: hidden;
+}
+
+.entity-detail-page .accordion-button {
+  font-weight: 600;
+  background: #fff;
+  box-shadow: none;
+}
+
+.entity-detail-page .accordion-button:not(.collapsed) {
+  background: #f8fafc;
+  color: #2563eb;
+}
+
+.entity-detail-page .accordion-body {
+  background: #fff;
+}
+
+.entity-detail-page .btn {
+  min-width: 90px;
+}
 /* jhipster-needle-scss-add-main JHipster will add new css style */
