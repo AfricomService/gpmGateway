@@ -18,9 +18,14 @@
       <fa-icon icon="bars"></fa-icon>
     </button>
 
-    <div class="navbar-collapse collapse" id="navbarResponsive" [ngbCollapse]="isNavbarCollapsed" [ngSwitch]="account !== null">
+    <div
+      class="navbar-collapse collapse navbar-layout"
+      id="navbarResponsive"
+      [ngbCollapse]="isNavbarCollapsed"
+      [ngSwitch]="account !== null"
+    >
       <!-- Center Section: Main Navigation -->
-      <ul class="navbar-nav mx-auto">
+      <ul class="navbar-nav navbar-center">
         <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
           <a class="nav-link" routerLink="/" (click)="collapseNavbar()">
             <fa-icon icon="home" class="me-1"></fa-icon>
@@ -66,7 +71,7 @@
       </ul>
 
       <!-- Right Section: Actions & User Profile -->
-      <ul class="navbar-nav ms-auto align-items-center">
+      <ul class="navbar-nav navbar-right align-items-center">
         <!--        <li class="nav-item me-2">-->
         <!--          <a class="nav-link" href="javascript:void(0);">-->
         <!--            <fa-icon icon="search"></fa-icon>-->
