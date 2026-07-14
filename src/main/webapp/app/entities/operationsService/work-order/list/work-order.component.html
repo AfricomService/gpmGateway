@@ -1,274 +1,370 @@
-<div>
-  <h2 id="page-heading" data-cy="WorkOrderHeading">
-    <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.home.title">WorkOrders</span>
-
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
-        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
-        <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.home.refreshListLabel">Actualiser la liste</span>
-      </button>
-
+<div class="missions-page">
+  <!-- Sidebar filtre "Vues" -->
+  <aside class="missions-sidebar">
+    <div class="missions-sidebar-title">Vues</div>
+    <nav class="missions-views">
       <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-work-order"
-        [routerLink]="['/work-order/new']"
+        type="button"
+        *ngFor="let view of views"
+        class="missions-view-item"
+        [class.active]="activeView === view.key"
+        (click)="selectView(view)"
       >
-        <fa-icon icon="plus"></fa-icon>
-        <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.home.createLabel"> Créer un nouveau Work Order </span>
+        <fa-icon [icon]="view.icon"></fa-icon>
+        <span>{{ view.label }}</span>
       </button>
-    </div>
-  </h2>
+    </nav>
+  </aside>
 
-  <jhi-alert-error></jhi-alert-error>
+  <!-- Contenu principal -->
+  <div class="missions-content">
+    <div class="missions-header">
+      <h2 id="page-heading" data-cy="WorkOrderHeading">Missions</h2>
 
-  <jhi-alert></jhi-alert>
+      <div class="missions-header-actions">
+        <button class="btn-refresh" (click)="load()" [disabled]="isLoading" title="Actualiser">
+          <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        </button>
 
-  <div class="alert alert-warning" id="no-result" *ngIf="workOrders?.length === 0">
-    <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.home.notFound">Aucun Work Order trouvé</span>
-  </div>
-
-  <div class="table-responsive table-entities" id="entities" *ngIf="workOrders && workOrders.length > 0">
-    <table class="table table-striped" aria-describedby="page-heading">
-      <thead>
-        <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
-          <th scope="col" jhiSortBy="id">
-            <div class="d-flex">
-              <span jhiTranslate="global.field.id">ID</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="clientId">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.clientId">Client Id</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="affaireId">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.affaireId">Affaire Id</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="demandeurContactId">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.demandeurContactId">Demandeur Contact Id</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="vehiculeId">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.vehiculeId">Vehicule Id</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="otExterneId">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.otExterneId">Ot Externe Id</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="valideurId">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.valideurId">Valideur Id</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="valideurUserLogin">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.valideurUserLogin">Valideur User Login</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="dateHeureDebutPrev">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.dateHeureDebutPrev">Date Heure Debut Prev</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="dateHeureFinPrev">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.dateHeureFinPrev">Date Heure Fin Prev</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="dateHeureDebutReel">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.dateHeureDebutReel">Date Heure Debut Reel</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="dateHeureFinReel">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.dateHeureFinReel">Date Heure Fin Reel</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="missionDeNuit">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.missionDeNuit">Mission De Nuit</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="nombreNuits">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.nombreNuits">Nombre Nuits</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="hebergement">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.hebergement">Hebergement</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="nombreHebergements">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.nombreHebergements">Nombre Hebergements</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="remarque">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.remarque">Remarque</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="numFicheIntervention">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.numFicheIntervention">Num Fiche Intervention</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="statut">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.statut">Statut</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="materielUtilise">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.materielUtilise">Materiel Utilise</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdAt">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.createdAt">Created At</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedAt">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.updatedAt">Updated At</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdBy">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.createdBy">Created By</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdByUserLogin">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.createdByUserLogin">Created By User Login</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedBy">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.updatedBy">Updated By</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedByUserLogin">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.updatedByUserLogin">Updated By User Login</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let workOrder of workOrders; trackBy: trackId" data-cy="entityTable">
-          <td>
-            <a [routerLink]="['/work-order', workOrder.id, 'view']">{{ workOrder.id }}</a>
-          </td>
-          <td>{{ workOrder.clientId }}</td>
-          <td>{{ workOrder.affaireId }}</td>
-          <td>{{ workOrder.demandeurContactId }}</td>
-          <td>{{ workOrder.vehiculeId }}</td>
-          <td>{{ workOrder.otExterneId }}</td>
-          <td>{{ workOrder.valideurId }}</td>
-          <td>{{ workOrder.valideurUserLogin }}</td>
-          <td>{{ workOrder.dateHeureDebutPrev | formatMediumDatetime }}</td>
-          <td>{{ workOrder.dateHeureFinPrev | formatMediumDatetime }}</td>
-          <td>{{ workOrder.dateHeureDebutReel | formatMediumDatetime }}</td>
-          <td>{{ workOrder.dateHeureFinReel | formatMediumDatetime }}</td>
-          <td>{{ workOrder.missionDeNuit }}</td>
-          <td>{{ workOrder.nombreNuits }}</td>
-          <td>{{ workOrder.hebergement }}</td>
-          <td>{{ workOrder.nombreHebergements }}</td>
-          <td>{{ workOrder.remarque }}</td>
-          <td>{{ workOrder.numFicheIntervention }}</td>
-          <td jhiTranslate="{{ 'gpmGatewayApp.StatutWO.' + workOrder.statut }}">{{ workOrder.statut }}</td>
-          <td>{{ workOrder.materielUtilise }}</td>
-          <td>{{ workOrder.createdAt | formatMediumDatetime }}</td>
-          <td>{{ workOrder.updatedAt | formatMediumDatetime }}</td>
-          <td>{{ workOrder.createdBy }}</td>
-          <td>{{ workOrder.createdByUserLogin }}</td>
-          <td>{{ workOrder.updatedBy }}</td>
-          <td>{{ workOrder.updatedByUserLogin }}</td>
-          <td class="text-end">
-            <div class="btn-group">
-              <button
-                type="submit"
-                [routerLink]="['/work-order', workOrder.id, 'view']"
-                class="btn btn-info btn-sm"
-                data-cy="entityDetailsButton"
-              >
-                <fa-icon icon="eye"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
-              </button>
-
-              <button
-                type="submit"
-                [routerLink]="['/work-order', workOrder.id, 'edit']"
-                class="btn btn-primary btn-sm"
-                data-cy="entityEditButton"
-              >
-                <fa-icon icon="pencil-alt"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
-              </button>
-
-              <button type="submit" (click)="delete(workOrder)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                <fa-icon icon="times"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div *ngIf="workOrders && workOrders.length > 0">
-    <div class="d-flex justify-content-center">
-      <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+        <button id="jh-create-entity" data-cy="entityCreateButton" class="btn-mission-new" [routerLink]="['/work-order/new']">
+          <fa-icon icon="plus"></fa-icon>
+          <span>Nouveau Work Order</span>
+        </button>
+      </div>
     </div>
 
-    <div class="d-flex justify-content-center">
-      <ngb-pagination
-        [collectionSize]="totalItems"
-        [page]="page"
-        [pageSize]="itemsPerPage"
-        [maxSize]="5"
-        [rotate]="true"
-        [boundaryLinks]="true"
-        (pageChange)="navigateToPage($event)"
-      ></ngb-pagination>
+    <!-- Barre d'outils -->
+    <div class="missions-toolbar-wrapper">
+      <div class="missions-toolbar-row">
+        <div class="missions-search">
+          <fa-icon icon="search" class="missions-search-icon"></fa-icon>
+          <input
+            type="text"
+            class="form-control missions-search-input"
+            placeholder="Rechercher..."
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="onSearchChange()"
+          />
+        </div>
+
+        <select class="form-select missions-filter" [(ngModel)]="selectedStatut" (ngModelChange)="onStatutFilterChange()">
+          <option [ngValue]="null">Tous les statuts</option>
+          <option [value]="'Creation'" jhiTranslate="gpmGatewayApp.StatutWO.Creation">Création</option>
+          <option [value]="'ExecutionTravaux'" jhiTranslate="gpmGatewayApp.StatutWO.ExecutionTravaux">Exécution travaux</option>
+          <option [value]="'VerificationWO'" jhiTranslate="gpmGatewayApp.StatutWO.VerificationWO">Vérification WO</option>
+          <option [value]="'ValidationTechnique'" jhiTranslate="gpmGatewayApp.StatutWO.ValidationTechnique">Validation technique</option>
+          <option [value]="'ValidationRessources'" jhiTranslate="gpmGatewayApp.StatutWO.ValidationRessources">Validation ressources</option>
+          <option [value]="'Fin'" jhiTranslate="gpmGatewayApp.StatutWO.Fin">Fin</option>
+        </select>
+
+        <select class="form-select missions-filter" [(ngModel)]="selectedClientId" (ngModelChange)="onClientFilterChange()">
+          <option [ngValue]="null">Tous les clients</option>
+          <option *ngFor="let clientId of clientIds" [ngValue]="clientId">Client #{{ clientId }}</option>
+        </select>
+
+        <button type="button" class="missions-reset" (click)="resetFilters()" title="Réinitialiser les filtres">
+          <fa-icon icon="times"></fa-icon>
+        </button>
+
+        <div class="missions-toolbar-right">
+          <span class="missions-count">{{ totalItems }} résultats</span>
+
+          <div class="missions-view-toggle">
+            <button type="button" [class.active]="viewMode === 'grid'" (click)="setViewMode('grid')" title="Vue grille">
+              <fa-icon icon="th-large"></fa-icon>
+            </button>
+            <button type="button" [class.active]="viewMode === 'list'" (click)="setViewMode('list')" title="Vue liste">
+              <fa-icon icon="list"></fa-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <jhi-alert-error></jhi-alert-error>
+    <jhi-alert></jhi-alert>
+
+    <div class="alert alert-warning" id="no-result" *ngIf="workOrders?.length === 0">
+      <span>Aucun Work Order trouvé</span>
+    </div>
+
+    <!-- Vue grille (cartes) -->
+    <div class="missions-grid" *ngIf="workOrders && workOrders.length > 0 && viewMode === 'grid'">
+      <div class="mission-card" *ngFor="let workOrder of workOrders; trackBy: trackId" [routerLink]="['/work-order', workOrder.id, 'view']">
+        <div class="mission-card-header">
+          <span class="mission-ref">#{{ workOrder.id }}</span>
+          <span
+            class="badge"
+            [ngClass]="statutBadgeClass(workOrder.statut)"
+            *ngIf="workOrder.statut"
+            jhiTranslate="{{ 'gpmGatewayApp.StatutWO.' + workOrder.statut }}"
+          >
+            {{ workOrder.statut }}
+          </span>
+        </div>
+
+        <h3 class="mission-title">{{ missionTitle(workOrder) }}</h3>
+
+        <div class="mission-meta">
+          <span>Client #{{ workOrder.clientId }}</span>
+          <span class="mission-meta-sep">·</span>
+          <span>Affaire #{{ workOrder.affaireId }}</span>
+        </div>
+
+        <div class="mission-card-footer">
+          <span class="mission-date">{{ workOrder.dateHeureFinPrev | formatMediumDatetime }}</span>
+          <span class="mission-vehicule">Véhicule #{{ workOrder.vehiculeId }}</span>
+        </div>
+
+        <div class="mission-card-tags" *ngIf="workOrder.missionDeNuit">
+          <span class="badge badge-night">
+            <fa-icon icon="moon"></fa-icon>
+            Nuit{{ workOrder.nombreNuits ? ' · ' + workOrder.nombreNuits : '' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vue liste (tableau complet, inchangé) -->
+    <div class="table-responsive table-entities" id="entities" *ngIf="workOrders && workOrders.length > 0 && viewMode === 'list'">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
+            <th scope="col" jhiSortBy="id">
+              <div class="d-flex"><span jhiTranslate="global.field.id">ID</span><fa-icon class="p-1" icon="sort"></fa-icon></div>
+            </th>
+            <th scope="col" jhiSortBy="clientId">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.clientId">Client Id</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="affaireId">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.affaireId">Affaire Id</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="demandeurContactId">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.demandeurContactId">Demandeur Contact Id</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="vehiculeId">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.vehiculeId">Vehicule Id</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="otExterneId">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.otExterneId">Ot Externe Id</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="valideurId">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.valideurId">Valideur Id</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="valideurUserLogin">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.valideurUserLogin">Valideur User Login</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="dateHeureDebutPrev">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.dateHeureDebutPrev">Date Heure Debut Prev</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="dateHeureFinPrev">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.dateHeureFinPrev">Date Heure Fin Prev</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="dateHeureDebutReel">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.dateHeureDebutReel">Date Heure Debut Reel</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="dateHeureFinReel">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.dateHeureFinReel">Date Heure Fin Reel</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="missionDeNuit">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.missionDeNuit">Mission De Nuit</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="nombreNuits">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.nombreNuits">Nombre Nuits</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="hebergement">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.hebergement">Hebergement</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="nombreHebergements">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.nombreHebergements">Nombre Hebergements</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="remarque">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.remarque">Remarque</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="numFicheIntervention">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.numFicheIntervention">Num Fiche Intervention</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="statut">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.statut">Statut</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="materielUtilise">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.materielUtilise">Materiel Utilise</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="createdAt">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.createdAt">Created At</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="updatedAt">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.updatedAt">Updated At</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="createdBy">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.createdBy">Created By</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="createdByUserLogin">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.createdByUserLogin">Created By User Login</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="updatedBy">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.updatedBy">Updated By</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="updatedByUserLogin">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.updatedByUserLogin">Updated By User Login</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let workOrder of workOrders; trackBy: trackId" data-cy="entityTable">
+            <td>
+              <a [routerLink]="['/work-order', workOrder.id, 'view']">{{ workOrder.id }}</a>
+            </td>
+            <td>{{ workOrder.clientId }}</td>
+            <td>{{ workOrder.affaireId }}</td>
+            <td>{{ workOrder.demandeurContactId }}</td>
+            <td>{{ workOrder.vehiculeId }}</td>
+            <td>{{ workOrder.otExterneId }}</td>
+            <td>{{ workOrder.valideurId }}</td>
+            <td>{{ workOrder.valideurUserLogin }}</td>
+            <td>{{ workOrder.dateHeureDebutPrev | formatMediumDatetime }}</td>
+            <td>{{ workOrder.dateHeureFinPrev | formatMediumDatetime }}</td>
+            <td>{{ workOrder.dateHeureDebutReel | formatMediumDatetime }}</td>
+            <td>{{ workOrder.dateHeureFinReel | formatMediumDatetime }}</td>
+            <td>{{ workOrder.missionDeNuit }}</td>
+            <td>{{ workOrder.nombreNuits }}</td>
+            <td>{{ workOrder.hebergement }}</td>
+            <td>{{ workOrder.nombreHebergements }}</td>
+            <td>{{ workOrder.remarque }}</td>
+            <td>{{ workOrder.numFicheIntervention }}</td>
+            <td jhiTranslate="{{ 'gpmGatewayApp.StatutWO.' + workOrder.statut }}">{{ workOrder.statut }}</td>
+            <td>{{ workOrder.materielUtilise }}</td>
+            <td>{{ workOrder.createdAt | formatMediumDatetime }}</td>
+            <td>{{ workOrder.updatedAt | formatMediumDatetime }}</td>
+            <td>{{ workOrder.createdBy }}</td>
+            <td>{{ workOrder.createdByUserLogin }}</td>
+            <td>{{ workOrder.updatedBy }}</td>
+            <td>{{ workOrder.updatedByUserLogin }}</td>
+            <td class="text-end">
+              <div class="btn-group">
+                <button
+                  type="submit"
+                  [routerLink]="['/work-order', workOrder.id, 'view']"
+                  class="btn btn-info btn-sm"
+                  data-cy="entityDetailsButton"
+                >
+                  <fa-icon icon="eye"></fa-icon>
+                  <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
+                </button>
+
+                <button
+                  type="submit"
+                  [routerLink]="['/work-order', workOrder.id, 'edit']"
+                  class="btn btn-primary btn-sm"
+                  data-cy="entityEditButton"
+                >
+                  <fa-icon icon="pencil-alt"></fa-icon>
+                  <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
+                </button>
+
+                <button type="submit" (click)="delete(workOrder)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                  <fa-icon icon="times"></fa-icon>
+                  <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="workOrders && workOrders.length > 0">
+      <div class="d-flex justify-content-center">
+        <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems"
+          [page]="page"
+          [pageSize]="itemsPerPage"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        ></ngb-pagination>
+      </div>
     </div>
   </div>
 </div>
