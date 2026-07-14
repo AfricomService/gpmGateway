@@ -151,6 +151,14 @@ export class WorkOrderComponent implements OnInit {
     return workOrder.remarque || workOrder.numFicheIntervention || `Work Order #${workOrder.id}`;
   }
 
+  clientName(clientId?: number | null): string {
+    if (!clientId) {
+      return '—';
+    }
+    const client = this.clients.find(c => c.id === clientId);
+    return client?.raisonSociale ?? `Client #${clientId}`;
+  }
+
   statutBadgeClass(statut?: StatutWO | null): string {
     switch (statut) {
       case StatutWO.Fin:

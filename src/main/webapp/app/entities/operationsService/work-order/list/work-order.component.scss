@@ -489,6 +489,104 @@
   color: var(--mp-text-muted);
 }
 
+/* ============ TABLEAU LISTE ============ */
+.missions-table-wrapper {
+  background: var(--mp-surface);
+  border: 1px solid var(--mp-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.missions-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead {
+    background: var(--mp-surface-hover);
+
+    th {
+      text-align: left;
+      padding: 0.85rem 1.2rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--mp-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--mp-border);
+    }
+  }
+
+  tbody {
+    tr {
+      cursor: pointer;
+      transition: background 0.2s ease;
+      border-bottom: 1px solid var(--mp-border);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:hover {
+        background: var(--mp-accent-soft);
+      }
+    }
+
+    td {
+      padding: 0.9rem 1.2rem;
+      font-size: 0.9rem;
+      color: var(--mp-text);
+      white-space: nowrap;
+    }
+  }
+}
+
+.missions-table-badge {
+  font-weight: 600;
+  font-size: 0.78rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+}
+
+/* ============ PAGINATION ORANGE ============ */
+::ng-deep {
+  .missions-content ngb-pagination {
+    .pagination {
+      gap: 0.35rem;
+    }
+
+    .page-item {
+      .page-link {
+        border: none;
+        border-radius: 8px;
+        color: var(--mp-text-muted);
+        font-weight: 600;
+        min-width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s ease, color 0.2s ease;
+
+        &:hover {
+          background: var(--mp-accent-soft);
+          color: var(--mp-accent);
+        }
+      }
+
+      &.active .page-link {
+        background: var(--mp-accent) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 10px -4px rgba(245, 130, 42, 0.5);
+      }
+
+      &.disabled .page-link {
+        color: var(--mp-border);
+        background: transparent;
+      }
+    }
+  }
+}
+
 /* ============ RESPONSIVE ============ */
 @media (max-width: 900px) {
   .missions-page {
