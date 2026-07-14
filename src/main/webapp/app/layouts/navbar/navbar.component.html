@@ -28,7 +28,7 @@
       <ul class="navbar-nav navbar-center">
         <!-- Accueil -->
         <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-          <a class="nav-link" routerLink="/" (click)="collapseNavbar()" ngbTooltip="Accueil" placement="bottom" container="body">
+          <a class="nav-link" routerLink="/" (click)="collapseNavbar()">
             <fa-icon icon="home"></fa-icon>
             <span class="nav-label">Accueil</span>
           </a>
@@ -36,7 +36,7 @@
 
         <!-- Missions -->
         <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-          <a class="nav-link" routerLink="work-order" (click)="collapseNavbar()" ngbTooltip="Missions" placement="bottom" container="body">
+          <a class="nav-link" routerLink="work-order" (click)="collapseNavbar()">
             <fa-icon icon="clipboard"></fa-icon>
             <span class="nav-label">Missions</span>
           </a>
@@ -44,7 +44,7 @@
 
         <!-- Bon de Commande -->
         <li class="nav-item">
-          <a class="nav-link" href="javascript:void(0);" ngbTooltip="Bon de Commande" placement="bottom" container="body">
+          <a class="nav-link" href="javascript:void(0);">
             <fa-icon icon="file-signature"></fa-icon>
             <span class="nav-label">Bon de Commande</span>
           </a>
@@ -52,14 +52,7 @@
 
         <!-- OT Externes -->
         <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-          <a
-            class="nav-link"
-            routerLink="ot-externe"
-            (click)="collapseNavbar()"
-            ngbTooltip="OT Externes"
-            placement="bottom"
-            container="body"
-          >
+          <a class="nav-link" routerLink="ot-externe" (click)="collapseNavbar()">
             <fa-icon icon="file-alt"></fa-icon>
             <span class="nav-label">OT Externes</span>
           </a>
@@ -67,15 +60,7 @@
 
         <!-- Facturation (dropdown) -->
         <li ngbDropdown class="nav-item dropdown pointer" display="dynamic" routerLinkActive="active">
-          <a
-            class="nav-link dropdown-toggle"
-            ngbDropdownToggle
-            href="javascript:void(0);"
-            id="facturation-menu"
-            ngbTooltip="Facturation"
-            placement="bottom"
-            container="body"
-          >
+          <a class="nav-link dropdown-toggle" ngbDropdownToggle href="javascript:void(0);" id="facturation-menu">
             <fa-icon icon="file-invoice-dollar"></fa-icon>
             <span class="nav-label">Facturation</span>
           </a>
@@ -103,7 +88,7 @@
 
         <!-- Rapport -->
         <li class="nav-item">
-          <a class="nav-link" href="javascript:void(0);" ngbTooltip="Rapport" placement="bottom" container="body">
+          <a class="nav-link" href="javascript:void(0);">
             <fa-icon icon="chart-bar"></fa-icon>
             <span class="nav-label">Rapport</span>
           </a>
@@ -111,15 +96,7 @@
 
         <!-- Administration (dropdown) -->
         <li ngbDropdown class="nav-item dropdown pointer" display="dynamic" routerLinkActive="active">
-          <a
-            class="nav-link dropdown-toggle"
-            ngbDropdownToggle
-            href="javascript:void(0);"
-            id="administration-menu"
-            ngbTooltip="Administration"
-            placement="bottom"
-            container="body"
-          >
+          <a class="nav-link dropdown-toggle" ngbDropdownToggle href="javascript:void(0);" id="administration-menu">
             <fa-icon icon="cogs"></fa-icon>
             <span class="nav-label">Administration</span>
           </a>
@@ -153,14 +130,7 @@
 
         <!-- Nouveau -->
         <li class="nav-item">
-          <button
-            type="button"
-            class="nav-link btn-new-entity"
-            (click)="openNewEntityModal(newEntityModal)"
-            ngbTooltip="Nouveau"
-            placement="bottom"
-            container="body"
-          >
+          <button type="button" class="nav-link btn-new-entity" (click)="openNewEntityModal(newEntityModal)">
             <fa-icon icon="plus"></fa-icon>
             <span class="nav-label">Nouveau</span>
           </button>
@@ -178,16 +148,7 @@
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: true }"
         >
-          <a
-            class="nav-link"
-            ngbDropdownToggle
-            href="javascript:void(0);"
-            id="admin-menu"
-            data-cy="adminMenu"
-            ngbTooltip="Administration système"
-            placement="bottom"
-            container="body"
-          >
+          <a class="nav-link" ngbDropdownToggle href="javascript:void(0);" id="admin-menu" data-cy="adminMenu">
             <fa-icon icon="cog"></fa-icon>
           </a>
           <ul class="dropdown-menu dropdown-menu-end" ngbDropdownMenu aria-labelledby="admin-menu">
@@ -232,15 +193,7 @@
 
         <!-- Language (icône drapeau) -->
         <li ngbDropdown class="nav-item dropdown pointer" display="dynamic" *ngIf="languages && languages.length > 1">
-          <a
-            class="nav-link"
-            ngbDropdownToggle
-            href="javascript:void(0);"
-            id="languagesnavBarDropdown"
-            ngbTooltip="Langue"
-            placement="bottom"
-            container="body"
-          >
+          <a class="nav-link" ngbDropdownToggle href="javascript:void(0);" id="languagesnavBarDropdown">
             <fa-icon icon="flag"></fa-icon>
           </a>
           <ul class="dropdown-menu dropdown-menu-end" ngbDropdownMenu aria-labelledby="languagesnavBarDropdown">
@@ -250,8 +203,9 @@
                 [jhiActiveMenu]="language"
                 href="javascript:void(0);"
                 (click)="changeLanguage(language); collapseNavbar()"
-                >{{ language | findLanguageFromKey }}</a
               >
+                {{ language | findLanguageFromKey }}
+              </a>
             </li>
           </ul>
         </li>

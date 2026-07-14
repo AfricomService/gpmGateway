@@ -90,8 +90,8 @@ Design tokens — thème clair "GPM style"
     overflow: hidden;
     white-space: nowrap;
     cursor: pointer;
-    transition: width 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), padding 0.28s ease, background 0.2s ease, color 0.2s ease,
-      transform 0.2s ease, box-shadow 0.2s ease;
+    transition: width 0.55s cubic-bezier(0.34, 1.2, 0.64, 1), padding 0.55s ease, background 0.4s ease, color 0.4s ease, transform 0.4s ease,
+      box-shadow 0.4s ease;
 
     fa-icon {
       margin-right: 0;
@@ -108,7 +108,7 @@ Design tokens — thème clair "GPM style"
       font-weight: 600;
       overflow: hidden;
       white-space: nowrap;
-      transition: max-width 0.28s ease, opacity 0.2s ease 0.05s, margin-left 0.28s ease;
+      transition: max-width 0.55s ease, opacity 0.4s ease 0.1s, margin-left 0.55s ease;
     }
 
     &:hover,
@@ -189,7 +189,7 @@ Design tokens — thème clair "GPM style"
     justify-content: center;
     color: var(--nav-icon);
     border-radius: 10px;
-    transition: background 0.18s ease, color 0.18s ease;
+    transition: background 0.35s ease, color 0.35s ease;
 
     &:hover {
       background: var(--nav-surface-hover);
@@ -215,7 +215,7 @@ Design tokens — thème clair "GPM style"
 
   a.nav-link {
     font-weight: 500;
-    transition: all 0.18s ease;
+    transition: all 0.35s ease;
   }
 
   /* ===========================
@@ -534,7 +534,7 @@ Modal "Créer un nouvel élément" — thème orange + grille de tuiles
     border-radius: 12px;
     background: #ffffff;
     cursor: pointer;
-    transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.4s ease, background 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
 
     &:hover,
     &:focus-visible {
