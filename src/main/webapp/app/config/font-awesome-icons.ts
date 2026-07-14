@@ -46,6 +46,11 @@ import {
   faTh,
   faEnvelope,
   faPhone,
+  faFileSignature,
+  faChartBar,
+  faBuilding,
+  faFileInvoice,
+  faReceipt,
   // jhipster-needle-add-icon-import
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -97,5 +102,10 @@ export const fontAwesomeIcons = [
   faTh,
   faEnvelope,
   faPhone,
+  faFileSignature,
+  faChartBar,
+  faBuilding,
+  faFileInvoice,
+  faReceipt,
   // jhipster-needle-add-icon-import
 ];
