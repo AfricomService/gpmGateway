@@ -29,13 +29,14 @@
         <fa-icon icon="users" class="missions-sidebar-filter-icon"></fa-icon>
         <select
           id="client-filter-select"
-          class="form-select missions-sidebar-filter"
+          class="missions-sidebar-filter"
           [(ngModel)]="selectedClientId"
           (ngModelChange)="onClientFilterChange()"
         >
           <option [ngValue]="null">Tous les clients</option>
           <option *ngFor="let client of clients" [ngValue]="client.id">{{ client.raisonSociale }}</option>
         </select>
+        <fa-icon icon="chevron-down" class="missions-sidebar-filter-chevron"></fa-icon>
       </div>
     </div>
   </aside>
