@@ -13,6 +13,8 @@ import { WorkOrderDeleteDialogComponent } from '../delete/work-order-delete-dial
 
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { StatutWO } from 'app/entities/enumerations/statut-wo.model';
+import { IClient } from 'app/entities/projectService/client/client.model';
+import { ClientService } from 'app/entities/projectService/client/service/client.service';
 
 type MissionViewKey = 'ALL' | StatutWO;
 
@@ -47,7 +49,7 @@ export class WorkOrderComponent implements OnInit {
   selectedStatut: StatutWO | null = null;
   selectedClientId: number | null = null;
 
-  clientIds: number[] = []; // TODO: alimenter via un futur ClientService.query() (liste des clients existants)
+  clients: IClient[] = [];
 
   viewMode: 'grid' | 'list' = 'grid';
 
@@ -64,6 +66,7 @@ export class WorkOrderComponent implements OnInit {
 
   constructor(
     protected workOrderService: WorkOrderService,
+    protected clientService: ClientService,
     protected activatedRoute: ActivatedRoute,
     public router: Router,
     protected modalService: NgbModal
@@ -73,6 +76,15 @@ export class WorkOrderComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    this.loadClients();
+  }
+
+  protected loadClients(): void {
+    this.clientService.query({ size: 1000, sort: ['raisonSociale,asc'] }).subscribe({
+      next: res => {
+        this.clients = res.body ?? [];
+      },
+    });
   }
 
   delete(workOrder: IWorkOrder): void {
@@ -120,10 +132,6 @@ export class WorkOrderComponent implements OnInit {
 
   onSearchChange(): void {
     // TODO: brancher sur une API de recherche côté back-end quand elle existera.
-  }
-
-  onStatutFilterChange(): void {
-    // TODO: brancher sur une API de filtre par statut quand elle existera.
   }
 
   onClientFilterChange(): void {

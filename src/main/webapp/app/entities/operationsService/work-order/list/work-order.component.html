@@ -3,9 +3,17 @@
   <aside class="missions-sidebar">
     <div class="missions-sidebar-title">Vues</div>
     <nav class="missions-views">
+      <button type="button" class="missions-view-item" [class.active]="activeView === views[0].key" (click)="selectView(views[0])">
+        <fa-icon [icon]="views[0].icon"></fa-icon>
+        <span>{{ views[0].label }}</span>
+      </button>
+    </nav>
+
+    <div class="missions-sidebar-title missions-sidebar-title-spaced">Statuts</div>
+    <nav class="missions-views">
       <button
         type="button"
-        *ngFor="let view of views"
+        *ngFor="let view of views.slice(1)"
         class="missions-view-item"
         [class.active]="activeView === view.key"
         (click)="selectView(view)"
@@ -14,6 +22,22 @@
         <span>{{ view.label }}</span>
       </button>
     </nav>
+
+    <div class="missions-sidebar-filters missions-sidebar-title-spaced">
+      <label class="missions-sidebar-title missions-sidebar-filter-label" for="client-filter-select">Client</label>
+      <div class="missions-sidebar-filter-wrapper">
+        <fa-icon icon="users" class="missions-sidebar-filter-icon"></fa-icon>
+        <select
+          id="client-filter-select"
+          class="form-select missions-sidebar-filter"
+          [(ngModel)]="selectedClientId"
+          (ngModelChange)="onClientFilterChange()"
+        >
+          <option [ngValue]="null">Tous les clients</option>
+          <option *ngFor="let client of clients" [ngValue]="client.id">{{ client.raisonSociale }}</option>
+        </select>
+      </div>
+    </div>
   </aside>
 
   <!-- Contenu principal -->
@@ -46,21 +70,6 @@
             (ngModelChange)="onSearchChange()"
           />
         </div>
-
-        <select class="form-select missions-filter" [(ngModel)]="selectedStatut" (ngModelChange)="onStatutFilterChange()">
-          <option [ngValue]="null">Tous les statuts</option>
-          <option [value]="'Creation'" jhiTranslate="gpmGatewayApp.StatutWO.Creation">Création</option>
-          <option [value]="'ExecutionTravaux'" jhiTranslate="gpmGatewayApp.StatutWO.ExecutionTravaux">Exécution travaux</option>
-          <option [value]="'VerificationWO'" jhiTranslate="gpmGatewayApp.StatutWO.VerificationWO">Vérification WO</option>
-          <option [value]="'ValidationTechnique'" jhiTranslate="gpmGatewayApp.StatutWO.ValidationTechnique">Validation technique</option>
-          <option [value]="'ValidationRessources'" jhiTranslate="gpmGatewayApp.StatutWO.ValidationRessources">Validation ressources</option>
-          <option [value]="'Fin'" jhiTranslate="gpmGatewayApp.StatutWO.Fin">Fin</option>
-        </select>
-
-        <select class="form-select missions-filter" [(ngModel)]="selectedClientId" (ngModelChange)="onClientFilterChange()">
-          <option [ngValue]="null">Tous les clients</option>
-          <option *ngFor="let clientId of clientIds" [ngValue]="clientId">Client #{{ clientId }}</option>
-        </select>
 
         <button type="button" class="missions-reset" (click)="resetFilters()" title="Réinitialiser les filtres">
           <fa-icon icon="times"></fa-icon>

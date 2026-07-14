@@ -42,6 +42,62 @@
   padding: 0 0.5rem 0.75rem;
 }
 
+.missions-sidebar-title-spaced {
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--mp-border);
+}
+
+.missions-sidebar-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0 0.15rem;
+}
+
+.missions-sidebar-filter-label {
+  padding: 0 0.15rem 0.75rem;
+}
+
+.missions-sidebar-filter-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  height: 42px;
+  border-radius: 9px;
+  border: 1px solid var(--mp-border);
+  background: var(--mp-surface);
+  padding: 0 14px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+
+  &:focus-within {
+    border-color: var(--mp-accent);
+    box-shadow: 0 0 0 3px var(--mp-accent-soft);
+  }
+
+  .missions-sidebar-filter-icon {
+    flex-shrink: 0;
+    color: var(--mp-text-muted);
+    font-size: 0.75rem;
+    pointer-events: none;
+  }
+}
+
+.missions-sidebar-filter {
+  flex: 1;
+  height: 100%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 0.85rem;
+  color: var(--mp-text);
+
+  &:focus {
+    box-shadow: none !important;
+    outline: none;
+  }
+}
+
 .missions-views {
   display: flex;
   flex-direction: column;
@@ -217,20 +273,6 @@
       border: none;
       box-shadow: none !important;
     }
-  }
-}
-
-.missions-filter {
-  min-width: 150px;
-  max-width: 220px;
-  flex: 1;
-  height: 42px;
-  border-radius: 10px;
-  border: 1px solid var(--mp-border);
-
-  &:focus {
-    border-color: var(--mp-accent);
-    box-shadow: 0 0 0 3px var(--mp-accent-soft);
   }
 }
 
