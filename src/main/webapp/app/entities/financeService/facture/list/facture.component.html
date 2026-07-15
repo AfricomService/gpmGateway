@@ -1,197 +1,270 @@
-<div>
-  <h2 id="page-heading" data-cy="FactureHeading">
-    <span jhiTranslate="gpmGatewayApp.financeServiceFacture.home.title">Factures</span>
+<div class="facture-layout">
+  <!-- ===== Sidebar navigation Facturation ===== -->
+  <aside class="fact-sidebar">
+    <div class="sidebar-title">FACTURATION</div>
 
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
-        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
-        <span jhiTranslate="gpmGatewayApp.financeServiceFacture.home.refreshListLabel">Actualiser la liste</span>
+    <nav class="sidebar-nav">
+      <a [routerLink]="['/facture']" routerLinkActive="active" class="sidebar-item">
+        <fa-icon icon="file-invoice-dollar"></fa-icon>
+        <span>Factures</span>
+      </a>
+
+      <!-- ⚠️ Adaptez ces routes si les entités Devis / Notes de Frais existent déjà -->
+      <a [routerLink]="['/devis']" routerLinkActive="active" class="sidebar-item">
+        <fa-icon icon="file-alt"></fa-icon>
+        <span>Devis</span>
+      </a>
+
+      <a [routerLink]="['/note-de-frais']" routerLinkActive="active" class="sidebar-item">
+        <fa-icon icon="receipt"></fa-icon>
+        <span>Notes de Frais</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- ===== Contenu principal ===== -->
+  <div class="facture-page">
+    <!-- ===== Cartes statistiques ===== -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label" jhiTranslate="gpmGatewayApp.financeServiceFacture.home.title">Factures</span>
+          <span class="stat-value">{{ totalCount }}</span>
+        </div>
+        <div class="stat-icon stat-icon-purple">
+          <fa-icon icon="file-invoice-dollar"></fa-icon>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">Devis</span>
+          <span class="stat-value">{{ devisCount }}</span>
+        </div>
+        <div class="stat-icon stat-icon-blue">
+          <fa-icon icon="file-alt"></fa-icon>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">CA encaissé</span>
+          <span class="stat-value stat-value-success">{{ caEncaisse | number: '1.0-0':'fr' }} DT</span>
+        </div>
+        <div class="stat-icon stat-icon-success">
+          <fa-icon icon="check-circle"></fa-icon>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">En attente</span>
+          <span class="stat-value stat-value-warning">{{ montantEnAttente | number: '1.0-0':'fr' }} DT</span>
+        </div>
+        <div class="stat-icon stat-icon-warning">
+          <fa-icon icon="clock"></fa-icon>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== En-tête + bouton créer ===== -->
+    <div class="page-header">
+      <h2 id="page-heading" data-cy="FactureHeading">Factures</h2>
+
+      <div class="header-actions">
+        <button class="btn btn-outline-refresh" (click)="load()" [disabled]="isLoading" title="Actualiser la liste">
+          <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        </button>
+
+        <button
+          id="jh-create-entity"
+          data-cy="entityCreateButton"
+          class="btn btn-primary-orange jh-create-entity create-facture"
+          [routerLink]="['/facture/new']"
+          title="Créer une nouvelle facture"
+        >
+          <fa-icon icon="plus"></fa-icon>
+        </button>
+      </div>
+    </div>
+
+    <jhi-alert-error></jhi-alert-error>
+    <jhi-alert></jhi-alert>
+
+    <!-- ===== Barre de recherche + filtre statut + toggle vue ===== -->
+    <div class="toolbar">
+      <div class="search-bar">
+        <fa-icon icon="search" class="search-icon"></fa-icon>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Rechercher..."
+          [ngModel]="searchTerm"
+          (ngModelChange)="onSearchChange($event)"
+        />
+      </div>
+
+      <select class="statut-select" [ngModel]="statutFilter ?? ''" (ngModelChange)="onStatutChange($event)">
+        <option *ngFor="let opt of statutOptions" [value]="opt.value ?? ''">{{ opt.label }}</option>
+      </select>
+
+      <button *ngIf="searchTerm || statutFilter" class="btn-clear-filters" (click)="clearFilters()" type="button">
+        <fa-icon icon="times"></fa-icon>
       </button>
 
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-facture"
-        [routerLink]="['/facture/new']"
+      <span class="results-count">{{ filteredFactures.length }} résultat{{ filteredFactures.length > 1 ? 's' : '' }}</span>
+
+      <div class="view-toggle">
+        <button type="button" class="view-btn" [class.active]="!isGridView" (click)="setGridView(false)" title="Vue tableau">
+          <fa-icon icon="th-list"></fa-icon>
+        </button>
+        <button type="button" class="view-btn" [class.active]="isGridView" (click)="setGridView(true)" title="Vue grille">
+          <fa-icon icon="th-large"></fa-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== Aucun résultat ===== -->
+    <div class="alert alert-warning" id="no-result" *ngIf="filteredFactures.length === 0">
+      <span jhiTranslate="gpmGatewayApp.financeServiceFacture.home.notFound">Aucun Facture trouvé</span>
+    </div>
+
+    <!-- ===== Vue tableau ===== -->
+    <div class="table-responsive table-entities" id="entities" *ngIf="!isGridView && filteredFactures.length > 0">
+      <table class="table facture-table" aria-describedby="page-heading">
+        <thead>
+          <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
+            <th scope="col" jhiSortBy="numFacture">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServiceFacture.numFacture">N° Facture</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="clientId">
+              <div class="d-flex">
+                <span>Client</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="bonDeCommande">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServiceFacture.bonDeCommande">Bon De Commande</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="montantFacture">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServiceFacture.montantFacture">Montant</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="dateFacture">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServiceFacture.dateFacture">Date</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="statut">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServiceFacture.statut">Statut</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" class="col-actions"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let facture of filteredFactures; trackBy: trackId"
+            data-cy="entityTable"
+            class="row-clickable"
+            (dblclick)="goToEdit(facture)"
+            title="Double-cliquez pour éditer"
+          >
+            <td class="cell-reference">{{ facture.numFacture }}</td>
+            <td>{{ getClientName(facture.clientId) }}</td>
+            <td>{{ facture.bonDeCommande ?? '—' }}</td>
+            <td>{{ facture.montantFacture | number: '1.2-2':'fr' }} DT</td>
+            <td>{{ facture.dateFacture | formatMediumDate }}</td>
+            <td>
+              <span class="badge-statut" [ngClass]="getStatutClass(facture.statut)">
+                {{ 'gpmGatewayApp.StatutFacture.' + facture.statut | translate }}
+              </span>
+            </td>
+            <td class="text-end">
+              <div class="btn-group">
+                <button
+                  type="submit"
+                  (click)="delete(facture)"
+                  class="btn btn-icon btn-delete"
+                  data-cy="entityDeleteButton"
+                  title="Supprimer"
+                >
+                  <fa-icon icon="trash-alt"></fa-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ===== Vue grille ===== -->
+    <div class="facture-grid" *ngIf="isGridView && filteredFactures.length > 0">
+      <div
+        class="facture-card row-clickable"
+        *ngFor="let facture of filteredFactures; trackBy: trackId"
+        (dblclick)="goToEdit(facture)"
+        title="Double-cliquez pour éditer"
       >
-        <fa-icon icon="plus"></fa-icon>
-        <span jhiTranslate="gpmGatewayApp.financeServiceFacture.home.createLabel"> Créer un nouveau Facture </span>
-      </button>
-    </div>
-  </h2>
-
-  <jhi-alert-error></jhi-alert-error>
-
-  <jhi-alert></jhi-alert>
-
-  <div class="alert alert-warning" id="no-result" *ngIf="factures?.length === 0">
-    <span jhiTranslate="gpmGatewayApp.financeServiceFacture.home.notFound">Aucun Facture trouvé</span>
-  </div>
-
-  <div class="table-responsive table-entities" id="entities" *ngIf="factures && factures.length > 0">
-    <table class="table table-striped" aria-describedby="page-heading">
-      <thead>
-        <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
-          <th scope="col" jhiSortBy="id">
-            <div class="d-flex">
-              <span jhiTranslate="global.field.id">ID</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="numFacture">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.numFacture">Num Facture</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="bonDeCommande">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.bonDeCommande">Bon De Commande</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="montantFacture">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.montantFacture">Montant Facture</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="dateFacture">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.dateFacture">Date Facture</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="dateEcheance">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.dateEcheance">Date Echeance</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="dateDecharge">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.dateDecharge">Date Decharge</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="statut">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.statut">Statut</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="clientId">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.clientId">Client Id</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdAt">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.createdAt">Created At</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedAt">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.updatedAt">Updated At</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdBy">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.createdBy">Created By</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdByUserLogin">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.createdByUserLogin">Created By User Login</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedBy">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.updatedBy">Updated By</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedByUserLogin">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceFacture.updatedByUserLogin">Updated By User Login</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let facture of factures; trackBy: trackId" data-cy="entityTable">
-          <td>
-            <a [routerLink]="['/facture', facture.id, 'view']">{{ facture.id }}</a>
-          </td>
-          <td>{{ facture.numFacture }}</td>
-          <td>{{ facture.bonDeCommande }}</td>
-          <td>{{ facture.montantFacture }}</td>
-          <td>{{ facture.dateFacture | formatMediumDate }}</td>
-          <td>{{ facture.dateEcheance | formatMediumDate }}</td>
-          <td>{{ facture.dateDecharge | formatMediumDate }}</td>
-          <td jhiTranslate="{{ 'gpmGatewayApp.StatutFacture.' + facture.statut }}">{{ facture.statut }}</td>
-          <td>{{ facture.clientId }}</td>
-          <td>{{ facture.createdAt | formatMediumDatetime }}</td>
-          <td>{{ facture.updatedAt | formatMediumDatetime }}</td>
-          <td>{{ facture.createdBy }}</td>
-          <td>{{ facture.createdByUserLogin }}</td>
-          <td>{{ facture.updatedBy }}</td>
-          <td>{{ facture.updatedByUserLogin }}</td>
-          <td class="text-end">
-            <div class="btn-group">
-              <button
-                type="submit"
-                [routerLink]="['/facture', facture.id, 'view']"
-                class="btn btn-info btn-sm"
-                data-cy="entityDetailsButton"
-              >
-                <fa-icon icon="eye"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
-              </button>
-
-              <button
-                type="submit"
-                [routerLink]="['/facture', facture.id, 'edit']"
-                class="btn btn-primary btn-sm"
-                data-cy="entityEditButton"
-              >
-                <fa-icon icon="pencil-alt"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
-              </button>
-
-              <button type="submit" (click)="delete(facture)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                <fa-icon icon="times"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div *ngIf="factures && factures.length > 0">
-    <div class="d-flex justify-content-center">
-      <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+        <div class="facture-card-header">
+          <span class="cell-reference">{{ facture.numFacture }}</span>
+          <span class="badge-statut" [ngClass]="getStatutClass(facture.statut)">
+            {{ 'gpmGatewayApp.StatutFacture.' + facture.statut | translate }}
+          </span>
+        </div>
+        <div class="facture-card-body">
+          <div class="facture-card-row">
+            <span class="row-label">Client</span>
+            <span class="row-value">{{ getClientName(facture.clientId) }}</span>
+          </div>
+          <div class="facture-card-row">
+            <span class="row-label">Bon de commande</span>
+            <span class="row-value">{{ facture.bonDeCommande ?? '—' }}</span>
+          </div>
+          <div class="facture-card-row">
+            <span class="row-label">Montant</span>
+            <span class="row-value row-value-strong">{{ facture.montantFacture | number: '1.2-2':'fr' }} DT</span>
+          </div>
+          <div class="facture-card-row">
+            <span class="row-label">Date</span>
+            <span class="row-value">{{ facture.dateFacture | formatMediumDate }}</span>
+          </div>
+        </div>
+        <div class="facture-card-footer">
+          <button type="submit" (click)="delete(facture)" class="btn btn-icon btn-delete" title="Supprimer">
+            <fa-icon icon="trash-alt"></fa-icon>
+          </button>
+        </div>
+      </div>
     </div>
 
-    <div class="d-flex justify-content-center">
-      <ngb-pagination
-        [collectionSize]="totalItems"
-        [page]="page"
-        [pageSize]="itemsPerPage"
-        [maxSize]="5"
-        [rotate]="true"
-        [boundaryLinks]="true"
-        (pageChange)="navigateToPage($event)"
-      ></ngb-pagination>
+    <div *ngIf="filteredFactures.length > 0">
+      <div class="d-flex justify-content-center">
+        <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems"
+          [page]="page"
+          [pageSize]="itemsPerPage"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        ></ngb-pagination>
+      </div>
     </div>
   </div>
 </div>

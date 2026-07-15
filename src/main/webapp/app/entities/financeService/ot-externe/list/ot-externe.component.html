@@ -1,169 +1,216 @@
-<div>
-  <h2 id="page-heading" data-cy="OtExterneHeading">
-    <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.home.title">OtExternes</span>
-
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
-        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
-        <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.home.refreshListLabel">Actualiser la liste</span>
+<div class="ot-externe-layout" [class.sidebar-collapsed]="isSidebarCollapsed">
+  <!-- ===== Sidebar filtre par statut ===== -->
+  <aside class="ot-sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title" *ngIf="!isSidebarCollapsed">OT EXTERNES</span>
+      <button class="sidebar-toggle" (click)="toggleSidebar()" type="button">
+        <fa-icon [icon]="isSidebarCollapsed ? 'chevron-right' : 'chevron-left'"></fa-icon>
       </button>
+    </div>
 
+    <nav class="sidebar-nav">
       <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-ot-externe"
-        [routerLink]="['/ot-externe/new']"
+        *ngFor="let option of statutFilterOptions"
+        type="button"
+        class="sidebar-item"
+        [class.active]="activeStatutFilter === option.value"
+        (click)="selectStatutFilter(option.value)"
       >
-        <fa-icon icon="plus"></fa-icon>
-        <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.home.createLabel"> Créer un nouveau Ot Externe </span>
+        <fa-icon [icon]="option.icon"></fa-icon>
+        <span *ngIf="!isSidebarCollapsed" class="sidebar-item-label">{{ option.label }}</span>
+        <span *ngIf="!isSidebarCollapsed" class="sidebar-item-count">{{ countByStatut(option.value) }}</span>
       </button>
-    </div>
-  </h2>
+    </nav>
+  </aside>
 
-  <jhi-alert-error></jhi-alert-error>
+  <!-- ===== Contenu principal ===== -->
+  <div class="ot-externe-page">
+    <!-- ===== Cartes statistiques ===== -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.home.title">OT Externes</span>
+          <span class="stat-value">{{ totalCount }}</span>
+        </div>
+        <div class="stat-icon stat-icon-primary">
+          <fa-icon icon="clipboard"></fa-icon>
+        </div>
+      </div>
 
-  <jhi-alert></jhi-alert>
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">Création</span>
+          <span class="stat-value">{{ creationCount }}</span>
+        </div>
+        <div class="stat-icon stat-icon-neutral">
+          <fa-icon icon="folder"></fa-icon>
+        </div>
+      </div>
 
-  <div class="alert alert-warning" id="no-result" *ngIf="otExternes?.length === 0">
-    <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.home.notFound">Aucun Ot Externe trouvé</span>
-  </div>
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">En cours</span>
+          <span class="stat-value">{{ enCoursCount }}</span>
+        </div>
+        <div class="stat-icon stat-icon-warning">
+          <fa-icon icon="clock"></fa-icon>
+        </div>
+      </div>
 
-  <div class="table-responsive table-entities" id="entities" *ngIf="otExternes && otExternes.length > 0">
-    <table class="table table-striped" aria-describedby="page-heading">
-      <thead>
-        <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
-          <th scope="col" jhiSortBy="id">
-            <div class="d-flex">
-              <span jhiTranslate="global.field.id">ID</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="reference">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.reference">Reference</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="statut">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.statut">Statut</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="affaireId">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.affaireId">Affaire Id</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="clientId">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.clientId">Client Id</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdAt">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.createdAt">Created At</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedAt">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.updatedAt">Updated At</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdBy">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.createdBy">Created By</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdByUserLogin">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.createdByUserLogin">Created By User Login</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedBy">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.updatedBy">Updated By</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedByUserLogin">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.updatedByUserLogin">Updated By User Login</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let otExterne of otExternes; trackBy: trackId" data-cy="entityTable">
-          <td>
-            <a [routerLink]="['/ot-externe', otExterne.id, 'view']">{{ otExterne.id }}</a>
-          </td>
-          <td>{{ otExterne.reference }}</td>
-          <td jhiTranslate="{{ 'gpmGatewayApp.StatutOtExterne.' + otExterne.statut }}">{{ otExterne.statut }}</td>
-          <td>{{ otExterne.affaireId }}</td>
-          <td>{{ otExterne.clientId }}</td>
-          <td>{{ otExterne.createdAt | formatMediumDatetime }}</td>
-          <td>{{ otExterne.updatedAt | formatMediumDatetime }}</td>
-          <td>{{ otExterne.createdBy }}</td>
-          <td>{{ otExterne.createdByUserLogin }}</td>
-          <td>{{ otExterne.updatedBy }}</td>
-          <td>{{ otExterne.updatedByUserLogin }}</td>
-          <td class="text-end">
-            <div class="btn-group">
-              <button
-                type="submit"
-                [routerLink]="['/ot-externe', otExterne.id, 'view']"
-                class="btn btn-info btn-sm"
-                data-cy="entityDetailsButton"
-              >
-                <fa-icon icon="eye"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
-              </button>
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">Paiement</span>
+          <span class="stat-value">{{ paiementCount }}</span>
+        </div>
+        <div class="stat-icon stat-icon-success">
+          <fa-icon icon="file-invoice-dollar"></fa-icon>
+        </div>
+      </div>
 
-              <button
-                type="submit"
-                [routerLink]="['/ot-externe', otExterne.id, 'edit']"
-                class="btn btn-primary btn-sm"
-                data-cy="entityEditButton"
-              >
-                <fa-icon icon="pencil-alt"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
-              </button>
-
-              <button type="submit" (click)="delete(otExterne)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                <fa-icon icon="times"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div *ngIf="otExternes && otExternes.length > 0">
-    <div class="d-flex justify-content-center">
-      <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">Fin</span>
+          <span class="stat-value">{{ finCount }}</span>
+        </div>
+        <div class="stat-icon stat-icon-neutral">
+          <fa-icon icon="check-circle"></fa-icon>
+        </div>
+      </div>
     </div>
 
-    <div class="d-flex justify-content-center">
-      <ngb-pagination
-        [collectionSize]="totalItems"
-        [page]="page"
-        [pageSize]="itemsPerPage"
-        [maxSize]="5"
-        [rotate]="true"
-        [boundaryLinks]="true"
-        (pageChange)="navigateToPage($event)"
-      ></ngb-pagination>
+    <!-- ===== En-tête + bouton créer ===== -->
+    <div class="page-header">
+      <h2 id="page-heading" data-cy="OtExterneHeading">OT Externes</h2>
+
+      <div class="header-actions">
+        <button class="btn btn-outline-refresh" (click)="load()" [disabled]="isLoading">
+          <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+          <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.home.refreshListLabel">Actualiser la liste</span>
+        </button>
+
+        <button
+          id="jh-create-entity"
+          data-cy="entityCreateButton"
+          class="btn btn-primary-orange jh-create-entity create-ot-externe"
+          [routerLink]="['/ot-externe/new']"
+        >
+          <fa-icon icon="plus"></fa-icon>
+          <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.home.createLabel">Nouveau OT Externe</span>
+        </button>
+      </div>
+    </div>
+
+    <jhi-alert-error></jhi-alert-error>
+    <jhi-alert></jhi-alert>
+
+    <!-- ===== Barre de recherche ===== -->
+    <div class="search-bar">
+      <fa-icon icon="search" class="search-icon"></fa-icon>
+      <input type="text" class="search-input" placeholder="Rechercher..." [ngModel]="searchTerm" (ngModelChange)="onSearchChange($event)" />
+      <button *ngIf="searchTerm" class="search-clear" (click)="clearSearch()" type="button">
+        <fa-icon icon="times"></fa-icon>
+      </button>
+      <span class="search-results-count">{{ filteredOtExternes.length }} résultat{{ filteredOtExternes.length > 1 ? 's' : '' }}</span>
+    </div>
+
+    <!-- ===== Aucun résultat ===== -->
+    <div class="alert alert-warning" id="no-result" *ngIf="filteredOtExternes.length === 0">
+      <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.home.notFound">Aucun Ot Externe trouvé</span>
+    </div>
+
+    <!-- ===== Tableau ===== -->
+    <div class="table-responsive table-entities" id="entities" *ngIf="filteredOtExternes.length > 0">
+      <table class="table ot-externe-table" aria-describedby="page-heading">
+        <thead>
+          <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
+            <th scope="col" jhiSortBy="reference">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.reference">Référence</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="clientId">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.clientId">Client</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="affaireId">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.affaireId">Affaire</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="statut">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.statut">Statut</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" class="col-actions"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let otExterne of filteredOtExternes; trackBy: trackId" data-cy="entityTable">
+            <td class="cell-reference">
+              <a [routerLink]="['/ot-externe', otExterne.id, 'view']">{{ otExterne.reference }}</a>
+            </td>
+            <td>{{ getClientName(otExterne.clientId) }}</td>
+            <td>{{ otExterne.affaireId ?? '—' }}</td>
+            <td>
+              <span class="badge-statut" [ngClass]="getStatutClass(otExterne.statut)">
+                {{ 'gpmGatewayApp.StatutOtExterne.' + otExterne.statut | translate }}
+              </span>
+            </td>
+            <td class="text-end">
+              <div class="btn-group">
+                <button
+                  type="submit"
+                  [routerLink]="['/ot-externe', otExterne.id, 'view']"
+                  class="btn btn-icon btn-view"
+                  data-cy="entityDetailsButton"
+                >
+                  <fa-icon icon="eye"></fa-icon>
+                  <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
+                </button>
+
+                <button
+                  type="submit"
+                  [routerLink]="['/ot-externe', otExterne.id, 'edit']"
+                  class="btn btn-icon btn-edit"
+                  data-cy="entityEditButton"
+                >
+                  <fa-icon icon="pencil-alt"></fa-icon>
+                  <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
+                </button>
+
+                <button type="submit" (click)="delete(otExterne)" class="btn btn-icon btn-delete" data-cy="entityDeleteButton">
+                  <fa-icon icon="times"></fa-icon>
+                  <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="filteredOtExternes.length > 0">
+      <div class="d-flex justify-content-center">
+        <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems"
+          [page]="page"
+          [pageSize]="itemsPerPage"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        ></ngb-pagination>
+      </div>
     </div>
   </div>
 </div>

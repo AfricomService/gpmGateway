@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpHeaders } from '@angular/common/http';
+import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Data, ParamMap, Router } from '@angular/router';
 import { combineLatest, filter, Observable, switchMap, tap } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -10,14 +10,39 @@ import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/co
 import { ASC, DESC, SORT, ITEM_DELETED_EVENT, DEFAULT_SORT_DATA } from 'app/config/navigation.constants';
 import { EntityArrayResponseType, FactureService } from '../service/facture.service';
 import { FactureDeleteDialogComponent } from '../delete/facture-delete-dialog.component';
+import { IClient } from 'app/entities/projectService/client/client.model';
+import { ClientService } from 'app/entities/projectService/client/service/client.service';
+
+interface StatutOption {
+  label: string;
+  value: string | null; // null = "Tous les statuts"
+}
 
 @Component({
   selector: 'jhi-facture',
   templateUrl: './facture.component.html',
+  styleUrls: ['./facture.component.scss'],
 })
 export class FactureComponent implements OnInit {
   factures?: IFacture[];
+  filteredFactures: IFacture[] = [];
   isLoading = false;
+
+  searchTerm = '';
+  statutFilter: string | null = null;
+  isGridView = false;
+
+  // clientId -> raisonSociale
+  clientsMap = new Map<number, string>();
+
+  statutOptions: StatutOption[] = [
+    { label: 'Tous les statuts', value: null },
+    { label: 'Création', value: 'Creation' },
+    { label: 'Vérification', value: 'Verification' },
+    { label: 'Paiement', value: 'Paiement' },
+    { label: 'Décharge', value: 'Decharge' },
+    { label: 'Fin', value: 'Fin' },
+  ];
 
   predicate = 'id';
   ascending = true;
@@ -28,6 +53,7 @@ export class FactureComponent implements OnInit {
 
   constructor(
     protected factureService: FactureService,
+    protected clientService: ClientService,
     protected activatedRoute: ActivatedRoute,
     public router: Router,
     protected modalService: NgbModal
@@ -36,7 +62,24 @@ export class FactureComponent implements OnInit {
   trackId = (_index: number, item: IFacture): number => this.factureService.getFactureIdentifier(item);
 
   ngOnInit(): void {
+    this.loadClients();
     this.load();
+  }
+
+  // ---- Résolution des noms de clients ----
+  protected loadClients(): void {
+    this.clientService.query({ size: 2000, sort: ['raisonSociale,asc'] }).subscribe({
+      next: (res: HttpResponse<IClient[]>) => {
+        this.clientsMap = new Map((res.body ?? []).filter(c => c.id != null).map(c => [c.id as number, c.raisonSociale ?? '—']));
+      },
+    });
+  }
+
+  getClientName(clientId?: number | null): string {
+    if (clientId === null || clientId === undefined) {
+      return '—';
+    }
+    return this.clientsMap.get(clientId) ?? String(clientId);
   }
 
   delete(facture: IFacture): void {
@@ -71,6 +114,94 @@ export class FactureComponent implements OnInit {
     this.handleNavigation(page, this.predicate, this.ascending);
   }
 
+  goToEdit(facture: IFacture): void {
+    this.router.navigate(['/facture', facture.id, 'edit']);
+  }
+
+  // ---- Vue tableau / grille ----
+  setGridView(isGrid: boolean): void {
+    this.isGridView = isGrid;
+  }
+
+  // ---- Recherche + filtre statut ----
+  onSearchChange(term: string): void {
+    this.searchTerm = term;
+    this.applyFilter();
+  }
+
+  onStatutChange(value: string): void {
+    this.statutFilter = value === '' ? null : value;
+    this.applyFilter();
+  }
+
+  clearFilters(): void {
+    this.searchTerm = '';
+    this.statutFilter = null;
+    this.applyFilter();
+  }
+
+  protected applyFilter(): void {
+    if (!this.factures) {
+      this.filteredFactures = [];
+      return;
+    }
+
+    let result = this.factures;
+
+    if (this.statutFilter !== null) {
+      result = result.filter(f => f.statut === this.statutFilter);
+    }
+
+    const term = this.searchTerm.trim().toLowerCase();
+    if (term) {
+      result = result.filter(
+        f =>
+          (f.numFacture ?? '').toLowerCase().includes(term) ||
+          (f.bonDeCommande ?? '').toLowerCase().includes(term) ||
+          (f.statut ?? '').toLowerCase().includes(term) ||
+          this.getClientName(f.clientId).toLowerCase().includes(term)
+      );
+    }
+
+    this.filteredFactures = result;
+  }
+
+  // ---- Statistiques des cartes ----
+  get totalCount(): number {
+    return this.factures?.length ?? 0;
+  }
+
+  // ⚠️ "Devis" et "Notes de Frais" ne sont pas gérés par ce service — reliez-les
+  // à leurs propres services quand ces entités seront disponibles.
+  get devisCount(): number {
+    return 0;
+  }
+
+  get caEncaisse(): number {
+    return this.factures?.filter(f => f.statut === 'Fin').reduce((sum, f) => sum + (f.montantFacture ?? 0), 0) ?? 0;
+  }
+
+  get montantEnAttente(): number {
+    return this.factures?.filter(f => f.statut !== 'Fin').reduce((sum, f) => sum + (f.montantFacture ?? 0), 0) ?? 0;
+  }
+
+  getStatutClass(statut?: string | null): string {
+    switch (statut) {
+      case 'Creation':
+        return 'badge-creation';
+      case 'Verification':
+        return 'badge-verification';
+      case 'Paiement':
+        return 'badge-paiement';
+      case 'Decharge':
+        return 'badge-decharge';
+      case 'Fin':
+        return 'badge-fin';
+      default:
+        return 'badge-default';
+    }
+  }
+
   protected loadFromBackendWithRouteInformations(): Observable<EntityArrayResponseType> {
     return combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data]).pipe(
       tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
@@ -90,6 +221,7 @@ export class FactureComponent implements OnInit {
     this.fillComponentAttributesFromResponseHeader(response.headers);
     const dataFromBody = this.fillComponentAttributesFromResponseBody(response.body);
     this.factures = dataFromBody;
+    this.applyFilter();
   }
 
   protected fillComponentAttributesFromResponseBody(data: IFacture[] | null): IFacture[] {
