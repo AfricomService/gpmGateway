@@ -10,7 +10,7 @@ spring:
         initial-interval: 1000
         max-interval: 2000
         max-attempts: 100
-      uri: http://admin:${jhipster.registry.password}@localhost:8761/config
+      uri: http://africomServices:${jhipster.registry.password}@${hostserver}:8761/config
       # name of the config server's property source (file.yml) that we want to use
       name: gpmGateway
       profile: prod # profile(s) of the property source
@@ -19,4 +19,21 @@ spring:
 
 jhipster:
   registry:
-    password: admin
+    password: africomOrgaCareRegistryEureka
+
+# ── Serveur ───────────────────────────────────────────
+hostserver: 172.30.1.113
+hostserverKeyCloak: 172.30.1.111
+
+# ── OAuth2 / OIDC ─────────────────────────────────────
+OAUTH2_ISSUER_URI: http://${hostserverKeyCloak}:9080/realms/AfricomProd
+OAUTH2_CLIENT_ID: gpm
+OAUTH2_CLIENT_SECRET: QLroHEHr0lYnWPl1BlUybXs1Twu0Z6Cw
+OAUTH2_SCOPE: openid,profile,email,offline_access
+
+# ── ApplicationProperties du Gateway ──────────────────
+KEYCLOAK_ADMIN_USER_CREATE_URL: http://${hostserverKeyCloak}:9080/admin/AfricomProd/console/#/AfricomProd/users/add-user
+KEYCLOAK_SERVER_URL: http://${hostserverKeyCloak}:9080
+KEYCLOAK_ADMIN_USERNAME: admin
+KEYCLOAK_ADMIN_PASSWORD: admin
+KEYCLOAK_TARGET_REALM: AfricomProd
