@@ -14,6 +14,7 @@ import { SiteDeleteDialogComponent } from '../delete/site-delete-dialog.componen
 @Component({
   selector: 'jhi-site',
   templateUrl: './site.component.html',
+  styleUrls: ['./site.component.scss'],
 })
 export class SiteComponent implements OnInit {
   sites?: ISite[];
@@ -43,36 +44,9 @@ export class SiteComponent implements OnInit {
     this.load();
   }
 
-  delete(site: ISite): void {
-    const modalRef = this.modalService.open(SiteDeleteDialogComponent, { size: 'lg', backdrop: 'static' });
-    modalRef.componentInstance.site = site;
-    // unsubscribe not needed because closed completes on modal close
-    modalRef.closed
-      .pipe(
-        filter(reason => reason === ITEM_DELETED_EVENT),
-        switchMap(() => this.loadFromBackendWithRouteInformations())
-      )
-      .subscribe({
-        next: (res: EntityArrayResponseType) => {
-          this.onResponseSuccess(res);
-        },
-      });
-  }
-
-  load(): void {
-    this.loadFromBackendWithRouteInformations().subscribe({
-      next: (res: EntityArrayResponseType) => {
-        this.onResponseSuccess(res);
-      },
-    });
-  }
-
-  navigateToWithComponentValues(): void {
-    this.handleNavigation(this.page, this.predicate, this.ascending);
-  }
-
-  navigateToPage(page = this.page): void {
-    this.handleNavigation(page, this.predicate, this.ascending);
+  /** Appelé par le bouton "Actualiser". */
+  refresh(): void {
+    this.load();
   }
 
   filterSites(): void {
@@ -94,6 +68,43 @@ export class SiteComponent implements OnInit {
     }
 
     this.filteredSites = result;
+  }
+
+  delete(site: ISite): void {
+    const modalRef = this.modalService.open(SiteDeleteDialogComponent, { size: 'lg', backdrop: 'static' });
+    modalRef.componentInstance.site = site;
+    // unsubscribe not needed because closed completes on modal close
+    modalRef.closed
+      .pipe(
+        filter(reason => reason === ITEM_DELETED_EVENT),
+        switchMap(() => this.loadFromBackendWithRouteInformations())
+      )
+      .subscribe({
+        next: (res: EntityArrayResponseType) => {
+          this.onResponseSuccess(res);
+        },
+      });
+  }
+
+  /** Appelé au double-clic sur une carte ou une ligne : navigation directe vers l'édition. */
+  goToEdit(site: ISite): void {
+    this.router.navigate(['/site', site.id, 'edit']);
+  }
+
+  load(): void {
+    this.loadFromBackendWithRouteInformations().subscribe({
+      next: (res: EntityArrayResponseType) => {
+        this.onResponseSuccess(res);
+      },
+    });
+  }
+
+  navigateToWithComponentValues(): void {
+    this.handleNavigation(this.page, this.predicate, this.ascending);
+  }
+
+  navigateToPage(page = this.page): void {
+    this.handleNavigation(page, this.predicate, this.ascending);
   }
 
   protected loadFromBackendWithRouteInformations(): Observable<EntityArrayResponseType> {
