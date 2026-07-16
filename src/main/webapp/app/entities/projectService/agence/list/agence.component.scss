@@ -1,34 +1,34 @@
-.clients-page {
-  --cp-accent: #f5822a;
-  --cp-accent-hover: #ff9a4d;
-  --cp-accent-soft: rgba(245, 130, 42, 0.12);
-  --cp-text: #1a2233;
-  --cp-text-muted: #8a93a3;
-  --cp-border: #e7e9ee;
-  --cp-surface: #ffffff;
-  --cp-surface-hover: #f2f4f8;
-  --cp-success: #1f9d55;
-  --cp-success-soft: rgba(31, 157, 85, 0.12);
-  --cp-info: #7c5cff;
-  --cp-info-soft: rgba(124, 92, 255, 0.12);
-  --cp-danger: #e0524d;
-  --cp-danger-soft: rgba(224, 82, 77, 0.12);
+.agences-page {
+  --agp-accent: #f5822a;
+  --agp-accent-hover: #ff9a4d;
+  --agp-accent-soft: rgba(245, 130, 42, 0.12);
+  --agp-text: #1a2233;
+  --agp-text-muted: #8a93a3;
+  --agp-border: #e7e9ee;
+  --agp-surface: #ffffff;
+  --agp-surface-hover: #f2f4f8;
+  --agp-success: #1f9d55;
+  --agp-success-soft: rgba(31, 157, 85, 0.12);
+  --agp-info: #7c5cff;
+  --agp-info-soft: rgba(124, 92, 255, 0.12);
+  --agp-danger: #e0524d;
+  --agp-danger-soft: rgba(224, 82, 77, 0.12);
 
   display: flex;
   /* La navbar est en fixed-top (min-height: 72px) : on réserve l'espace
      nécessaire pour que le header (titre + boutons) ne soit plus masqué. */
-  padding: 96px 1.5rem 1.5rem;
+  padding: 24px 1.5rem 1.5rem;
   align-items: flex-start;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
 /* ============ CONTENU ============ */
-.clients-content {
+.agences-content {
   flex: 1;
   min-width: 0;
 }
 
-.clients-header {
+.agences-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -37,32 +37,32 @@
   h2 {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--cp-text);
+    color: var(--agp-text);
     margin: 0;
   }
 }
 
-.clients-header-actions {
+.agences-header-actions {
   display: flex;
   align-items: center;
   gap: 0.6rem;
 }
 
-.btn-client-refresh {
+.btn-agence-refresh {
   width: 42px;
   height: 42px;
   border-radius: 10px;
-  border: 1px solid var(--cp-border);
-  background: var(--cp-surface);
-  color: var(--cp-text-muted);
+  border: 1px solid var(--agp-border);
+  background: var(--agp-surface);
+  color: var(--agp-text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.25s ease, color 0.25s ease;
 
   &:hover:not(:disabled) {
-    background: var(--cp-surface-hover);
-    color: var(--cp-text);
+    background: var(--agp-surface-hover);
+    color: var(--agp-text);
   }
 
   &:disabled {
@@ -71,14 +71,14 @@
   }
 }
 
-.btn-client-new {
+.btn-agence-new {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.6rem 1.1rem;
   border-radius: 10px;
   border: none;
-  background: var(--cp-accent) !important;
+  background: var(--agp-accent) !important;
   opacity: 1 !important;
   color: #ffffff !important;
   font-weight: 600;
@@ -92,7 +92,7 @@
   }
 
   &:hover {
-    background: var(--cp-accent-hover) !important;
+    background: var(--agp-accent-hover) !important;
     box-shadow: 0 10px 22px -8px rgba(245, 130, 42, 0.7);
     transform: translateY(-1px);
     color: #ffffff !important;
@@ -100,9 +100,9 @@
 }
 
 /* ============ TOOLBAR ============ */
-.clients-toolbar-wrapper {
-  background: var(--cp-surface);
-  border: 1px solid var(--cp-border);
+.agences-toolbar-wrapper {
+  background: var(--agp-surface);
+  border: 1px solid var(--agp-border);
   border-radius: 14px;
   padding: 1rem;
   margin-bottom: 1.25rem;
@@ -111,14 +111,14 @@
   gap: 0.85rem;
 }
 
-.clients-toolbar-row {
+.agences-toolbar-row {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
 }
 
-.clients-search {
+.agences-search {
   flex: 1;
   min-width: 180px;
   display: flex;
@@ -126,24 +126,24 @@
   gap: 0.6rem;
   height: 42px;
   border-radius: 10px;
-  border: 1px solid var(--cp-border);
-  background: var(--cp-surface);
+  border: 1px solid var(--agp-border);
+  background: var(--agp-surface);
   padding: 0 14px;
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
 
   &:focus-within {
-    border-color: var(--cp-accent);
-    box-shadow: 0 0 0 3px var(--cp-accent-soft);
+    border-color: var(--agp-accent);
+    box-shadow: 0 0 0 3px var(--agp-accent-soft);
   }
 
-  .clients-search-icon {
+  .agences-search-icon {
     flex-shrink: 0;
-    color: var(--cp-text-muted);
+    color: var(--agp-text-muted);
     font-size: 0.85rem;
     pointer-events: none;
   }
 
-  .clients-search-input {
+  .agences-search-input {
     flex: 1;
     height: 100%;
     border: none;
@@ -159,25 +159,25 @@
   }
 }
 
-.clients-toolbar-right {
+.agences-toolbar-right {
   margin-left: auto;
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
-.clients-count {
+.agences-count {
   font-size: 0.85rem;
-  color: var(--cp-text-muted);
+  color: var(--agp-text-muted);
   white-space: nowrap;
-  background: var(--cp-surface-hover);
+  background: var(--agp-surface-hover);
   padding: 0.4rem 0.75rem;
   border-radius: 8px;
 }
 
-.clients-view-toggle {
+.agences-view-toggle {
   display: flex;
-  border: 1px solid var(--cp-border);
+  border: 1px solid var(--agp-border);
   border-radius: 10px;
   overflow: hidden;
 
@@ -185,35 +185,35 @@
     width: 40px;
     height: 40px;
     border: none;
-    background: var(--cp-surface);
-    color: var(--cp-text-muted);
+    background: var(--agp-surface);
+    color: var(--agp-text-muted);
     display: flex;
     align-items: center;
     justify-content: center;
     transition: background 0.25s ease, color 0.25s ease;
 
     &.active {
-      background: var(--cp-accent-soft);
-      color: var(--cp-accent);
+      background: var(--agp-accent-soft);
+      color: var(--agp-accent);
     }
 
     &:hover {
-      background: var(--cp-surface-hover);
+      background: var(--agp-surface-hover);
     }
   }
 }
 
 /* ============ GRILLE DE CARTES ============ */
-.clients-grid {
+.agences-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1rem;
 }
 
-.client-card {
+.agence-card {
   position: relative;
-  background: var(--cp-surface);
-  border: 1px solid var(--cp-border);
+  background: var(--agp-surface);
+  border: 1px solid var(--agp-border);
   border-radius: 14px;
   padding: 1.1rem 1.2rem;
   cursor: pointer;
@@ -223,29 +223,29 @@
   user-select: none;
 
   &:hover {
-    border-color: var(--cp-accent);
+    border-color: var(--agp-accent);
     box-shadow: 0 12px 26px -16px rgba(245, 130, 42, 0.4);
     transform: translateY(-2px);
   }
 }
 
-.client-card-header {
+.agence-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 0.5rem;
 }
 
-.client-ref {
+.agence-ref {
   font-weight: 700;
-  color: var(--cp-accent);
+  color: var(--agp-accent);
   font-size: 0.92rem;
 }
 
-.client-title {
+.agence-title {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--cp-text);
+  color: var(--agp-text);
   margin: 0.15rem 0 0.6rem;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -253,14 +253,14 @@
   overflow: hidden;
 }
 
-.client-details {
+.agence-details {
   font-size: 0.85rem;
-  color: var(--cp-text-muted);
+  color: var(--agp-text-muted);
   display: flex;
   flex-direction: column;
   gap: 6px;
   padding-bottom: 0.75rem;
-  border-bottom: 1px dashed var(--cp-border);
+  border-bottom: 1px dashed var(--agp-border);
   margin-bottom: 0.75rem;
 
   div {
@@ -270,7 +270,7 @@
   }
 }
 
-.client-card-footer {
+.agence-card-footer {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -284,7 +284,7 @@
   transition: opacity 0.15s ease;
 }
 
-.client-card:hover .card-actions {
+.agence-card:hover .card-actions {
   opacity: 1;
 }
 
@@ -301,39 +301,39 @@
   transition: all 0.18s ease;
 
   &.btn-delete {
-    background: var(--cp-danger-soft);
-    color: var(--cp-danger);
+    background: var(--agp-danger-soft);
+    color: var(--agp-danger);
     &:hover {
-      background: var(--cp-danger);
+      background: var(--agp-danger);
       color: #ffffff;
     }
   }
 }
 
 /* ============ TABLEAU LISTE ============ */
-.clients-table-wrapper {
-  background: var(--cp-surface);
-  border: 1px solid var(--cp-border);
+.agences-table-wrapper {
+  background: var(--agp-surface);
+  border: 1px solid var(--agp-border);
   border-radius: 14px;
   overflow: hidden;
 }
 
-.clients-table {
+.agences-table {
   width: 100%;
   border-collapse: collapse;
 
   thead {
-    background: var(--cp-surface-hover);
+    background: var(--agp-surface-hover);
 
     th {
       text-align: left;
       padding: 0.85rem 1.2rem;
       font-size: 0.78rem;
       font-weight: 700;
-      color: var(--cp-text-muted);
+      color: var(--agp-text-muted);
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      border-bottom: 1px solid var(--cp-border);
+      border-bottom: 1px solid var(--agp-border);
     }
   }
 
@@ -341,7 +341,7 @@
     tr {
       cursor: pointer;
       transition: background 0.2s ease;
-      border-bottom: 1px solid var(--cp-border);
+      border-bottom: 1px solid var(--agp-border);
       user-select: none;
 
       &:last-child {
@@ -349,22 +349,28 @@
       }
 
       &:hover {
-        background: var(--cp-accent-soft);
+        background: var(--agp-accent-soft);
       }
     }
 
     td {
       padding: 0.9rem 1.2rem;
       font-size: 0.9rem;
-      color: var(--cp-text);
+      color: var(--agp-text);
       white-space: nowrap;
     }
   }
 }
 
+.table-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
 /* ============ PAGINATION ORANGE ============ */
 ::ng-deep {
-  .clients-content ngb-pagination {
+  .agences-content ngb-pagination {
     .pagination {
       gap: 0.35rem;
     }
@@ -373,7 +379,7 @@
       .page-link {
         border: none;
         border-radius: 8px;
-        color: var(--cp-text-muted);
+        color: var(--agp-text-muted);
         font-weight: 600;
         min-width: 36px;
         height: 36px;
@@ -383,19 +389,19 @@
         transition: background 0.2s ease, color 0.2s ease;
 
         &:hover {
-          background: var(--cp-accent-soft);
-          color: var(--cp-accent);
+          background: var(--agp-accent-soft);
+          color: var(--agp-accent);
         }
       }
 
       &.active .page-link {
-        background: var(--cp-accent) !important;
+        background: var(--agp-accent) !important;
         color: #ffffff !important;
         box-shadow: 0 4px 10px -4px rgba(245, 130, 42, 0.5);
       }
 
       &.disabled .page-link {
-        color: var(--cp-border);
+        color: var(--agp-border);
         background: transparent;
       }
     }
@@ -404,11 +410,11 @@
 
 /* ============ RESPONSIVE ============ */
 @media (max-width: 900px) {
-  .clients-page {
-    padding: 88px 1rem 1rem;
+  .agences-page {
+    padding: 20px 1rem 1rem;
   }
 
-  .clients-toolbar-right {
+  .agences-toolbar-right {
     margin-left: 0;
     width: 100%;
     justify-content: space-between;

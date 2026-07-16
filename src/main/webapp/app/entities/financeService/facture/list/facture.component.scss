@@ -1,0 +1,557 @@
+// ===== Palette (orange app) =====
+$orange-primary: #f97316;
+$orange-dark: #ea580c;
+$orange-light: #fff7ed;
+$orange-border: #fed7aa;
+
+$text-dark: #1f2937;
+$text-muted: #6b7280;
+$border-light: #e5e7eb;
+$bg-card: #ffffff;
+
+// ===== Fix chevauchement navbar =====
+:host {
+  display: block;
+  margin-top: 70px; // ajustez à la hauteur réelle de votre navbar
+}
+
+.facture-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+// ===== Sidebar =====
+.fact-sidebar {
+  flex: 0 0 220px;
+  background: $bg-card;
+  border: 1px solid $border-light;
+  border-radius: 12px;
+  padding: 16px 12px;
+  position: sticky;
+  top: 82px;
+}
+
+.sidebar-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: $text-muted;
+  padding: 0 10px 14px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  color: $text-dark;
+  font-size: 0.9rem;
+  text-decoration: none;
+
+  fa-icon {
+    width: 16px;
+    color: $text-muted;
+  }
+
+  &:hover {
+    background: $orange-light;
+    text-decoration: none;
+    color: $text-dark;
+  }
+
+  &.active {
+    background: $orange-light;
+    color: $orange-dark;
+    font-weight: 600;
+
+    fa-icon {
+      color: $orange-primary;
+    }
+  }
+}
+
+// ===== Contenu principal =====
+.facture-page {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 0;
+}
+
+// ===== Cartes statistiques =====
+.stats-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  flex: 1 1 220px;
+  background: $bg-card;
+  border: 1px solid $border-light;
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: $text-muted;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $text-dark;
+}
+
+.stat-value-success {
+  color: #16a34a;
+}
+
+.stat-value-warning {
+  color: $orange-dark;
+}
+
+.stat-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.stat-icon-purple {
+  background: #f3e8ff;
+  color: #9333ea;
+}
+
+.stat-icon-blue {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.stat-icon-success {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.stat-icon-warning {
+  background: #ffedd5;
+  color: $orange-dark;
+}
+
+// ===== En-tête =====
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  h2 {
+    margin: 0;
+    font-weight: 700;
+    color: $text-dark;
+  }
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-outline-refresh {
+  background: #fff;
+  border: 1px solid $border-light;
+  color: $text-dark;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 500;
+
+  &:hover {
+    background: #f9fafb;
+  }
+}
+
+.btn-primary-orange {
+  background: $orange-primary;
+  border: 1px solid $orange-primary;
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 600;
+
+  &:hover {
+    background: $orange-dark;
+    border-color: $orange-dark;
+  }
+}
+
+// ===== Barre d'outils (recherche + filtre + toggle) =====
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.search-bar {
+  flex: 1 1 260px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid $border-light;
+  border-radius: 10px;
+  padding: 10px 14px;
+
+  &:focus-within {
+    border-color: $orange-primary;
+    box-shadow: 0 0 0 3px rgba($orange-primary, 0.12);
+  }
+}
+
+.search-icon {
+  color: $text-muted;
+  margin-right: 10px;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 0.95rem;
+  color: $text-dark;
+
+  &::placeholder {
+    color: $text-muted;
+  }
+}
+
+.statut-select {
+  border: 1px solid $border-light;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  color: $text-dark;
+  background: #fff;
+  min-width: 170px;
+
+  &:focus {
+    outline: none;
+    border-color: $orange-primary;
+    box-shadow: 0 0 0 3px rgba($orange-primary, 0.12);
+  }
+}
+
+.btn-clear-filters {
+  border: none;
+  background: transparent;
+  color: $text-muted;
+  padding: 8px;
+  border-radius: 8px;
+
+  &:hover {
+    background: #f3f4f6;
+    color: $text-dark;
+  }
+}
+
+.results-count {
+  font-size: 0.85rem;
+  color: $text-muted;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.view-toggle {
+  display: flex;
+  border: 1px solid $border-light;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.view-btn {
+  border: none;
+  background: #fff;
+  color: $text-muted;
+  padding: 8px 12px;
+
+  &:hover {
+    background: #f9fafb;
+  }
+
+  &.active {
+    background: $orange-light;
+    color: $orange-dark;
+  }
+}
+
+// ===== Tableau =====
+.table-entities {
+  background: $bg-card;
+  border-radius: 12px;
+  border: 1px solid $border-light;
+  overflow: hidden;
+}
+
+.facture-table {
+  margin-bottom: 0;
+
+  thead th {
+    background: #fafafa;
+    color: $text-muted;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-bottom: 1px solid $border-light;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    vertical-align: middle;
+    font-size: 0.92rem;
+    color: $text-dark;
+    border-bottom: 1px solid $border-light;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr:hover {
+    background: $orange-light;
+  }
+
+  .col-actions {
+    width: 1%;
+  }
+}
+
+.cell-reference {
+  color: $orange-dark;
+  font-weight: 600;
+}
+
+.row-clickable {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.facture-table tbody tr.row-clickable:hover {
+  background: $orange-light;
+}
+
+.facture-grid .facture-card.row-clickable:hover {
+  border-color: $orange-border;
+  box-shadow: 0 2px 8px rgba($orange-primary, 0.12);
+}
+
+// ===== Vue grille =====
+.facture-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.facture-card {
+  background: $bg-card;
+  border: 1px solid $border-light;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.facture-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1rem;
+}
+
+.facture-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.facture-card-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.row-label {
+  color: $text-muted;
+}
+
+.row-value {
+  color: $text-dark;
+  font-weight: 500;
+}
+
+.row-value-strong {
+  font-weight: 700;
+  color: $orange-dark;
+}
+
+.facture-card-footer {
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid $border-light;
+  padding-top: 10px;
+}
+
+// ===== Badges statut =====
+.badge-statut {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-creation {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.badge-verification {
+  background: #f3e8ff;
+  color: #7e22ce;
+}
+
+.badge-paiement {
+  background: #ccfbf1;
+  color: #0f766e;
+}
+
+.badge-decharge {
+  background: #ffedd5;
+  color: $orange-dark;
+}
+
+.badge-fin {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.badge-default {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+// ===== Boutons d'action =====
+.btn-icon {
+  border-radius: 6px;
+  font-size: 0.8rem;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+
+  fa-icon {
+    margin-right: 4px;
+  }
+}
+
+.btn-view {
+  background: $orange-light;
+  color: $orange-dark;
+  border-color: $orange-border;
+
+  &:hover {
+    background: $orange-border;
+  }
+}
+
+.btn-edit {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+
+  &:hover {
+    background: #dbeafe;
+  }
+}
+
+.btn-delete {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+
+  &:hover {
+    background: #fee2e2;
+  }
+}
+
+// ===== Responsive =====
+@media (max-width: 900px) {
+  .facture-layout {
+    flex-direction: column;
+  }
+
+  .fact-sidebar {
+    flex: 1 1 auto;
+    width: 100%;
+    position: static;
+  }
+
+  .results-count {
+    margin-left: 0;
+  }
+}
+// ===== Pagination (thème orange) =====
+::ng-deep .ot-externe-page ngb-pagination,
+::ng-deep .facture-page ngb-pagination {
+  .page-link {
+    color: $orange-dark;
+    border-color: $border-light;
+
+    &:hover {
+      background-color: $orange-light;
+      border-color: $orange-border;
+      color: $orange-dark;
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 3px rgba($orange-primary, 0.15);
+    }
+  }
+
+  .page-item.active .page-link {
+    background-color: $orange-primary;
+    border-color: $orange-primary;
+    color: #fff;
+  }
+
+  .page-item.disabled .page-link {
+    color: $text-muted;
+    background-color: #fff;
+    border-color: $border-light;
+  }
+}

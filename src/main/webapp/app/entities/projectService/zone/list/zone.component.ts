@@ -14,6 +14,7 @@ import { ZoneDeleteDialogComponent } from '../delete/zone-delete-dialog.componen
 @Component({
   selector: 'jhi-zone',
   templateUrl: './zone.component.html',
+  styleUrls: ['./zone.component.scss'],
 })
 export class ZoneComponent implements OnInit {
   zones?: IZone[];
@@ -43,6 +44,26 @@ export class ZoneComponent implements OnInit {
     this.load();
   }
 
+  /** Appelé par le bouton "Actualiser". */
+  refresh(): void {
+    this.load();
+  }
+
+  filterZones(): void {
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    let result = this.zones ?? [];
+    const term = this.searchTerm.trim().toLowerCase();
+
+    if (term) {
+      result = result.filter(z => (z.nom ?? '').toLowerCase().includes(term) || (z.ville?.nom ?? '').toLowerCase().includes(term));
+    }
+
+    this.filteredZones = result;
+  }
+
   delete(zone: IZone): void {
     const modalRef = this.modalService.open(ZoneDeleteDialogComponent, { size: 'lg', backdrop: 'static' });
     modalRef.componentInstance.zone = zone;
@@ -59,6 +80,11 @@ export class ZoneComponent implements OnInit {
       });
   }
 
+  /** Appelé au double-clic sur une carte ou une ligne : navigation directe vers l'édition. */
+  goToEdit(zone: IZone): void {
+    this.router.navigate(['/zone', zone.id, 'edit']);
+  }
+
   load(): void {
     this.loadFromBackendWithRouteInformations().subscribe({
       next: (res: EntityArrayResponseType) => {
@@ -73,21 +99,6 @@ export class ZoneComponent implements OnInit {
 
   navigateToPage(page = this.page): void {
     this.handleNavigation(page, this.predicate, this.ascending);
-  }
-
-  filterZones(): void {
-    this.applyFilters();
-  }
-
-  private applyFilters(): void {
-    let result = this.zones ?? [];
-    const term = this.searchTerm.trim().toLowerCase();
-
-    if (term) {
-      result = result.filter(z => (z.nom ?? '').toLowerCase().includes(term) || (z.ville?.nom ?? '').toLowerCase().includes(term));
-    }
-
-    this.filteredZones = result;
   }
 
   protected loadFromBackendWithRouteInformations(): Observable<EntityArrayResponseType> {

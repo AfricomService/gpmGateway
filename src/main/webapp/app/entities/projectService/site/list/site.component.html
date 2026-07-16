@@ -1,141 +1,159 @@
-<div class="entity-modern-container">
-  <div class="entity-modern-header">
-    <h2 id="page-heading" data-cy="SiteHeading">
-      <span>Sites</span>
-    </h2>
-    <div class="header-actions">
-      <button id="jh-create-entity" data-cy="entityCreateButton" class="btn btn-primary" [routerLink]="['/site/new']">
-        <fa-icon icon="plus"></fa-icon>
-        <span>Nouveau site</span>
-      </button>
-    </div>
-  </div>
+<div class="sites-page">
+  <div class="sites-content">
+    <div class="sites-header">
+      <h2 data-cy="SiteHeading" id="page-heading">
+        <span class="text-uppercase">Sites</span>
+      </h2>
 
-  <jhi-alert-error></jhi-alert-error>
-  <jhi-alert></jhi-alert>
-
-  <div class="entity-modern-toolbar">
-    <div class="toolbar-left">
-      <div class="input-group">
-        <input [(ngModel)]="searchTerm" (ngModelChange)="filterSites()" class="form-control" placeholder="Rechercher..." type="text" />
-      </div>
-    </div>
-
-    <div class="toolbar-right">
-      <div class="view-toggle">
-        <button class="view-btn" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Grille" type="button">
-          <fa-icon icon="th"></fa-icon>
+      <div class="sites-header-actions">
+        <button (click)="refresh()" [disabled]="isLoading" class="btn-site-refresh" title="Actualiser" type="button">
+          <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
         </button>
-        <button class="view-btn" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'" title="Liste" type="button">
-          <fa-icon icon="list"></fa-icon>
+        <button [routerLink]="['/site/new']" class="btn-site-new" data-cy="entityCreateButton" id="jh-create-entity">
+          <fa-icon icon="plus"></fa-icon>
+          <span>Nouveau site</span>
         </button>
       </div>
     </div>
-  </div>
 
-  <div class="alert alert-warning" id="no-result" *ngIf="filteredSites?.length === 0">
-    <span>Aucun site trouve</span>
-  </div>
+    <jhi-alert-error></jhi-alert-error>
+    <jhi-alert></jhi-alert>
 
-  <div *ngIf="filteredSites && filteredSites.length > 0 && viewMode === 'grid'" class="entity-modern-grid" id="entities">
-    <div *ngFor="let site of filteredSites; trackBy: trackId" class="entity-modern-card" data-cy="entityTable">
-      <div class="card-header">
-        <a [routerLink]="['/site', site.id, 'view']" class="entity-modern-num">#{{ site.id }}</a>
-      </div>
-
-      <div class="card-body">
-        <h3 class="entity-modern-title">
-          <a [routerLink]="['/site', site.id, 'view']">{{ site.designation || 'Sans designation' }}</a>
-        </h3>
-        <div class="entity-modern-details">
-          <div><strong>Code:</strong> {{ site.code || '-' }}</div>
-          <div><strong>Ville:</strong> {{ site.ville?.nom || '-' }}</div>
-          <div><strong>Client:</strong> {{ site.client?.raisonSociale || '-' }}</div>
+    <!-- Toolbar -->
+    <div class="sites-toolbar-wrapper">
+      <div class="sites-toolbar-row">
+        <div class="sites-search">
+          <fa-icon icon="search" class="sites-search-icon"></fa-icon>
+          <input
+            (ngModelChange)="filterSites()"
+            [(ngModel)]="searchTerm"
+            class="form-control sites-search-input"
+            placeholder="Rechercher..."
+            type="text"
+          />
         </div>
-      </div>
 
-      <div class="card-footer">
-        <div class="card-actions">
-          <button
-            [routerLink]="['/site', site.id, 'view']"
-            class="action-btn btn-view"
-            data-cy="entityDetailsButton"
-            title="Voir"
-            type="button"
-          >
-            <fa-icon icon="eye"></fa-icon>
-          </button>
-          <button
-            [routerLink]="['/site', site.id, 'edit']"
-            class="action-btn btn-edit"
-            data-cy="entityEditButton"
-            title="Editer"
-            type="button"
-          >
-            <fa-icon icon="pencil-alt"></fa-icon>
-          </button>
-          <button (click)="delete(site)" class="action-btn btn-delete" data-cy="entityDeleteButton" title="Supprimer" type="button">
-            <fa-icon icon="times"></fa-icon>
-          </button>
+        <div class="sites-toolbar-right">
+          <span class="sites-count">{{ filteredSites?.length ?? 0 }} résultat(s)</span>
+
+          <div class="sites-view-toggle">
+            <button type="button" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Vue grille">
+              <fa-icon icon="th-large"></fa-icon>
+            </button>
+            <button type="button" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'" title="Vue liste">
+              <fa-icon icon="list"></fa-icon>
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div *ngIf="filteredSites && filteredSites.length > 0 && viewMode === 'list'" class="table-responsive table-entities" id="entities-list">
-    <table class="table table-hover align-middle bg-white border rounded-3 shadow-sm mb-0" aria-describedby="page-heading">
-      <thead>
-        <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
-          <th scope="col" jhiSortBy="id"><span>ID</span></th>
-          <th scope="col" jhiSortBy="code"><span>Code</span></th>
-          <th scope="col" jhiSortBy="designation"><span>Designation</span></th>
-          <th scope="col" jhiSortBy="ville.nom"><span>Ville</span></th>
-          <th scope="col" jhiSortBy="client.raisonSociale"><span>Client</span></th>
-          <th scope="col"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let site of filteredSites; trackBy: trackId" data-cy="entityTable">
-          <td>
-            <a [routerLink]="['/site', site.id, 'view']">{{ site.id }}</a>
-          </td>
-          <td>{{ site.code }}</td>
-          <td>{{ site.designation }}</td>
-          <td>{{ site.ville?.nom || '-' }}</td>
-          <td>{{ site.client?.raisonSociale || '-' }}</td>
-          <td class="text-end">
-            <div class="btn-group">
-              <button [routerLink]="['/site', site.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton" type="button">
-                <fa-icon icon="eye"></fa-icon>
-              </button>
-              <button [routerLink]="['/site', site.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton" type="button">
-                <fa-icon icon="pencil-alt"></fa-icon>
-              </button>
-              <button (click)="delete(site)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton" type="button">
-                <fa-icon icon="times"></fa-icon>
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div *ngIf="filteredSites && filteredSites.length > 0">
-    <div class="d-flex justify-content-center">
-      <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+    <!-- No result -->
+    <div *ngIf="filteredSites?.length === 0" class="alert alert-warning" id="no-result">
+      <span>Aucun site trouvé</span>
     </div>
 
-    <div class="d-flex justify-content-center">
-      <ngb-pagination
-        [collectionSize]="totalItems"
-        [page]="page"
-        [pageSize]="itemsPerPage"
-        [maxSize]="5"
-        [rotate]="true"
-        [boundaryLinks]="true"
-        (pageChange)="navigateToPage($event)"
-      ></ngb-pagination>
+    <!-- Card Grid -->
+    <div *ngIf="filteredSites && filteredSites.length > 0 && viewMode === 'grid'" class="sites-grid" id="entities">
+      <div
+        *ngFor="let site of filteredSites; trackBy: trackId"
+        class="site-card"
+        data-cy="entityTable"
+        title="Double-cliquer pour éditer"
+        (dblclick)="goToEdit(site)"
+      >
+        <div class="site-card-header">
+          <span class="site-ref">#{{ site.code || site.id }}</span>
+        </div>
+
+        <h3 class="site-title">{{ site.designation || 'Sans désignation' }}</h3>
+
+        <div class="site-details">
+          <div *ngIf="site.ville?.nom">
+            <fa-icon icon="flag" class="text-muted"></fa-icon>
+            <span>{{ site.ville?.nom }}</span>
+          </div>
+          <div *ngIf="site.client?.raisonSociale">
+            <fa-icon icon="building" class="text-muted"></fa-icon>
+            <span>{{ site.client?.raisonSociale }}</span>
+          </div>
+        </div>
+
+        <div class="site-card-footer">
+          <div class="card-actions">
+            <button
+              (click)="$event.stopPropagation(); delete(site)"
+              class="action-btn btn-delete"
+              data-cy="entityDeleteButton"
+              title="Supprimer"
+              type="button"
+            >
+              <fa-icon icon="trash-alt"></fa-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- List View -->
+    <div *ngIf="filteredSites && filteredSites.length > 0 && viewMode === 'list'" class="sites-table-wrapper" id="entities-list">
+      <table class="sites-table" aria-describedby="page-heading">
+        <thead>
+          <tr (sortChange)="navigateToWithComponentValues()" [(ascending)]="ascending" [(predicate)]="predicate" jhiSort>
+            <th jhiSortBy="code" scope="col">
+              <div class="d-flex"><span>Code</span><fa-icon class="p-1" icon="sort"></fa-icon></div>
+            </th>
+            <th jhiSortBy="designation" scope="col">
+              <div class="d-flex"><span>Désignation</span><fa-icon class="p-1" icon="sort"></fa-icon></div>
+            </th>
+            <th jhiSortBy="ville.nom" scope="col">
+              <div class="d-flex"><span>Ville</span><fa-icon class="p-1" icon="sort"></fa-icon></div>
+            </th>
+            <th jhiSortBy="client.raisonSociale" scope="col">
+              <div class="d-flex"><span>Client</span><fa-icon class="p-1" icon="sort"></fa-icon></div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let site of filteredSites; trackBy: trackId"
+            data-cy="entityTable"
+            title="Double-cliquer pour éditer"
+            (dblclick)="goToEdit(site)"
+          >
+            <td>{{ site.code }}</td>
+            <td>{{ site.designation }}</td>
+            <td>{{ site.ville?.nom || '-' }}</td>
+            <td>{{ site.client?.raisonSociale || '-' }}</td>
+            <td class="text-end" (click)="$event.stopPropagation()">
+              <div class="table-actions">
+                <button (click)="delete(site)" class="action-btn btn-delete" data-cy="entityDeleteButton" title="Supprimer" type="button">
+                  <fa-icon icon="trash-alt"></fa-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="filteredSites && filteredSites.length > 0">
+      <div class="d-flex justify-content-center">
+        <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+      </div>
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          (pageChange)="navigateToPage($event)"
+          [boundaryLinks]="true"
+          [collectionSize]="totalItems"
+          [maxSize]="5"
+          [pageSize]="itemsPerPage"
+          [page]="page"
+          [rotate]="true"
+        ></ngb-pagination>
+      </div>
     </div>
   </div>
 </div>

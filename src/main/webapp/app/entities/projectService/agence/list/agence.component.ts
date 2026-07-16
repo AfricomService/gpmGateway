@@ -14,6 +14,7 @@ import { AgenceDeleteDialogComponent } from '../delete/agence-delete-dialog.comp
 @Component({
   selector: 'jhi-agence',
   templateUrl: './agence.component.html',
+  styleUrls: ['./agence.component.scss'],
 })
 export class AgenceComponent implements OnInit {
   agences?: IAgence[];
@@ -43,36 +44,9 @@ export class AgenceComponent implements OnInit {
     this.load();
   }
 
-  delete(agence: IAgence): void {
-    const modalRef = this.modalService.open(AgenceDeleteDialogComponent, { size: 'lg', backdrop: 'static' });
-    modalRef.componentInstance.agence = agence;
-    // unsubscribe not needed because closed completes on modal close
-    modalRef.closed
-      .pipe(
-        filter(reason => reason === ITEM_DELETED_EVENT),
-        switchMap(() => this.loadFromBackendWithRouteInformations())
-      )
-      .subscribe({
-        next: (res: EntityArrayResponseType) => {
-          this.onResponseSuccess(res);
-        },
-      });
-  }
-
-  load(): void {
-    this.loadFromBackendWithRouteInformations().subscribe({
-      next: (res: EntityArrayResponseType) => {
-        this.onResponseSuccess(res);
-      },
-    });
-  }
-
-  navigateToWithComponentValues(): void {
-    this.handleNavigation(this.page, this.predicate, this.ascending);
-  }
-
-  navigateToPage(page = this.page): void {
-    this.handleNavigation(page, this.predicate, this.ascending);
+  /** Appelé par le bouton "Actualiser". */
+  refresh(): void {
+    this.load();
   }
 
   filterAgences(): void {
@@ -94,6 +68,43 @@ export class AgenceComponent implements OnInit {
     }
 
     this.filteredAgences = result;
+  }
+
+  delete(agence: IAgence): void {
+    const modalRef = this.modalService.open(AgenceDeleteDialogComponent, { size: 'lg', backdrop: 'static' });
+    modalRef.componentInstance.agence = agence;
+    // unsubscribe not needed because closed completes on modal close
+    modalRef.closed
+      .pipe(
+        filter(reason => reason === ITEM_DELETED_EVENT),
+        switchMap(() => this.loadFromBackendWithRouteInformations())
+      )
+      .subscribe({
+        next: (res: EntityArrayResponseType) => {
+          this.onResponseSuccess(res);
+        },
+      });
+  }
+
+  /** Appelé au double-clic sur une carte ou une ligne : navigation directe vers l'édition. */
+  goToEdit(agence: IAgence): void {
+    this.router.navigate(['/agence', agence.id, 'edit']);
+  }
+
+  load(): void {
+    this.loadFromBackendWithRouteInformations().subscribe({
+      next: (res: EntityArrayResponseType) => {
+        this.onResponseSuccess(res);
+      },
+    });
+  }
+
+  navigateToWithComponentValues(): void {
+    this.handleNavigation(this.page, this.predicate, this.ascending);
+  }
+
+  navigateToPage(page = this.page): void {
+    this.handleNavigation(page, this.predicate, this.ascending);
   }
 
   protected loadFromBackendWithRouteInformations(): Observable<EntityArrayResponseType> {

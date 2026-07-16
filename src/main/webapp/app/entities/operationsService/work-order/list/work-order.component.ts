@@ -11,9 +11,24 @@ import { ASC, DESC, SORT, ITEM_DELETED_EVENT, DEFAULT_SORT_DATA } from 'app/conf
 import { EntityArrayResponseType, WorkOrderService } from '../service/work-order.service';
 import { WorkOrderDeleteDialogComponent } from '../delete/work-order-delete-dialog.component';
 
+import { IconProp } from '@fortawesome/fontawesome-svg-core';
+import { StatutWO } from 'app/entities/enumerations/statut-wo.model';
+import { IClient } from 'app/entities/projectService/client/client.model';
+import { ClientService } from 'app/entities/projectService/client/service/client.service';
+
+type MissionViewKey = 'ALL' | StatutWO;
+
+interface MissionView {
+  key: MissionViewKey;
+  label: string;
+  icon: IconProp;
+  statut?: StatutWO;
+}
+
 @Component({
   selector: 'jhi-work-order',
   templateUrl: './work-order.component.html',
+  styleUrls: ['./work-order.component.scss'],
 })
 export class WorkOrderComponent implements OnInit {
   workOrders?: IWorkOrder[];
@@ -26,8 +41,32 @@ export class WorkOrderComponent implements OnInit {
   totalItems = 0;
   page = 1;
 
+  // --- Barre d'outils : recherche / filtres --------------------------
+  // NOTE: aucune API de recherche/filtre n'existe encore côté back-end.
+  // Ces champs sont câblés en ngModel uniquement ; les méthodes ci-dessous
+  // sont des emplacements (TODO) à brancher plus tard.
+  searchTerm = '';
+  selectedStatut: StatutWO | null = null;
+  selectedClientId: number | null = null;
+
+  clients: IClient[] = [];
+
+  viewMode: 'grid' | 'list' = 'grid';
+
+  views: MissionView[] = [
+    { key: 'ALL', label: 'Toutes les missions', icon: 'list' },
+    { key: StatutWO.Creation, label: 'Création', icon: 'calendar-alt', statut: StatutWO.Creation },
+    { key: StatutWO.ExecutionTravaux, label: 'Exécution travaux', icon: 'clock', statut: StatutWO.ExecutionTravaux },
+    { key: StatutWO.VerificationWO, label: 'Vérification WO', icon: 'search', statut: StatutWO.VerificationWO },
+    { key: StatutWO.ValidationTechnique, label: 'Validation technique', icon: 'check', statut: StatutWO.ValidationTechnique },
+    { key: StatutWO.ValidationRessources, label: 'Validation ressources', icon: 'check-double', statut: StatutWO.ValidationRessources },
+    { key: StatutWO.Fin, label: 'Terminées', icon: 'check-circle', statut: StatutWO.Fin },
+  ];
+  activeView: MissionViewKey = 'ALL';
+
   constructor(
     protected workOrderService: WorkOrderService,
+    protected clientService: ClientService,
     protected activatedRoute: ActivatedRoute,
     public router: Router,
     protected modalService: NgbModal
@@ -37,12 +76,20 @@ export class WorkOrderComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    this.loadClients();
+  }
+
+  protected loadClients(): void {
+    this.clientService.query({ size: 1000, sort: ['raisonSociale,asc'] }).subscribe({
+      next: res => {
+        this.clients = res.body ?? [];
+      },
+    });
   }
 
   delete(workOrder: IWorkOrder): void {
     const modalRef = this.modalService.open(WorkOrderDeleteDialogComponent, { size: 'lg', backdrop: 'static' });
     modalRef.componentInstance.workOrder = workOrder;
-    // unsubscribe not needed because closed completes on modal close
     modalRef.closed
       .pipe(
         filter(reason => reason === ITEM_DELETED_EVENT),
@@ -69,6 +116,63 @@ export class WorkOrderComponent implements OnInit {
 
   navigateToPage(page = this.page): void {
     this.handleNavigation(page, this.predicate, this.ascending);
+  }
+
+  // --- Barre d'outils ---------------------------------------------------
+
+  selectView(view: MissionView): void {
+    this.activeView = view.key;
+    this.selectedStatut = view.statut ?? null;
+    // TODO: quand l'API de recherche/filtre existera, relancer this.load() avec le filtre statut
+  }
+
+  setViewMode(mode: 'grid' | 'list'): void {
+    this.viewMode = mode;
+  }
+
+  onSearchChange(): void {
+    // TODO: brancher sur une API de recherche côté back-end quand elle existera.
+  }
+
+  onClientFilterChange(): void {
+    // TODO: brancher sur une API de filtre par client quand elle existera.
+  }
+
+  resetFilters(): void {
+    this.searchTerm = '';
+    this.selectedStatut = null;
+    this.selectedClientId = null;
+    this.activeView = 'ALL';
+  }
+
+  // --- Aide à l'affichage -------------------------------------------
+
+  missionTitle(workOrder: IWorkOrder): string {
+    return workOrder.remarque || workOrder.numFicheIntervention || `Work Order #${workOrder.id}`;
+  }
+
+  clientName(clientId?: number | null): string {
+    if (!clientId) {
+      return '—';
+    }
+    const client = this.clients.find(c => c.id === clientId);
+    return client?.raisonSociale ?? `Client #${clientId}`;
+  }
+
+  statutBadgeClass(statut?: StatutWO | null): string {
+    switch (statut) {
+      case StatutWO.Fin:
+        return 'badge-success';
+      case StatutWO.VerificationWO:
+        return 'badge-info-soft';
+      case StatutWO.ExecutionTravaux:
+        return 'badge-warning';
+      case StatutWO.ValidationTechnique:
+      case StatutWO.ValidationRessources:
+        return 'badge-purple';
+      default:
+        return 'badge-neutral';
+    }
   }
 
   protected loadFromBackendWithRouteInformations(): Observable<EntityArrayResponseType> {

@@ -1,8 +1,8 @@
-<nav *ngIf="account !== null" data-cy="navbar" class="navbar navbar-dark bg-primary navbar-expand-md shadow-sm fixed-top">
+<nav *ngIf="account !== null" data-cy="navbar" class="navbar navbar-light bg-white navbar-expand-md shadow-sm fixed-top">
   <div class="container-fluid">
     <!-- Left Section: Logo -->
-    <a class="navbar-brand logo me-3" routerLink="/" (click)="collapseNavbar()">
-      <img src="/content/images/logoNavv.png" alt="logo" style="width: 100px" />
+    <a class="navbar-brand logo me-2" routerLink="/" (click)="collapseNavbar()">
+      <img src="/content/images/gpmlogo.png" alt="logo" style="width: 90px" />
     </a>
 
     <button
@@ -26,82 +26,125 @@
     >
       <!-- Center Section: Main Navigation -->
       <ul class="navbar-nav navbar-center">
+        <!-- Accueil -->
         <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
           <a class="nav-link" routerLink="/" (click)="collapseNavbar()">
-            <fa-icon icon="home" class="me-1"></fa-icon>
-            <span jhiTranslate="global.menu.home">Accueil</span>
+            <fa-icon icon="home"></fa-icon>
+            <span class="nav-label">Accueil</span>
           </a>
         </li>
+
+        <!-- Missions -->
         <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
           <a class="nav-link" routerLink="work-order" (click)="collapseNavbar()">
-            <fa-icon icon="clipboard" class="me-1"></fa-icon>
-            <span>Missions</span>
+            <fa-icon icon="clipboard"></fa-icon>
+            <span class="nav-label">Missions</span>
           </a>
         </li>
-        <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-          <a class="nav-link" routerLink="client" (click)="collapseNavbar()">
-            <fa-icon icon="users" class="me-1"></fa-icon>
-            <span>Clients</span>
+
+        <!-- Bon de Commande -->
+        <li class="nav-item">
+          <a class="nav-link" href="javascript:void(0);">
+            <fa-icon icon="file-signature"></fa-icon>
+            <span class="nav-label">Bon de Commande</span>
           </a>
         </li>
-        <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-          <a class="nav-link" routerLink="affaire" (click)="collapseNavbar()">
-            <fa-icon icon="folder" class="me-1"></fa-icon>
-            <span>Projets</span>
-          </a>
-        </li>
-        <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-          <a class="nav-link" routerLink="/ressources/vehicules" (click)="collapseNavbar()">
-            <fa-icon icon="truck" class="me-1"></fa-icon>
-            <span>Ressources</span>
-          </a>
-        </li>
-        <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-          <a class="nav-link" routerLink="facture" (click)="collapseNavbar()">
-            <fa-icon icon="file-invoice-dollar" class="me-1"></fa-icon>
-            <span>Facturation</span>
-          </a>
-        </li>
+
+        <!-- OT Externes -->
         <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
           <a class="nav-link" routerLink="ot-externe" (click)="collapseNavbar()">
-            <fa-icon icon="file-alt" class="me-1"></fa-icon>
-            <span>OT Externes</span>
+            <fa-icon icon="file-alt"></fa-icon>
+            <span class="nav-label">OT Externes</span>
           </a>
+        </li>
+
+        <!-- Facturation (dropdown) -->
+        <li ngbDropdown class="nav-item dropdown pointer" display="dynamic" routerLinkActive="active">
+          <a class="nav-link dropdown-toggle" ngbDropdownToggle href="javascript:void(0);" id="facturation-menu">
+            <fa-icon icon="file-invoice-dollar"></fa-icon>
+            <span class="nav-label">Facturation</span>
+          </a>
+          <ul class="dropdown-menu" ngbDropdownMenu aria-labelledby="facturation-menu">
+            <li></li>
+            <li>
+              <a class="dropdown-item" routerLink="devis" routerLinkActive="active" (click)="collapseNavbar()">
+                <fa-icon icon="file-invoice" [fixedWidth]="true"></fa-icon>
+                <span>Devis</span>
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" routerLink="facture" routerLinkActive="active" (click)="collapseNavbar()">
+                <fa-icon icon="file-invoice-dollar" [fixedWidth]="true"></fa-icon>
+                <span>Factures</span>
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="javascript:void(0);">
+                <fa-icon icon="receipt" [fixedWidth]="true"></fa-icon>
+                <span>Notes de Frais</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Rapport -->
+        <li class="nav-item">
+          <a class="nav-link" href="javascript:void(0);">
+            <fa-icon icon="chart-bar"></fa-icon>
+            <span class="nav-label">Rapport</span>
+          </a>
+        </li>
+
+        <!-- Administration (dropdown) -->
+        <li ngbDropdown class="nav-item dropdown pointer" display="dynamic" routerLinkActive="active">
+          <a class="nav-link dropdown-toggle" ngbDropdownToggle href="javascript:void(0);" id="administration-menu">
+            <fa-icon icon="cogs"></fa-icon>
+            <span class="nav-label">Administration</span>
+          </a>
+          <ul class="dropdown-menu" ngbDropdownMenu aria-labelledby="administration-menu">
+            <li>
+              <a class="dropdown-item" href="javascript:void(0);">
+                <fa-icon icon="building" [fixedWidth]="true"></fa-icon>
+                <span>Société</span>
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" routerLink="affaire" routerLinkActive="active" (click)="collapseNavbar()">
+                <fa-icon icon="folder" [fixedWidth]="true"></fa-icon>
+                <span>Projet</span>
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" routerLink="/ressources/vehicules" routerLinkActive="active" (click)="collapseNavbar()">
+                <fa-icon icon="truck" [fixedWidth]="true"></fa-icon>
+                <span>Ressources</span>
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" routerLink="client" routerLinkActive="active" (click)="collapseNavbar()">
+                <fa-icon icon="users" [fixedWidth]="true"></fa-icon>
+                <span>Clients</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Nouveau -->
+        <li class="nav-item">
+          <button type="button" class="nav-link btn-new-entity" (click)="openNewEntityModal(newEntityModal)">
+            <fa-icon icon="plus"></fa-icon>
+            <span class="nav-label">Nouveau</span>
+          </button>
         </li>
       </ul>
 
       <!-- Right Section: Actions & User Profile -->
       <ul class="navbar-nav navbar-right align-items-center">
-        <!--        <li class="nav-item me-2">-->
-        <!--          <a class="nav-link" href="javascript:void(0);">-->
-        <!--            <fa-icon icon="search"></fa-icon>-->
-        <!--          </a>-->
-        <!--        </li>-->
-
-        <!-- Language -->
-        <li ngbDropdown class="nav-item dropdown pointer me-2" display="dynamic" *ngIf="languages && languages.length > 1">
-          <a class="nav-link" ngbDropdownToggle href="javascript:void(0);" id="languagesnavBarDropdown">
-            <fa-icon icon="flag"></fa-icon>
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end" ngbDropdownMenu aria-labelledby="languagesnavBarDropdown">
-            <li *ngFor="let language of languages">
-              <a
-                class="dropdown-item"
-                [jhiActiveMenu]="language"
-                href="javascript:void(0);"
-                (click)="changeLanguage(language); collapseNavbar()"
-                >{{ language | findLanguageFromKey }}</a
-              >
-            </li>
-          </ul>
-        </li>
-
         <!-- Settings / Admin -->
         <li
-          style="border: 0"
           *jhiHasAnyAuthority="'ROLE_ADMIN'"
           ngbDropdown
-          class="nav-item dropdown pointer me-3"
+          class="nav-item dropdown pointer"
           display="dynamic"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: true }"
@@ -149,35 +192,43 @@
           </ul>
         </li>
 
-        <!-- User Profile & Notifications -->
-        <li class="nav-item d-flex align-items-center ps-3 ms-1">
-          <!-- Notification Bell -->
-          <!--            <div class="position-relative me-3 pointer" style="cursor: pointer">-->
-          <!--              <fa-icon icon="bell" class="text-white fa-lg"></fa-icon>-->
-          <!--              <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">-->
-          <!--                <span class="visually-hidden">New alerts</span>-->
-          <!--              </span>-->
-          <!--            </div>-->
+        <!-- Language (icône drapeau) -->
+        <li ngbDropdown class="nav-item dropdown pointer" display="dynamic" *ngIf="languages && languages.length > 1">
+          <a class="nav-link" ngbDropdownToggle href="javascript:void(0);" id="languagesnavBarDropdown">
+            <fa-icon icon="flag"></fa-icon>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" ngbDropdownMenu aria-labelledby="languagesnavBarDropdown">
+            <li *ngFor="let language of languages">
+              <a
+                class="dropdown-item"
+                [jhiActiveMenu]="language"
+                href="javascript:void(0);"
+                (click)="changeLanguage(language); collapseNavbar()"
+              >
+                {{ language | findLanguageFromKey }}
+              </a>
+            </li>
+          </ul>
+        </li>
 
+        <li class="nav-divider"></li>
+
+        <!-- User Profile & Notifications -->
+        <li class="nav-item d-flex align-items-center">
           <!-- User Profile Dropdown -->
           <div ngbDropdown class="dropdown" display="dynamic">
             <a
-              class="nav-link dropdown-toggle p-0 d-flex align-items-center"
+              class="nav-link dropdown-toggle p-0 d-flex flex-column align-items-center"
               ngbDropdownToggle
               href="javascript:void(0);"
               id="account-menu-desktop"
               data-cy="accountMenu"
             >
-              <div class="me-2 text-end d-none d-lg-block" style="line-height: 1.2">
-                <span class="d-block fw-bold text-white" style="font-size: 0.9rem">Mohamed Ben Ali</span>
-                <small class="text-white-50" style="font-size: 0.75rem">{{ account.login }}</small>
+              <img *ngIf="account!.imageUrl" [src]="account!.imageUrl" class="avatar-img" alt="Avatar" />
+              <div *ngIf="!account!.imageUrl" class="avatar-fallback">
+                <fa-icon icon="user"></fa-icon>
               </div>
-              <img
-                [src]="account!.imageUrl || 'content/images/jhipster_family_member_0_head-192.png'"
-                class="rounded-circle border border-white border-3"
-                style="width: 40px; height: 40px; object-fit: cover"
-                alt="Avatar"
-              />
+              <small class="avatar-label">{{ account.login }}</small>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" ngbDropdownMenu aria-labelledby="account-menu-desktop">
               <li>
@@ -192,4 +243,68 @@
       </ul>
     </div>
   </div>
+
+  <!-- Modal Nouveau -->
+  <ng-template #newEntityModal let-modal>
+    <div class="modal-header entity-modal-header">
+      <h5 class="modal-title">Créer un nouvel élément</h5>
+      <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body entity-modal-body">
+      <div class="entity-grid">
+        <button type="button" class="entity-tile" routerLink="work-order/new" (click)="modal.close()">
+          <span class="entity-tile-icon"><fa-icon icon="clipboard"></fa-icon></span>
+          <span class="entity-tile-label">Mission</span>
+        </button>
+        <button type="button" class="entity-tile" routerLink="client/new" (click)="modal.close()">
+          <span class="entity-tile-icon"><fa-icon icon="users"></fa-icon></span>
+          <span class="entity-tile-label">Client</span>
+        </button>
+        <button type="button" class="entity-tile" routerLink="affaire/new" (click)="modal.close()">
+          <span class="entity-tile-icon"><fa-icon icon="folder"></fa-icon></span>
+          <span class="entity-tile-label">Projet</span>
+        </button>
+        <button type="button" class="entity-tile" routerLink="facture/new" (click)="modal.close()">
+          <span class="entity-tile-icon"><fa-icon icon="file-invoice-dollar"></fa-icon></span>
+          <span class="entity-tile-label">Facture</span>
+        </button>
+        <button type="button" class="entity-tile" routerLink="devis/new" (click)="modal.close()">
+          <span class="entity-tile-icon"><fa-icon icon="file-invoice"></fa-icon></span>
+          <span class="entity-tile-label">Devis</span>
+        </button>
+        <button type="button" class="entity-tile" routerLink="ot-externe/new" (click)="modal.close()">
+          <span class="entity-tile-icon"><fa-icon icon="file-alt"></fa-icon></span>
+          <span class="entity-tile-label">OT Externe</span>
+        </button>
+        <button type="button" class="entity-tile" routerLink="frais-de-mission/new" (click)="modal.close()">
+          <span class="entity-tile-icon"><fa-icon icon="receipt"></fa-icon></span>
+          <span class="entity-tile-label">Note de Frais</span>
+        </button>
+        <button type="button" class="entity-tile" routerLink="societe/new" (click)="modal.close()">
+          <span class="entity-tile-icon"><fa-icon icon="building"></fa-icon></span>
+          <span class="entity-tile-label">Société</span>
+        </button>
+        <button type="button" class="entity-tile" routerLink="vehicule/new" (click)="modal.close()">
+          <span class="entity-tile-icon"><fa-icon icon="truck"></fa-icon></span>
+          <span class="entity-tile-label">Véhicule</span>
+        </button>
+        <button type="button" class="entity-tile" routerLink="contact/new" (click)="modal.close()">
+          <span class="entity-tile-icon"><fa-icon icon="users"></fa-icon></span>
+          <span class="entity-tile-label">Contact</span>
+        </button>
+        <button type="button" class="entity-tile" routerLink="site/new" (click)="modal.close()">
+          <span class="entity-tile-icon"><fa-icon icon="folder"></fa-icon></span>
+          <span class="entity-tile-label">Site</span>
+        </button>
+        <button type="button" class="entity-tile" routerLink="ville/new" (click)="modal.close()">
+          <span class="entity-tile-icon"><fa-icon icon="flag"></fa-icon></span>
+          <span class="entity-tile-label">Ville</span>
+        </button>
+        <button type="button" class="entity-tile" routerLink="agence/new" (click)="modal.close()">
+          <span class="entity-tile-icon"><fa-icon icon="building"></fa-icon></span>
+          <span class="entity-tile-label">Agence</span>
+        </button>
+      </div>
+    </div>
+  </ng-template>
 </nav>

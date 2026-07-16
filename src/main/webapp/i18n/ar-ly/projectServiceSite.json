@@ -2,38 +2,38 @@
   "gpmGatewayApp": {
     "projectServiceSite": {
       "home": {
-        "title": "Sites",
-        "refreshListLabel": "Refresh list",
-        "createLabel": "Create a new Site",
-        "createOrEditLabel": "Create or edit a Site",
-        "notFound": "No Sites found"
+        "title": "المواقع",
+        "refreshListLabel": "تحديث القائمة",
+        "createLabel": "إنشاء موقع جديد",
+        "createOrEditLabel": "إنشاء أو تعديل موقع",
+        "notFound": "لم يتم العثور على أي موقع"
       },
       "delete": {
-        "question": "Are you sure you want to delete Site {{ id }}?"
+        "question": "هل أنت متأكد أنك تريد حذف الموقع {{ id }} ؟"
       },
       "detail": {
-        "title": "Site"
+        "title": "موقع"
       },
-      "id": "ID",
-      "code": "Code",
-      "designation": "Designation",
-      "gpsX": "Gps X",
-      "gpsY": "Gps Y",
-      "createdAt": "Created At",
-      "updatedAt": "Updated At",
-      "createdBy": "Created By",
-      "createdByUserLogin": "Created By User Login",
-      "updatedBy": "Updated By",
-      "updatedByUserLogin": "Updated By User Login",
-      "ville": "Ville",
-      "client": "Client"
+      "id": "المعرف",
+      "code": "الرمز",
+      "designation": "التسمية",
+      "gpsX": "إحداثية GPS X",
+      "gpsY": "إحداثية GPS Y",
+      "createdAt": "تاريخ الإنشاء",
+      "updatedAt": "تاريخ التحديث",
+      "createdBy": "أنشئ من طرف",
+      "createdByUserLogin": "اسم المستخدم المنشئ",
+      "updatedBy": "حُدّث من طرف",
+      "updatedByUserLogin": "اسم المستخدم المحدّث",
+      "ville": "المدينة",
+      "client": "العميل"
     }
   },
   "projectServiceApp": {
     "projectServiceSite": {
-      "created": "A new Site is created with identifier {{ param }}",
-      "updated": "A Site is updated with identifier {{ param }}",
-      "deleted": "A Site is deleted with identifier {{ param }}"
+      "created": "تم إنشاء موقع جديد بالمعرف {{ param }}",
+      "updated": "تم تحديث الموقع بالمعرف {{ param }}",
+      "deleted": "تم حذف الموقع بالمعرف {{ param }}"
     }
   }
 }

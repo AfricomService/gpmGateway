@@ -11,13 +11,16 @@ import { ASC, DESC, SORT, ITEM_DELETED_EVENT, DEFAULT_SORT_DATA } from 'app/conf
 import { EntityArrayResponseType, AffaireService } from '../service/affaire.service';
 import { AffaireDeleteDialogComponent } from '../delete/affaire-delete-dialog.component';
 
-/** Maps each StatutAffaire enum value to a CSS class defined in the SCSS. */
+/**
+ * Maps each StatutAffaire enum value (see affaire.model.ts) to a CSS class defined in the SCSS.
+ * NB: les clés DOIVENT correspondre exactement aux valeurs de l'enum StatutAffaire.
+ */
 const STATUT_CLASS_MAP: Record<string, string> = {
-  BROUILLON: 'Brouillon',
-  ETUDE_OPPORTUNITE: 'statut-etude',
-  EXECUTION_DES_TRAVAUX: 'statut-execution',
-  CLOTURE_PROJET: 'statut-cloture',
-  FIN: 'statut-fin',
+  Brouillon: 'statut-brouillon',
+  EtudeOpportunite: 'statut-etude',
+  ExecutionDesTravaux: 'statut-execution',
+  ClotureProjet: 'statut-cloture',
+  Fin: 'statut-fin',
 };
 
 @Component({
@@ -73,6 +76,11 @@ export class AffaireComponent implements OnInit {
     });
   }
 
+  /** Called by the "Actualiser" button. */
+  refresh(): void {
+    this.load();
+  }
+
   delete(affaire: IAffaire): void {
     const modalRef = this.modalService.open(AffaireDeleteDialogComponent, { size: 'lg', backdrop: 'static' });
     modalRef.componentInstance.affaire = affaire;
@@ -84,6 +92,11 @@ export class AffaireComponent implements OnInit {
       .subscribe({
         next: (res: EntityArrayResponseType) => this.onResponseSuccess(res),
       });
+  }
+
+  /** Called on double-click on a card or a row: navigate straight to the edit screen. */
+  goToEdit(affaire: IAffaire): void {
+    this.router.navigate(['/affaire', affaire.id, 'edit']);
   }
 
   navigateToWithComponentValues(): void {

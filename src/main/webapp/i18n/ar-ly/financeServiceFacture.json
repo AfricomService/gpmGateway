@@ -2,43 +2,43 @@
   "gpmGatewayApp": {
     "financeServiceFacture": {
       "home": {
-        "title": "Factures",
-        "refreshListLabel": "Refresh list",
-        "createLabel": "Create a new Facture",
-        "createOrEditLabel": "Create or edit a Facture",
-        "notFound": "No Factures found"
+        "title": "الفواتير",
+        "refreshListLabel": "تحديث القائمة",
+        "createLabel": "إنشاء فاتورة جديدة",
+        "createOrEditLabel": "إنشاء أو تعديل فاتورة",
+        "notFound": "لم يتم العثور على أي فاتورة"
       },
       "delete": {
-        "question": "Are you sure you want to delete Facture {{ id }}?"
+        "question": "هل أنت متأكد أنك تريد حذف الفاتورة {{ id }}؟"
       },
       "detail": {
-        "title": "Facture"
+        "title": "فاتورة"
       },
-      "id": "ID",
-      "numFacture": "Num Facture",
-      "bonDeCommande": "Bon De Commande",
-      "montantFacture": "Montant Facture",
-      "dateFacture": "Date Facture",
-      "dateEcheance": "Date Echeance",
-      "dateDecharge": "Date Decharge",
-      "statut": "Statut",
-      "clientId": "Client Id",
-      "createdAt": "Created At",
-      "updatedAt": "Updated At",
-      "createdBy": "Created By",
-      "createdByUserLogin": "Created By User Login",
-      "updatedBy": "Updated By",
-      "updatedByUserLogin": "Updated By User Login",
+      "id": "المعرف",
+      "numFacture": "رقم الفاتورة",
+      "bonDeCommande": "أمر الشراء",
+      "montantFacture": "مبلغ الفاتورة",
+      "dateFacture": "تاريخ الفاتورة",
+      "dateEcheance": "تاريخ الاستحقاق",
+      "dateDecharge": "تاريخ التسليم",
+      "statut": "الحالة",
+      "clientId": "معرف العميل",
+      "createdAt": "تاريخ الإنشاء",
+      "updatedAt": "تاريخ التحديث",
+      "createdBy": "أنشئ بواسطة",
+      "createdByUserLogin": "اسم مستخدم المنشئ",
+      "updatedBy": "حُدّث بواسطة",
+      "updatedByUserLogin": "اسم مستخدم المحدّث",
       "help": {
-        "clientId": "Cross-service FK → Client (projectService)"
+        "clientId": "مفتاح خارجي بين الخدمات → العميل (projectService)"
       }
     }
   },
   "financeServiceApp": {
     "financeServiceFacture": {
-      "created": "A new Facture is created with identifier {{ param }}",
-      "updated": "A Facture is updated with identifier {{ param }}",
-      "deleted": "A Facture is deleted with identifier {{ param }}"
+      "created": "تم إنشاء فاتورة جديدة بالمعرف {{ param }}",
+      "updated": "تم تحديث الفاتورة بالمعرف {{ param }}",
+      "deleted": "تم حذف الفاتورة بالمعرف {{ param }}"
     }
   }
 }

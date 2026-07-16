@@ -14,6 +14,7 @@ import { ArticleDeleteDialogComponent } from '../delete/article-delete-dialog.co
 @Component({
   selector: 'jhi-article',
   templateUrl: './article.component.html',
+  styleUrls: ['./article.component.scss'],
 })
 export class ArticleComponent implements OnInit {
   articles?: IArticle[];
@@ -43,36 +44,9 @@ export class ArticleComponent implements OnInit {
     this.load();
   }
 
-  delete(article: IArticle): void {
-    const modalRef = this.modalService.open(ArticleDeleteDialogComponent, { size: 'lg', backdrop: 'static' });
-    modalRef.componentInstance.article = article;
-    // unsubscribe not needed because closed completes on modal close
-    modalRef.closed
-      .pipe(
-        filter(reason => reason === ITEM_DELETED_EVENT),
-        switchMap(() => this.loadFromBackendWithRouteInformations())
-      )
-      .subscribe({
-        next: (res: EntityArrayResponseType) => {
-          this.onResponseSuccess(res);
-        },
-      });
-  }
-
-  load(): void {
-    this.loadFromBackendWithRouteInformations().subscribe({
-      next: (res: EntityArrayResponseType) => {
-        this.onResponseSuccess(res);
-      },
-    });
-  }
-
-  navigateToWithComponentValues(): void {
-    this.handleNavigation(this.page, this.predicate, this.ascending);
-  }
-
-  navigateToPage(page = this.page): void {
-    this.handleNavigation(page, this.predicate, this.ascending);
+  /** Appelé par le bouton "Actualiser". */
+  refresh(): void {
+    this.load();
   }
 
   filterArticles(): void {
@@ -93,6 +67,43 @@ export class ArticleComponent implements OnInit {
     }
 
     this.filteredArticles = result;
+  }
+
+  delete(article: IArticle): void {
+    const modalRef = this.modalService.open(ArticleDeleteDialogComponent, { size: 'lg', backdrop: 'static' });
+    modalRef.componentInstance.article = article;
+    // unsubscribe not needed because closed completes on modal close
+    modalRef.closed
+      .pipe(
+        filter(reason => reason === ITEM_DELETED_EVENT),
+        switchMap(() => this.loadFromBackendWithRouteInformations())
+      )
+      .subscribe({
+        next: (res: EntityArrayResponseType) => {
+          this.onResponseSuccess(res);
+        },
+      });
+  }
+
+  /** Appelé au double-clic sur une carte ou une ligne : navigation directe vers l'édition. */
+  goToEdit(article: IArticle): void {
+    this.router.navigate(['/article', article.id, 'edit']);
+  }
+
+  load(): void {
+    this.loadFromBackendWithRouteInformations().subscribe({
+      next: (res: EntityArrayResponseType) => {
+        this.onResponseSuccess(res);
+      },
+    });
+  }
+
+  navigateToWithComponentValues(): void {
+    this.handleNavigation(this.page, this.predicate, this.ascending);
+  }
+
+  navigateToPage(page = this.page): void {
+    this.handleNavigation(page, this.predicate, this.ascending);
   }
 
   protected loadFromBackendWithRouteInformations(): Observable<EntityArrayResponseType> {
