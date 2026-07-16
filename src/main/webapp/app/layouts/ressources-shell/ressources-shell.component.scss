@@ -1,41 +1,81 @@
 .ressources-shell {
-  padding-top: 4.5em;
+  --rsb-accent: #f5822a;
+  --rsb-accent-hover: #ff9a4d;
+  --rsb-accent-soft: rgba(245, 130, 42, 0.12);
+  --rsb-text: #1a2233;
+  --rsb-text-muted: #8a93a3;
+  --rsb-border: #e7e9ee;
+  --rsb-surface: #ffffff;
+  --rsb-surface-hover: #f2f4f8;
+
+  padding-top: 88px; // remplace le 20px — réserve l'espace pour la navbar fixed-top (72px + marge)
   display: flex;
   gap: 1rem;
   min-height: calc(100vh - 180px);
   padding-right: 0.5em;
   padding-left: 0 !important;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
 .ressources-sidebar {
   width: 220px;
   flex-shrink: 0;
-  border-right: 1px solid #dee2e6;
-  padding-right: 0.75rem;
+  background: var(--rsb-surface);
+  border-right: 1px solid var(--rsb-border);
+  padding: 1rem 0.75rem;
+  transition: width 0.25s ease;
 }
 
 .ressources-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 .ressources-title {
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--rsb-text);
   margin-bottom: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .sidebar-toggle {
-  padding: 0.2rem 0.45rem;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--rsb-border);
+  border-radius: 8px;
+  background: var(--rsb-surface);
+  color: var(--rsb-text-muted);
+  transition: background 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    background: var(--rsb-surface-hover);
+    color: var(--rsb-text);
+  }
 }
 
 .ressources-sidebar .nav-link {
-  color: #495057;
-  border-radius: 0.4rem;
-  margin-bottom: 0.25rem;
+  color: var(--rsb-text-muted);
+  border-radius: 10px;
+  margin-bottom: 0.3rem;
+  padding: 0.6rem 0.75rem;
   display: flex;
   align-items: center;
+  font-weight: 500;
+  font-size: 0.92rem;
+  transition: background 0.2s ease, color 0.2s ease;
+
+  fa-icon {
+    width: 18px;
+    text-align: center;
+  }
 }
 
 .ressources-sidebar.is-collapsed {
@@ -57,12 +97,14 @@
 }
 
 .ressources-sidebar .nav-link:hover {
-  background: #f1f3f5;
+  background: var(--rsb-surface-hover);
+  color: var(--rsb-text);
 }
 
 .ressources-sidebar .nav-link.active {
-  background: #0d6efd;
-  color: #fff;
+  background: var(--rsb-accent-soft);
+  color: var(--rsb-accent);
+  font-weight: 600;
 }
 
 .ressources-content {
@@ -78,7 +120,7 @@
   .ressources-sidebar {
     width: 100%;
     border-right: 0;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid var(--rsb-border);
     padding-right: 0;
     padding-bottom: 0.75rem;
   }

@@ -1,267 +1,226 @@
-<div class="affaires-container">
-  <!-- Header -->
-  <div class="affaires-header">
-    <h2 data-cy="AffaireHeading" id="page-heading">
-      <span class="text-uppercase">Projets</span>
-    </h2>
-    <div class="header-actions">
-      <!--      <button class="btn btn-refresh me-2" (click)="load()" [disabled]="isLoading">-->
-      <!--        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>-->
-      <!--        <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.home.refreshListLabel">Actualiser</span>-->
-      <!--      </button>-->
-      <button [routerLink]="['/affaire/new']" class="btn btn-primary" data-cy="entityCreateButton" id="jh-create-entity">
-        <fa-icon icon="plus"></fa-icon>
-        <span>Nouveau projet</span>
+<div class="affaires-page">
+  <!-- Sidebar filtre "Statuts" -->
+  <aside class="affaires-sidebar">
+    <div class="affaires-sidebar-title">Filtres</div>
+    <nav class="affaires-views">
+      <button type="button" class="affaires-view-item" [class.active]="selectedStatut === null" (click)="filterByStatut(null)">
+        <fa-icon icon="list"></fa-icon>
+        <span>Tous les projets</span>
       </button>
+    </nav>
+
+    <div class="affaires-sidebar-title affaires-sidebar-title-spaced">Statuts</div>
+    <nav class="affaires-views">
+      <button
+        type="button"
+        class="affaires-view-item"
+        [class.active]="selectedStatut === 'Brouillon'"
+        (click)="filterByStatut('Brouillon')"
+      >
+        <fa-icon icon="file"></fa-icon>
+        <span>Brouillon</span>
+      </button>
+      <button
+        type="button"
+        class="affaires-view-item"
+        [class.active]="selectedStatut === 'EtudeOpportunite'"
+        (click)="filterByStatut('EtudeOpportunite')"
+      >
+        <fa-icon icon="search"></fa-icon>
+        <span>Étude Opportunité</span>
+      </button>
+      <button
+        type="button"
+        class="affaires-view-item"
+        [class.active]="selectedStatut === 'ExecutionDesTravaux'"
+        (click)="filterByStatut('ExecutionDesTravaux')"
+      >
+        <fa-icon icon="clock"></fa-icon>
+        <span>Exécution</span>
+      </button>
+      <button
+        type="button"
+        class="affaires-view-item"
+        [class.active]="selectedStatut === 'ClotureProjet'"
+        (click)="filterByStatut('ClotureProjet')"
+      >
+        <fa-icon icon="check-double"></fa-icon>
+        <span>Clôture</span>
+      </button>
+      <button type="button" class="affaires-view-item" [class.active]="selectedStatut === 'Fin'" (click)="filterByStatut('Fin')">
+        <fa-icon icon="check-circle"></fa-icon>
+        <span>Fin</span>
+      </button>
+    </nav>
+  </aside>
+
+  <!-- Contenu principal -->
+  <div class="affaires-content">
+    <div class="affaires-header">
+      <h2 data-cy="AffaireHeading" id="page-heading">
+        <span class="text-uppercase">Projets</span>
+      </h2>
+
+      <div class="affaires-header-actions">
+        <button (click)="refresh()" [disabled]="isLoading" class="btn-affaire-refresh" title="Actualiser" type="button">
+          <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        </button>
+        <button [routerLink]="['/affaire/new']" class="btn-affaire-new" data-cy="entityCreateButton" id="jh-create-entity">
+          <fa-icon icon="plus"></fa-icon>
+          <span>Nouveau projet</span>
+        </button>
+      </div>
     </div>
-  </div>
 
-  <jhi-alert-error></jhi-alert-error>
-  <jhi-alert></jhi-alert>
+    <jhi-alert-error></jhi-alert-error>
+    <jhi-alert></jhi-alert>
 
-  <!-- Toolbar: Search + Status Filters + View Toggle -->
-  <div class="affaires-toolbar">
-    <div class="toolbar-left">
-      <!-- Search -->
-      <!--      <div class="search-wrapper">-->
-      <!--        &lt;!&ndash;        <fa-icon icon="search" class="search-icon"></fa-icon>&ndash;&gt;-->
-      <!--        <input-->
-      <!--          class="search-input"-->
-      <!--          placeholder="Rechercher..."-->
-      <!--          type="text"-->
+    <!-- Toolbar -->
+    <div class="affaires-toolbar-wrapper">
+      <div class="affaires-toolbar-row">
+        <div class="affaires-search">
+          <fa-icon icon="search" class="affaires-search-icon"></fa-icon>
+          <input
+            (ngModelChange)="filterAffaires()"
+            [(ngModel)]="searchTerm"
+            class="form-control affaires-search-input"
+            placeholder="Rechercher..."
+            type="text"
+          />
+        </div>
 
-      <!--        />-->
-      <!--      </div>-->
+        <div class="affaires-toolbar-right">
+          <span class="affaires-count">{{ filteredAffaires?.length ?? 0 }} résultat(s)</span>
 
-      <div class="input-group">
-        <input (ngModelChange)="filterAffaires()" [(ngModel)]="searchTerm" class="form-control" placeholder="Rechercher..." type="text" />
-      </div>
-
-      <!-- Status filter buttons -->
-      <div class="status-filters" role="group">
-        <button (click)="filterByStatut(null)" [class.active]="selectedStatut === null" class="filter-btn">Tous</button>
-        <button (click)="filterByStatut('BROUILLON')" [class.active]="selectedStatut === 'BROUILLON'" class="filter-btn filter-brouillon">
-          Brouillon
-        </button>
-        <button
-          (click)="filterByStatut('ETUDE_OPPORTUNITE')"
-          [class.active]="selectedStatut === 'ETUDE_OPPORTUNITE'"
-          class="filter-btn filter-etude"
-        >
-          Étude Opportunité
-        </button>
-        <button (click)="filterByStatut('EXECUTION')" [class.active]="selectedStatut === 'EXECUTION'" class="filter-btn filter-execution">
-          Exécution
-        </button>
-        <button (click)="filterByStatut('CLOTURE')" [class.active]="selectedStatut === 'CLOTURE'" class="filter-btn filter-cloture">
-          Clôture
-        </button>
-        <button (click)="filterByStatut('FIN')" [class.active]="selectedStatut === 'FIN'" class="filter-btn filter-fin">Fin</button>
-      </div>
-    </div>
-
-    <!--    <div class="toolbar-right">-->
-    <!--      <span class="results-count">{{ filteredAffaires?.length ?? 0 }} résultat(s)</span>-->
-    <!--      <div class="view-toggle">-->
-    <!--        <button class="view-btn" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Grille">-->
-    <!--          <fa-icon icon="th"></fa-icon>-->
-    <!--        </button>-->
-    <!--        <button class="view-btn" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'" title="Liste">-->
-    <!--          <fa-icon icon="list"></fa-icon>-->
-    <!--        </button>-->
-    <!--      </div>-->
-    <!--    </div>-->
-  </div>
-
-  <!-- No result -->
-  <div *ngIf="filteredAffaires?.length === 0" class="alert alert-warning" id="no-result">
-    <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.home.notFound">Aucun Affaire trouvé</span>
-  </div>
-
-  <!-- Card Grid -->
-  <div *ngIf="filteredAffaires && filteredAffaires.length > 0 && viewMode === 'grid'" class="affaires-grid" id="entities">
-    <div *ngFor="let affaire of filteredAffaires; trackBy: trackId" class="affaire-card" data-cy="entityTable">
-      <!-- Card Header -->
-      <div class="card-header">
-        <a [routerLink]="['/affaire', affaire.id, 'view']" class="affaire-num">#{{ affaire.numAffaire }}</a>
-        <span [ngClass]="getStatutClass(affaire.statut!)" class="statut-badge">
-          {{ affaire.statut }}
-        </span>
-      </div>
-
-      <!-- Card Body -->
-      <div class="card-body">
-        <h3 class="affaire-title">
-          <a [routerLink]="['/affaire', affaire.id, 'view']">{{ affaire.designationAffaire }}</a>
-        </h3>
-        <p *ngIf="affaire.client" class="affaire-client">
-          <a [routerLink]="['/client', affaire.client.id, 'view']">{{ affaire.client.raisonSociale }}</a>
-        </p>
-      </div>
-
-      <!-- Card Footer -->
-      <div class="card-footer">
-        <span class="affaire-montant">{{ affaire.montant | number: '1.2-2' }} {{ affaire.devise }}</span>
-        <div class="card-actions">
-          <button
-            [routerLink]="['/affaire', affaire.id, 'view']"
-            class="action-btn btn-view"
-            data-cy="entityDetailsButton"
-            title="Voir"
-            type="button"
-          >
-            <fa-icon icon="eye"></fa-icon>
-          </button>
-          <button
-            [routerLink]="['/affaire', affaire.id, 'edit']"
-            class="action-btn btn-edit"
-            data-cy="entityEditButton"
-            title="Éditer"
-            type="button"
-          >
-            <fa-icon icon="pencil-alt"></fa-icon>
-          </button>
-          <button (click)="delete(affaire)" class="action-btn btn-delete" data-cy="entityDeleteButton" title="Supprimer" type="button">
-            <fa-icon icon="times"></fa-icon>
-          </button>
+          <div class="affaires-view-toggle">
+            <button type="button" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Vue grille">
+              <fa-icon icon="th-large"></fa-icon>
+            </button>
+            <button type="button" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'" title="Vue liste">
+              <fa-icon icon="list"></fa-icon>
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- List View (table fallback) -->
-  <div
-    *ngIf="filteredAffaires && filteredAffaires.length > 0 && viewMode === 'list'"
-    class="table-responsive table-entities"
-    id="entities-list"
-  >
-    <table aria-describedby="page-heading" class="table table-striped">
-      <thead>
-        <tr (sortChange)="navigateToWithComponentValues()" [(ascending)]="ascending" [(predicate)]="predicate" jhiSort>
-          <th jhiSortBy="id" scope="col">
-            <div class="d-flex">
-              <span>ID</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th jhiSortBy="numAffaire" scope="col">
-            <div class="d-flex">
-              <span>Num Affaire</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th jhiSortBy="designationAffaire" scope="col">
-            <div class="d-flex">
-              <span>Désignation</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th jhiSortBy="montant" scope="col">
-            <div class="d-flex">
-              <span>Montant</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th jhiSortBy="devise" scope="col">
-            <div class="d-flex">
-              <span>Devise</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th jhiSortBy="statut" scope="col">
-            <div class="d-flex">
-              <span>Statut</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th jhiSortBy="client.raisonSociale" scope="col">
-            <div class="d-flex">
-              <span>Client</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th jhiSortBy="dateDebut" scope="col">
-            <div class="d-flex">
-              <span>Date Début</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th jhiSortBy="dateCloture" scope="col">
-            <div class="d-flex">
-              <span>Date Clôture</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let affaire of filteredAffaires; trackBy: trackId" data-cy="entityTable">
-          <td>
-            <a [routerLink]="['/affaire', affaire.id, 'view']">{{ affaire.id }}</a>
-          </td>
-          <td>{{ affaire.numAffaire }}</td>
-          <td>{{ affaire.designationAffaire }}</td>
-          <td>{{ affaire.montant }}</td>
-          <td>{{ affaire.devise }}</td>
-          <td>
-            <span [ngClass]="getStatutClass(affaire.statut!)" class="statut-badge">
-              {{ affaire.statut }}
-            </span>
-          </td>
-          <td>
-            <div *ngIf="affaire.client">
-              <a [routerLink]="['/client', affaire.client.id, 'view']">{{ affaire.client.raisonSociale }}</a>
-            </div>
-          </td>
-          <td>{{ affaire.dateDebut | formatMediumDate }}</td>
-          <td>{{ affaire.dateCloture | formatMediumDate }}</td>
-          <td class="text-end">
-            <div class="btn-group">
-              <button
-                [routerLink]="['/affaire', affaire.id, 'view']"
-                class="btn btn-info btn-sm"
-                data-cy="entityDetailsButton"
-                type="submit"
-              >
-                <fa-icon icon="eye"></fa-icon>
-                <span class="d-none d-md-inline">Voir</span>
-              </button>
-              <button
-                [routerLink]="['/affaire', affaire.id, 'edit']"
-                class="btn btn-primary btn-sm"
-                data-cy="entityEditButton"
-                type="submit"
-              >
-                <fa-icon icon="pencil-alt"></fa-icon>
-                <span class="d-none d-md-inline">Éditer</span>
-              </button>
-              <button (click)="delete(affaire)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton" type="submit">
-                <fa-icon icon="times"></fa-icon>
-                <span class="d-none d-md-inline">Supprimer</span>
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Pagination -->
-  <div *ngIf="filteredAffaires && filteredAffaires.length > 0">
-    <div class="d-flex justify-content-center">
-      <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+    <!-- No result -->
+    <div *ngIf="filteredAffaires?.length === 0" class="alert alert-warning" id="no-result">
+      <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.home.notFound">Aucun Affaire trouvé</span>
     </div>
-    <div class="d-flex justify-content-center">
-      <ngb-pagination
-        (pageChange)="navigateToPage($event)"
-        [boundaryLinks]="true"
-        [collectionSize]="totalItems"
-        [maxSize]="5"
-        [pageSize]="itemsPerPage"
-        [page]="page"
-        [rotate]="true"
-      ></ngb-pagination>
+
+    <!-- Card Grid -->
+    <div *ngIf="filteredAffaires && filteredAffaires.length > 0 && viewMode === 'grid'" class="affaires-grid" id="entities">
+      <div
+        *ngFor="let affaire of filteredAffaires; trackBy: trackId"
+        class="affaire-card"
+        data-cy="entityTable"
+        title="Double-cliquer pour éditer"
+        (dblclick)="goToEdit(affaire)"
+      >
+        <div class="affaire-card-header">
+          <span [ngClass]="getStatutClass(affaire.statut!)" class="badge statut-badge">
+            {{ affaire.statut }}
+          </span>
+        </div>
+
+        <h3 class="affaire-title">{{ affaire.designationAffaire }}</h3>
+
+        <div class="affaire-meta" *ngIf="affaire.client">
+          <span>{{ affaire.client.raisonSociale }}</span>
+        </div>
+
+        <div class="affaire-card-footer">
+          <span class="affaire-montant">{{ affaire.montant | number: '1.2-2' }} {{ affaire.devise }}</span>
+
+          <div class="card-actions">
+            <button
+              (click)="$event.stopPropagation(); delete(affaire)"
+              class="action-btn btn-delete"
+              data-cy="entityDeleteButton"
+              title="Supprimer"
+              type="button"
+            >
+              <fa-icon icon="trash-alt"></fa-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- List View -->
+    <div *ngIf="filteredAffaires && filteredAffaires.length > 0 && viewMode === 'list'" class="affaires-table-wrapper" id="entities-list">
+      <table class="affaires-table" aria-describedby="page-heading">
+        <thead>
+          <tr (sortChange)="navigateToWithComponentValues()" [(ascending)]="ascending" [(predicate)]="predicate" jhiSort>
+            <th jhiSortBy="designationAffaire" scope="col">
+              <div class="d-flex"><span>Désignation</span><fa-icon class="p-1" icon="sort"></fa-icon></div>
+            </th>
+            <th jhiSortBy="montant" scope="col">
+              <div class="d-flex"><span>Montant</span><fa-icon class="p-1" icon="sort"></fa-icon></div>
+            </th>
+            <th jhiSortBy="devise" scope="col">
+              <div class="d-flex"><span>Devise</span><fa-icon class="p-1" icon="sort"></fa-icon></div>
+            </th>
+            <th jhiSortBy="statut" scope="col">
+              <div class="d-flex"><span>Statut</span><fa-icon class="p-1" icon="sort"></fa-icon></div>
+            </th>
+            <th jhiSortBy="client.raisonSociale" scope="col">
+              <div class="d-flex"><span>Client</span><fa-icon class="p-1" icon="sort"></fa-icon></div>
+            </th>
+            <th jhiSortBy="dateDebut" scope="col">
+              <div class="d-flex"><span>Date Début</span><fa-icon class="p-1" icon="sort"></fa-icon></div>
+            </th>
+            <th jhiSortBy="dateCloture" scope="col">
+              <div class="d-flex"><span>Date Clôture</span><fa-icon class="p-1" icon="sort"></fa-icon></div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let affaire of filteredAffaires; trackBy: trackId"
+            data-cy="entityTable"
+            title="Double-cliquer pour éditer"
+            (dblclick)="goToEdit(affaire)"
+          >
+            <td>{{ affaire.designationAffaire }}</td>
+            <td>{{ affaire.montant }}</td>
+            <td>{{ affaire.devise }}</td>
+            <td>
+              <span [ngClass]="getStatutClass(affaire.statut!)" class="badge statut-badge">
+                {{ affaire.statut }}
+              </span>
+            </td>
+            <td>{{ affaire.client?.raisonSociale ?? '—' }}</td>
+            <td>{{ affaire.dateDebut | formatMediumDate }}</td>
+            <td>{{ affaire.dateCloture | formatMediumDate }}</td>
+            <td class="text-end" (click)="$event.stopPropagation()">
+              <button (click)="delete(affaire)" class="action-btn btn-delete" data-cy="entityDeleteButton" title="Supprimer" type="button">
+                <fa-icon icon="trash-alt"></fa-icon>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="filteredAffaires && filteredAffaires.length > 0">
+      <div class="d-flex justify-content-center">
+        <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+      </div>
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          (pageChange)="navigateToPage($event)"
+          [boundaryLinks]="true"
+          [collectionSize]="totalItems"
+          [maxSize]="5"
+          [pageSize]="itemsPerPage"
+          [page]="page"
+          [rotate]="true"
+        ></ngb-pagination>
+      </div>
     </div>
   </div>
 </div>

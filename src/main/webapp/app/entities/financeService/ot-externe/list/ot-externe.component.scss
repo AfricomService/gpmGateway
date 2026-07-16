@@ -1,0 +1,434 @@
+// ===== Palette (orange app) =====
+$orange-primary: #f97316;
+$orange-dark: #ea580c;
+$orange-light: #fff7ed;
+$orange-border: #fed7aa;
+
+$text-dark: #1f2937;
+$text-muted: #6b7280;
+$border-light: #e5e7eb;
+$bg-card: #ffffff;
+
+// ===== Fix chevauchement navbar =====
+// La navbar de l'app est en position fixed/sticky et masque le haut de la page.
+// :host { display:block } + margin-top garantit que ce composant démarre TOUJOURS
+// sous la navbar, quel que soit le layout parent.
+:host {
+  display: block;
+  margin-top: 70px; // ajustez cette valeur à la hauteur réelle de votre navbar (ex: 60px, 64px...)
+}
+
+.ot-externe-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+// ===== Sidebar =====
+.ot-sidebar {
+  flex: 0 0 220px;
+  background: $bg-card;
+  border: 1px solid $border-light;
+  border-radius: 12px;
+  padding: 12px;
+  position: sticky;
+  top: 82px; // navbar height (70px) + petite marge
+  transition: flex-basis 0.2s ease;
+}
+
+.ot-externe-layout.sidebar-collapsed .ot-sidebar {
+  flex: 0 0 64px;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px 14px;
+}
+
+.sidebar-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: $text-muted;
+}
+
+.sidebar-toggle {
+  border: none;
+  background: transparent;
+  color: $text-muted;
+  padding: 4px;
+  border-radius: 6px;
+
+  &:hover {
+    background: #f3f4f6;
+    color: $text-dark;
+  }
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 10px 10px;
+  border-radius: 8px;
+  color: $text-dark;
+  font-size: 0.9rem;
+  text-align: left;
+
+  fa-icon {
+    width: 16px;
+    color: $text-muted;
+  }
+
+  &:hover {
+    background: $orange-light;
+  }
+
+  &.active {
+    background: $orange-light;
+    color: $orange-dark;
+    font-weight: 600;
+
+    fa-icon {
+      color: $orange-primary;
+    }
+  }
+}
+
+.sidebar-item-label {
+  flex: 1;
+}
+
+.sidebar-item-count {
+  font-size: 0.78rem;
+  color: $text-muted;
+}
+
+.sidebar-item.active .sidebar-item-count {
+  color: $orange-dark;
+}
+
+// ===== Contenu principal =====
+.ot-externe-page {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 0;
+}
+
+// ===== Cartes statistiques =====
+.stats-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  flex: 1 1 200px;
+  background: $bg-card;
+  border: 1px solid $border-light;
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: $text-muted;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: $text-dark;
+}
+
+.stat-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.stat-icon-primary {
+  background: $orange-light;
+  color: $orange-primary;
+}
+
+.stat-icon-neutral {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.stat-icon-warning {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.stat-icon-success {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+// ===== En-tête =====
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  h2 {
+    margin: 0;
+    font-weight: 700;
+    color: $text-dark;
+  }
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-outline-refresh {
+  background: #fff;
+  border: 1px solid $border-light;
+  color: $text-dark;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 500;
+
+  &:hover {
+    background: #f9fafb;
+  }
+}
+
+.btn-primary-orange {
+  background: $orange-primary;
+  border: 1px solid $orange-primary;
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 600;
+
+  &:hover {
+    background: $orange-dark;
+    border-color: $orange-dark;
+  }
+}
+
+// ===== Barre de recherche =====
+.search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid $border-light;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 18px;
+
+  &:focus-within {
+    border-color: $orange-primary;
+    box-shadow: 0 0 0 3px rgba($orange-primary, 0.12);
+  }
+}
+
+.search-icon {
+  color: $text-muted;
+  margin-right: 10px;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 0.95rem;
+  color: $text-dark;
+
+  &::placeholder {
+    color: $text-muted;
+  }
+}
+
+.search-clear {
+  border: none;
+  background: transparent;
+  color: $text-muted;
+  margin-right: 10px;
+
+  &:hover {
+    color: $text-dark;
+  }
+}
+
+.search-results-count {
+  font-size: 0.85rem;
+  color: $text-muted;
+  white-space: nowrap;
+}
+
+// ===== Tableau =====
+.table-entities {
+  background: $bg-card;
+  border-radius: 12px;
+  border: 1px solid $border-light;
+  overflow: hidden;
+}
+
+.ot-externe-table {
+  margin-bottom: 0;
+
+  thead th {
+    background: #fafafa;
+    color: $text-muted;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-bottom: 1px solid $border-light;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    vertical-align: middle;
+    font-size: 0.92rem;
+    color: $text-dark;
+    border-bottom: 1px solid $border-light;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr:hover {
+    background: $orange-light;
+  }
+
+  .cell-reference a {
+    color: $orange-dark;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .col-actions {
+    width: 1%;
+  }
+}
+
+// ===== Badges statut =====
+.badge-statut {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-creation {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.badge-en-cours {
+  background: #ffedd5;
+  color: $orange-dark;
+}
+
+.badge-paiement {
+  background: #ccfbf1;
+  color: #0f766e;
+}
+
+.badge-fin {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.badge-default {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+// ===== Boutons d'action =====
+.btn-icon {
+  border-radius: 6px;
+  font-size: 0.8rem;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+
+  fa-icon {
+    margin-right: 4px;
+  }
+}
+
+.btn-view {
+  background: $orange-light;
+  color: $orange-dark;
+  border-color: $orange-border;
+
+  &:hover {
+    background: $orange-border;
+  }
+}
+
+.btn-edit {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+
+  &:hover {
+    background: #dbeafe;
+  }
+}
+
+.btn-delete {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+
+  &:hover {
+    background: #fee2e2;
+  }
+}
+
+// ===== Responsive =====
+@media (max-width: 900px) {
+  .ot-externe-layout {
+    flex-direction: column;
+  }
+
+  .ot-sidebar {
+    flex: 1 1 auto;
+    width: 100%;
+    position: static;
+  }
+}

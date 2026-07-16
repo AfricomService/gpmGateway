@@ -1,0 +1,612 @@
+.missions-page {
+  --mp-accent: #f5822a;
+  --mp-accent-hover: #ff9a4d;
+  --mp-accent-soft: rgba(245, 130, 42, 0.12);
+  --mp-text: #1a2233;
+  --mp-text-muted: #8a93a3;
+  --mp-border: #e7e9ee;
+  --mp-surface: #ffffff;
+  --mp-surface-hover: #f2f4f8;
+  --mp-success: #1f9d55;
+  --mp-success-soft: rgba(31, 157, 85, 0.12);
+  --mp-info: #7c5cff;
+  --mp-danger: #e0524d;
+  --mp-danger-soft: rgba(224, 82, 77, 0.12);
+
+  display: flex;
+  gap: 1.5rem;
+  /* La navbar est en fixed-top (min-height: 72px) : on réserve l'espace
+     nécessaire pour que le header (titre + boutons) ne soit plus masqué. */
+  padding: 96px 1.5rem 1.5rem;
+  align-items: flex-start;
+}
+
+/* ============ SIDEBAR ============ */
+.missions-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--mp-surface);
+  border: 1px solid var(--mp-border);
+  border-radius: 14px;
+  padding: 1rem 0.75rem;
+  position: sticky;
+  top: 96px;
+}
+
+.missions-sidebar-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--mp-text-muted);
+  text-transform: uppercase;
+  padding: 0 0.5rem 0.75rem;
+}
+
+.missions-sidebar-title-spaced {
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--mp-border);
+}
+
+.missions-sidebar-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0 0.15rem;
+}
+
+.missions-sidebar-filter-label {
+  padding: 0 0.15rem 0.75rem;
+}
+
+.missions-sidebar-filter-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  height: 42px;
+  border-radius: 9px;
+  border: 1px solid var(--mp-border);
+  background: var(--mp-surface);
+  padding: 0 32px 0 14px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  cursor: pointer;
+
+  &:focus-within {
+    border-color: var(--mp-accent);
+    box-shadow: 0 0 0 3px var(--mp-accent-soft);
+  }
+
+  .missions-sidebar-filter-icon {
+    flex-shrink: 0;
+    color: var(--mp-text-muted);
+    font-size: 0.75rem;
+    pointer-events: none;
+  }
+
+  .missions-sidebar-filter-chevron {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--mp-text-muted);
+    font-size: 0.7rem;
+    pointer-events: none;
+  }
+}
+
+.missions-sidebar-filter {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--mp-text);
+  cursor: pointer;
+
+  /* Reset apparence native + suppression du double chevron de Bootstrap */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none !important;
+
+  /* Empêche le texte de déborder si le nom du client est long */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &:focus {
+    box-shadow: none !important;
+    outline: none;
+  }
+
+  option {
+    color: var(--mp-text);
+    background: var(--mp-surface);
+  }
+}
+
+.missions-views {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.missions-view-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border: none;
+  background: transparent;
+  padding: 0.6rem 0.65rem;
+  border-radius: 9px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--mp-text);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.25s ease, color 0.25s ease;
+
+  fa-icon {
+    color: var(--mp-text-muted);
+    width: 18px;
+  }
+
+  &:hover {
+    background: var(--mp-surface-hover);
+  }
+
+  &.active {
+    background: var(--mp-accent-soft);
+    color: var(--mp-accent);
+    font-weight: 600;
+
+    fa-icon {
+      color: var(--mp-accent);
+    }
+  }
+}
+
+/* ============ CONTENU ============ */
+.missions-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.missions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--mp-text);
+    margin: 0;
+  }
+}
+
+.missions-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.btn-refresh {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--mp-border);
+  background: var(--mp-surface);
+  color: var(--mp-text-muted);
+  transition: background 0.25s ease;
+
+  &:hover {
+    background: var(--mp-surface-hover);
+  }
+}
+
+.btn-mission-new {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.1rem;
+  border-radius: 10px;
+  border: none;
+  background: var(--mp-accent) !important;
+  opacity: 1 !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  font-size: 0.92rem;
+  box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.55);
+  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+
+  fa-icon,
+  span {
+    color: #ffffff !important;
+  }
+
+  &:hover {
+    background: var(--mp-accent-hover) !important;
+    box-shadow: 0 10px 22px -8px rgba(245, 130, 42, 0.7);
+    transform: translateY(-1px);
+    color: #ffffff !important;
+  }
+
+  &:disabled {
+    opacity: 1 !important;
+    background: var(--mp-accent) !important;
+    color: #ffffff !important;
+  }
+}
+
+/* ============ TOOLBAR ============ */
+.missions-toolbar-wrapper {
+  background: var(--mp-surface);
+  border: 1px solid var(--mp-border);
+  border-radius: 14px;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.missions-toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.missions-search {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid var(--mp-border);
+  background: var(--mp-surface);
+  padding: 0 14px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+
+  &:focus-within {
+    border-color: var(--mp-accent);
+    box-shadow: 0 0 0 3px var(--mp-accent-soft);
+  }
+
+  .missions-search-icon {
+    flex-shrink: 0;
+    color: var(--mp-text-muted);
+    font-size: 0.85rem;
+    pointer-events: none;
+  }
+
+  .missions-search-input {
+    flex: 1;
+    height: 100%;
+    border: none;
+    padding: 0;
+    background: transparent;
+    outline: none;
+    box-shadow: none !important;
+
+    &:focus {
+      border: none;
+      box-shadow: none !important;
+    }
+  }
+}
+
+.missions-reset {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid var(--mp-border);
+  background: var(--mp-surface);
+  color: var(--mp-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.25s ease, color 0.25s ease;
+
+  &:hover {
+    background: var(--mp-surface-hover);
+    color: var(--mp-text);
+  }
+}
+
+.missions-toolbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.missions-count {
+  font-size: 0.85rem;
+  color: var(--mp-text-muted);
+  white-space: nowrap;
+  background: var(--mp-surface-hover);
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+}
+
+.missions-view-toggle {
+  display: flex;
+  border: 1px solid var(--mp-border);
+  border-radius: 10px;
+  overflow: hidden;
+
+  button {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: var(--mp-surface);
+    color: var(--mp-text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.25s ease, color 0.25s ease;
+
+    &.active {
+      background: var(--mp-accent-soft);
+      color: var(--mp-accent);
+    }
+
+    &:hover {
+      background: var(--mp-surface-hover);
+    }
+  }
+}
+
+/* ============ GRILLE DE CARTES ============ */
+.missions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.mission-card {
+  position: relative;
+  background: var(--mp-surface);
+  border: 1px solid var(--mp-border);
+  border-radius: 14px;
+  padding: 1.1rem 1.2rem;
+  cursor: pointer;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+
+  &:hover {
+    border-color: var(--mp-accent);
+    box-shadow: 0 12px 26px -16px rgba(245, 130, 42, 0.4);
+    transform: translateY(-2px);
+  }
+}
+
+.mission-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.mission-ref {
+  font-weight: 700;
+  color: var(--mp-accent);
+  font-size: 0.92rem;
+}
+
+.mission-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--mp-text);
+  margin: 0.15rem 0 0.35rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mission-meta {
+  font-size: 0.85rem;
+  color: var(--mp-text-muted);
+  padding-bottom: 0.75rem;
+  border-bottom: 1px dashed var(--mp-border);
+  margin-bottom: 0.75rem;
+
+  .mission-meta-sep {
+    margin: 0 0.35rem;
+  }
+}
+
+.mission-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: var(--mp-text-muted);
+}
+
+/* Le badge "Nuit" fait maintenant partie du flux normal de la carte
+   (plus de position: absolute), donc il ne chevauche plus le texte. */
+.mission-card-tags {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.badge-night {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--mp-accent-soft);
+  color: var(--mp-accent);
+  border-radius: 20px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* ============ BADGES DE STATUT ============ */
+.badge-success {
+  background: var(--mp-success-soft);
+  color: var(--mp-success);
+}
+
+.badge-info-soft {
+  background: rgba(124, 92, 255, 0.12);
+  color: var(--mp-info);
+}
+
+.badge-warning {
+  background: var(--mp-accent-soft);
+  color: var(--mp-accent);
+}
+
+.badge-danger {
+  background: var(--mp-danger-soft);
+  color: var(--mp-danger);
+}
+
+.badge-purple {
+  background: rgba(124, 92, 255, 0.12);
+  color: #7c5cff;
+}
+
+.badge-neutral {
+  background: var(--mp-surface-hover);
+  color: var(--mp-text-muted);
+}
+
+/* ============ TABLEAU LISTE ============ */
+.missions-table-wrapper {
+  background: var(--mp-surface);
+  border: 1px solid var(--mp-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.missions-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead {
+    background: var(--mp-surface-hover);
+
+    th {
+      text-align: left;
+      padding: 0.85rem 1.2rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--mp-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--mp-border);
+    }
+  }
+
+  tbody {
+    tr {
+      cursor: pointer;
+      transition: background 0.2s ease;
+      border-bottom: 1px solid var(--mp-border);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:hover {
+        background: var(--mp-accent-soft);
+      }
+    }
+
+    td {
+      padding: 0.9rem 1.2rem;
+      font-size: 0.9rem;
+      color: var(--mp-text);
+      white-space: nowrap;
+    }
+  }
+}
+
+.missions-table-badge {
+  font-weight: 600;
+  font-size: 0.78rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+}
+
+/* ============ PAGINATION ORANGE ============ */
+::ng-deep {
+  .missions-content ngb-pagination {
+    .pagination {
+      gap: 0.35rem;
+    }
+
+    .page-item {
+      .page-link {
+        border: none;
+        border-radius: 8px;
+        color: var(--mp-text-muted);
+        font-weight: 600;
+        min-width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s ease, color 0.2s ease;
+
+        &:hover {
+          background: var(--mp-accent-soft);
+          color: var(--mp-accent);
+        }
+      }
+
+      &.active .page-link {
+        background: var(--mp-accent) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 10px -4px rgba(245, 130, 42, 0.5);
+      }
+
+      &.disabled .page-link {
+        color: var(--mp-border);
+        background: transparent;
+      }
+    }
+  }
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 900px) {
+  .missions-page {
+    flex-direction: column;
+    padding: 88px 1rem 1rem;
+  }
+
+  .missions-sidebar {
+    width: 100%;
+    position: static;
+  }
+
+  .missions-views {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .missions-toolbar-right {
+    margin-left: 0;
+    width: 100%;
+    justify-content: space-between;
+  }
+}

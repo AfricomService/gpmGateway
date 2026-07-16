@@ -1,4 +1,4 @@
-.affaires-page {
+.articles-page {
   --ap-accent: #f5822a;
   --ap-accent-hover: #ff9a4d;
   --ap-accent-soft: rgba(245, 130, 42, 0.12);
@@ -13,93 +13,22 @@
   --ap-info-soft: rgba(124, 92, 255, 0.12);
   --ap-danger: #e0524d;
   --ap-danger-soft: rgba(224, 82, 77, 0.12);
-  --ap-warning: #d97706;
-  --ap-warning-soft: rgba(217, 119, 6, 0.12);
 
   display: flex;
-  gap: 1.5rem;
   /* La navbar est en fixed-top (min-height: 72px) : on réserve l'espace
      nécessaire pour que le header (titre + boutons) ne soit plus masqué. */
-  padding: 96px 1.5rem 1.5rem;
+  padding: 20px 1.5rem 1.5rem;
   align-items: flex-start;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
-/* ============ SIDEBAR ============ */
-.affaires-sidebar {
-  width: 220px;
-  flex-shrink: 0;
-  background: var(--ap-surface);
-  border: 1px solid var(--ap-border);
-  border-radius: 14px;
-  padding: 1rem 0.75rem;
-  position: sticky;
-  top: 96px;
-}
-
-.affaires-sidebar-title {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--ap-text-muted);
-  text-transform: uppercase;
-  padding: 0 0.5rem 0.75rem;
-}
-
-.affaires-sidebar-title-spaced {
-  padding-top: 1rem;
-  margin-top: 0.5rem;
-  border-top: 1px solid var(--ap-border);
-}
-
-.affaires-views {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.affaires-view-item {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  border: none;
-  background: transparent;
-  padding: 0.6rem 0.65rem;
-  border-radius: 9px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--ap-text);
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.25s ease, color 0.25s ease;
-
-  fa-icon {
-    color: var(--ap-text-muted);
-    width: 18px;
-  }
-
-  &:hover {
-    background: var(--ap-surface-hover);
-  }
-
-  &.active {
-    background: var(--ap-accent-soft);
-    color: var(--ap-accent);
-    font-weight: 600;
-
-    fa-icon {
-      color: var(--ap-accent);
-    }
-  }
-}
-
 /* ============ CONTENU ============ */
-.affaires-content {
+.articles-content {
   flex: 1;
   min-width: 0;
 }
 
-.affaires-header {
+.articles-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -113,13 +42,13 @@
   }
 }
 
-.affaires-header-actions {
+.articles-header-actions {
   display: flex;
   align-items: center;
   gap: 0.6rem;
 }
 
-.btn-affaire-refresh {
+.btn-article-refresh {
   width: 42px;
   height: 42px;
   border-radius: 10px;
@@ -142,7 +71,7 @@
   }
 }
 
-.btn-affaire-new {
+.btn-article-new {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -171,7 +100,7 @@
 }
 
 /* ============ TOOLBAR ============ */
-.affaires-toolbar-wrapper {
+.articles-toolbar-wrapper {
   background: var(--ap-surface);
   border: 1px solid var(--ap-border);
   border-radius: 14px;
@@ -182,14 +111,14 @@
   gap: 0.85rem;
 }
 
-.affaires-toolbar-row {
+.articles-toolbar-row {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
 }
 
-.affaires-search {
+.articles-search {
   flex: 1;
   min-width: 180px;
   display: flex;
@@ -207,14 +136,14 @@
     box-shadow: 0 0 0 3px var(--ap-accent-soft);
   }
 
-  .affaires-search-icon {
+  .articles-search-icon {
     flex-shrink: 0;
     color: var(--ap-text-muted);
     font-size: 0.85rem;
     pointer-events: none;
   }
 
-  .affaires-search-input {
+  .articles-search-input {
     flex: 1;
     height: 100%;
     border: none;
@@ -230,14 +159,14 @@
   }
 }
 
-.affaires-toolbar-right {
+.articles-toolbar-right {
   margin-left: auto;
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
-.affaires-count {
+.articles-count {
   font-size: 0.85rem;
   color: var(--ap-text-muted);
   white-space: nowrap;
@@ -246,7 +175,7 @@
   border-radius: 8px;
 }
 
-.affaires-view-toggle {
+.articles-view-toggle {
   display: flex;
   border: 1px solid var(--ap-border);
   border-radius: 10px;
@@ -275,13 +204,13 @@
 }
 
 /* ============ GRILLE DE CARTES ============ */
-.affaires-grid {
+.articles-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1rem;
 }
 
-.affaire-card {
+.article-card {
   position: relative;
   background: var(--ap-surface);
   border: 1px solid var(--ap-border);
@@ -300,50 +229,52 @@
   }
 }
 
-.affaire-card-header {
+.article-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 0.5rem;
 }
 
-.affaire-ref {
+.article-ref {
   font-weight: 700;
   color: var(--ap-accent);
   font-size: 0.92rem;
 }
 
-.affaire-title {
+.article-title {
   font-size: 1rem;
   font-weight: 600;
   color: var(--ap-text);
-  margin: 0.15rem 0 0.35rem;
+  margin: 0.15rem 0 0.6rem;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.affaire-meta {
+.article-details {
   font-size: 0.85rem;
   color: var(--ap-text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   padding-bottom: 0.75rem;
   border-bottom: 1px dashed var(--ap-border);
   margin-bottom: 0.75rem;
+
+  div {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
 }
 
-.affaire-card-footer {
+.article-card-footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   margin-top: auto;
-}
-
-.affaire-montant {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--ap-text);
-  letter-spacing: -0.01em;
 }
 
 .card-actions {
@@ -353,7 +284,7 @@
   transition: opacity 0.15s ease;
 }
 
-.affaire-card:hover .card-actions {
+.article-card:hover .card-actions {
   opacity: 1;
 }
 
@@ -369,6 +300,15 @@
   cursor: pointer;
   transition: all 0.18s ease;
 
+  &.btn-view {
+    background: var(--ap-info-soft);
+    color: var(--ap-info);
+    &:hover {
+      background: var(--ap-info);
+      color: #ffffff;
+    }
+  }
+
   &.btn-delete {
     background: var(--ap-danger-soft);
     color: var(--ap-danger);
@@ -379,52 +319,15 @@
   }
 }
 
-/* ============ BADGES DE STATUT ============ */
-/* Ces classes doivent correspondre exactement aux valeurs retournées par
-   STATUT_CLASS_MAP dans affaire.component.ts. Une classe .badge Bootstrap
-   par défaut met le texte en blanc — sans classe de statut correspondante,
-   le texte devient invisible sur fond blanc (bug corrigé ici). */
-.statut-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  white-space: nowrap;
-  color: var(--ap-text-muted); // fallback visible si jamais aucune classe ne matche
-}
-
-.statut-brouillon {
-  background: var(--ap-surface-hover);
-  color: var(--ap-text-muted);
-}
-.statut-etude {
-  background: var(--ap-info-soft);
-  color: var(--ap-info);
-}
-.statut-execution {
-  background: var(--ap-warning-soft);
-  color: var(--ap-warning);
-}
-.statut-cloture {
-  background: rgba(8, 145, 178, 0.12);
-  color: #0891b2;
-}
-.statut-fin {
-  background: var(--ap-success-soft);
-  color: var(--ap-success);
-}
-
 /* ============ TABLEAU LISTE ============ */
-.affaires-table-wrapper {
+.articles-table-wrapper {
   background: var(--ap-surface);
   border: 1px solid var(--ap-border);
   border-radius: 14px;
   overflow: hidden;
 }
 
-.affaires-table {
+.articles-table {
   width: 100%;
   border-collapse: collapse;
 
@@ -468,9 +371,15 @@
   }
 }
 
+.table-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
 /* ============ PAGINATION ORANGE ============ */
 ::ng-deep {
-  .affaires-content ngb-pagination {
+  .articles-content ngb-pagination {
     .pagination {
       gap: 0.35rem;
     }
@@ -510,22 +419,11 @@
 
 /* ============ RESPONSIVE ============ */
 @media (max-width: 900px) {
-  .affaires-page {
-    flex-direction: column;
-    padding: 88px 1rem 1rem;
+  .articles-page {
+    padding: 24px 1rem 1rem;
   }
 
-  .affaires-sidebar {
-    width: 100%;
-    position: static;
-  }
-
-  .affaires-views {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-
-  .affaires-toolbar-right {
+  .articles-toolbar-right {
     margin-left: 0;
     width: 100%;
     justify-content: space-between;
