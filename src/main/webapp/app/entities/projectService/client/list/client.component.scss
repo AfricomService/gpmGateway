@@ -1,312 +1,416 @@
-// ─── Variables ────────────────────────────────────────────────────────────────
-$primary: #2c3e50;
-$primary-light: #eff6ff;
-$gray-50: #f8fafc;
-$gray-100: #f1f5f9;
-$gray-200: #e2e8f0;
-$gray-400: #94a3b8;
-$gray-600: #475569;
-$gray-800: #1e293b;
-$white: #ffffff;
-$radius-sm: 6px;
-$radius-md: 10px;
-$radius-lg: 14px;
-$shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
-$shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
-$transition: all 0.18s ease;
+.clients-page {
+  --cp-accent: #f5822a;
+  --cp-accent-hover: #ff9a4d;
+  --cp-accent-soft: rgba(245, 130, 42, 0.12);
+  --cp-text: #1a2233;
+  --cp-text-muted: #8a93a3;
+  --cp-border: #e7e9ee;
+  --cp-surface: #ffffff;
+  --cp-surface-hover: #f2f4f8;
+  --cp-success: #1f9d55;
+  --cp-success-soft: rgba(31, 157, 85, 0.12);
+  --cp-info: #7c5cff;
+  --cp-info-soft: rgba(124, 92, 255, 0.12);
+  --cp-danger: #e0524d;
+  --cp-danger-soft: rgba(224, 82, 77, 0.12);
 
-// ─── Container ────────────────────────────────────────────────────────────────
-.clients-container {
-  padding-top: 4em;
-  min-height: 100vh;
+  display: flex;
+  /* La navbar est en fixed-top (min-height: 72px) : on réserve l'espace
+     nécessaire pour que le header (titre + boutons) ne soit plus masqué. */
+  padding: 96px 1.5rem 1.5rem;
+  align-items: flex-start;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
-// ─── Header ───────────────────────────────────────────────────────────────────
+/* ============ CONTENU ============ */
+.clients-content {
+  flex: 1;
+  min-width: 0;
+}
+
 .clients-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 1.25rem;
 
   h2 {
-    font-size: 1.35rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    color: $gray-800;
+    color: var(--cp-text);
     margin: 0;
   }
+}
 
-  .header-actions {
+.clients-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.btn-client-refresh {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface);
+  color: var(--cp-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s ease, color 0.25s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--cp-surface-hover);
+    color: var(--cp-text);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.7;
+  }
+}
+
+.btn-client-new {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.1rem;
+  border-radius: 10px;
+  border: none;
+  background: var(--cp-accent) !important;
+  opacity: 1 !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  font-size: 0.92rem;
+  box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.55);
+  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+
+  fa-icon,
+  span {
+    color: #ffffff !important;
+  }
+
+  &:hover {
+    background: var(--cp-accent-hover) !important;
+    box-shadow: 0 10px 22px -8px rgba(245, 130, 42, 0.7);
+    transform: translateY(-1px);
+    color: #ffffff !important;
+  }
+}
+
+/* ============ TOOLBAR ============ */
+.clients-toolbar-wrapper {
+  background: var(--cp-surface);
+  border: 1px solid var(--cp-border);
+  border-radius: 14px;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.clients-toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.clients-search {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface);
+  padding: 0 14px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+
+  &:focus-within {
+    border-color: var(--cp-accent);
+    box-shadow: 0 0 0 3px var(--cp-accent-soft);
+  }
+
+  .clients-search-icon {
+    flex-shrink: 0;
+    color: var(--cp-text-muted);
+    font-size: 0.85rem;
+    pointer-events: none;
+  }
+
+  .clients-search-input {
+    flex: 1;
+    height: 100%;
+    border: none;
+    padding: 0;
+    background: transparent;
+    outline: none;
+    box-shadow: none !important;
+
+    &:focus {
+      border: none;
+      box-shadow: none !important;
+    }
+  }
+}
+
+.clients-toolbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.clients-count {
+  font-size: 0.85rem;
+  color: var(--cp-text-muted);
+  white-space: nowrap;
+  background: var(--cp-surface-hover);
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+}
+
+.clients-view-toggle {
+  display: flex;
+  border: 1px solid var(--cp-border);
+  border-radius: 10px;
+  overflow: hidden;
+
+  button {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: var(--cp-surface);
+    color: var(--cp-text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.25s ease, color 0.25s ease;
+
+    &.active {
+      background: var(--cp-accent-soft);
+      color: var(--cp-accent);
+    }
+
+    &:hover {
+      background: var(--cp-surface-hover);
+    }
+  }
+}
+
+/* ============ GRILLE DE CARTES ============ */
+.clients-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.client-card {
+  position: relative;
+  background: var(--cp-surface);
+  border: 1px solid var(--cp-border);
+  border-radius: 14px;
+  padding: 1.1rem 1.2rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  user-select: none;
+
+  &:hover {
+    border-color: var(--cp-accent);
+    box-shadow: 0 12px 26px -16px rgba(245, 130, 42, 0.4);
+    transform: translateY(-2px);
+  }
+}
+
+.client-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.client-ref {
+  font-weight: 700;
+  color: var(--cp-accent);
+  font-size: 0.92rem;
+}
+
+.client-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--cp-text);
+  margin: 0.15rem 0 0.6rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.client-details {
+  font-size: 0.85rem;
+  color: var(--cp-text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px dashed var(--cp-border);
+  margin-bottom: 0.75rem;
+
+  div {
     display: flex;
     gap: 8px;
     align-items: center;
   }
 }
 
-// ─── Toolbar ──────────────────────────────────────────────────────────────────
-.clients-toolbar {
+.client-card-footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-
-  .toolbar-left {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    width: 100%;
-    gap: 12px;
-  }
-
-  .toolbar-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+  justify-content: flex-end;
+  margin-top: auto;
 }
 
-// ─── Search ───────────────────────────────────────────────────────────────────
-.search-wrapper {
-  position: relative;
+.card-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.client-card:hover .card-actions {
+  opacity: 1;
+}
+
+.action-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 8px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.18s ease;
 
-  .search-icon {
-    position: absolute;
-    left: 10px;
-    color: $gray-400;
-    font-size: 0.875rem;
-    pointer-events: none;
-  }
-
-  .search-input {
-    padding: 8px 12px 8px 32px;
-    border: 1px solid $gray-200;
-    border-radius: $radius-sm;
-    font-size: 0.875rem;
-    color: $gray-800;
-    background: $white;
-    width: 240px;
-    transition: $transition;
-    outline: none;
-
-    &::placeholder {
-      color: $gray-400;
-    }
-    &:focus {
-      border-color: $primary;
-      box-shadow: 0 0 0 3px rgba($primary, 0.1);
-    }
-  }
-}
-
-// ─── Results count + view toggle ─────────────────────────────────────────────
-.results-count {
-  font-size: 0.8125rem;
-  color: $gray-400;
-  white-space: nowrap;
-}
-
-.view-toggle {
-  display: flex;
-  border: 1px solid $gray-200;
-  border-radius: $radius-sm;
-  overflow: hidden;
-
-  .view-btn {
-    padding: 7px 10px;
-    background: $white;
-    border: none;
-    border-right: 1px solid $gray-200;
-    color: $gray-400;
-    cursor: pointer;
-    transition: $transition;
-    font-size: 0.875rem;
-    line-height: 1;
-
-    &:last-child {
-      border-right: none;
-    }
-    &:hover:not(.active) {
-      background: $gray-100;
-    }
-    &.active {
-      background: $primary-light;
-      color: $primary;
-    }
-  }
-}
-
-// ─── Card Grid ────────────────────────────────────────────────────────────────
-.clients-grid {
-  padding-top: 2em;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
-  gap: 16px;
-}
-
-// ─── Card ─────────────────────────────────────────────────────────────────────
-.client-card {
-  background: $white;
-  border: 1px solid $gray-200;
-  border-radius: $radius-lg;
-  padding: 18px 20px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  box-shadow: $shadow-card;
-  transition: $transition;
-  cursor: default;
-
-  &:hover {
-    box-shadow: $shadow-hover;
-    transform: translateY(-2px);
-    border-color: darken($gray-200, 5%);
-  }
-
-  // ── Card Header ─────────────────────────────────────────���───────────────────
-  .card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0;
-    background: transparent;
-    border: none;
-  }
-
-  .client-num {
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: $primary;
-    text-decoration: none;
-
+  &.btn-delete {
+    background: var(--cp-danger-soft);
+    color: var(--cp-danger);
     &:hover {
-      text-decoration: underline;
+      background: var(--cp-danger);
+      color: #ffffff;
+    }
+  }
+}
+
+/* ============ TABLEAU LISTE ============ */
+.clients-table-wrapper {
+  background: var(--cp-surface);
+  border: 1px solid var(--cp-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.clients-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead {
+    background: var(--cp-surface-hover);
+
+    th {
+      text-align: left;
+      padding: 0.85rem 1.2rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--cp-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--cp-border);
     }
   }
 
-  // ── Card Body ───────────────────────────────────────────────────────────────
-  .card-body {
-    padding: 0;
-    flex: 1;
-  }
+  tbody {
+    tr {
+      cursor: pointer;
+      transition: background 0.2s ease;
+      border-bottom: 1px solid var(--cp-border);
+      user-select: none;
 
-  .client-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: $gray-800;
-    margin: 0 0 4px;
-    line-height: 1.35;
+      &:last-child {
+        border-bottom: none;
+      }
 
-    a {
-      color: inherit;
-      text-decoration: none;
       &:hover {
-        color: $primary;
+        background: var(--cp-accent-soft);
       }
     }
-  }
 
-  .client-details {
-    font-size: 0.8125rem;
-    color: $gray-400;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-
-    div {
-      display: flex;
-      gap: 6px;
-      align-items: center;
+    td {
+      padding: 0.9rem 1.2rem;
+      font-size: 0.9rem;
+      color: var(--cp-text);
+      white-space: nowrap;
     }
   }
+}
 
-  // ── Card Footer ──────────────────────────��──────────────────────────────────
-  .card-footer {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding: 10px 0 0;
-    border-top: 1px solid $gray-100;
-    background: transparent;
-    border-radius: 0;
-  }
+/* ============ PAGINATION ORANGE ============ */
+::ng-deep {
+  .clients-content ngb-pagination {
+    .pagination {
+      gap: 0.35rem;
+    }
 
-  .card-actions {
-    display: flex;
-    gap: 4px;
-    opacity: 0;
-    transition: opacity 0.15s ease;
-  }
+    .page-item {
+      .page-link {
+        border: none;
+        border-radius: 8px;
+        color: var(--cp-text-muted);
+        font-weight: 600;
+        min-width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s ease, color 0.2s ease;
 
-  &:hover .card-actions {
-    opacity: 1;
-  }
-
-  .action-btn {
-    width: 28px;
-    height: 28px;
-    border: none;
-    border-radius: $radius-sm;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: $transition;
-
-    &.btn-view {
-      background: #eff6ff;
-      color: $primary;
-      &:hover {
-        background: $primary;
-        color: $white;
+        &:hover {
+          background: var(--cp-accent-soft);
+          color: var(--cp-accent);
+        }
       }
-    }
-    &.btn-edit {
-      background: #f0fdf4;
-      color: #16a34a;
-      &:hover {
-        background: #16a34a;
-        color: $white;
+
+      &.active .page-link {
+        background: var(--cp-accent) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 10px -4px rgba(245, 130, 42, 0.5);
       }
-    }
-    &.btn-delete {
-      background: #fef2f2;
-      color: #dc2626;
-      &:hover {
-        background: #dc2626;
-        color: $white;
+
+      &.disabled .page-link {
+        color: var(--cp-border);
+        background: transparent;
       }
     }
   }
 }
 
-// ─── Responsive ───────────────────────────────────────────────────────────────
-@media (max-width: 768px) {
-  .clients-container {
-    padding: 16px;
+/* ============ RESPONSIVE ============ */
+@media (max-width: 900px) {
+  .clients-page {
+    padding: 88px 1rem 1rem;
   }
 
-  .clients-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .clients-toolbar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .search-input {
-    width: 100% !important;
-  }
-
-  .clients-grid {
-    grid-template-columns: 1fr;
+  .clients-toolbar-right {
+    margin-left: 0;
+    width: 100%;
+    justify-content: space-between;
   }
 }

@@ -1,177 +1,278 @@
-<div>
-  <h2 id="page-heading" data-cy="DevisHeading">
-    <span jhiTranslate="gpmGatewayApp.financeServiceDevis.home.title">Devis</span>
+<div class="devis-layout">
+  <!-- ===== Sidebar navigation Facturation ===== -->
+  <aside class="fact-sidebar">
+    <div class="sidebar-title">FACTURATION</div>
 
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
-        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
-        <span jhiTranslate="gpmGatewayApp.financeServiceDevis.home.refreshListLabel">Actualiser la liste</span>
-      </button>
+    <nav class="sidebar-nav">
+      <a [routerLink]="['/facture']" routerLinkActive="active" class="sidebar-item">
+        <fa-icon icon="file-invoice-dollar"></fa-icon>
+        <span>Factures</span>
+      </a>
+
+      <a [routerLink]="['/devis']" routerLinkActive="active" class="sidebar-item">
+        <fa-icon icon="file-alt"></fa-icon>
+        <span>Devis</span>
+      </a>
+
+      <a [routerLink]="['/note-de-frais']" routerLinkActive="active" class="sidebar-item">
+        <fa-icon icon="receipt"></fa-icon>
+        <span>Notes de Frais</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- ===== Contenu principal ===== -->
+  <div class="devis-page">
+    <!-- ===== Cartes statistiques ===== -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label" jhiTranslate="gpmGatewayApp.financeServiceDevis.home.title">Devis</span>
+          <span class="stat-value">{{ totalCount }}</span>
+        </div>
+        <div class="stat-icon stat-icon-blue">
+          <fa-icon icon="file-alt"></fa-icon>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">Montant total</span>
+          <span class="stat-value">{{ montantTotal | number: '1.0-0':'fr' }} DT</span>
+        </div>
+        <div class="stat-icon stat-icon-purple">
+          <fa-icon icon="file-invoice-dollar"></fa-icon>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">Encaissé</span>
+          <span class="stat-value stat-value-success">{{ montantEncaisse | number: '1.0-0':'fr' }} DT</span>
+        </div>
+        <div class="stat-icon stat-icon-success">
+          <fa-icon icon="check-circle"></fa-icon>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">En attente</span>
+          <span class="stat-value stat-value-warning">{{ montantEnAttente | number: '1.0-0':'fr' }} DT</span>
+        </div>
+        <div class="stat-icon stat-icon-warning">
+          <fa-icon icon="clock"></fa-icon>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== En-tête + bouton créer ===== -->
+    <div class="page-header">
+      <h2 id="page-heading" data-cy="DevisHeading" jhiTranslate="gpmGatewayApp.financeServiceDevis.home.title">Devis</h2>
+
+      <div class="header-actions">
+        <button class="btn btn-outline-refresh" (click)="load()" [disabled]="isLoading" title="Actualiser la liste">
+          <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        </button>
+
+        <button
+          id="jh-create-entity"
+          data-cy="entityCreateButton"
+          class="btn btn-primary-orange jh-create-entity create-devis"
+          [routerLink]="['/devis/new']"
+          title="Créer un nouveau Devis"
+        >
+          <fa-icon icon="plus"></fa-icon>
+        </button>
+      </div>
+    </div>
+
+    <jhi-alert-error></jhi-alert-error>
+    <jhi-alert></jhi-alert>
+
+    <!-- ===== Barre de recherche + filtre statut + toggle vue ===== -->
+    <div class="toolbar">
+      <div class="search-bar">
+        <fa-icon icon="search" class="search-icon"></fa-icon>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Rechercher..."
+          [ngModel]="searchTerm"
+          (ngModelChange)="onSearchChange($event)"
+        />
+      </div>
+
+      <select class="statut-select" [ngModel]="statutFilter ?? ''" (ngModelChange)="onStatutChange($event)">
+        <option *ngFor="let opt of statutOptions" [value]="opt.value ?? ''">{{ opt.label }}</option>
+      </select>
 
       <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-devis"
-        [routerLink]="['/devis/new']"
+        *ngIf="searchTerm || statutFilter"
+        class="btn-clear-filters"
+        (click)="clearFilters()"
+        type="button"
+        title="Effacer les filtres"
       >
-        <fa-icon icon="plus"></fa-icon>
-        <span jhiTranslate="gpmGatewayApp.financeServiceDevis.home.createLabel"> Créer un nouveau Devis </span>
+        <fa-icon icon="times"></fa-icon>
       </button>
-    </div>
-  </h2>
 
-  <jhi-alert-error></jhi-alert-error>
+      <span class="results-count">{{ filteredDevis.length }} résultat{{ filteredDevis.length > 1 ? 's' : '' }}</span>
 
-  <jhi-alert></jhi-alert>
-
-  <div class="alert alert-warning" id="no-result" *ngIf="devis?.length === 0">
-    <span jhiTranslate="gpmGatewayApp.financeServiceDevis.home.notFound">Aucun Devis trouvé</span>
-  </div>
-
-  <div class="table-responsive table-entities" id="entities" *ngIf="devis && devis.length > 0">
-    <table class="table table-striped" aria-describedby="page-heading">
-      <thead>
-        <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
-          <th scope="col" jhiSortBy="id">
-            <div class="d-flex">
-              <span jhiTranslate="global.field.id">ID</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="reference">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceDevis.reference">Reference</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="montant">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceDevis.montant">Montant</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="date">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceDevis.date">Date</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="statut">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceDevis.statut">Statut</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="workOrderId">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceDevis.workOrderId">Work Order Id</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdAt">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceDevis.createdAt">Created At</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedAt">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceDevis.updatedAt">Updated At</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdBy">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceDevis.createdBy">Created By</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="createdByUserLogin">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceDevis.createdByUserLogin">Created By User Login</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedBy">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceDevis.updatedBy">Updated By</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="updatedByUserLogin">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceDevis.updatedByUserLogin">Updated By User Login</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="facture.numFacture">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.financeServiceDevis.facture">Facture</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let devis of devis; trackBy: trackId" data-cy="entityTable">
-          <td>
-            <a [routerLink]="['/devis', devis.id, 'view']">{{ devis.id }}</a>
-          </td>
-          <td>{{ devis.reference }}</td>
-          <td>{{ devis.montant }}</td>
-          <td>{{ devis.date | formatMediumDate }}</td>
-          <td jhiTranslate="{{ 'gpmGatewayApp.StatutDevis.' + devis.statut }}">{{ devis.statut }}</td>
-          <td>{{ devis.workOrderId }}</td>
-          <td>{{ devis.createdAt | formatMediumDatetime }}</td>
-          <td>{{ devis.updatedAt | formatMediumDatetime }}</td>
-          <td>{{ devis.createdBy }}</td>
-          <td>{{ devis.createdByUserLogin }}</td>
-          <td>{{ devis.updatedBy }}</td>
-          <td>{{ devis.updatedByUserLogin }}</td>
-          <td>
-            <div *ngIf="devis.facture">
-              <a [routerLink]="['/facture', devis.facture.id, 'view']">{{ devis.facture.numFacture }}</a>
-            </div>
-          </td>
-          <td class="text-end">
-            <div class="btn-group">
-              <button type="submit" [routerLink]="['/devis', devis.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
-                <fa-icon icon="eye"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
-              </button>
-
-              <button type="submit" [routerLink]="['/devis', devis.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
-                <fa-icon icon="pencil-alt"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
-              </button>
-
-              <button type="submit" (click)="delete(devis)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                <fa-icon icon="times"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div *ngIf="devis && devis.length > 0">
-    <div class="d-flex justify-content-center">
-      <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+      <div class="view-toggle">
+        <button type="button" class="view-btn" [class.active]="!isGridView" (click)="setGridView(false)" title="Vue tableau">
+          <fa-icon icon="th-list"></fa-icon>
+        </button>
+        <button type="button" class="view-btn" [class.active]="isGridView" (click)="setGridView(true)" title="Vue grille">
+          <fa-icon icon="th-large"></fa-icon>
+        </button>
+      </div>
     </div>
 
-    <div class="d-flex justify-content-center">
-      <ngb-pagination
-        [collectionSize]="totalItems"
-        [page]="page"
-        [pageSize]="itemsPerPage"
-        [maxSize]="5"
-        [rotate]="true"
-        [boundaryLinks]="true"
-        (pageChange)="navigateToPage($event)"
-      ></ngb-pagination>
+    <!-- ===== Aucun résultat ===== -->
+    <div class="alert alert-warning" id="no-result" *ngIf="filteredDevis.length === 0">
+      <span jhiTranslate="gpmGatewayApp.financeServiceDevis.home.notFound">Aucun Devis trouvé</span>
+    </div>
+
+    <!-- ===== Vue tableau ===== -->
+    <div class="table-responsive table-entities" id="entities" *ngIf="!isGridView && filteredDevis.length > 0">
+      <table class="table devis-table" aria-describedby="page-heading">
+        <thead>
+          <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
+            <th scope="col" jhiSortBy="reference">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServiceDevis.reference">Reference</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="montant">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServiceDevis.montant">Montant</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="date">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServiceDevis.date">Date</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="statut">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServiceDevis.statut">Statut</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="workOrderId">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServiceDevis.workOrderId">Work Order Id</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="facture.numFacture">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServiceDevis.facture">Facture</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" class="col-actions"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let devis of filteredDevis; trackBy: trackId"
+            data-cy="entityTable"
+            class="row-clickable"
+            (dblclick)="goToEdit(devis)"
+            title="Double-cliquez pour éditer"
+          >
+            <td class="cell-reference">{{ devis.reference }}</td>
+            <td>{{ devis.montant | number: '1.2-2':'fr' }} DT</td>
+            <td>{{ devis.date | formatMediumDate }}</td>
+            <td>
+              <span class="badge-statut" [ngClass]="getStatutClass(devis.statut)">
+                {{ statutLabel(devis.statut) }}
+              </span>
+            </td>
+            <td>{{ devis.workOrderId ?? '—' }}</td>
+            <td>
+              <span *ngIf="devis.facture">{{ devis.facture.numFacture }}</span>
+              <span *ngIf="!devis.facture">—</span>
+            </td>
+            <td class="text-end">
+              <div class="btn-group">
+                <button
+                  type="button"
+                  (click)="delete(devis)"
+                  class="btn btn-icon btn-delete"
+                  data-cy="entityDeleteButton"
+                  title="Supprimer"
+                >
+                  <fa-icon icon="trash-alt"></fa-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ===== Vue grille ===== -->
+    <div class="devis-grid" *ngIf="isGridView && filteredDevis.length > 0">
+      <div
+        class="devis-card row-clickable"
+        *ngFor="let devis of filteredDevis; trackBy: trackId"
+        (dblclick)="goToEdit(devis)"
+        title="Double-cliquez pour éditer"
+      >
+        <div class="devis-card-header">
+          <span class="cell-reference">{{ devis.reference }}</span>
+          <span class="badge-statut" [ngClass]="getStatutClass(devis.statut)">
+            {{ statutLabel(devis.statut) }}
+          </span>
+        </div>
+        <div class="devis-card-body">
+          <div class="devis-card-row">
+            <span class="row-label" jhiTranslate="gpmGatewayApp.financeServiceDevis.montant">Montant</span>
+            <span class="row-value row-value-strong">{{ devis.montant | number: '1.2-2':'fr' }} DT</span>
+          </div>
+          <div class="devis-card-row">
+            <span class="row-label" jhiTranslate="gpmGatewayApp.financeServiceDevis.date">Date</span>
+            <span class="row-value">{{ devis.date | formatMediumDate }}</span>
+          </div>
+          <div class="devis-card-row">
+            <span class="row-label" jhiTranslate="gpmGatewayApp.financeServiceDevis.workOrderId">Work Order Id</span>
+            <span class="row-value">{{ devis.workOrderId ?? '—' }}</span>
+          </div>
+          <div class="devis-card-row">
+            <span class="row-label" jhiTranslate="gpmGatewayApp.financeServiceDevis.facture">Facture</span>
+            <span class="row-value">{{ devis.facture?.numFacture ?? '—' }}</span>
+          </div>
+        </div>
+        <div class="devis-card-footer">
+          <button type="button" (click)="delete(devis)" class="btn btn-icon btn-delete" title="Supprimer">
+            <fa-icon icon="trash-alt"></fa-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="filteredDevis.length > 0">
+      <div class="d-flex justify-content-center">
+        <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems"
+          [page]="page"
+          [pageSize]="itemsPerPage"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        ></ngb-pagination>
+      </div>
     </div>
   </div>
 </div>

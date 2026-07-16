@@ -44,6 +44,11 @@ export class ClientComponent implements OnInit {
     this.load();
   }
 
+  /** Called by the "Actualiser" button. */
+  refresh(): void {
+    this.load();
+  }
+
   filterClients(): void {
     this.applyFilters();
   }
@@ -76,6 +81,11 @@ export class ClientComponent implements OnInit {
           this.onResponseSuccess(res);
         },
       });
+  }
+
+  /** Called on double-click on a card or a row: navigate straight to the edit screen. */
+  goToEdit(client: IClient): void {
+    this.router.navigate(['/client', client.id, 'edit']);
   }
 
   load(): void {

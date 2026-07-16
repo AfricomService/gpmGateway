@@ -14,6 +14,7 @@ import { VehiculeDeleteDialogComponent } from '../delete/vehicule-delete-dialog.
 @Component({
   selector: 'jhi-vehicule',
   templateUrl: './vehicule.component.html',
+  styleUrls: ['./vehicule.component.scss'],
 })
 export class VehiculeComponent implements OnInit {
   vehicules?: IVehicule[];
@@ -43,6 +44,11 @@ export class VehiculeComponent implements OnInit {
     this.load();
   }
 
+  /** Called by the "Actualiser" button. */
+  refresh(): void {
+    this.load();
+  }
+
   delete(vehicule: IVehicule): void {
     const modalRef = this.modalService.open(VehiculeDeleteDialogComponent, { size: 'lg', backdrop: 'static' });
     modalRef.componentInstance.vehicule = vehicule;
@@ -57,6 +63,11 @@ export class VehiculeComponent implements OnInit {
           this.onResponseSuccess(res);
         },
       });
+  }
+
+  /** Called on double-click on a card or a row: navigate straight to the edit screen. */
+  goToEdit(vehicule: IVehicule): void {
+    this.router.navigate(['/vehicule', vehicule.id, 'edit']);
   }
 
   load(): void {
