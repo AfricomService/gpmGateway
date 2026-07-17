@@ -61,6 +61,7 @@ import {
   faFileInvoice,
   faReceipt,
   faRuler,
+  faSortNumericUp,
   // jhipster-needle-add-icon-import
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -127,5 +128,6 @@ export const fontAwesomeIcons = [
   faFileInvoice,
   faReceipt,
   faRuler,
+  faSortNumericUp,
   // jhipster-needle-add-icon-import
 ];

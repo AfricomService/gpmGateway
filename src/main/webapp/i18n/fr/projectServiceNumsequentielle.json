@@ -1,0 +1,31 @@
+{
+  "gpmGatewayApp": {
+    "projectServiceNumsequentielle": {
+      "home": {
+        "title": "Numsequentielles",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Numsequentielle",
+        "createOrEditLabel": "Créer ou éditer un Numsequentielle",
+        "notFound": "Aucun Numsequentielle trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Numsequentielle {{ id }} ?"
+      },
+      "detail": {
+        "title": "Numsequentielle"
+      },
+      "id": "ID",
+      "prefix": "Prefix",
+      "nextNumber": "Next Number",
+      "format": "Format",
+      "codeNumSeq": "Code Num Seq"
+    }
+  },
+  "projectServiceApp": {
+    "projectServiceNumsequentielle": {
+      "created": "Un nouveau Numsequentielle a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Numsequentielle avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Numsequentielle avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

@@ -41,6 +41,7 @@
         "operationsServiceWoSite": "Wo Site",
         "operationsServiceWoUtilisateur": "Wo Utilisateur",
         "projectServiceZone": "Zone",
+        "projectServiceNumsequentielle": "Numsequentielle",
         "jhipster-needle-menu-add-entry": "JHipster will add additional entities here (do not translate!)"
       },
       "account": {
