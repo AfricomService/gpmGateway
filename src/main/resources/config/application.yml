@@ -189,7 +189,7 @@ spring:
         registration:
           oidc:
             client-id: gpm_app
-            client-secret: V30PnVzVOvilnETsAQp4lh1nvViCLPJs
+            client-secret: O59yB3ltLQ4vbAT2QLh9rEWnLP3mz1tD
             scope: openid, profile, email, offline_access # last one for refresh tokens
 
 server:
