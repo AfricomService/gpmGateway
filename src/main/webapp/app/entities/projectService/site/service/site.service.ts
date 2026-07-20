@@ -67,6 +67,21 @@ export class SiteService {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }
 
+  findByClientId(clientId: number, req?: any): Observable<EntityArrayResponseType> {
+    const options = createRequestOption(req);
+    return this.http
+      .get<RestSite[]>(`${this.resourceUrl}/client/${clientId}`, { params: options, observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
+  searchByClientId(clientId: number, designation: string, req?: any): Observable<EntityArrayResponseType> {
+    const options = createRequestOption(req);
+    const params = { ...options, designation };
+    return this.http
+      .get<RestSite[]>(`${this.resourceUrl}/client/${clientId}/search`, { params, observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
   getSiteIdentifier(site: Pick<ISite, 'id'>): number {
     return site.id;
   }

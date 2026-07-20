@@ -163,13 +163,21 @@
             </button>
 
             <div class="cu-accordion-body" *ngIf="isSectionOpen('sites')">
+              <input
+                type="text"
+                class="form-control mb-3"
+                placeholder="Rechercher par désignation..."
+                [(ngModel)]="siteSearchTerm"
+                [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="searchSites()"
+              />
               <div *ngIf="selectedSites.length > 0; else noSites" class="cu-item-list">
                 <div class="cu-item-card" *ngFor="let site of selectedSites">
                   <div class="cu-item-info">
                     <div class="cu-item-title">{{ site.code || '-' }}</div>
                     <div class="cu-item-sub">{{ site.designation || 'Désignation non renseignée' }}</div>
                   </div>
-                  <button type="button" class="cu-item-remove" (click)="unlinkSite()">
+                  <button type="button" class="cu-item-remove" (click)="unlinkSite(site)">
                     <fa-icon icon="times"></fa-icon>
                   </button>
                 </div>
@@ -177,6 +185,21 @@
               <ng-template #noSites>
                 <div class="cu-empty">Aucun site associé</div>
               </ng-template>
+
+              <div class="cu-pagination" *ngIf="sitesTotalItems > sitesItemsPerPage">
+                <button type="button" class="btn-cu-cancel" [disabled]="sitesPage === 0" (click)="sitesPreviousPage()">Précédent</button>
+                <span class="cu-pagination-info">
+                  Page {{ sitesPage + 1 }} / {{ sitesTotalItems / sitesItemsPerPage | number: '1.0-0' }}
+                </span>
+                <button
+                  type="button"
+                  class="btn-cu-cancel"
+                  [disabled]="(sitesPage + 1) * sitesItemsPerPage >= sitesTotalItems"
+                  (click)="sitesNextPage()"
+                >
+                  Suivant
+                </button>
+              </div>
             </div>
           </div>
 
@@ -317,6 +340,13 @@
             <input type="text" class="form-control" [(ngModel)]="newSite.designation" [ngModelOptions]="{ standalone: true }" />
           </div>
           <div class="col-md-6">
+            <label class="form-label fw-bold">Ville</label>
+            <select class="form-control" [(ngModel)]="newSite.ville" [ngModelOptions]="{ standalone: true }">
+              <option [ngValue]="null">-- Sélectionner une ville --</option>
+              <option *ngFor="let ville of allVilles" [ngValue]="{ id: ville.id, nom: ville.nom }">{{ ville.nom }}</option>
+            </select>
+          </div>
+          <div class="col-md-6">
             <label class="form-label fw-bold">GPS X</label>
             <input type="number" class="form-control" [(ngModel)]="newSite.gpsX" [ngModelOptions]="{ standalone: true }" />
           </div>
@@ -328,7 +358,13 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
-        <button class="btn-cu-save" (click)="saveNewSite(modal)">Ajouter</button>
+        <button
+          class="btn-cu-save"
+          [disabled]="!newSite.code?.trim() || !newSite.designation?.trim() || !newSite.ville"
+          (click)="saveNewSite(modal)"
+        >
+          Ajouter
+        </button>
       </div>
     </ng-template>
   </div>

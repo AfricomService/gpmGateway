@@ -11,6 +11,8 @@ import { IContact, NewContact } from 'app/entities/projectService/contact/contac
 import { ContactService } from 'app/entities/projectService/contact/service/contact.service';
 import { ISite, NewSite } from 'app/entities/projectService/site/site.model';
 import { SiteService } from 'app/entities/projectService/site/service/site.service';
+import { IVille } from 'app/entities/projectService/ville/ville.model';
+import { VilleService } from 'app/entities/projectService/ville/service/ville.service';
 import { IAffaire } from 'app/entities/projectService/affaire/affaire.model';
 import { AffaireService } from 'app/entities/projectService/affaire/service/affaire.service';
 import { IFacture } from 'app/entities/financeService/facture/facture.model';
@@ -37,6 +39,11 @@ export class ClientUpdateComponent implements OnInit {
 
   allSites: ISite[] = [];
   selectedSites: ISite[] = [];
+  allVilles: IVille[] = [];
+  siteSearchTerm = '';
+  sitesPage = 0;
+  sitesItemsPerPage = 5;
+  sitesTotalItems = 0;
 
   allAffaires: IAffaire[] = [];
   selectedAffaires: IAffaire[] = [];
@@ -57,6 +64,7 @@ export class ClientUpdateComponent implements OnInit {
     protected clientFormService: ClientFormService,
     protected contactService: ContactService,
     protected siteService: SiteService,
+    protected villeService: VilleService,
     protected affaireService: AffaireService,
     protected factureService: FactureService,
     protected activatedRoute: ActivatedRoute,
@@ -74,18 +82,18 @@ export class ClientUpdateComponent implements OnInit {
   }
 
   loadRelationships(): void {
+    this.villeService.query().subscribe((res: HttpResponse<IVille[]>) => {
+      this.allVilles = res.body ?? [];
+    });
     this.contactService.query().subscribe((res: HttpResponse<IContact[]>) => {
       this.allContacts = res.body ?? [];
       if (this.client?.id) {
         this.selectedContacts = this.allContacts.filter(contact => contact.client?.id === this.client!.id);
       }
     });
-    this.siteService.query().subscribe((res: HttpResponse<ISite[]>) => {
-      this.allSites = res.body ?? [];
-      if (this.client?.id) {
-        this.selectedSites = this.allSites.filter(site => site.client?.id === this.client!.id);
-      }
-    });
+    if (this.client?.id) {
+      this.loadSites();
+    }
     this.affaireService.query().subscribe((res: HttpResponse<IAffaire[]>) => {
       this.allAffaires = res.body ?? [];
       if (this.client?.id) {
@@ -140,35 +148,89 @@ export class ClientUpdateComponent implements OnInit {
   }
 
   openSiteModal(): void {
-    this.newSite = {};
+    this.newSite = { ville: null };
     this.modalService.open(this.siteModal, { size: 'lg', backdrop: 'static', centered: true });
   }
 
   saveNewSite(modal: any): void {
     const clientRef = this.client ? { id: this.client.id, raisonSociale: this.client.raisonSociale } : null;
-    if (!clientRef || !this.newSite.code?.trim() || !this.newSite.designation?.trim()) {
+    if (!clientRef || !this.newSite.code?.trim() || !this.newSite.designation?.trim() || !this.newSite.ville) {
       return;
     }
 
-    const createdSite: ISite = {
-      id: this.generateTempId(),
+    const siteToCreate: NewSite = {
+      id: null,
       code: this.newSite.code.trim(),
       designation: this.newSite.designation.trim(),
       gpsX: this.newSite.gpsX ?? null,
       gpsY: this.newSite.gpsY ?? null,
+      ville: this.newSite.ville,
       client: clientRef,
     };
 
-    this.selectedSites = [...this.selectedSites, createdSite];
-    modal.close();
+    this.siteService.create(siteToCreate).subscribe({
+      next: () => {
+        this.loadSites();
+        modal.close();
+      },
+      error: () => {
+        // Optionnel : notifier l'utilisateur via jhi-alert-error ou toast
+      },
+    });
   }
 
   unlinkContact(): void {
     // Placeholder: unlink flow will be implemented later.
   }
 
-  unlinkSite(): void {
-    // Placeholder: unlink flow will be implemented later.
+  unlinkSite(site: ISite): void {
+    if (!site.id) {
+      return;
+    }
+    this.siteService.delete(site.id).subscribe({
+      next: () => {
+        this.loadSites();
+      },
+      error: () => {
+        // Optionnel : notifier l'utilisateur via jhi-alert-error ou toast
+      },
+    });
+  }
+
+  loadSites(): void {
+    if (!this.client?.id) {
+      return;
+    }
+    const req = { page: this.sitesPage, size: this.sitesItemsPerPage };
+    const term = this.siteSearchTerm.trim();
+
+    const request$ = term
+      ? this.siteService.searchByClientId(this.client.id, term, req)
+      : this.siteService.findByClientId(this.client.id, req);
+
+    request$.subscribe((res: HttpResponse<ISite[]>) => {
+      this.selectedSites = res.body ?? [];
+      this.sitesTotalItems = Number(res.headers.get('X-Total-Count')) || 0;
+    });
+  }
+
+  searchSites(): void {
+    this.sitesPage = 0;
+    this.loadSites();
+  }
+
+  sitesPreviousPage(): void {
+    if (this.sitesPage > 0) {
+      this.sitesPage--;
+      this.loadSites();
+    }
+  }
+
+  sitesNextPage(): void {
+    if ((this.sitesPage + 1) * this.sitesItemsPerPage < this.sitesTotalItems) {
+      this.sitesPage++;
+      this.loadSites();
+    }
   }
 
   unlinkAffaire(): void {

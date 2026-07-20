@@ -342,6 +342,19 @@
   text-transform: uppercase;
 }
 
+.cu-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+
+  .cu-pagination-info {
+    font-size: 0.8rem;
+    color: var(--cp-text-muted);
+  }
+}
+
 /* ============ RESPONSIVE ============ */
 @media (max-width: 900px) {
   .cu-accordion-grid {
