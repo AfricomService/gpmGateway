@@ -41,6 +41,13 @@ export class ClientService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
+  identifierEtEnregistrer(client: NewClient): Observable<EntityResponseType> {
+    const copy = this.convertDateFromClient(client);
+    return this.http
+      .post<RestClient>(`${this.resourceUrl}/identifier-et-enregistrer`, copy, { observe: 'response' })
+      .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+
   update(client: IClient): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(client);
     return this.http

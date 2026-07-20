@@ -47,6 +47,13 @@ export class NumsequentielleService {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }
 
+  generateIdentifiantClient(): Observable<HttpResponse<string>> {
+    return this.http.post<string>(`${this.resourceUrl}/generate-identifiant-client`, null, {
+      observe: 'response',
+      responseType: 'text' as 'json',
+    });
+  }
+
   getNumsequentielleIdentifier(numsequentielle: Pick<INumsequentielle, 'id'>): number {
     return numsequentielle.id;
   }

@@ -62,6 +62,12 @@ import {
   faReceipt,
   faRuler,
   faSortNumericUp,
+  faIdCard,
+  faAddressBook,
+  faMapMarkerAlt,
+  faBriefcase,
+  faChevronDown,
+  faWandMagicSparkles,
   // jhipster-needle-add-icon-import
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -129,5 +135,11 @@ export const fontAwesomeIcons = [
   faReceipt,
   faRuler,
   faSortNumericUp,
+  faIdCard,
+  faAddressBook,
+  faMapMarkerAlt,
+  faBriefcase,
+  faChevronDown,
+  faWandMagicSparkles,
   // jhipster-needle-add-icon-import
 ];

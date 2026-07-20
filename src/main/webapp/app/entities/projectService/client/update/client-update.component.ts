@@ -18,9 +18,12 @@ import { FactureService } from 'app/entities/financeService/facture/service/fact
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { TemplateRef, ViewChild } from '@angular/core';
 
+type AccordionSection = 'general' | 'contacts' | 'sites' | 'affaires' | 'factures';
+
 @Component({
   selector: 'jhi-client-update',
   templateUrl: './client-update.component.html',
+  styleUrls: ['./client-update.component.scss'],
 })
 export class ClientUpdateComponent implements OnInit {
   @ViewChild('contactModal') contactModal!: TemplateRef<unknown>;
@@ -45,6 +48,9 @@ export class ClientUpdateComponent implements OnInit {
   newSite: Partial<NewSite> = {};
 
   editForm: ClientFormGroup = this.clientFormService.createClientFormGroup();
+
+  // === Gestion de l'accordéon ===
+  openSections: Set<AccordionSection> = new Set(['general']);
 
   constructor(
     protected clientService: ClientService,
@@ -92,6 +98,19 @@ export class ClientUpdateComponent implements OnInit {
         this.selectedFactures = this.allFactures.filter(facture => facture.clientId === this.client!.id);
       }
     });
+  }
+
+  // === Accordéon ===
+  toggleSection(section: AccordionSection): void {
+    if (this.openSections.has(section)) {
+      this.openSections.delete(section);
+    } else {
+      this.openSections.add(section);
+    }
+  }
+
+  isSectionOpen(section: AccordionSection): boolean {
+    return this.openSections.has(section);
   }
 
   openContactModal(): void {
@@ -170,7 +189,7 @@ export class ClientUpdateComponent implements OnInit {
     if (client.id !== null) {
       this.subscribeToSaveResponse(this.clientService.update(client));
     } else {
-      this.subscribeToSaveResponse(this.clientService.create(client));
+      this.subscribeToSaveResponse(this.clientService.identifierEtEnregistrer(client));
     }
   }
 

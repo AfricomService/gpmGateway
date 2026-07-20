@@ -44,6 +44,7 @@ type ClientFormGroupContent = {
   createdByUserLogin: FormControl<ClientFormRawValue['createdByUserLogin']>;
   updatedBy: FormControl<ClientFormRawValue['updatedBy']>;
   updatedByUserLogin: FormControl<ClientFormRawValue['updatedByUserLogin']>;
+  status: FormControl<ClientFormRawValue['status']>;
 };
 
 export type ClientFormGroup = FormGroup<ClientFormGroupContent>;
@@ -66,9 +67,7 @@ export class ClientFormService {
       raisonSociale: new FormControl(clientRawValue.raisonSociale, {
         validators: [Validators.required],
       }),
-      identifiantUnique: new FormControl(clientRawValue.identifiantUnique, {
-        validators: [Validators.required],
-      }),
+      identifiantUnique: new FormControl(clientRawValue.identifiantUnique),
       adresse: new FormControl(clientRawValue.adresse, {
         validators: [Validators.required],
       }),
@@ -81,6 +80,7 @@ export class ClientFormService {
       createdByUserLogin: new FormControl(clientRawValue.createdByUserLogin),
       updatedBy: new FormControl(clientRawValue.updatedBy),
       updatedByUserLogin: new FormControl(clientRawValue.updatedByUserLogin),
+      status: new FormControl(clientRawValue.status),
     });
   }
 
