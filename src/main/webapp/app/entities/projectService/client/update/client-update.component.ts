@@ -36,6 +36,7 @@ export class ClientUpdateComponent implements OnInit {
 
   allContacts: IContact[] = [];
   selectedContacts: IContact[] = [];
+  contactSearchTerm = '';
 
   allSites: ISite[] = [];
   selectedSites: ISite[] = [];
@@ -45,11 +46,11 @@ export class ClientUpdateComponent implements OnInit {
   sitesItemsPerPage = 5;
   sitesTotalItems = 0;
 
-  allAffaires: IAffaire[] = [];
   selectedAffaires: IAffaire[] = [];
+  affaireSearchTerm = '';
 
-  allFactures: IFacture[] = [];
   selectedFactures: IFacture[] = [];
+  factureSearchTerm = '';
 
   newContact: Partial<NewContact> = {};
   newSite: Partial<NewSite> = {};
@@ -85,27 +86,12 @@ export class ClientUpdateComponent implements OnInit {
     this.villeService.query().subscribe((res: HttpResponse<IVille[]>) => {
       this.allVilles = res.body ?? [];
     });
-    this.contactService.query().subscribe((res: HttpResponse<IContact[]>) => {
-      this.allContacts = res.body ?? [];
-      if (this.client?.id) {
-        this.selectedContacts = this.allContacts.filter(contact => contact.client?.id === this.client!.id);
-      }
-    });
     if (this.client?.id) {
+      this.loadContacts();
       this.loadSites();
+      this.loadAffaires();
+      this.loadFactures();
     }
-    this.affaireService.query().subscribe((res: HttpResponse<IAffaire[]>) => {
-      this.allAffaires = res.body ?? [];
-      if (this.client?.id) {
-        this.selectedAffaires = this.allAffaires.filter(affaire => affaire.client?.id === this.client!.id);
-      }
-    });
-    this.factureService.query().subscribe((res: HttpResponse<IFacture[]>) => {
-      this.allFactures = res.body ?? [];
-      if (this.client?.id) {
-        this.selectedFactures = this.allFactures.filter(facture => facture.clientId === this.client!.id);
-      }
-    });
   }
 
   // === Accordéon ===
@@ -132,8 +118,8 @@ export class ClientUpdateComponent implements OnInit {
       return;
     }
 
-    const createdContact: IContact = {
-      id: this.generateTempId(),
+    const contactToCreate: NewContact = {
+      id: null,
       raisonSociale: this.newContact.raisonSociale.trim(),
       identifiantUnique: this.newContact.identifiantUnique ?? null,
       adresse: this.newContact.adresse ?? null,
@@ -143,8 +129,63 @@ export class ClientUpdateComponent implements OnInit {
       client: clientRef,
     };
 
-    this.selectedContacts = [...this.selectedContacts, createdContact];
-    modal.close();
+    this.contactService.create(contactToCreate).subscribe({
+      next: () => {
+        this.loadContacts();
+        modal.close();
+      },
+      error: () => {
+        // Optionnel : notifier l'utilisateur via jhi-alert-error ou toast
+      },
+    });
+  }
+
+  loadContacts(): void {
+    if (!this.client?.id) {
+      return;
+    }
+    const term = this.contactSearchTerm.trim();
+    const request$ = term ? this.contactService.searchByClientId(this.client.id, term) : this.contactService.findByClientId(this.client.id);
+
+    request$.subscribe((res: HttpResponse<IContact[]>) => {
+      this.selectedContacts = res.body ?? [];
+    });
+  }
+
+  searchContacts(): void {
+    this.loadContacts();
+  }
+
+  loadAffaires(): void {
+    if (!this.client?.id) {
+      return;
+    }
+    const term = this.affaireSearchTerm.trim();
+    const request$ = term ? this.affaireService.searchByClientId(this.client.id, term) : this.affaireService.findByClientId(this.client.id);
+
+    request$.subscribe((res: HttpResponse<IAffaire[]>) => {
+      this.selectedAffaires = res.body ?? [];
+    });
+  }
+
+  searchAffaires(): void {
+    this.loadAffaires();
+  }
+
+  loadFactures(): void {
+    if (!this.client?.id) {
+      return;
+    }
+    const term = this.factureSearchTerm.trim();
+    const request$ = term ? this.factureService.searchByClientId(this.client.id, term) : this.factureService.findByClientId(this.client.id);
+
+    request$.subscribe((res: HttpResponse<IFacture[]>) => {
+      this.selectedFactures = res.body ?? [];
+    });
+  }
+
+  searchFactures(): void {
+    this.loadFactures();
   }
 
   openSiteModal(): void {
@@ -179,8 +220,18 @@ export class ClientUpdateComponent implements OnInit {
     });
   }
 
-  unlinkContact(): void {
-    // Placeholder: unlink flow will be implemented later.
+  unlinkContact(contact: IContact): void {
+    if (!contact.id) {
+      return;
+    }
+    this.contactService.delete(contact.id).subscribe({
+      next: () => {
+        this.loadContacts();
+      },
+      error: () => {
+        // Optionnel : notifier l'utilisateur via jhi-alert-error ou toast
+      },
+    });
   }
 
   unlinkSite(site: ISite): void {

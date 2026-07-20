@@ -69,6 +69,19 @@ export class ContactService {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }
 
+  findByClientId(clientId: number): Observable<EntityArrayResponseType> {
+    return this.http
+      .get<RestContact[]>(`${this.resourceUrl}/client/${clientId}`, { observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
+  searchByClientId(clientId: number, raisonSociale: string): Observable<EntityArrayResponseType> {
+    const params = { raisonSociale };
+    return this.http
+      .get<RestContact[]>(`${this.resourceUrl}/client/${clientId}/search`, { params, observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
   getContactIdentifier(contact: Pick<IContact, 'id'>): number {
     return contact.id;
   }

@@ -39,9 +39,10 @@
           <div class="cu-accordion-body" *ngIf="isSectionOpen('general')">
             <div class="row">
               <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceClient.raisonSociale" for="field_raisonSociale"
-                  >Raison Sociale</label
-                >
+                <label class="form-label fw-bold" for="field_raisonSociale">
+                  <span jhiTranslate="gpmGatewayApp.projectServiceClient.raisonSociale">Raison Sociale</span>
+                  <span class="text-danger">*</span>
+                </label>
                 <input
                   type="text"
                   class="form-control"
@@ -67,9 +68,10 @@
               </div>
 
               <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceClient.adresse" for="field_adresse"
-                  >Adresse</label
-                >
+                <label class="form-label fw-bold" for="field_adresse">
+                  <span jhiTranslate="gpmGatewayApp.projectServiceClient.adresse">Adresse</span>
+                  <span class="text-danger">*</span>
+                </label>
                 <input type="text" class="form-control" name="adresse" id="field_adresse" data-cy="adresse" formControlName="adresse" />
                 <div *ngIf="editForm.get('adresse')!.invalid && (editForm.get('adresse')!.dirty || editForm.get('adresse')!.touched)">
                   <small
@@ -109,8 +111,8 @@
           </div>
         </div>
 
-        <!-- Sections liées : 2 par ligne -->
-        <div class="cu-accordion-grid">
+        <!-- Sections liées : 2 par ligne (uniquement en édition, pas en création) -->
+        <div class="cu-accordion-grid" *ngIf="client?.id">
           <!-- Contacts liés -->
           <div class="cu-accordion-item" [class.open]="isSectionOpen('contacts')">
             <button type="button" class="cu-accordion-header" (click)="toggleSection('contacts')">
@@ -128,6 +130,14 @@
             </button>
 
             <div class="cu-accordion-body" *ngIf="isSectionOpen('contacts')">
+              <input
+                type="text"
+                class="form-control mb-3"
+                placeholder="Rechercher par raison sociale..."
+                [(ngModel)]="contactSearchTerm"
+                [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="searchContacts()"
+              />
               <div *ngIf="selectedContacts.length > 0; else noContacts" class="cu-item-list">
                 <div class="cu-item-card" *ngFor="let contact of selectedContacts">
                   <div class="cu-item-info">
@@ -135,7 +145,7 @@
                     <div class="cu-item-sub">{{ contact.email || 'Email non renseigné' }}</div>
                     <div class="cu-item-sub">{{ contact.telephone || 'Téléphone non renseigné' }}</div>
                   </div>
-                  <button type="button" class="cu-item-remove" (click)="unlinkContact()">
+                  <button type="button" class="cu-item-remove" (click)="unlinkContact(contact)">
                     <fa-icon icon="times"></fa-icon>
                   </button>
                 </div>
@@ -226,6 +236,14 @@
             </button>
 
             <div class="cu-accordion-body" *ngIf="isSectionOpen('affaires')">
+              <input
+                type="text"
+                class="form-control mb-3"
+                placeholder="Rechercher par désignation..."
+                [(ngModel)]="affaireSearchTerm"
+                [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="searchAffaires()"
+              />
               <div *ngIf="selectedAffaires.length > 0; else noAffaires" class="cu-item-list">
                 <div class="cu-item-card" *ngFor="let affaire of selectedAffaires">
                   <div class="cu-item-info">
@@ -266,6 +284,14 @@
             </button>
 
             <div class="cu-accordion-body" *ngIf="isSectionOpen('factures')">
+              <input
+                type="text"
+                class="form-control mb-3"
+                placeholder="Rechercher par numéro de facture..."
+                [(ngModel)]="factureSearchTerm"
+                [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="searchFactures()"
+              />
               <div *ngIf="selectedFactures.length > 0; else noFactures" class="cu-item-list">
                 <div class="cu-item-card" *ngFor="let facture of selectedFactures">
                   <div class="cu-item-info">
