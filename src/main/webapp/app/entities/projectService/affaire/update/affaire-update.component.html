@@ -1,23 +1,24 @@
 <div class="row justify-content-center">
-  <div class="col-md-12 col-lg-10">
+  <div class="col-md-12 col-lg-10" style="padding-top: 2em">
     <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-      <h2
+      <h5
         *ngIf="editForm.controls.id.value === null"
         style="padding-top: 2em; text-transform: uppercase; font-style: italic"
         id="jhi-client-heading"
         class="mb-4"
       >
-        CREATION D'UN PROJET
-      </h2>
+        EDITION D'UN PROJET
+      </h5>
 
-      <h2
+      <h4
         *ngIf="editForm.controls.id.value !== null"
         style="padding-top: 2em; text-transform: uppercase; font-style: italic"
         id="jhi-client-heading"
         class="mb-4"
       >
-        EDITION D'UN PROJET
-      </h2>
+        <span>PROJET {{ affaire?.designationAffaire }}</span>
+        <span style="padding-top: 0.5em" class="d-block">{{ primarySociete?.raisonSociale }}</span>
+      </h4>
       <jhi-alert-error></jhi-alert-error>
 
       <div class="row">
@@ -30,20 +31,6 @@
             <div class="card-body">
               <div class="row">
                 <div class="col-md-12 mb-3">
-                  <label
-                    class="form-label font-weight-bold"
-                    jhiTranslate="gpmGatewayApp.projectServiceAffaire.numAffaire"
-                    for="field_numAffaire"
-                    >Num Affaire</label
-                  >
-                  <input
-                    type="number"
-                    class="form-control"
-                    name="numAffaire"
-                    id="field_numAffaire"
-                    data-cy="numAffaire"
-                    formControlName="numAffaire"
-                  />
                   <div
                     *ngIf="
                       editForm.get('numAffaire')!.invalid && (editForm.get('numAffaire')!.dirty || editForm.get('numAffaire')!.touched)
@@ -117,99 +104,49 @@
                     </small>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <!-- Section: Détails Commerciaux -->
-        <div class="col-lg-6 mb-4">
-          <div class="card shadow-sm h-100">
-            <div class="card-header bg-light">
-              <h5 class="mb-0">Détails Commerciaux</h5>
-            </div>
-            <div class="card-body">
-              <div class="row">
                 <div class="col-md-12 mb-3">
-                  <label
-                    class="form-label font-weight-bold"
-                    jhiTranslate="gpmGatewayApp.projectServiceAffaire.bonDeCommande"
-                    for="field_bonDeCommande"
-                    >Bon De Commande</label
+                  <label class="form-label font-weight-bold" jhiTranslate="gpmGatewayApp.projectServiceAffaire.client" for="field_client"
+                    >Client</label
                   >
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="bonDeCommande"
-                    id="field_bonDeCommande"
-                    data-cy="bonDeCommande"
-                    formControlName="bonDeCommande"
-                  />
-                </div>
-
-                <div class="col-md-6 mb-3">
-                  <label class="form-label font-weight-bold" jhiTranslate="gpmGatewayApp.projectServiceAffaire.montant" for="field_montant"
-                    >Montant</label
+                  <ng-select
+                    id="field_client"
+                    data-cy="client"
+                    name="client"
+                    formControlName="client"
+                    [items]="clientsSharedCollection"
+                    bindLabel="raisonSociale"
+                    [searchable]="true"
+                    [compareWith]="compareClient"
+                    class="custom-ng-select"
+                    placeholder="Rechercher un client..."
                   >
-                  <input type="number" class="form-control" name="montant" id="field_montant" data-cy="montant" formControlName="montant" />
-                </div>
-
-                <div class="col-md-6 mb-3">
-                  <label class="form-label font-weight-bold" jhiTranslate="gpmGatewayApp.projectServiceAffaire.devise" for="field_devise"
-                    >Devise</label
-                  >
-                  <input type="text" class="form-control" name="devise" id="field_devise" data-cy="devise" formControlName="devise" />
+                  </ng-select>
+                  <div *ngIf="editForm.get(['client'])!.invalid && (editForm.get(['client'])!.dirty || editForm.get(['client'])!.touched)">
+                    <small
+                      class="form-text text-danger"
+                      *ngIf="editForm.get(['client'])?.errors?.required"
+                      jhiTranslate="entity.validation.required"
+                    >
+                      Ce champ est obligatoire.
+                    </small>
+                  </div>
                 </div>
 
                 <div class="col-md-12 mb-3">
-                  <label
-                    class="form-label font-weight-bold"
-                    jhiTranslate="gpmGatewayApp.projectServiceAffaire.montantVente"
-                    for="field_montantVente"
-                    >Montant Vente</label
+                  <label class="form-label font-weight-bold" for="field_responsable">Responsable Projet</label>
+                  <ng-select
+                    id="field_responsable"
+                    name="responsable"
+                    [items]="usersSharedCollection"
+                    bindLabel="login"
+                    [searchable]="true"
+                    [(ngModel)]="selectedResponsable"
+                    [ngModelOptions]="{ standalone: true }"
+                    class="custom-ng-select"
+                    placeholder="Rechercher un responsable..."
                   >
-                  <input
-                    type="number"
-                    class="form-control"
-                    name="montantVente"
-                    id="field_montantVente"
-                    data-cy="montantVente"
-                    formControlName="montantVente"
-                  />
-                </div>
-
-                <div class="col-md-6 mb-3">
-                  <label
-                    class="form-label font-weight-bold"
-                    jhiTranslate="gpmGatewayApp.projectServiceAffaire.montantBudgetaireMateriel"
-                    for="field_montantBudgetaireMateriel"
-                    >Montant Budgetaire Materiel</label
-                  >
-                  <input
-                    type="number"
-                    class="form-control"
-                    name="montantBudgetaireMateriel"
-                    id="field_montantBudgetaireMateriel"
-                    data-cy="montantBudgetaireMateriel"
-                    formControlName="montantBudgetaireMateriel"
-                  />
-                </div>
-
-                <div class="col-md-6 mb-3">
-                  <label
-                    class="form-label font-weight-bold"
-                    jhiTranslate="gpmGatewayApp.projectServiceAffaire.montantBudgetaireService"
-                    for="field_montantBudgetaireService"
-                    >Montant Budgetaire Service</label
-                  >
-                  <input
-                    type="number"
-                    class="form-control"
-                    name="montantBudgetaireService"
-                    id="field_montantBudgetaireService"
-                    data-cy="montantBudgetaireService"
-                    formControlName="montantBudgetaireService"
-                  />
+                  </ng-select>
                 </div>
               </div>
             </div>
@@ -318,75 +255,6 @@
           </div>
         </div>
 
-        <!-- Split Section: Client & Responsable -->
-        <div class="col-lg-6 mb-4 d-flex flex-column" style="gap: 1.5rem">
-          <!-- Section: Client -->
-          <div class="card shadow-sm bg-white">
-            <div class="card-header bg-light">
-              <h5 class="mb-0">Client</h5>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-12 mb-3">
-                  <label class="form-label font-weight-bold" jhiTranslate="gpmGatewayApp.projectServiceAffaire.client" for="field_client"
-                    >Client</label
-                  >
-                  <ng-select
-                    id="field_client"
-                    data-cy="client"
-                    name="client"
-                    formControlName="client"
-                    [items]="clientsSharedCollection"
-                    bindLabel="raisonSociale"
-                    [searchable]="true"
-                    [compareWith]="compareClient"
-                    class="custom-ng-select"
-                    placeholder="Rechercher un client..."
-                  >
-                  </ng-select>
-                  <div *ngIf="editForm.get(['client'])!.invalid && (editForm.get(['client'])!.dirty || editForm.get(['client'])!.touched)">
-                    <small
-                      class="form-text text-danger"
-                      *ngIf="editForm.get(['client'])?.errors?.required"
-                      jhiTranslate="entity.validation.required"
-                    >
-                      Ce champ est obligatoire.
-                    </small>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Section: Responsable -->
-          <div class="card shadow-sm bg-white flex-grow-1">
-            <div class="card-header bg-light">
-              <h5 class="mb-0">Responsable</h5>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-12 mb-3">
-                  <label class="form-label font-weight-bold" for="field_responsable">Responsable Projet</label>
-                  <!-- The user selection updates a standalone model, which gets merged to the main form upon save -->
-                  <ng-select
-                    id="field_responsable"
-                    name="responsable"
-                    [items]="usersSharedCollection"
-                    bindLabel="login"
-                    [searchable]="true"
-                    [(ngModel)]="selectedResponsable"
-                    [ngModelOptions]="{ standalone: true }"
-                    class="custom-ng-select"
-                    placeholder="Rechercher un responsable..."
-                  >
-                  </ng-select>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section: Articles -->
         <!-- Section: Articles -->
         <div class="col-lg-6 mb-4">
           <div class="card shadow-sm h-100">
@@ -426,46 +294,6 @@
           </div>
         </div>
 
-        <!-- Modal -->
-        <ng-template #articleModal let-modal>
-          <div class="modal-header">
-            <h5 class="modal-title">Sélection des Articles</h5>
-            <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
-          </div>
-
-          <div class="modal-body">
-            <input
-              type="text"
-              class="form-control mb-3"
-              placeholder="Rechercher un article..."
-              [(ngModel)]="articleSearchTerm"
-              [ngModelOptions]="{ standalone: true }"
-            />
-
-            <div style="max-height: 350px; overflow-y: auto">
-              <div *ngFor="let article of filteredArticles" class="form-check mb-3">
-                <input
-                  type="checkbox"
-                  class="form-check-input me-3"
-                  style="width: 1.5rem; height: 1.5rem; cursor: pointer; margin-top: 0"
-                  [id]="'modal_article_' + article.id"
-                  [checked]="isTempArticleSelected(article)"
-                  (change)="toggleTempArticleSelection(article)"
-                />
-                <label class="form-check-label" [for]="'modal_article_' + article.id">
-                  {{ article.code }} - {{ article.designation }}
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
-            <button class="btn btn-primary" (click)="confirmArticleSelection(modal)">Confirmer</button>
-          </div>
-        </ng-template>
-
-        <!-- Section: Matrices -->
         <!-- Section: Matrices de Facturation -->
         <div class="col-lg-6 mb-4">
           <div class="card shadow-sm h-100">
@@ -521,65 +349,69 @@
           </div>
         </div>
 
-        <!-- Matrice Creation Modal -->
-        <ng-template #matriceModal let-modal>
-          <div class="modal-header">
-            <h5 class="modal-title">Nouvelle Matrice de Facturation</h5>
-            <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
-          </div>
-          <div class="modal-body">
-            <div class="row g-3">
-              <div class="col-md-6">
-                <label class="form-label fw-bold">Ville</label>
-                <select class="form-control" [(ngModel)]="newMatrice.ville" [ngModelOptions]="{ standalone: true }">
-                  <option [ngValue]="null">-- Sélectionner --</option>
-                  <option *ngFor="let v of allVilles" [ngValue]="v">{{ v.nom }}</option>
-                </select>
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!-- NEW SECTION: Sociétés Associées -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <div class="col-lg-12 mb-4">
+          <div class="card shadow-sm">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">
+                <fa-icon icon="building" class="me-2"></fa-icon>
+                Sociétés Associées
+              </h5>
+              <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-edit" (click)="openSocieteModal()">Gérer</button>
+                <span class="badge bg-primary">{{ societesAssociees.length }} société(s)</span>
               </div>
-              <div class="col-md-6">
-                <label class="form-label fw-bold">Zone</label>
-                <select class="form-control" [(ngModel)]="newMatrice.zone" [ngModelOptions]="{ standalone: true }">
-                  <option [ngValue]="null">-- Sélectionner --</option>
-                  <option *ngFor="let z of allZones" [ngValue]="z">{{ z.nom }}</option>
-                </select>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-bold">Tarif Base</label>
-                <input type="number" class="form-control" [(ngModel)]="newMatrice.tarifBase" [ngModelOptions]="{ standalone: true }" />
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-bold">Tarif Mission Nuit</label>
-                <input
-                  type="number"
-                  class="form-control"
-                  [(ngModel)]="newMatrice.tarifMissionNuit"
-                  [ngModelOptions]="{ standalone: true }"
-                />
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-bold">Tarif Hébergement</label>
-                <input
-                  type="number"
-                  class="form-control"
-                  [(ngModel)]="newMatrice.tarifHebergement"
-                  [ngModelOptions]="{ standalone: true }"
-                />
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-bold">Tarif Jour Férié</label>
-                <input type="number" class="form-control" [(ngModel)]="newMatrice.tarifJourFerie" [ngModelOptions]="{ standalone: true }" />
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-bold">Tarif Dimanche</label>
-                <input type="number" class="form-control" [(ngModel)]="newMatrice.tarifDimanche" [ngModelOptions]="{ standalone: true }" />
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 align-middle">
+                  <thead class="table-light">
+                    <tr>
+                      <th scope="col" style="width: 25%">Raison Sociale</th>
+                      <th scope="col" style="width: 18%">Matricule Fiscal</th>
+                      <th scope="col" style="width: 22%">Adresse</th>
+                      <th scope="col" style="width: 15%">Téléphone</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let societe of societesAssociees; let i = index">
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <div
+                            class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-2"
+                            style="width: 32px; height: 32px; font-size: 0.75rem; font-weight: 700"
+                          >
+                            {{ societe.raisonSociale!.charAt(0) }}
+                          </div>
+                          <span class="fw-semibold">{{ societe.raisonSociale }}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <code class="text-dark bg-light px-2 py-1 rounded">{{ societe.identifiantUnique }}</code>
+                      </td>
+                      <td class="text-muted small">{{ societe.adresse }}</td>
+                      <td>
+                        <a [href]="'tel:' + societe.telephone" class="text-decoration-none">
+                          <fa-icon icon="phone" class="me-1 text-success" style="font-size: 0.8rem"></fa-icon>
+                          <span class="small">{{ societe.telephone }}</span>
+                        </a>
+                      </td>
+                    </tr>
+                    <tr *ngIf="societesAssociees.length === 0">
+                      <td colspan="6" class="text-center text-muted py-4">
+                        <fa-icon icon="info-circle" class="me-2"></fa-icon>
+                        Aucune société associée à cette affaire
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
-          <div class="modal-footer">
-            <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
-            <button class="btn btn-primary" (click)="saveNewMatrice(modal)">Créer</button>
-          </div>
-        </ng-template>
+        </div>
+        <!-- ═══════════════════════════════════════════════════════════ -->
       </div>
 
       <div class="d-flex justify-content-end mb-4">
@@ -606,3 +438,148 @@
     </form>
   </div>
 </div>
+
+<!-- Modal: Article Selection -->
+<ng-template #articleModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Sélection des Articles</h5>
+    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body">
+    <input
+      type="text"
+      class="form-control mb-3"
+      placeholder="Rechercher un article..."
+      [(ngModel)]="articleSearchTerm"
+      [ngModelOptions]="{ standalone: true }"
+    />
+
+    <div style="max-height: 350px; overflow-y: auto">
+      <div *ngFor="let article of filteredArticles" class="form-check mb-3">
+        <input
+          type="checkbox"
+          class="form-check-input me-3"
+          style="width: 1.5rem; height: 1.5rem; cursor: pointer; margin-top: 0"
+          [id]="'modal_article_' + article.id"
+          [checked]="isTempArticleSelected(article)"
+          (change)="toggleTempArticleSelection(article)"
+        />
+        <label class="form-check-label" [for]="'modal_article_' + article.id"> {{ article.code }} - {{ article.designation }} </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
+    <button class="btn btn-primary" (click)="confirmArticleSelection(modal)">Confirmer</button>
+  </div>
+</ng-template>
+
+<!-- Modal: Matrice Creation -->
+<ng-template #matriceModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Nouvelle Matrice de Facturation</h5>
+    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Ville</label>
+        <select class="form-control" [(ngModel)]="newMatrice.ville" [ngModelOptions]="{ standalone: true }">
+          <option [ngValue]="null">-- Sélectionner --</option>
+          <option *ngFor="let v of allVilles" [ngValue]="v">{{ v.nom }}</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Zone</label>
+        <select class="form-control" [(ngModel)]="newMatrice.zone" [ngModelOptions]="{ standalone: true }">
+          <option [ngValue]="null">-- Sélectionner --</option>
+          <option *ngFor="let z of allZones" [ngValue]="z">{{ z.nom }}</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Tarif Base</label>
+        <input type="number" class="form-control" [(ngModel)]="newMatrice.tarifBase" [ngModelOptions]="{ standalone: true }" />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Tarif Mission Nuit</label>
+        <input type="number" class="form-control" [(ngModel)]="newMatrice.tarifMissionNuit" [ngModelOptions]="{ standalone: true }" />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Tarif Hébergement</label>
+        <input type="number" class="form-control" [(ngModel)]="newMatrice.tarifHebergement" [ngModelOptions]="{ standalone: true }" />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Tarif Jour Férié</label>
+        <input type="number" class="form-control" [(ngModel)]="newMatrice.tarifJourFerie" [ngModelOptions]="{ standalone: true }" />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Tarif Dimanche</label>
+        <input type="number" class="form-control" [(ngModel)]="newMatrice.tarifDimanche" [ngModelOptions]="{ standalone: true }" />
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
+    <button class="btn btn-primary" (click)="saveNewMatrice(modal)">Créer</button>
+  </div>
+</ng-template>
+
+<!-- Modal: Societe Selection -->
+<ng-template #societeModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Sélection des Sociétés Associées</h5>
+    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body">
+    <input
+      type="text"
+      class="form-control mb-3"
+      placeholder="Rechercher une société..."
+      [(ngModel)]="societeSearchTerm"
+      [ngModelOptions]="{ standalone: true }"
+    />
+
+    <div style="max-height: 350px; overflow-y: auto">
+      <div *ngFor="let societe of filteredSocietes" class="form-check mb-3">
+        <input
+          type="checkbox"
+          class="form-check-input me-3"
+          style="width: 1.5rem; height: 1.5rem; cursor: pointer; margin-top: 0"
+          [id]="'modal_societe_' + societe.id"
+          [checked]="isTempSocieteSelected(societe)"
+          (change)="toggleTempSocieteSelection(societe)"
+        />
+        <label class="form-check-label" [for]="'modal_societe_' + societe.id">
+          {{ societe.raisonSociale }}
+        </label>
+      </div>
+
+      <div *ngIf="filteredSocietes.length === 0" class="text-center text-muted py-3">Aucune société trouvée</div>
+    </div>
+
+    <hr />
+
+    <div>
+      <strong>Sociétés sélectionnées :</strong>
+      <div *ngIf="tempSelectedSocietes.length > 0; else noSocieteSelected" class="mt-2 d-flex flex-wrap gap-2">
+        <span class="badge bg-primary" *ngFor="let societe of tempSelectedSocietes">
+          {{ societe.raisonSociale }}
+        </span>
+      </div>
+      <ng-template #noSocieteSelected>
+        <div class="text-muted mt-2">Aucune société sélectionnée</div>
+      </ng-template>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-outline-secondary" (click)="modal.dismiss()" [disabled]="isSavingSocietes">Annuler</button>
+    <button class="btn btn-primary" (click)="confirmSocieteSelection(modal)" [disabled]="isSavingSocietes">
+      <span *ngIf="isSavingSocietes" class="spinner-border spinner-border-sm me-1"></span>
+      Confirmer
+    </button>
+  </div>
+</ng-template>

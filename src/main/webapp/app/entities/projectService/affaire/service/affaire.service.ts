@@ -101,6 +101,16 @@ export class AffaireService {
     return affaireCollection;
   }
 
+  updateSocieteAssociees(req?: any): Observable<HttpResponse<string>> {
+    const options = createRequestOption(req);
+
+    return this.http.get(`${this.resourceUrl}/updateSocieteAssociees`, {
+      params: options,
+      observe: 'response',
+      responseType: 'text',
+    });
+  }
+
   protected convertDateFromClient<T extends IAffaire | NewAffaire | PartialUpdateAffaire>(affaire: T): RestOf<T> {
     return {
       ...affaire,

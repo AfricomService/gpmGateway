@@ -97,6 +97,13 @@ export class SocieteService {
     return societeCollection;
   }
 
+  findAllSocieteByAffaireId(req?: any): Observable<EntityArrayResponseType> {
+    const options = createRequestOption(req);
+    return this.http
+      .get<RestSociete[]>(`${this.resourceUrl}/findAllSocieteByAffaireId`, { params: options, observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
   protected convertDateFromClient<T extends ISociete | NewSociete | PartialUpdateSociete>(societe: T): RestOf<T> {
     return {
       ...societe,
