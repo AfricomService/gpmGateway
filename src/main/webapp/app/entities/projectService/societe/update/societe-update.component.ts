@@ -7,6 +7,7 @@ import { finalize } from 'rxjs/operators';
 import { SocieteFormService, SocieteFormGroup } from './societe-form.service';
 import { ISociete } from '../societe.model';
 import { SocieteService } from '../service/societe.service';
+import { IContactSociete } from '../contact-societe.model';
 
 @Component({
   selector: 'jhi-societe-update',
@@ -15,6 +16,10 @@ import { SocieteService } from '../service/societe.service';
 export class SocieteUpdateComponent implements OnInit {
   isSaving = false;
   societe: ISociete | null = null;
+
+  // ── Contacts Associés ─────────────────────────────────────────
+  contactsAssocies: IContactSociete[] = [];
+  isLoadingContacts = false;
 
   editForm: SocieteFormGroup = this.societeFormService.createSocieteFormGroup();
 
@@ -29,8 +34,29 @@ export class SocieteUpdateComponent implements OnInit {
       this.societe = societe;
       if (societe) {
         this.updateForm(societe);
+        this.loadContactsAssocies();
       }
     });
+  }
+
+  // ── Contacts Associés ─────────────────────────────────────────
+  loadContactsAssocies(): void {
+    if (!this.societe?.id) {
+      return;
+    }
+
+    this.isLoadingContacts = true;
+    this.societeService
+      .queryContacts({ societeId: this.societe.id })
+      .pipe(finalize(() => (this.isLoadingContacts = false)))
+      .subscribe({
+        next: (res: HttpResponse<IContactSociete[]>) => {
+          this.contactsAssocies = res.body ?? [];
+        },
+        error: () => {
+          this.contactsAssocies = [];
+        },
+      });
   }
 
   previousState(): void {

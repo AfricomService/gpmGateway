@@ -28,6 +28,7 @@ export type EntityArrayResponseType = HttpResponse<ISociete[]>;
 @Injectable({ providedIn: 'root' })
 export class SocieteService {
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/societes', 'projectservice');
+  protected resourceUrlContactSoc = this.applicationConfigService.getEndpointFor('api/contact-societes', 'projectservice');
 
   constructor(protected http: HttpClient, protected applicationConfigService: ApplicationConfigService) {}
 
@@ -62,6 +63,13 @@ export class SocieteService {
     const options = createRequestOption(req);
     return this.http
       .get<RestSociete[]>(this.resourceUrl, { params: options, observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
+  queryContacts(req?: any): Observable<EntityArrayResponseType> {
+    const options = createRequestOption(req);
+    return this.http
+      .get<RestSociete[]>(`${this.resourceUrlContactSoc}/by-spciete-id`, { params: options, observe: 'response' })
       .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 
