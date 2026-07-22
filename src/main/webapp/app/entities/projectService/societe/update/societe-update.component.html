@@ -250,7 +250,13 @@
                 <fa-icon icon="address-book" class="me-2"></fa-icon>
                 Contact Associés
               </h5>
-              <span class="badge bg-primary">{{ contactsAssocies.length }} contact(s)</span>
+              <div class="d-flex align-items-center">
+                <span class="badge bg-primary me-3">{{ contactsAssocies.length }} contact(s)</span>
+                <button type="button" class="btn btn-sm btn-outline-primary" (click)="openOrgaModal()">
+                  <fa-icon icon="cloud-download-alt" class="me-1"></fa-icon>
+                  Importer de OrgaCare
+                </button>
+              </div>
             </div>
             <div class="card-body p-0">
               <div class="table-responsive">
@@ -332,3 +338,190 @@
     </form>
   </div>
 </div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- Modal: Importer de OrgaCare -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="modal fade" [class.show]="showOrgaModal" [style.display]="showOrgaModal ? 'block' : 'none'" tabindex="-1" *ngIf="showOrgaModal">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 95vw; width: 1400px">
+    <div class="modal-content">
+      <div class="modal-header py-3 px-4">
+        <h5 class="modal-title">
+          <fa-icon icon="cloud-download-alt" class="me-2"></fa-icon>
+          Importer depuis OrgaCare
+        </h5>
+        <button type="button" class="btn-close" (click)="closeOrgaModal()"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <div class="row g-4" style="min-height: 500px">
+          <!-- Left: Sociétés list -->
+          <div class="col-md-5">
+            <div class="card h-100">
+              <div class="card-header bg-light">
+                <div class="fw-semibold text-uppercase small text-muted mb-2">Sociétés OrgaCare</div>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-white">
+                    <fa-icon icon="search"></fa-icon>
+                  </span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Rechercher une société..."
+                    [value]="societeSearchTerm"
+                    (input)="onSocieteSearchChange($any($event.target).value)"
+                  />
+                </div>
+              </div>
+              <div class="card-body p-0" style="max-height: 500px; overflow-y: auto">
+                <table class="table table-hover mb-0">
+                  <tbody>
+                    <tr
+                      *ngFor="let orgaSociete of filteredOrgaSocietes"
+                      (click)="selectOrgaSociete(orgaSociete)"
+                      [class.table-active]="selectedOrgaSociete?.id === orgaSociete.id"
+                      style="cursor: pointer"
+                    >
+                      <td class="py-3 px-3">
+                        <fa-icon icon="building" class="me-2 text-muted"></fa-icon>
+                        {{ orgaSociete.raisonSociale }}
+                      </td>
+                    </tr>
+                    <tr *ngIf="!isLoadingOrgaSocietes && filteredOrgaSocietes.length === 0">
+                      <td class="text-center text-muted py-4">
+                        <fa-icon icon="info-circle" class="me-2"></fa-icon>
+                        Aucune société trouvée
+                      </td>
+                    </tr>
+                    <tr *ngIf="isLoadingOrgaSocietes">
+                      <td class="text-center text-muted py-4">
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        Chargement...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Personnes list -->
+          <div class="col-md-7">
+            <div class="card h-100">
+              <div class="card-header bg-light">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div class="fw-semibold text-uppercase small text-muted">
+                    Personnes
+                    <span *ngIf="selectedOrgaSociete" class="text-primary"> — {{ selectedOrgaSociete.raisonSociale }}</span>
+                  </div>
+                  <span class="badge bg-secondary" *ngIf="selectedOrgaSociete">{{ orgaPersonnes.length }}</span>
+                </div>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-white">
+                    <fa-icon icon="search"></fa-icon>
+                  </span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Rechercher une personne..."
+                    [value]="personneSearchTerm"
+                    [disabled]="!selectedOrgaSociete"
+                    (input)="onPersonneSearchChange($any($event.target).value)"
+                  />
+                </div>
+              </div>
+              <div class="card-body p-0" style="max-height: 500px; overflow-y: auto">
+                <table class="table table-hover mb-0" *ngIf="selectedOrgaSociete">
+                  <thead class="table-light">
+                    <tr>
+                      <th style="width: 40px"></th>
+                      <th>Nom</th>
+                      <th>Email</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      *ngFor="let personne of filteredOrgaPersonnes"
+                      style="cursor: pointer"
+                      (click)="togglePersonneSelection(personne)"
+                      [class.table-active]="isPersonneSelected(personne)"
+                    >
+                      <td class="text-center">
+                        <input
+                          type="checkbox"
+                          class="form-check-input"
+                          [checked]="isPersonneSelected(personne)"
+                          (click)="$event.stopPropagation(); togglePersonneSelection(personne)"
+                        />
+                      </td>
+                      <td class="fw-semibold">{{ personne.nomPrenom }}</td>
+                      <td class="small">{{ personne.email }}</td>
+                    </tr>
+                    <tr *ngIf="!isLoadingOrgaPersonnes && filteredOrgaPersonnes.length === 0">
+                      <td colspan="5" class="text-center text-muted py-4">
+                        <fa-icon icon="info-circle" class="me-2"></fa-icon>
+                        Aucune personne trouvée
+                      </td>
+                    </tr>
+                    <tr *ngIf="isLoadingOrgaPersonnes">
+                      <td colspan="5" class="text-center text-muted py-4">
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        Chargement...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div *ngIf="!selectedOrgaSociete" class="text-center text-muted py-5">
+                  <fa-icon icon="arrow-left" class="me-2"></fa-icon>
+                  Sélectionnez une société pour afficher ses personnes
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom: Personnes sélectionnées -->
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <div class="fw-semibold text-uppercase small text-muted">
+                  <fa-icon icon="check-circle" class="me-2 text-success"></fa-icon>
+                  Personnes sélectionnées
+                </div>
+                <span class="badge bg-success">{{ selectedPersonnes.length }}</span>
+              </div>
+              <div class="card-body" style="max-height: 200px; overflow-y: auto">
+                <div *ngIf="selectedPersonnes.length === 0" class="text-center text-muted py-2">Aucune personne sélectionnée</div>
+                <div class="d-flex flex-wrap gap-2" *ngIf="selectedPersonnes.length > 0">
+                  <span
+                    class="badge bg-light text-dark border d-flex align-items-center py-2 px-3"
+                    style="font-size: 0.85rem"
+                    *ngFor="let personne of selectedPersonnes"
+                  >
+                    <fa-icon icon="user" class="me-2 text-primary"></fa-icon>
+                    {{ personne.nomPrenom }}
+                    <button
+                      type="button"
+                      class="btn-close btn-close-sm ms-2"
+                      style="font-size: 0.6rem"
+                      (click)="removeSelectedPersonne(personne)"
+                    ></button>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer py-3 px-4">
+        <button type="button" class="btn btn-outline-secondary" (click)="closeOrgaModal()">Fermer</button>
+        <button type="button" class="btn btn-primary" [disabled]="selectedPersonnes.length === 0" (click)="confirmImportPersonnes()">
+          <fa-icon icon="download" class="me-1"></fa-icon>
+          Importer ({{ selectedPersonnes.length }})
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade show" *ngIf="showOrgaModal"></div>
