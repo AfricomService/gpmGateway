@@ -10,14 +10,51 @@
   --cp-danger: #e0524d;
   --cp-danger-soft: rgba(224, 82, 77, 0.12);
 
+  position: relative;
   display: flex;
   justify-content: center;
+  align-items: flex-start;
+  gap: 16px;
   padding: 96px 1.5rem 2rem;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
   color: var(--cp-text);
 }
 
+.btn-cu-back-floating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  margin-top: 2px;
+  border-radius: 50%;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface);
+  color: var(--cp-text-muted);
+  font-size: 0.95rem;
+  box-shadow: 0 4px 14px -8px rgba(26, 34, 51, 0.25);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  z-index: 10;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &:hover {
+    background: var(--cp-surface-hover);
+    color: var(--cp-accent);
+    border-color: var(--cp-accent);
+    transform: translateX(-2px);
+  }
+}
+
+@media (max-width: 1300px) {
+  .btn-cu-back-floating {
+    display: none;
+  }
+}
+
 .cu-container {
+  position: relative;
   width: 100%;
   max-width: 1100px;
 }
@@ -374,5 +411,36 @@
 
   .cu-toolbar-left {
     justify-content: space-between;
+  }
+}
+
+/* Bouton d'enregistrement texte, utilisé dans les modals NgbModal (Contact, Site, Agence...) */
+/* Non scopé car NgbModal rend son contenu hors de l'arbre DOM du composant (ngb-modal-window) */
+.btn-cu-save-modal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  border: none;
+  background: #f5822a;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
+  transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+
+  &:hover:not(:disabled) {
+    background: #ff9a4d;
+    box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.7);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: default;
+    box-shadow: none;
+    transform: none;
   }
 }

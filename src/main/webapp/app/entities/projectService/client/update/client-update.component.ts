@@ -20,7 +20,12 @@ import { FactureService } from 'app/entities/financeService/facture/service/fact
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { TemplateRef, ViewChild } from '@angular/core';
 
-type AccordionSection = 'general' | 'contacts' | 'sites' | 'affaires' | 'factures';
+import { IAgence, NewAgence } from 'app/entities/projectService/agence/agence.model';
+import { AgenceService } from 'app/entities/projectService/agence/service/agence.service';
+import { ISociete } from 'app/entities/projectService/societe/societe.model';
+import { SocieteService } from 'app/entities/projectService/societe/service/societe.service';
+
+type AccordionSection = 'general' | 'contacts' | 'sites' | 'affaires' | 'factures' | 'agences';
 
 @Component({
   selector: 'jhi-client-update',
@@ -30,6 +35,7 @@ type AccordionSection = 'general' | 'contacts' | 'sites' | 'affaires' | 'facture
 export class ClientUpdateComponent implements OnInit {
   @ViewChild('contactModal') contactModal!: TemplateRef<unknown>;
   @ViewChild('siteModal') siteModal!: TemplateRef<unknown>;
+  @ViewChild('agenceModal') agenceModal!: TemplateRef<unknown>;
 
   isSaving = false;
   client: IClient | null = null;
@@ -52,6 +58,11 @@ export class ClientUpdateComponent implements OnInit {
   selectedFactures: IFacture[] = [];
   factureSearchTerm = '';
 
+  selectedAgences: IAgence[] = [];
+  agenceSearchTerm = '';
+  allSocietes: ISociete[] = [];
+  newAgence: Partial<NewAgence> = {};
+
   newContact: Partial<NewContact> = {};
   newSite: Partial<NewSite> = {};
 
@@ -68,6 +79,8 @@ export class ClientUpdateComponent implements OnInit {
     protected villeService: VilleService,
     protected affaireService: AffaireService,
     protected factureService: FactureService,
+    protected agenceService: AgenceService,
+    protected societeService: SocieteService,
     protected activatedRoute: ActivatedRoute,
     protected modalService: NgbModal
   ) {}
@@ -86,11 +99,15 @@ export class ClientUpdateComponent implements OnInit {
     this.villeService.query().subscribe((res: HttpResponse<IVille[]>) => {
       this.allVilles = res.body ?? [];
     });
+    this.societeService.query().subscribe((res: HttpResponse<ISociete[]>) => {
+      this.allSocietes = res.body ?? [];
+    });
     if (this.client?.id) {
       this.loadContacts();
       this.loadSites();
       this.loadAffaires();
       this.loadFactures();
+      this.loadAgences();
     }
   }
 
@@ -186,6 +203,64 @@ export class ClientUpdateComponent implements OnInit {
 
   searchFactures(): void {
     this.loadFactures();
+  }
+
+  loadAgences(): void {
+    if (!this.client?.id) {
+      return;
+    }
+    const term = this.agenceSearchTerm.trim();
+    const request$ = term ? this.agenceService.searchByClientId(this.client.id, term) : this.agenceService.findByClientId(this.client.id);
+
+    request$.subscribe((res: HttpResponse<IAgence[]>) => {
+      this.selectedAgences = res.body ?? [];
+    });
+  }
+
+  searchAgences(): void {
+    this.loadAgences();
+  }
+
+  openAgenceModal(): void {
+    this.newAgence = {};
+    this.modalService.open(this.agenceModal, { size: 'lg', backdrop: 'static', centered: true });
+  }
+
+  saveNewAgence(modal: any): void {
+    if (
+      !this.client?.id ||
+      !this.newAgence.designation?.trim() ||
+      !this.newAgence.adresse?.trim() ||
+      !this.newAgence.ville?.trim() ||
+      !this.newAgence.pays?.trim() ||
+      !this.newAgence.societe
+    ) {
+      return;
+    }
+
+    const agenceToCreate: NewAgence = {
+      id: null,
+      designation: this.newAgence.designation.trim(),
+      adresse: this.newAgence.adresse.trim(),
+      ville: this.newAgence.ville.trim(),
+      pays: this.newAgence.pays.trim(),
+      societe: this.newAgence.societe,
+      clientId: this.client.id,
+    };
+
+    this.agenceService.create(agenceToCreate).subscribe({
+      next: () => {
+        this.loadAgences();
+        modal.close();
+      },
+      error: () => {
+        // Optionnel : notifier l'utilisateur via jhi-alert-error ou toast
+      },
+    });
+  }
+
+  unlinkAgence(): void {
+    // Placeholder: unlink flow will be implemented later.
   }
 
   openSiteModal(): void {

@@ -79,6 +79,12 @@ export class ClientService {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }
 
+  softDelete(id: number): Observable<EntityResponseType> {
+    return this.http
+      .patch<RestClient>(`${this.resourceUrl}/${id}/soft-delete`, {}, { observe: 'response' })
+      .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+
   getContactsByClientId(clientId: number): Observable<HttpResponse<any[]>> {
     return this.http.get<any[]>(`${this.applicationConfigService.getEndpointFor('api/contacts/client', 'projectservice')}/${clientId}`, {
       observe: 'response',

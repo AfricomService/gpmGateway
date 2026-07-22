@@ -1,4 +1,15 @@
 <div class="client-update-page">
+  <button
+    type="button"
+    id="back-to-client-list"
+    data-cy="entityBackButton"
+    title="Retour à la liste"
+    class="btn-cu-back-floating"
+    [routerLink]="['/client']"
+  >
+    <fa-icon icon="arrow-left"></fa-icon>
+  </button>
+
   <div class="cu-container">
     <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
       <jhi-alert-error></jhi-alert-error>
@@ -308,6 +319,48 @@
               </ng-template>
             </div>
           </div>
+
+          <!-- Agences liées -->
+          <div class="cu-accordion-item" [class.open]="isSectionOpen('agences')">
+            <button type="button" class="cu-accordion-header" (click)="toggleSection('agences')">
+              <span class="cu-accordion-header-left">
+                <fa-icon icon="building" class="cu-accordion-icon"></fa-icon>
+                <span>Agences liées</span>
+                <span class="cu-accordion-count" *ngIf="selectedAgences.length">{{ selectedAgences.length }}</span>
+              </span>
+              <span class="cu-accordion-header-right">
+                <button type="button" class="btn-cu-add" (click)="$event.stopPropagation(); openAgenceModal()">
+                  <fa-icon icon="plus"></fa-icon>&nbsp;Ajouter
+                </button>
+                <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+              </span>
+            </button>
+
+            <div class="cu-accordion-body" *ngIf="isSectionOpen('agences')">
+              <input
+                type="text"
+                class="form-control mb-3"
+                placeholder="Rechercher par désignation..."
+                [(ngModel)]="agenceSearchTerm"
+                [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="searchAgences()"
+              />
+              <div *ngIf="selectedAgences.length > 0; else noAgences" class="cu-item-list">
+                <div class="cu-item-card" *ngFor="let agence of selectedAgences">
+                  <div class="cu-item-info">
+                    <div class="cu-item-title">{{ agence.designation || '-' }}</div>
+                    <div class="cu-item-sub">{{ agence.ville || 'Ville non renseignée' }}, {{ agence.pays || 'Pays non renseigné' }}</div>
+                  </div>
+                  <button type="button" class="cu-item-remove" (click)="unlinkAgence()">
+                    <fa-icon icon="times"></fa-icon>
+                  </button>
+                </div>
+              </div>
+              <ng-template #noAgences>
+                <div class="cu-empty">Aucune agence associée</div>
+              </ng-template>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -388,6 +441,57 @@
           class="btn-cu-save"
           [disabled]="!newSite.code?.trim() || !newSite.designation?.trim() || !newSite.ville"
           (click)="saveNewSite(modal)"
+        >
+          Ajouter
+        </button>
+      </div>
+    </ng-template>
+    <ng-template #agenceModal let-modal>
+      <div class="modal-header">
+        <h5 class="modal-title">Nouvelle Agence</h5>
+        <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-12">
+            <label class="form-label fw-bold">Désignation</label>
+            <input type="text" class="form-control" [(ngModel)]="newAgence.designation" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-12">
+            <label class="form-label fw-bold">Adresse</label>
+            <input type="text" class="form-control" [(ngModel)]="newAgence.adresse" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Ville</label>
+            <input type="text" class="form-control" [(ngModel)]="newAgence.ville" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Pays</label>
+            <input type="text" class="form-control" [(ngModel)]="newAgence.pays" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-12">
+            <label class="form-label fw-bold">Société</label>
+            <select class="form-control" [(ngModel)]="newAgence.societe" [ngModelOptions]="{ standalone: true }">
+              <option [ngValue]="null">-- Sélectionner une société --</option>
+              <option *ngFor="let societe of allSocietes" [ngValue]="{ id: societe.id, raisonSociale: societe.raisonSociale }">
+                {{ societe.raisonSociale }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
+        <button
+          class="btn-cu-save-modal"
+          [disabled]="
+            !newAgence.designation?.trim() ||
+            !newAgence.adresse?.trim() ||
+            !newAgence.ville?.trim() ||
+            !newAgence.pays?.trim() ||
+            !newAgence.societe
+          "
+          (click)="saveNewAgence(modal)"
         >
           Ajouter
         </button>
