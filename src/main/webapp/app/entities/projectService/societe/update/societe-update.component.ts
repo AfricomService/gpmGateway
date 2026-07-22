@@ -37,6 +37,9 @@ export class SocieteUpdateComponent implements OnInit {
 
   selectedPersonnes: IPersonne[] = [];
 
+  isImportingPersonnes = false;
+  importError = false;
+
   editForm: SocieteFormGroup = this.societeFormService.createSocieteFormGroup();
 
   constructor(
@@ -83,6 +86,7 @@ export class SocieteUpdateComponent implements OnInit {
     this.selectedPersonnes = [];
     this.societeSearchTerm = '';
     this.personneSearchTerm = '';
+    this.importError = false;
     this.loadOrgaSocietes();
   }
 
@@ -175,15 +179,27 @@ export class SocieteUpdateComponent implements OnInit {
     this.selectedPersonnes = this.selectedPersonnes.filter(p => p.id !== personne.id);
   }
 
+  // ── Import / Assignation ─────────────────────────────────────────
   confirmImportPersonnes(): void {
-    if (this.selectedPersonnes.length === 0) {
+    if (!this.societe?.id || this.selectedPersonnes.length === 0) {
       return;
     }
 
-    // TODO: wire this up to the actual import/save logic once the endpoint is ready.
-    // e.g. this.societeService.importContactsFromOrga(this.societe!.id, this.selectedPersonnes)...
+    this.isImportingPersonnes = true;
+    this.importError = false;
 
-    this.closeOrgaModal();
+    this.societeService
+      .assignContactSocieteFromOrgaCare(this.societe.id, this.selectedPersonnes)
+      .pipe(finalize(() => (this.isImportingPersonnes = false)))
+      .subscribe({
+        next: () => {
+          this.closeOrgaModal();
+          this.loadContactsAssocies();
+        },
+        error: () => {
+          this.importError = true;
+        },
+      });
   }
 
   previousState(): void {

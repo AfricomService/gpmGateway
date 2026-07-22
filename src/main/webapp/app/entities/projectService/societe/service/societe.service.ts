@@ -126,6 +126,15 @@ export class SocieteService {
       .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 
+  assignContactSocieteFromOrgaCare(societeId: number, personsToAssign: IPersonne[]): Observable<HttpResponse<void>> {
+    return this.http.post<void>(`${this.resourceUrl}/assign-from-orgacare`, personsToAssign, {
+      params: {
+        societeId: societeId.toString(),
+      },
+      observe: 'response',
+    });
+  }
+
   protected convertDateFromClient<T extends ISociete | NewSociete | PartialUpdateSociete>(societe: T): RestOf<T> {
     return {
       ...societe,

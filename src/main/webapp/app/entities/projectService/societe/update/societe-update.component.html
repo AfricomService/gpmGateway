@@ -514,11 +514,27 @@
         </div>
       </div>
 
-      <div class="modal-footer py-3 px-4">
-        <button type="button" class="btn btn-outline-secondary" (click)="closeOrgaModal()">Fermer</button>
-        <button type="button" class="btn btn-primary" [disabled]="selectedPersonnes.length === 0" (click)="confirmImportPersonnes()">
-          <fa-icon icon="download" class="me-1"></fa-icon>
-          Importer ({{ selectedPersonnes.length }})
+      <div class="modal-footer py-3 px-4 d-flex align-items-center">
+        <div class="text-danger small me-auto" *ngIf="importError">
+          <fa-icon icon="exclamation-triangle" class="me-1"></fa-icon>
+          Une erreur est survenue lors de l'import. Veuillez réessayer.
+        </div>
+
+        <button type="button" class="btn btn-outline-secondary" [disabled]="isImportingPersonnes" (click)="closeOrgaModal()">Fermer</button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="selectedPersonnes.length === 0 || isImportingPersonnes"
+          (click)="confirmImportPersonnes()"
+        >
+          <span *ngIf="!isImportingPersonnes">
+            <fa-icon icon="download" class="me-1"></fa-icon>
+            Importer ({{ selectedPersonnes.length }})
+          </span>
+          <span *ngIf="isImportingPersonnes">
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            Import en cours...
+          </span>
         </button>
       </div>
     </div>
