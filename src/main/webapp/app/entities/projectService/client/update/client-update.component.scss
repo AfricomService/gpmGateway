@@ -302,10 +302,27 @@
   padding: 0.75rem 1rem;
 }
 
+.cu-item-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
 .cu-item-title {
   font-weight: 700;
   font-size: 0.9rem;
   color: var(--cp-text);
+}
+
+.cu-item-badge-id {
+  font-weight: 700;
+  font-size: 0.7rem;
+  color: var(--cp-accent);
+  background: var(--cp-accent-soft);
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  white-space: nowrap;
 }
 
 .cu-item-sub {

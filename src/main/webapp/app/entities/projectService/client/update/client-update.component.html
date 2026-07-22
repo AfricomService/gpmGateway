@@ -152,7 +152,10 @@
               <div *ngIf="selectedContacts.length > 0; else noContacts" class="cu-item-list">
                 <div class="cu-item-card" *ngFor="let contact of selectedContacts">
                   <div class="cu-item-info">
-                    <div class="cu-item-title">{{ contact.raisonSociale || '-' }}</div>
+                    <div class="cu-item-title-row">
+                      <div class="cu-item-title">{{ contact.raisonSociale || '-' }}</div>
+                      <span class="cu-item-badge-id" *ngIf="contact.identifiantUnique">{{ contact.identifiantUnique }}</span>
+                    </div>
                     <div class="cu-item-sub">{{ contact.email || 'Email non renseigné' }}</div>
                     <div class="cu-item-sub">{{ contact.telephone || 'Téléphone non renseigné' }}</div>
                   </div>
@@ -399,7 +402,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
-        <button class="btn-cu-save" (click)="saveNewContact(modal)">Ajouter</button>
+        <button class="btn-cu-save-modal" [disabled]="!newContact.raisonSociale?.trim()" (click)="saveNewContact(modal)">Ajouter</button>
       </div>
     </ng-template>
 
@@ -438,7 +441,7 @@
       <div class="modal-footer">
         <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
         <button
-          class="btn-cu-save"
+          class="btn-cu-save-modal"
           [disabled]="!newSite.code?.trim() || !newSite.designation?.trim() || !newSite.ville"
           (click)="saveNewSite(modal)"
         >
