@@ -14,6 +14,7 @@ export interface IAgence {
   updatedBy?: string | null;
   updatedByUserLogin?: string | null;
   clientId?: number | null;
+  identifiantUnique?: string | null;
   societe?: Pick<ISociete, 'id' | 'raisonSociale'> | null;
 }
 

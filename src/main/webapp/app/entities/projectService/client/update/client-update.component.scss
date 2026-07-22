@@ -461,3 +461,79 @@
     transform: none;
   }
 }
+/* ============ IMPORT MODAL (Sites) ============ */
+/* Non scopé car NgbModal rend son contenu hors de l'arbre DOM du composant */
+.import-step {
+  margin-bottom: 0.5rem;
+}
+
+.import-step-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.import-step-badge {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #f5822a;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.import-step-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: #1a2233;
+}
+
+.import-step-subtitle {
+  color: #8a93a3;
+  font-size: 0.85rem;
+  margin-top: 2px;
+}
+
+.import-dropzone {
+  border: 2px dashed #e7e9ee;
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.import-dropzone-active {
+  border-color: #f5822a;
+  background-color: rgba(245, 130, 42, 0.08);
+}
+
+.import-file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(245, 130, 42, 0.12);
+  color: #1a2233;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.btn-cu-remove-file {
+  border: none;
+  background: none;
+  color: #8a93a3;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.18s ease;
+
+  &:hover {
+    color: #e0524d;
+  }
+}

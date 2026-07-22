@@ -68,6 +68,9 @@ import {
   faBriefcase,
   faChevronDown,
   faWandMagicSparkles,
+  faFileImport,
+  faDownload,
+  faFileExcel,
   // jhipster-needle-add-icon-import
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -141,5 +144,8 @@ export const fontAwesomeIcons = [
   faBriefcase,
   faChevronDown,
   faWandMagicSparkles,
+  faFileImport,
+  faDownload,
+  faFileExcel,
   // jhipster-needle-add-icon-import
 ];

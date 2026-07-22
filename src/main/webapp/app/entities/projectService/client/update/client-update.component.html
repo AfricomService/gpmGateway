@@ -179,6 +179,9 @@
                 <span class="cu-accordion-count" *ngIf="selectedSites.length">{{ selectedSites.length }}</span>
               </span>
               <span class="cu-accordion-header-right">
+                <button type="button" class="btn-cu-add" (click)="$event.stopPropagation(); openSiteImportModal()">
+                  <fa-icon icon="file-import"></fa-icon>&nbsp;Importer
+                </button>
                 <button type="button" class="btn-cu-add" (click)="$event.stopPropagation(); openSiteModal()">
                   <fa-icon icon="plus"></fa-icon>&nbsp;Ajouter
                 </button>
@@ -351,7 +354,10 @@
               <div *ngIf="selectedAgences.length > 0; else noAgences" class="cu-item-list">
                 <div class="cu-item-card" *ngFor="let agence of selectedAgences">
                   <div class="cu-item-info">
-                    <div class="cu-item-title">{{ agence.designation || '-' }}</div>
+                    <div class="cu-item-title-row">
+                      <div class="cu-item-title">{{ agence.designation || '-' }}</div>
+                      <span class="cu-item-badge-id" *ngIf="agence.identifiantUnique">{{ agence.identifiantUnique }}</span>
+                    </div>
                     <div class="cu-item-sub">{{ agence.ville || 'Ville non renseignée' }}, {{ agence.pays || 'Pays non renseigné' }}</div>
                   </div>
                   <button type="button" class="cu-item-remove" (click)="unlinkAgence()">
@@ -446,6 +452,87 @@
           (click)="saveNewSite(modal)"
         >
           Ajouter
+        </button>
+      </div>
+    </ng-template>
+    <ng-template #siteImportModal let-modal>
+      <div class="modal-header">
+        <h5 class="modal-title"><fa-icon icon="file-import"></fa-icon>&nbsp;Importer des sites depuis Excel</h5>
+        <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Étape 1 : télécharger le modèle -->
+        <div class="import-step">
+          <div class="import-step-header">
+            <span class="import-step-badge">1</span>
+            <div>
+              <div class="import-step-title">Télécharger le modèle Excel</div>
+              <div class="import-step-subtitle">
+                Téléchargez le fichier modèle vide, remplissez-le avec vos sites, puis importez-le à l'étape 2.
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-outline-secondary btn-sm mt-2" (click)="downloadSiteTemplate()">
+            <fa-icon icon="download"></fa-icon>&nbsp;Télécharger le modèle (.xlsx)
+          </button>
+        </div>
+
+        <hr />
+
+        <!-- Étape 2 : importer le fichier rempli -->
+        <div class="import-step">
+          <div class="import-step-header">
+            <span class="import-step-badge">2</span>
+            <div>
+              <div class="import-step-title">Importer le fichier rempli</div>
+              <div class="import-step-subtitle">Sélectionnez votre fichier Excel complété (.xlsx uniquement).</div>
+            </div>
+          </div>
+
+          <div
+            class="import-dropzone mt-2"
+            [class.import-dropzone-active]="siteImportDragOver"
+            (dragover)="onSiteImportDragOver($event)"
+            (dragleave)="onSiteImportDragLeave($event)"
+            (drop)="onSiteImportDrop($event)"
+          >
+            <ng-container *ngIf="!siteImportFile; else fileSelected">
+              <div class="text-muted mb-2">Glissez votre fichier ici, ou</div>
+              <label class="btn btn-outline-secondary btn-sm mb-0">
+                Parcourir...
+                <input type="file" hidden accept=".xlsx" (change)="onSiteImportFileSelected($event)" />
+              </label>
+            </ng-container>
+            <ng-template #fileSelected>
+              <div class="import-file-chip">
+                <fa-icon icon="file-excel"></fa-icon>
+                <span>{{ siteImportFile?.name }}</span>
+                <button type="button" class="btn-cu-remove-file" (click)="removeSiteImportFile()">
+                  <fa-icon icon="times"></fa-icon>
+                </button>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+
+        <div *ngIf="siteImportInProgress" class="mt-3 text-muted">Import en cours...</div>
+
+        <div *ngIf="siteImportResult" class="mt-3">
+          <div class="alert alert-success" *ngIf="siteImportResult.successCount > 0">
+            {{ siteImportResult.successCount }} site(s) importé(s) avec succès.
+          </div>
+          <div class="alert alert-danger" *ngIf="siteImportResult.errors.length > 0">
+            <div>{{ siteImportResult.errors.length }} erreur(s) :</div>
+            <ul class="mb-0">
+              <li *ngFor="let err of siteImportResult.errors">{{ err }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" (click)="modal.dismiss()"><fa-icon icon="times"></fa-icon>&nbsp;Fermer</button>
+        <button class="btn-cu-save-modal" [disabled]="!siteImportFile || siteImportInProgress" (click)="submitSiteImport()">
+          <fa-icon icon="file-import"></fa-icon>&nbsp;Lancer l'import
         </button>
       </div>
     </ng-template>

@@ -11,6 +11,7 @@ import { IContact, NewContact } from 'app/entities/projectService/contact/contac
 import { ContactService } from 'app/entities/projectService/contact/service/contact.service';
 import { ISite, NewSite } from 'app/entities/projectService/site/site.model';
 import { SiteService } from 'app/entities/projectService/site/service/site.service';
+import { SiteImportService, ISiteImportResult } from 'app/entities/projectService/site/service/site-import.service';
 import { IVille } from 'app/entities/projectService/ville/ville.model';
 import { VilleService } from 'app/entities/projectService/ville/service/ville.service';
 import { IAffaire } from 'app/entities/projectService/affaire/affaire.model';
@@ -36,6 +37,7 @@ export class ClientUpdateComponent implements OnInit {
   @ViewChild('contactModal') contactModal!: TemplateRef<unknown>;
   @ViewChild('siteModal') siteModal!: TemplateRef<unknown>;
   @ViewChild('agenceModal') agenceModal!: TemplateRef<unknown>;
+  @ViewChild('siteImportModal') siteImportModal!: TemplateRef<unknown>;
 
   isSaving = false;
   client: IClient | null = null;
@@ -66,6 +68,11 @@ export class ClientUpdateComponent implements OnInit {
   newContact: Partial<NewContact> = {};
   newSite: Partial<NewSite> = {};
 
+  siteImportFile: File | null = null;
+  siteImportInProgress = false;
+  siteImportResult: ISiteImportResult | null = null;
+  siteImportDragOver = false;
+
   editForm: ClientFormGroup = this.clientFormService.createClientFormGroup();
 
   // === Gestion de l'accordéon ===
@@ -76,6 +83,7 @@ export class ClientUpdateComponent implements OnInit {
     protected clientFormService: ClientFormService,
     protected contactService: ContactService,
     protected siteService: SiteService,
+    protected siteImportService: SiteImportService,
     protected villeService: VilleService,
     protected affaireService: AffaireService,
     protected factureService: FactureService,
@@ -293,6 +301,79 @@ export class ClientUpdateComponent implements OnInit {
         // Optionnel : notifier l'utilisateur via jhi-alert-error ou toast
       },
     });
+  }
+
+  openSiteImportModal(): void {
+    this.siteImportFile = null;
+    this.siteImportResult = null;
+    this.modalService.open(this.siteImportModal, { size: 'lg', backdrop: 'static', centered: true });
+  }
+
+  onSiteImportFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.siteImportFile = input.files && input.files.length > 0 ? input.files[0] : null;
+    this.siteImportResult = null;
+  }
+
+  submitSiteImport(): void {
+    if (!this.client?.id || !this.siteImportFile) {
+      return;
+    }
+
+    this.siteImportInProgress = true;
+    this.siteImportService.importSites(this.client.id, this.siteImportFile).subscribe({
+      next: response => {
+        this.siteImportResult = response.body;
+        this.siteImportInProgress = false;
+        this.loadSites();
+      },
+      error: () => {
+        this.siteImportInProgress = false;
+      },
+    });
+  }
+
+  downloadSiteTemplate(): void {
+    this.siteImportService.downloadTemplate().subscribe(response => {
+      const blob = response.body;
+      if (!blob) {
+        return;
+      }
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'modele_import_sites.xlsx';
+      link.click();
+      window.URL.revokeObjectURL(url);
+    });
+  }
+
+  onSiteImportDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.siteImportDragOver = true;
+  }
+
+  onSiteImportDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.siteImportDragOver = false;
+  }
+
+  onSiteImportDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.siteImportDragOver = false;
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      this.siteImportFile = files[0];
+      this.siteImportResult = null;
+    }
+  }
+
+  removeSiteImportFile(): void {
+    this.siteImportFile = null;
+    this.siteImportResult = null;
   }
 
   unlinkContact(contact: IContact): void {

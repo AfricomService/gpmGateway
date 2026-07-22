@@ -14,6 +14,11 @@ export interface ISite {
   createdByUserLogin?: string | null;
   updatedBy?: string | null;
   updatedByUserLogin?: string | null;
+  nodaleGpm?: string | null;
+  sitePriority?: string | null;
+  typeSite?: string | null;
+  regionSite?: string | null;
+  zoneId?: number | null;
   ville?: Pick<IVille, 'id' | 'nom'> | null;
   client?: Pick<IClient, 'id' | 'raisonSociale'> | null;
 }
