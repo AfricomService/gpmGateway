@@ -54,6 +54,7 @@ type AffaireFormGroupContent = {
   updatedBy: FormControl<AffaireFormRawValue['updatedBy']>;
   updatedByUserLogin: FormControl<AffaireFormRawValue['updatedByUserLogin']>;
   client: FormControl<AffaireFormRawValue['client']>;
+  societeId: FormControl<AffaireFormRawValue['societeId']>;
 };
 
 export type AffaireFormGroup = FormGroup<AffaireFormGroupContent>;
@@ -103,6 +104,7 @@ export class AffaireFormService {
       client: new FormControl(affaireRawValue.client, {
         validators: [Validators.required],
       }),
+      societeId: new FormControl(affaireRawValue.societeId),
     });
   }
 
