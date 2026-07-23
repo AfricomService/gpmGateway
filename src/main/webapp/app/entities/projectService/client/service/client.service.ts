@@ -41,6 +41,13 @@ export class ClientService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
+  identifierEtEnregistrer(client: NewClient): Observable<EntityResponseType> {
+    const copy = this.convertDateFromClient(client);
+    return this.http
+      .post<RestClient>(`${this.resourceUrl}/identifier-et-enregistrer`, copy, { observe: 'response' })
+      .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+
   update(client: IClient): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(client);
     return this.http
@@ -70,6 +77,12 @@ export class ClientService {
 
   delete(id: number): Observable<HttpResponse<{}>> {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
+  }
+
+  softDelete(id: number): Observable<EntityResponseType> {
+    return this.http
+      .patch<RestClient>(`${this.resourceUrl}/${id}/soft-delete`, {}, { observe: 'response' })
+      .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
   getContactsByClientId(clientId: number): Observable<HttpResponse<any[]>> {

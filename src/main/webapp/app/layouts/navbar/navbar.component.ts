@@ -74,8 +74,28 @@ export class NavbarComponent implements OnInit {
     this.router.navigate(['']);
   }
 
-  toggleNavbar(): void {
+  navbarToggleLock = false; // public : lu par [class.toggler-locked] dans le template
+
+  toggleNavbar(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      // stopImmediatePropagation coupe aussi les autres listeners attachés
+      // au MÊME élément (ex: un listener natif ou un autre binding),
+      // ce que stopPropagation seul ne fait pas.
+      (event as any).stopImmediatePropagation?.();
+    }
+
+    if (this.navbarToggleLock) {
+      return;
+    }
+
+    this.navbarToggleLock = true;
     this.isNavbarCollapsed = !this.isNavbarCollapsed;
+
+    // pointer-events:none (via toggler-locked) bloque déjà le second tap physiquement ;
+    // le setTimeout ne sert plus qu'à réactiver le bouton après l'animation de collapse.
+    setTimeout(() => (this.navbarToggleLock = false), 350);
   }
 
   openNewEntityModal(content: any): void {

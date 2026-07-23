@@ -216,6 +216,12 @@ import { RouterModule } from '@angular/router';
         data: { pageTitle: 'gpmGatewayApp.projectServiceZone.home.title' },
         loadChildren: () => import('./projectService/zone/zone.module').then(m => m.ProjectServiceZoneModule),
       },
+      {
+        path: 'numsequentielle',
+        data: { pageTitle: 'gpmGatewayApp.projectServiceNumsequentielle.home.title' },
+        loadChildren: () =>
+          import('./projectService/numsequentielle/numsequentielle.module').then(m => m.ProjectServiceNumsequentielleModule),
+      },
       /* jhipster-needle-add-entity-route - JHipster will add entity modules routes here */
     ]),
   ],

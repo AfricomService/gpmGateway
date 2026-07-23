@@ -4,20 +4,19 @@ import { ActivatedRoute, Data, ParamMap, Router } from '@angular/router';
 import { combineLatest, filter, Observable, switchMap, tap } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { IClient } from '../client.model';
+import { INumsequentielle } from '../numsequentielle.model';
 
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
-import { ASC, DESC, SORT, DEFAULT_SORT_DATA } from 'app/config/navigation.constants';
-import { EntityArrayResponseType, ClientService } from '../service/client.service';
+import { ASC, DESC, SORT, ITEM_DELETED_EVENT, DEFAULT_SORT_DATA } from 'app/config/navigation.constants';
+import { EntityArrayResponseType, NumsequentielleService } from '../service/numsequentielle.service';
+import { NumsequentielleDeleteDialogComponent } from '../delete/numsequentielle-delete-dialog.component';
 
 @Component({
-  selector: 'jhi-client',
-  templateUrl: './client.component.html',
-  styleUrls: ['./client.component.scss'],
+  selector: 'jhi-numsequentielle',
+  templateUrl: './numsequentielle.component.html',
 })
-export class ClientComponent implements OnInit {
-  clients?: IClient[];
-  filteredClients?: IClient[];
+export class NumsequentielleComponent implements OnInit {
+  numsequentielles?: INumsequentielle[];
   isLoading = false;
 
   predicate = 'id';
@@ -27,63 +26,33 @@ export class ClientComponent implements OnInit {
   totalItems = 0;
   page = 1;
 
-  searchTerm = '';
-  viewMode: 'grid' | 'list' = 'grid';
-
   constructor(
-    protected clientService: ClientService,
+    protected numsequentielleService: NumsequentielleService,
     protected activatedRoute: ActivatedRoute,
     public router: Router,
     protected modalService: NgbModal
   ) {}
 
-  trackId = (_index: number, item: IClient): number => this.clientService.getClientIdentifier(item);
+  trackId = (_index: number, item: INumsequentielle): number => this.numsequentielleService.getNumsequentielleIdentifier(item);
 
   ngOnInit(): void {
     this.load();
   }
 
-  /** Called by the "Actualiser" button. */
-  refresh(): void {
-    this.load();
-  }
-
-  filterClients(): void {
-    this.applyFilters();
-  }
-
-  private applyFilters(): void {
-    let result = this.clients ?? [];
-    const term = this.searchTerm.trim().toLowerCase();
-    if (term) {
-      result = result.filter(
-        c =>
-          (c.raisonSociale ?? '').toLowerCase().includes(term) ||
-          (c.identifiantUnique ?? '').toLowerCase().includes(term) ||
-          (c.email ?? '').toLowerCase().includes(term)
-      );
-    }
-    this.filteredClients = result;
-  }
-
-  delete(client: IClient): void {
-    if (!confirm(`Voulez-vous vraiment supprimer le client "${client.raisonSociale}" ?`)) {
-      return;
-    }
-
-    this.clientService
-      .softDelete(client.id)
-      .pipe(switchMap(() => this.loadFromBackendWithRouteInformations()))
+  delete(numsequentielle: INumsequentielle): void {
+    const modalRef = this.modalService.open(NumsequentielleDeleteDialogComponent, { size: 'lg', backdrop: 'static' });
+    modalRef.componentInstance.numsequentielle = numsequentielle;
+    // unsubscribe not needed because closed completes on modal close
+    modalRef.closed
+      .pipe(
+        filter(reason => reason === ITEM_DELETED_EVENT),
+        switchMap(() => this.loadFromBackendWithRouteInformations())
+      )
       .subscribe({
         next: (res: EntityArrayResponseType) => {
           this.onResponseSuccess(res);
         },
       });
-  }
-
-  /** Called on double-click on a card or a row: navigate straight to the edit screen. */
-  goToEdit(client: IClient): void {
-    this.router.navigate(['/client', client.id, 'edit']);
   }
 
   load(): void {
@@ -120,11 +89,10 @@ export class ClientComponent implements OnInit {
   protected onResponseSuccess(response: EntityArrayResponseType): void {
     this.fillComponentAttributesFromResponseHeader(response.headers);
     const dataFromBody = this.fillComponentAttributesFromResponseBody(response.body);
-    this.clients = dataFromBody;
-    this.applyFilters();
+    this.numsequentielles = dataFromBody;
   }
 
-  protected fillComponentAttributesFromResponseBody(data: IClient[] | null): IClient[] {
+  protected fillComponentAttributesFromResponseBody(data: INumsequentielle[] | null): INumsequentielle[] {
     return data ?? [];
   }
 
@@ -140,7 +108,7 @@ export class ClientComponent implements OnInit {
       size: this.itemsPerPage,
       sort: this.getSortQueryParam(predicate, ascending),
     };
-    return this.clientService.query(queryObject).pipe(tap(() => (this.isLoading = false)));
+    return this.numsequentielleService.query(queryObject).pipe(tap(() => (this.isLoading = false)));
   }
 
   protected handleNavigation(page = this.page, predicate?: string, ascending?: boolean): void {

@@ -1,0 +1,88 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="jhi-numsequentielle-heading"
+        data-cy="NumsequentielleCreateUpdateHeading"
+        jhiTranslate="gpmGatewayApp.projectServiceNumsequentielle.home.createOrEditLabel"
+      >
+        Créer ou éditer un Numsequentielle
+      </h2>
+
+      <div>
+        <jhi-alert-error></jhi-alert-error>
+
+        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
+          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
+          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceNumsequentielle.prefix" for="field_prefix">Prefix</label>
+          <input type="text" class="form-control" name="prefix" id="field_prefix" data-cy="prefix" formControlName="prefix" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceNumsequentielle.nextNumber" for="field_nextNumber"
+            >Next Number</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="nextNumber"
+            id="field_nextNumber"
+            data-cy="nextNumber"
+            formControlName="nextNumber"
+          />
+          <div *ngIf="editForm.get('nextNumber')!.invalid && (editForm.get('nextNumber')!.dirty || editForm.get('nextNumber')!.touched)">
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('nextNumber')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceNumsequentielle.format" for="field_format">Format</label>
+          <input type="text" class="form-control" name="format" id="field_format" data-cy="format" formControlName="format" />
+        </div>
+
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceNumsequentielle.codeNumSeq" for="field_codeNumSeq"
+            >Code Num Seq</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="codeNumSeq"
+            id="field_codeNumSeq"
+            data-cy="codeNumSeq"
+            formControlName="codeNumSeq"
+          />
+          <div
+            *ngIf="editForm.get('codeNumSeq')!.invalid && (editForm.get('codeNumSeq')!.dirty || editForm.get('codeNumSeq')!.touched)"
+          ></div>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

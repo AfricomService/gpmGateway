@@ -7,15 +7,14 @@
 
     <button
       class="navbar-toggler"
+      [class.toggler-locked]="navbarToggleLock"
       type="button"
-      data-toggle="collapse"
-      data-target="#navbarResponsive"
       aria-controls="navbarResponsive"
-      aria-expanded="false"
+      [attr.aria-expanded]="!isNavbarCollapsed"
       aria-label="Toggle navigation"
-      (click)="toggleNavbar()"
+      (click)="toggleNavbar($event)"
     >
-      <fa-icon icon="bars"></fa-icon>
+      <fa-icon [icon]="isNavbarCollapsed ? 'bars' : 'times'"></fa-icon>
     </button>
 
     <div
@@ -28,7 +27,7 @@
       <ul class="navbar-nav navbar-center">
         <!-- Accueil -->
         <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-          <a class="nav-link" routerLink="/" (click)="collapseNavbar()">
+          <a class="nav-link nav-icon-only" routerLink="/" (click)="collapseNavbar()" title="Accueil">
             <fa-icon icon="home"></fa-icon>
             <span class="nav-label">Accueil</span>
           </a>
@@ -126,12 +125,19 @@
                 <span>Clients</span>
               </a>
             </li>
+            <!-- Nouvelle entrée : Numérotation Séquentielle -->
+            <li>
+              <a class="dropdown-item" routerLink="numsequentielle" routerLinkActive="active" (click)="collapseNavbar()">
+                <fa-icon icon="sort-numeric-up" [fixedWidth]="true"></fa-icon>
+                <span>Numérotation</span>
+              </a>
+            </li>
           </ul>
         </li>
 
         <!-- Nouveau -->
         <li class="nav-item">
-          <button type="button" class="nav-link btn-new-entity" (click)="openNewEntityModal(newEntityModal)">
+          <button type="button" class="nav-link btn-new-entity nav-icon-only" (click)="openNewEntityModal(newEntityModal)" title="Nouveau">
             <fa-icon icon="plus"></fa-icon>
             <span class="nav-label">Nouveau</span>
           </button>

@@ -1,372 +1,591 @@
-<div class="row justify-content-center">
-  <div class="col-md-12 col-lg-10">
+<div class="client-update-page">
+  <button
+    type="button"
+    id="back-to-client-list"
+    data-cy="entityBackButton"
+    title="Retour à la liste"
+    class="btn-cu-back-floating"
+    [routerLink]="['/client']"
+  >
+    <fa-icon icon="arrow-left"></fa-icon>
+  </button>
+
+  <div class="cu-container">
     <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-      <h2
-        *ngIf="editForm.controls.id.value === null"
-        style="padding-top: 2em; text-transform: uppercase; font-style: italic"
-        id="jhi-client-heading"
-        data-cy="ClientCreateUpdateHeading"
-        class="mb-4"
-      >
-        CREATION D'UN CLIENT
-      </h2>
-
-      <h2
-        *ngIf="editForm.controls.id.value !== null"
-        style="padding-top: 2em; text-transform: uppercase; font-style: italic"
-        id="jhi-client-heading"
-        data-cy="ClientCreateUpdateHeading"
-        class="mb-4"
-      >
-        EDITION D'UN CLIENT
-      </h2>
-
       <jhi-alert-error></jhi-alert-error>
 
-      <div class="row">
-        <!-- Section: Informations Générales -->
-        <div class="col-lg-6 mb-4">
-          <div class="card shadow-sm h-100">
-            <div class="card-header bg-light">
-              <h5 class="mb-0">Informations Générales</h5>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <!--                <div class="col-md-12 mb-3" *ngIf="editForm.controls.id.value !== null">-->
-                <!--                  <label class="form-label font-weight-bold" jhiTranslate="global.field.id" for="field_id">ID</label>-->
-                <!--                  <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />-->
-                <!--                </div>-->
-
-                <div class="col-md-12 mb-3">
-                  <label
-                    class="form-label font-weight-bold"
-                    jhiTranslate="gpmGatewayApp.projectServiceClient.raisonSociale"
-                    for="field_raisonSociale"
-                    >Raison Sociale</label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="raisonSociale"
-                    id="field_raisonSociale"
-                    data-cy="raisonSociale"
-                    formControlName="raisonSociale"
-                  />
-                  <div
-                    *ngIf="
-                      editForm.get('raisonSociale')!.invalid &&
-                      (editForm.get('raisonSociale')!.dirty || editForm.get('raisonSociale')!.touched)
-                    "
-                  >
-                    <small
-                      class="form-text text-danger"
-                      *ngIf="editForm.get('raisonSociale')?.errors?.required"
-                      jhiTranslate="entity.validation.required"
-                    >
-                      Ce champ est obligatoire.
-                    </small>
-                  </div>
-                </div>
-
-                <div class="col-md-12 mb-3">
-                  <label
-                    class="form-label font-weight-bold"
-                    jhiTranslate="gpmGatewayApp.projectServiceClient.identifiantUnique"
-                    for="field_identifiantUnique"
-                    >Identifiant Unique</label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="identifiantUnique"
-                    id="field_identifiantUnique"
-                    data-cy="identifiantUnique"
-                    formControlName="identifiantUnique"
-                  />
-                  <div
-                    *ngIf="
-                      editForm.get('identifiantUnique')!.invalid &&
-                      (editForm.get('identifiantUnique')!.dirty || editForm.get('identifiantUnique')!.touched)
-                    "
-                  >
-                    <small
-                      class="form-text text-danger"
-                      *ngIf="editForm.get('identifiantUnique')?.errors?.required"
-                      jhiTranslate="entity.validation.required"
-                    >
-                      Ce champ est obligatoire.
-                    </small>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+      <!-- Toolbar : Identifier (gauche) + Enregistrer (droite) -->
+      <!-- Toolbar : Enregistrer -->
+      <div class="cu-toolbar">
+        <div class="cu-toolbar-left">
+          <span *ngIf="editForm.get('identifiantUnique')?.value" class="cu-badge-id">
+            {{ editForm.get('identifiantUnique')?.value }}
+          </span>
         </div>
-
-        <!-- Section: Contact -->
-        <div class="col-lg-6 mb-4">
-          <div class="card shadow-sm h-100">
-            <div class="card-header bg-light">
-              <h5 class="mb-0">Contact & Coordonnées</h5>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-12 mb-3">
-                  <label class="form-label font-weight-bold" jhiTranslate="gpmGatewayApp.projectServiceClient.adresse" for="field_adresse"
-                    >Adresse</label
-                  >
-                  <input type="text" class="form-control" name="adresse" id="field_adresse" data-cy="adresse" formControlName="adresse" />
-                  <div *ngIf="editForm.get('adresse')!.invalid && (editForm.get('adresse')!.dirty || editForm.get('adresse')!.touched)">
-                    <small
-                      class="form-text text-danger"
-                      *ngIf="editForm.get('adresse')?.errors?.required"
-                      jhiTranslate="entity.validation.required"
-                    >
-                      Ce champ est obligatoire.
-                    </small>
-                  </div>
-                </div>
-
-                <div class="col-md-12 mb-3">
-                  <label
-                    class="form-label font-weight-bold"
-                    jhiTranslate="gpmGatewayApp.projectServiceClient.telephone"
-                    for="field_telephone"
-                    >Telephone</label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="telephone"
-                    id="field_telephone"
-                    data-cy="telephone"
-                    formControlName="telephone"
-                  />
-                </div>
-
-                <div class="col-md-12 mb-3">
-                  <label class="form-label font-weight-bold" jhiTranslate="gpmGatewayApp.projectServiceClient.fax" for="field_fax"
-                    >Fax</label
-                  >
-                  <input type="text" class="form-control" name="fax" id="field_fax" data-cy="fax" formControlName="fax" />
-                </div>
-
-                <div class="col-md-12 mb-3">
-                  <label class="form-label font-weight-bold" jhiTranslate="gpmGatewayApp.projectServiceClient.email" for="field_email"
-                    >Email</label
-                  >
-                  <input type="email" class="form-control" name="email" id="field_email" data-cy="email" formControlName="email" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-lg-6 mb-4">
-          <div class="card shadow-sm h-100">
-            <div class="card-header bg-light d-flex justify-content-between align-items-center">
-              <h5 class="mb-0">Contacts liés</h5>
-              <button type="button" class="btn btn-sm btn-primary fw-bold" (click)="openContactModal()">Gérer</button>
-            </div>
-            <div class="card-body" style="max-height: 300px; overflow-y: auto">
-              <div *ngIf="selectedContacts.length > 0; else noContacts" class="d-flex flex-column gap-2">
-                <div class="card border" *ngFor="let contact of selectedContacts">
-                  <div class="card-body d-flex justify-content-between align-items-start gap-3">
-                    <div>
-                      <div class="fw-bold">{{ contact.raisonSociale || '-' }}</div>
-                      <div class="small text-muted">{{ contact.email || 'Email non renseigné' }}</div>
-                      <div class="small text-muted">{{ contact.telephone || 'Téléphone non renseigné' }}</div>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-outline-danger">
-                      <fa-icon icon="times"></fa-icon>
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <ng-template #noContacts>
-                <div class="text-center py-3">Aucun contact associé</div>
-              </ng-template>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-6 mb-4">
-          <div class="card shadow-sm h-100">
-            <div class="card-header bg-light d-flex justify-content-between align-items-center">
-              <h5 class="mb-0">Sites liés</h5>
-              <button type="button" class="btn btn-sm btn-primary fw-bold" (click)="openSiteModal()">Gérer</button>
-            </div>
-            <div class="card-body" style="max-height: 300px; overflow-y: auto">
-              <div *ngIf="selectedSites.length > 0; else noSites" class="d-flex flex-column gap-2">
-                <div class="card border" *ngFor="let site of selectedSites">
-                  <div class="card-body d-flex justify-content-between align-items-start gap-3">
-                    <div>
-                      <div class="fw-bold">{{ site.code || '-' }}</div>
-                      <div class="small text-muted">{{ site.designation || 'Désignation non renseignée' }}</div>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-outline-danger">
-                      <fa-icon icon="times"></fa-icon>
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <ng-template #noSites>
-                <div class="text-center py-3">Aucun site associé</div>
-              </ng-template>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-6 mb-4">
-          <div class="card shadow-sm h-100">
-            <div class="card-header bg-light d-flex justify-content-between align-items-center">
-              <h5 class="mb-0">Affaires liées</h5>
-              <button
-                type="button"
-                class="btn btn-sm btn-primary fw-bold"
-                [routerLink]="['/affaire/new']"
-                [queryParams]="{ clientId: client?.id }"
-              >
-                Gérer
-              </button>
-            </div>
-            <div class="card-body" style="max-height: 300px; overflow-y: auto">
-              <div *ngIf="selectedAffaires.length > 0; else noAffaires" class="d-flex flex-column gap-2">
-                <div class="card border" *ngFor="let affaire of selectedAffaires">
-                  <div class="card-body d-flex justify-content-between align-items-start gap-3">
-                    <div>
-                      <div class="fw-bold">{{ affaire.numAffaire || '-' }}</div>
-                      <div class="small text-muted">{{ affaire.designationAffaire || 'Désignation non renseignée' }}</div>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-outline-danger">
-                      <fa-icon icon="times"></fa-icon>
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <ng-template #noAffaires>
-                <div class="text-center py-3">Aucune affaire associée</div>
-              </ng-template>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-6 mb-4">
-          <div class="card shadow-sm h-100">
-            <div class="card-header bg-light d-flex justify-content-between align-items-center">
-              <h5 class="mb-0">Factures liées</h5>
-              <button
-                type="button"
-                class="btn btn-sm btn-primary fw-bold"
-                [routerLink]="['/facture/new']"
-                [queryParams]="{ clientId: client?.id }"
-              >
-                Gérer
-              </button>
-            </div>
-            <div class="card-body" style="max-height: 300px; overflow-y: auto">
-              <div *ngIf="selectedFactures.length > 0; else noFactures" class="d-flex flex-column gap-2">
-                <div class="card border" *ngFor="let facture of selectedFactures">
-                  <div class="card-body d-flex justify-content-between align-items-start gap-3">
-                    <div>
-                      <div class="fw-bold">{{ facture.numFacture || '-' }}</div>
-                      <div class="small text-muted">{{ facture.montantFacture || 0 }} TND</div>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-outline-danger">
-                      <fa-icon icon="times"></fa-icon>
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <ng-template #noFactures>
-                <div class="text-center py-3">Aucune facture associée</div>
-              </ng-template>
-            </div>
-          </div>
-        </div>
-
-        <ng-template #contactModal let-modal>
-          <div class="modal-header">
-            <h5 class="modal-title">Nouveau Contact</h5>
-            <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
-          </div>
-          <div class="modal-body">
-            <div class="row g-3">
-              <div class="col-md-12">
-                <label class="form-label fw-bold">Raison Sociale</label>
-                <input type="text" class="form-control" [(ngModel)]="newContact.raisonSociale" [ngModelOptions]="{ standalone: true }" />
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-bold">Email</label>
-                <input type="email" class="form-control" [(ngModel)]="newContact.email" [ngModelOptions]="{ standalone: true }" />
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-bold">Téléphone</label>
-                <input type="text" class="form-control" [(ngModel)]="newContact.telephone" [ngModelOptions]="{ standalone: true }" />
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
-            <button class="btn btn-primary" (click)="saveNewContact(modal)">Ajouter</button>
-          </div>
-        </ng-template>
-
-        <ng-template #siteModal let-modal>
-          <div class="modal-header">
-            <h5 class="modal-title">Nouveau Site</h5>
-            <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
-          </div>
-          <div class="modal-body">
-            <div class="row g-3">
-              <div class="col-md-6">
-                <label class="form-label fw-bold">Code</label>
-                <input type="text" class="form-control" [(ngModel)]="newSite.code" [ngModelOptions]="{ standalone: true }" />
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-bold">Désignation</label>
-                <input type="text" class="form-control" [(ngModel)]="newSite.designation" [ngModelOptions]="{ standalone: true }" />
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-bold">GPS X</label>
-                <input type="number" class="form-control" [(ngModel)]="newSite.gpsX" [ngModelOptions]="{ standalone: true }" />
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-bold">GPS Y</label>
-                <input type="number" class="form-control" [(ngModel)]="newSite.gpsY" [ngModelOptions]="{ standalone: true }" />
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
-            <button class="btn btn-primary" (click)="saveNewSite(modal)">Ajouter</button>
-          </div>
-        </ng-template>
-      </div>
-
-      <div class="d-flex justify-content-end mb-4">
-        <button
-          type="button"
-          id="cancel-save"
-          data-cy="entityCreateCancelButton"
-          class="btn btn-outline-secondary me-2"
-          (click)="previousState()"
-        >
-          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
-        </button>
 
         <button
           type="submit"
-          id="save-entity"
+          id="save-entity-top"
           data-cy="entityCreateSaveButton"
+          title="Enregistrer"
           [disabled]="editForm.invalid || isSaving"
-          class="btn btn-primary"
+          class="btn-cu-save"
         >
-          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+          <fa-icon icon="save"></fa-icon>
+        </button>
+      </div>
+
+      <!-- Accordéon -->
+      <div class="cu-accordion">
+        <!-- Informations Générales (pleine largeur) -->
+        <div class="cu-accordion-item" [class.open]="isSectionOpen('general')">
+          <button type="button" class="cu-accordion-header" (click)="toggleSection('general')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="id-card" class="cu-accordion-icon"></fa-icon>
+              <span>Informations Générales</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isSectionOpen('general')">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold" for="field_raisonSociale">
+                  <span jhiTranslate="gpmGatewayApp.projectServiceClient.raisonSociale">Raison Sociale</span>
+                  <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="raisonSociale"
+                  id="field_raisonSociale"
+                  data-cy="raisonSociale"
+                  formControlName="raisonSociale"
+                />
+                <div
+                  *ngIf="
+                    editForm.get('raisonSociale')!.invalid &&
+                    (editForm.get('raisonSociale')!.dirty || editForm.get('raisonSociale')!.touched)
+                  "
+                >
+                  <small
+                    class="form-text text-danger"
+                    *ngIf="editForm.get('raisonSociale')?.errors?.required"
+                    jhiTranslate="entity.validation.required"
+                  >
+                    Ce champ est obligatoire.
+                  </small>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold" for="field_adresse">
+                  <span jhiTranslate="gpmGatewayApp.projectServiceClient.adresse">Adresse</span>
+                  <span class="text-danger">*</span>
+                </label>
+                <input type="text" class="form-control" name="adresse" id="field_adresse" data-cy="adresse" formControlName="adresse" />
+                <div *ngIf="editForm.get('adresse')!.invalid && (editForm.get('adresse')!.dirty || editForm.get('adresse')!.touched)">
+                  <small
+                    class="form-text text-danger"
+                    *ngIf="editForm.get('adresse')?.errors?.required"
+                    jhiTranslate="entity.validation.required"
+                  >
+                    Ce champ est obligatoire.
+                  </small>
+                </div>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceClient.email" for="field_email">Email</label>
+                <input type="email" class="form-control" name="email" id="field_email" data-cy="email" formControlName="email" />
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceClient.telephone" for="field_telephone"
+                  >Telephone</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  name="telephone"
+                  id="field_telephone"
+                  data-cy="telephone"
+                  formControlName="telephone"
+                />
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceClient.fax" for="field_fax">Fax</label>
+                <input type="text" class="form-control" name="fax" id="field_fax" data-cy="fax" formControlName="fax" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sections liées : 2 par ligne (uniquement en édition, pas en création) -->
+        <div class="cu-accordion-grid" *ngIf="client?.id">
+          <!-- Contacts liés -->
+          <div class="cu-accordion-item" [class.open]="isSectionOpen('contacts')">
+            <button type="button" class="cu-accordion-header" (click)="toggleSection('contacts')">
+              <span class="cu-accordion-header-left">
+                <fa-icon icon="address-book" class="cu-accordion-icon"></fa-icon>
+                <span>Contacts liés</span>
+                <span class="cu-accordion-count" *ngIf="selectedContacts.length">{{ selectedContacts.length }}</span>
+              </span>
+              <span class="cu-accordion-header-right">
+                <button type="button" class="btn-cu-add" (click)="$event.stopPropagation(); openContactModal()">
+                  <fa-icon icon="plus"></fa-icon>&nbsp;Ajouter
+                </button>
+                <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+              </span>
+            </button>
+
+            <div class="cu-accordion-body" *ngIf="isSectionOpen('contacts')">
+              <input
+                type="text"
+                class="form-control mb-3"
+                placeholder="Rechercher par raison sociale..."
+                [(ngModel)]="contactSearchTerm"
+                [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="searchContacts()"
+              />
+              <div *ngIf="selectedContacts.length > 0; else noContacts" class="cu-item-list">
+                <div class="cu-item-card" *ngFor="let contact of selectedContacts">
+                  <div class="cu-item-info">
+                    <div class="cu-item-title-row">
+                      <div class="cu-item-title">{{ contact.raisonSociale || '-' }}</div>
+                      <span class="cu-item-badge-id" *ngIf="contact.identifiantUnique">{{ contact.identifiantUnique }}</span>
+                    </div>
+                    <div class="cu-item-sub">{{ contact.email || 'Email non renseigné' }}</div>
+                    <div class="cu-item-sub">{{ contact.telephone || 'Téléphone non renseigné' }}</div>
+                  </div>
+                  <button type="button" class="cu-item-remove" (click)="unlinkContact(contact)">
+                    <fa-icon icon="times"></fa-icon>
+                  </button>
+                </div>
+              </div>
+              <ng-template #noContacts>
+                <div class="cu-empty">Aucun contact associé</div>
+              </ng-template>
+            </div>
+          </div>
+
+          <!-- Sites liés -->
+          <div class="cu-accordion-item" [class.open]="isSectionOpen('sites')">
+            <button type="button" class="cu-accordion-header" (click)="toggleSection('sites')">
+              <span class="cu-accordion-header-left">
+                <fa-icon icon="map-marker-alt" class="cu-accordion-icon"></fa-icon>
+                <span>Sites liés</span>
+                <span class="cu-accordion-count" *ngIf="selectedSites.length">{{ selectedSites.length }}</span>
+              </span>
+              <span class="cu-accordion-header-right">
+                <button type="button" class="btn-cu-add" (click)="$event.stopPropagation(); openSiteImportModal()">
+                  <fa-icon icon="file-import"></fa-icon>&nbsp;Importer
+                </button>
+                <button type="button" class="btn-cu-add" (click)="$event.stopPropagation(); openSiteModal()">
+                  <fa-icon icon="plus"></fa-icon>&nbsp;Ajouter
+                </button>
+                <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+              </span>
+            </button>
+
+            <div class="cu-accordion-body" *ngIf="isSectionOpen('sites')">
+              <input
+                type="text"
+                class="form-control mb-3"
+                placeholder="Rechercher par désignation..."
+                [(ngModel)]="siteSearchTerm"
+                [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="searchSites()"
+              />
+              <div *ngIf="selectedSites.length > 0; else noSites" class="cu-item-list">
+                <div class="cu-item-card" *ngFor="let site of selectedSites">
+                  <div class="cu-item-info">
+                    <div class="cu-item-title">{{ site.code || '-' }}</div>
+                    <div class="cu-item-sub">{{ site.designation || 'Désignation non renseignée' }}</div>
+                  </div>
+                  <button type="button" class="cu-item-remove" (click)="unlinkSite(site)">
+                    <fa-icon icon="times"></fa-icon>
+                  </button>
+                </div>
+              </div>
+              <ng-template #noSites>
+                <div class="cu-empty">Aucun site associé</div>
+              </ng-template>
+
+              <div class="cu-pagination" *ngIf="sitesTotalItems > sitesItemsPerPage">
+                <button type="button" class="btn-cu-cancel" [disabled]="sitesPage === 0" (click)="sitesPreviousPage()">Précédent</button>
+                <span class="cu-pagination-info">
+                  Page {{ sitesPage + 1 }} / {{ sitesTotalItems / sitesItemsPerPage | number: '1.0-0' }}
+                </span>
+                <button
+                  type="button"
+                  class="btn-cu-cancel"
+                  [disabled]="(sitesPage + 1) * sitesItemsPerPage >= sitesTotalItems"
+                  (click)="sitesNextPage()"
+                >
+                  Suivant
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Affaires liées -->
+          <div class="cu-accordion-item" [class.open]="isSectionOpen('affaires')">
+            <button type="button" class="cu-accordion-header" (click)="toggleSection('affaires')">
+              <span class="cu-accordion-header-left">
+                <fa-icon icon="briefcase" class="cu-accordion-icon"></fa-icon>
+                <span>Affaires liées</span>
+                <span class="cu-accordion-count" *ngIf="selectedAffaires.length">{{ selectedAffaires.length }}</span>
+              </span>
+              <span class="cu-accordion-header-right">
+                <button
+                  type="button"
+                  class="btn-cu-add"
+                  [routerLink]="['/affaire/new']"
+                  [queryParams]="{ clientId: client?.id }"
+                  (click)="$event.stopPropagation()"
+                >
+                  <fa-icon icon="plus"></fa-icon>&nbsp;Ajouter
+                </button>
+                <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+              </span>
+            </button>
+
+            <div class="cu-accordion-body" *ngIf="isSectionOpen('affaires')">
+              <input
+                type="text"
+                class="form-control mb-3"
+                placeholder="Rechercher par désignation..."
+                [(ngModel)]="affaireSearchTerm"
+                [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="searchAffaires()"
+              />
+              <div *ngIf="selectedAffaires.length > 0; else noAffaires" class="cu-item-list">
+                <div class="cu-item-card" *ngFor="let affaire of selectedAffaires">
+                  <div class="cu-item-info">
+                    <div class="cu-item-title">{{ affaire.numAffaire || '-' }}</div>
+                    <div class="cu-item-sub">{{ affaire.designationAffaire || 'Désignation non renseignée' }}</div>
+                  </div>
+                  <button type="button" class="cu-item-remove" (click)="unlinkAffaire()">
+                    <fa-icon icon="times"></fa-icon>
+                  </button>
+                </div>
+              </div>
+              <ng-template #noAffaires>
+                <div class="cu-empty">Aucune affaire associée</div>
+              </ng-template>
+            </div>
+          </div>
+
+          <!-- Factures liées -->
+          <div class="cu-accordion-item" [class.open]="isSectionOpen('factures')">
+            <button type="button" class="cu-accordion-header" (click)="toggleSection('factures')">
+              <span class="cu-accordion-header-left">
+                <fa-icon icon="file-invoice-dollar" class="cu-accordion-icon"></fa-icon>
+                <span>Factures liées</span>
+                <span class="cu-accordion-count" *ngIf="selectedFactures.length">{{ selectedFactures.length }}</span>
+              </span>
+              <span class="cu-accordion-header-right">
+                <button
+                  type="button"
+                  class="btn-cu-add"
+                  [routerLink]="['/facture/new']"
+                  [queryParams]="{ clientId: client?.id }"
+                  (click)="$event.stopPropagation()"
+                >
+                  <fa-icon icon="plus"></fa-icon>&nbsp;Ajouter
+                </button>
+                <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+              </span>
+            </button>
+
+            <div class="cu-accordion-body" *ngIf="isSectionOpen('factures')">
+              <input
+                type="text"
+                class="form-control mb-3"
+                placeholder="Rechercher par numéro de facture..."
+                [(ngModel)]="factureSearchTerm"
+                [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="searchFactures()"
+              />
+              <div *ngIf="selectedFactures.length > 0; else noFactures" class="cu-item-list">
+                <div class="cu-item-card" *ngFor="let facture of selectedFactures">
+                  <div class="cu-item-info">
+                    <div class="cu-item-title">{{ facture.numFacture || '-' }}</div>
+                    <div class="cu-item-sub">{{ facture.montantFacture || 0 }} TND</div>
+                  </div>
+                  <button type="button" class="cu-item-remove" (click)="unlinkFacture()">
+                    <fa-icon icon="times"></fa-icon>
+                  </button>
+                </div>
+              </div>
+              <ng-template #noFactures>
+                <div class="cu-empty">Aucune facture associée</div>
+              </ng-template>
+            </div>
+          </div>
+
+          <!-- Agences liées -->
+          <div class="cu-accordion-item" [class.open]="isSectionOpen('agences')">
+            <button type="button" class="cu-accordion-header" (click)="toggleSection('agences')">
+              <span class="cu-accordion-header-left">
+                <fa-icon icon="building" class="cu-accordion-icon"></fa-icon>
+                <span>Agences liées</span>
+                <span class="cu-accordion-count" *ngIf="selectedAgences.length">{{ selectedAgences.length }}</span>
+              </span>
+              <span class="cu-accordion-header-right">
+                <button type="button" class="btn-cu-add" (click)="$event.stopPropagation(); openAgenceModal()">
+                  <fa-icon icon="plus"></fa-icon>&nbsp;Ajouter
+                </button>
+                <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+              </span>
+            </button>
+
+            <div class="cu-accordion-body" *ngIf="isSectionOpen('agences')">
+              <input
+                type="text"
+                class="form-control mb-3"
+                placeholder="Rechercher par désignation..."
+                [(ngModel)]="agenceSearchTerm"
+                [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="searchAgences()"
+              />
+              <div *ngIf="selectedAgences.length > 0; else noAgences" class="cu-item-list">
+                <div class="cu-item-card" *ngFor="let agence of selectedAgences">
+                  <div class="cu-item-info">
+                    <div class="cu-item-title-row">
+                      <div class="cu-item-title">{{ agence.designation || '-' }}</div>
+                      <span class="cu-item-badge-id" *ngIf="agence.identifiantUnique">{{ agence.identifiantUnique }}</span>
+                    </div>
+                    <div class="cu-item-sub">{{ agence.ville || 'Ville non renseignée' }}, {{ agence.pays || 'Pays non renseigné' }}</div>
+                  </div>
+                  <button type="button" class="cu-item-remove" (click)="unlinkAgence()">
+                    <fa-icon icon="times"></fa-icon>
+                  </button>
+                </div>
+              </div>
+              <ng-template #noAgences>
+                <div class="cu-empty">Aucune agence associée</div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cu-toolbar cu-toolbar-bottom">
+        <span *ngIf="editForm.get('status')?.value" class="cu-badge-status">
+          {{ editForm.get('status')?.value }}
+        </span>
+
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
         </button>
       </div>
     </form>
+
+    <!-- Modals -->
+    <ng-template #contactModal let-modal>
+      <div class="modal-header">
+        <h5 class="modal-title">Nouveau Contact</h5>
+        <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-12">
+            <label class="form-label fw-bold">Raison Sociale</label>
+            <input type="text" class="form-control" [(ngModel)]="newContact.raisonSociale" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Email</label>
+            <input type="email" class="form-control" [(ngModel)]="newContact.email" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Téléphone</label>
+            <input type="text" class="form-control" [(ngModel)]="newContact.telephone" [ngModelOptions]="{ standalone: true }" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
+        <button class="btn-cu-save-modal" [disabled]="!newContact.raisonSociale?.trim()" (click)="saveNewContact(modal)">Ajouter</button>
+      </div>
+    </ng-template>
+
+    <ng-template #siteModal let-modal>
+      <div class="modal-header">
+        <h5 class="modal-title">Nouveau Site</h5>
+        <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Code</label>
+            <input type="text" class="form-control" [(ngModel)]="newSite.code" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Désignation</label>
+            <input type="text" class="form-control" [(ngModel)]="newSite.designation" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Ville</label>
+            <select class="form-control" [(ngModel)]="newSite.ville" [ngModelOptions]="{ standalone: true }">
+              <option [ngValue]="null">-- Sélectionner une ville --</option>
+              <option *ngFor="let ville of allVilles" [ngValue]="{ id: ville.id, nom: ville.nom }">{{ ville.nom }}</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">GPS X</label>
+            <input type="number" class="form-control" [(ngModel)]="newSite.gpsX" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">GPS Y</label>
+            <input type="number" class="form-control" [(ngModel)]="newSite.gpsY" [ngModelOptions]="{ standalone: true }" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
+        <button
+          class="btn-cu-save-modal"
+          [disabled]="!newSite.code?.trim() || !newSite.designation?.trim() || !newSite.ville"
+          (click)="saveNewSite(modal)"
+        >
+          Ajouter
+        </button>
+      </div>
+    </ng-template>
+    <ng-template #siteImportModal let-modal>
+      <div class="modal-header">
+        <h5 class="modal-title"><fa-icon icon="file-import"></fa-icon>&nbsp;Importer des sites depuis Excel</h5>
+        <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Étape 1 : télécharger le modèle -->
+        <div class="import-step">
+          <div class="import-step-header">
+            <span class="import-step-badge">1</span>
+            <div>
+              <div class="import-step-title">Télécharger le modèle Excel</div>
+              <div class="import-step-subtitle">
+                Téléchargez le fichier modèle vide, remplissez-le avec vos sites, puis importez-le à l'étape 2.
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-outline-secondary btn-sm mt-2" (click)="downloadSiteTemplate()">
+            <fa-icon icon="download"></fa-icon>&nbsp;Télécharger le modèle (.xlsx)
+          </button>
+        </div>
+
+        <hr />
+
+        <!-- Étape 2 : importer le fichier rempli -->
+        <div class="import-step">
+          <div class="import-step-header">
+            <span class="import-step-badge">2</span>
+            <div>
+              <div class="import-step-title">Importer le fichier rempli</div>
+              <div class="import-step-subtitle">Sélectionnez votre fichier Excel complété (.xlsx uniquement).</div>
+            </div>
+          </div>
+
+          <div
+            class="import-dropzone mt-2"
+            [class.import-dropzone-active]="siteImportDragOver"
+            (dragover)="onSiteImportDragOver($event)"
+            (dragleave)="onSiteImportDragLeave($event)"
+            (drop)="onSiteImportDrop($event)"
+          >
+            <ng-container *ngIf="!siteImportFile; else fileSelected">
+              <div class="text-muted mb-2">Glissez votre fichier ici, ou</div>
+              <label class="btn btn-outline-secondary btn-sm mb-0">
+                Parcourir...
+                <input type="file" hidden accept=".xlsx" (change)="onSiteImportFileSelected($event)" />
+              </label>
+            </ng-container>
+            <ng-template #fileSelected>
+              <div class="import-file-chip">
+                <fa-icon icon="file-excel"></fa-icon>
+                <span>{{ siteImportFile?.name }}</span>
+                <button type="button" class="btn-cu-remove-file" (click)="removeSiteImportFile()">
+                  <fa-icon icon="times"></fa-icon>
+                </button>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+
+        <div *ngIf="siteImportInProgress" class="mt-3 text-muted">Import en cours...</div>
+
+        <div *ngIf="siteImportResult" class="mt-3">
+          <div class="alert alert-success" *ngIf="siteImportResult.successCount > 0">
+            {{ siteImportResult.successCount }} site(s) importé(s) avec succès.
+          </div>
+          <div class="alert alert-danger" *ngIf="siteImportResult.errors.length > 0">
+            <div>{{ siteImportResult.errors.length }} erreur(s) :</div>
+            <ul class="mb-0">
+              <li *ngFor="let err of siteImportResult.errors">{{ err }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" (click)="modal.dismiss()"><fa-icon icon="times"></fa-icon>&nbsp;Fermer</button>
+        <button class="btn-cu-save-modal" [disabled]="!siteImportFile || siteImportInProgress" (click)="submitSiteImport()">
+          <fa-icon icon="file-import"></fa-icon>&nbsp;Lancer l'import
+        </button>
+      </div>
+    </ng-template>
+    <ng-template #agenceModal let-modal>
+      <div class="modal-header">
+        <h5 class="modal-title">Nouvelle Agence</h5>
+        <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-12">
+            <label class="form-label fw-bold">Désignation</label>
+            <input type="text" class="form-control" [(ngModel)]="newAgence.designation" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-12">
+            <label class="form-label fw-bold">Adresse</label>
+            <input type="text" class="form-control" [(ngModel)]="newAgence.adresse" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Ville</label>
+            <input type="text" class="form-control" [(ngModel)]="newAgence.ville" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Pays</label>
+            <input type="text" class="form-control" [(ngModel)]="newAgence.pays" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-12">
+            <label class="form-label fw-bold">Société</label>
+            <select class="form-control" [(ngModel)]="newAgence.societe" [ngModelOptions]="{ standalone: true }">
+              <option [ngValue]="null">-- Sélectionner une société --</option>
+              <option *ngFor="let societe of allSocietes" [ngValue]="{ id: societe.id, raisonSociale: societe.raisonSociale }">
+                {{ societe.raisonSociale }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
+        <button
+          class="btn-cu-save-modal"
+          [disabled]="
+            !newAgence.designation?.trim() ||
+            !newAgence.adresse?.trim() ||
+            !newAgence.ville?.trim() ||
+            !newAgence.pays?.trim() ||
+            !newAgence.societe
+          "
+          (click)="saveNewAgence(modal)"
+        >
+          Ajouter
+        </button>
+      </div>
+    </ng-template>
   </div>
 </div>
