@@ -71,7 +71,8 @@
       "WorkOrder",
       "WoSite",
       "WoUtilisateur",
-      "Zone"
+      "Zone",
+      "Numsequentielle"
     ],
     "entitySuffix": "",
     "gradleEnterpriseHost": "",

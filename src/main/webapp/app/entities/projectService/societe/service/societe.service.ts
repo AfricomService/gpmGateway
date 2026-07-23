@@ -8,6 +8,7 @@ import { isPresent } from 'app/core/util/operators';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { ISociete, NewSociete } from '../societe.model';
+import { IPersonne } from '../personne.model';
 
 export type PartialUpdateSociete = Partial<ISociete> & Pick<ISociete, 'id'>;
 
@@ -24,12 +25,26 @@ export type PartialUpdateRestSociete = RestOf<PartialUpdateSociete>;
 
 export type EntityResponseType = HttpResponse<ISociete>;
 export type EntityArrayResponseType = HttpResponse<ISociete[]>;
+export type EntityArrayResponseTypePeronne = HttpResponse<IPersonne[]>;
 
 @Injectable({ providedIn: 'root' })
 export class SocieteService {
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/societes', 'projectservice');
+  protected resourceUrlContactSoc = this.applicationConfigService.getEndpointFor('api/contact-societes', 'projectservice');
+  protected resourceUrlOrga = this.applicationConfigService.getEndpointFor('api', 'orgacare');
 
   constructor(protected http: HttpClient, protected applicationConfigService: ApplicationConfigService) {}
+
+  // GET /societes (paginée)
+  queryOrgaSoc(req?: any): Observable<EntityArrayResponseType> {
+    const options = createRequestOption(req);
+    return this.http.get<ISociete[]>(`${this.resourceUrlOrga}/societes`, { params: options, observe: 'response' });
+  }
+
+  getPersonnesBySocieteId(req?: any): Observable<EntityArrayResponseTypePeronne> {
+    const options = createRequestOption(req);
+    return this.http.get<IPersonne[]>(`${this.resourceUrlOrga}/personnes/by-societe-id`, { params: options, observe: 'response' });
+  }
 
   create(societe: NewSociete): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(societe);
@@ -65,6 +80,13 @@ export class SocieteService {
       .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 
+  queryContacts(req?: any): Observable<EntityArrayResponseType> {
+    const options = createRequestOption(req);
+    return this.http
+      .get<RestSociete[]>(`${this.resourceUrlContactSoc}/by-spciete-id`, { params: options, observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
   delete(id: number): Observable<HttpResponse<{}>> {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }
@@ -95,6 +117,22 @@ export class SocieteService {
       return [...societesToAdd, ...societeCollection];
     }
     return societeCollection;
+  }
+
+  findAllSocieteByAffaireId(req?: any): Observable<EntityArrayResponseType> {
+    const options = createRequestOption(req);
+    return this.http
+      .get<RestSociete[]>(`${this.resourceUrl}/findAllSocieteByAffaireId`, { params: options, observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
+  assignContactSocieteFromOrgaCare(societeId: number, personsToAssign: IPersonne[]): Observable<HttpResponse<void>> {
+    return this.http.post<void>(`${this.resourceUrl}/assign-from-orgacare`, personsToAssign, {
+      params: {
+        societeId: societeId.toString(),
+      },
+      observe: 'response',
+    });
   }
 
   protected convertDateFromClient<T extends ISociete | NewSociete | PartialUpdateSociete>(societe: T): RestOf<T> {

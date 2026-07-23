@@ -26,6 +26,8 @@ import { ZoneService } from 'app/entities/projectService/zone/service/zone.servi
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ViewChild, TemplateRef } from '@angular/core';
+import { SocieteService } from '../../societe/service/societe.service';
+import { ISociete } from '../../societe/societe.model';
 
 @Component({
   selector: 'jhi-affaire-update',
@@ -34,6 +36,7 @@ import { ViewChild, TemplateRef } from '@angular/core';
 export class AffaireUpdateComponent implements OnInit {
   @ViewChild('articleModal') articleModal!: TemplateRef<any>;
   @ViewChild('matriceModal') matriceModal!: TemplateRef<any>;
+  @ViewChild('societeModal') societeModal!: TemplateRef<any>;
 
   isSaving = false;
   affaire: IAffaire | null = null;
@@ -55,6 +58,15 @@ export class AffaireUpdateComponent implements OnInit {
   articleSearchTerm = '';
   clientIdFromQuery: number | null = null;
 
+  // ── Sociétés Associées ─────────────────────────────────────────
+  societesAssociees: ISociete[] = [];
+  allSocietes: ISociete[] = [];
+  tempSelectedSocietes: ISociete[] = [];
+  societeSearchTerm = '';
+  isSavingSocietes = false;
+
+  primarySociete: ISociete | null = null;
+
   editForm: AffaireFormGroup = this.affaireFormService.createAffaireFormGroup();
 
   constructor(
@@ -68,7 +80,8 @@ export class AffaireUpdateComponent implements OnInit {
     protected villeService: VilleService,
     protected zoneService: ZoneService,
     protected activatedRoute: ActivatedRoute,
-    protected modalService: NgbModal
+    protected modalService: NgbModal,
+    protected societeService: SocieteService
   ) {}
 
   // ── Article modal ──────────────────────────────────────────────
@@ -144,6 +157,66 @@ export class AffaireUpdateComponent implements OnInit {
     });
   }
 
+  // ── Societe modal ──────────────────────────────────────────────
+  openSocieteModal(): void {
+    this.tempSelectedSocietes = [...this.societesAssociees];
+    if (this.allSocietes.length === 0) {
+      this.loadAllSocietes();
+    }
+    this.modalService.open(this.societeModal, { size: 'lg', backdrop: 'static', centered: true });
+  }
+
+  loadAllSocietes(): void {
+    this.societeService
+      .query({ page: 0, size: 1000, sort: ['id', 'asc'] })
+      .pipe(map((res: HttpResponse<ISociete[]>) => res.body ?? []))
+      .subscribe((societes: ISociete[]) => (this.allSocietes = societes));
+  }
+
+  toggleTempSocieteSelection(societe: ISociete): void {
+    const index = this.tempSelectedSocietes.findIndex(s => s.id === societe.id);
+    if (index > -1) {
+      this.tempSelectedSocietes.splice(index, 1);
+    } else {
+      this.tempSelectedSocietes.push(societe);
+    }
+  }
+
+  isTempSocieteSelected(societe: ISociete): boolean {
+    return this.tempSelectedSocietes.findIndex(s => s.id === societe.id) > -1;
+  }
+
+  get filteredSocietes(): ISociete[] {
+    if (!this.societeSearchTerm) {
+      return this.allSocietes;
+    }
+    const term = this.societeSearchTerm.toLowerCase();
+    return this.allSocietes.filter(s => (s.raisonSociale?.toLowerCase() ?? '').includes(term));
+  }
+
+  confirmSocieteSelection(modal: any): void {
+    if (!this.affaire?.id) {
+      modal.close();
+      return;
+    }
+
+    this.isSavingSocietes = true;
+    const societeIds = this.tempSelectedSocietes.map(s => s.id);
+
+    this.affaireService
+      .updateSocieteAssociees({ affaireId: this.affaire.id, societeIds })
+      .pipe(finalize(() => (this.isSavingSocietes = false)))
+      .subscribe({
+        next: () => {
+          this.societesAssociees = [...this.tempSelectedSocietes];
+          modal.close();
+        },
+        error: () => {
+          // Intentionally left blank; wire to jhi-alert-error if desired.
+        },
+      });
+  }
+
   // ── Shared ─────────────────────────────────────────────────────
   compareClient = (o1: IClient | null, o2: IClient | null): boolean => this.clientService.compareClient(o1, o2);
 
@@ -162,9 +235,20 @@ export class AffaireUpdateComponent implements OnInit {
     this.activatedRoute.data.subscribe(({ affaire }) => {
       this.affaire = affaire;
       if (affaire) {
+        this.societeService.find(this.affaire!.societeId!).subscribe(res => (this.primarySociete = res.body));
         this.updateForm(affaire);
       }
       this.loadRelationshipsOptions();
+    });
+
+    // Load fake associated companies data
+    this.loadSocietesAssociees();
+  }
+
+  // ── Fake Data Loader for Sociétés Associées ────────────────────
+  loadSocietesAssociees(): void {
+    this.societeService.findAllSocieteByAffaireId({ affaireId: this.affaire?.id }).subscribe((res: HttpResponse<any[]>) => {
+      this.societesAssociees = res.body!;
     });
   }
 

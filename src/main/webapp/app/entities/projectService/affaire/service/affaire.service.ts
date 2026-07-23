@@ -69,6 +69,19 @@ export class AffaireService {
       .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 
+  findByClientId(clientId: number): Observable<EntityArrayResponseType> {
+    return this.http
+      .get<RestAffaire[]>(`${this.resourceUrl}/client/${clientId}`, { observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
+  searchByClientId(clientId: number, designation: string): Observable<EntityArrayResponseType> {
+    const options = createRequestOption({ designation });
+    return this.http
+      .get<RestAffaire[]>(`${this.resourceUrl}/client/${clientId}/search`, { params: options, observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
   delete(id: number): Observable<HttpResponse<{}>> {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }
@@ -99,6 +112,16 @@ export class AffaireService {
       return [...affairesToAdd, ...affaireCollection];
     }
     return affaireCollection;
+  }
+
+  updateSocieteAssociees(req?: any): Observable<HttpResponse<string>> {
+    const options = createRequestOption(req);
+
+    return this.http.get(`${this.resourceUrl}/updateSocieteAssociees`, {
+      params: options,
+      observe: 'response',
+      responseType: 'text',
+    });
   }
 
   protected convertDateFromClient<T extends IAffaire | NewAffaire | PartialUpdateAffaire>(affaire: T): RestOf<T> {

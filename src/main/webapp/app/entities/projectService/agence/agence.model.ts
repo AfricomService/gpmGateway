@@ -13,6 +13,8 @@ export interface IAgence {
   createdByUserLogin?: string | null;
   updatedBy?: string | null;
   updatedByUserLogin?: string | null;
+  clientId?: number | null;
+  identifiantUnique?: string | null;
   societe?: Pick<ISociete, 'id' | 'raisonSociale'> | null;
 }
 

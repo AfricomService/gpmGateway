@@ -14,17 +14,29 @@ import { SocieteDeleteDialogComponent } from '../delete/societe-delete-dialog.co
 @Component({
   selector: 'jhi-societe',
   templateUrl: './societe.component.html',
+  styleUrls: ['./societe.component.scss'],
 })
 export class SocieteComponent implements OnInit {
+  // ── Raw data from backend ─────────────────────────────────────────────────
   societes?: ISociete[];
-  isLoading = false;
 
+  // ── Filtered / displayed data ─────────────────────────────────────────────
+  filteredSocietes?: ISociete[];
+
+  // ── Pagination & sort ─────────────────────────────────────────────────────
+  isLoading = false;
   predicate = 'id';
   ascending = true;
-
   itemsPerPage = ITEMS_PER_PAGE;
   totalItems = 0;
   page = 1;
+
+  // ── UI state ──────────────────────────────────────────────────────────────
+  /** Live search term */
+  searchTerm = '';
+
+  /** Card grid or table list */
+  viewMode: 'grid' | 'list' = 'grid';
 
   constructor(
     protected societeService: SocieteService,
@@ -35,32 +47,41 @@ export class SocieteComponent implements OnInit {
 
   trackId = (_index: number, item: ISociete): number => this.societeService.getSocieteIdentifier(item);
 
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
+
   ngOnInit(): void {
+    this.load();
+  }
+
+  // ── Public actions ────────────────────────────────────────────────────────
+
+  load(): void {
+    this.loadFromBackendWithRouteInformations().subscribe({
+      next: (res: EntityArrayResponseType) => this.onResponseSuccess(res),
+    });
+  }
+
+  /** Called by the "Actualiser" button. */
+  refresh(): void {
     this.load();
   }
 
   delete(societe: ISociete): void {
     const modalRef = this.modalService.open(SocieteDeleteDialogComponent, { size: 'lg', backdrop: 'static' });
     modalRef.componentInstance.societe = societe;
-    // unsubscribe not needed because closed completes on modal close
     modalRef.closed
       .pipe(
         filter(reason => reason === ITEM_DELETED_EVENT),
         switchMap(() => this.loadFromBackendWithRouteInformations())
       )
       .subscribe({
-        next: (res: EntityArrayResponseType) => {
-          this.onResponseSuccess(res);
-        },
+        next: (res: EntityArrayResponseType) => this.onResponseSuccess(res),
       });
   }
 
-  load(): void {
-    this.loadFromBackendWithRouteInformations().subscribe({
-      next: (res: EntityArrayResponseType) => {
-        this.onResponseSuccess(res);
-      },
-    });
+  /** Called on double-click on a card or a row: navigate straight to the edit screen. */
+  goToEdit(societe: ISociete): void {
+    this.router.navigate(['/societe', societe.id, 'edit']);
   }
 
   navigateToWithComponentValues(): void {
@@ -69,6 +90,35 @@ export class SocieteComponent implements OnInit {
 
   navigateToPage(page = this.page): void {
     this.handleNavigation(page, this.predicate, this.ascending);
+  }
+
+  // ── Filter helpers (called from template) ─────────────────────────────────
+
+  /** Called on every keystroke in the search input via (ngModelChange). */
+  filterSocietes(): void {
+    this.applyFilters();
+  }
+
+  // ── Private helpers ───────────────────────────────────────────────────────
+
+  /** Applies the search term to this.societes. */
+  private applyFilters(): void {
+    let result = this.societes ?? [];
+
+    const term = this.searchTerm.trim().toLowerCase();
+    if (term) {
+      result = result.filter(
+        s =>
+          (s.raisonSociale ?? '').toLowerCase().includes(term) ||
+          (s.raisonSocialeAbrege ?? '').toLowerCase().includes(term) ||
+          (s.identifiantUnique ?? '').toLowerCase().includes(term) ||
+          (s.registreCommerce ?? '').toLowerCase().includes(term) ||
+          (s.pays ?? '').toLowerCase().includes(term) ||
+          (s.email ?? '').toLowerCase().includes(term)
+      );
+    }
+
+    this.filteredSocietes = result;
   }
 
   protected loadFromBackendWithRouteInformations(): Observable<EntityArrayResponseType> {
@@ -88,8 +138,9 @@ export class SocieteComponent implements OnInit {
 
   protected onResponseSuccess(response: EntityArrayResponseType): void {
     this.fillComponentAttributesFromResponseHeader(response.headers);
-    const dataFromBody = this.fillComponentAttributesFromResponseBody(response.body);
-    this.societes = dataFromBody;
+    this.societes = this.fillComponentAttributesFromResponseBody(response.body);
+    // Re-apply any active filters whenever new data arrives from backend.
+    this.applyFilters();
   }
 
   protected fillComponentAttributesFromResponseBody(data: ISociete[] | null): ISociete[] {
@@ -102,7 +153,7 @@ export class SocieteComponent implements OnInit {
 
   protected queryBackend(page?: number, predicate?: string, ascending?: boolean): Observable<EntityArrayResponseType> {
     this.isLoading = true;
-    const pageToLoad: number = page ?? 1;
+    const pageToLoad = page ?? 1;
     const queryObject = {
       page: pageToLoad - 1,
       size: this.itemsPerPage,
@@ -112,24 +163,20 @@ export class SocieteComponent implements OnInit {
   }
 
   protected handleNavigation(page = this.page, predicate?: string, ascending?: boolean): void {
-    const queryParamsObj = {
-      page,
-      size: this.itemsPerPage,
-      sort: this.getSortQueryParam(predicate, ascending),
-    };
-
     this.router.navigate(['./'], {
       relativeTo: this.activatedRoute,
-      queryParams: queryParamsObj,
+      queryParams: {
+        page,
+        size: this.itemsPerPage,
+        sort: this.getSortQueryParam(predicate, ascending),
+      },
     });
   }
 
   protected getSortQueryParam(predicate = this.predicate, ascending = this.ascending): string[] {
-    const ascendingQueryParam = ascending ? ASC : DESC;
     if (predicate === '') {
       return [];
-    } else {
-      return [predicate + ',' + ascendingQueryParam];
     }
+    return [`${predicate},${ascending ? ASC : DESC}`];
   }
 }

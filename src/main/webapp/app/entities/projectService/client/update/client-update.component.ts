@@ -11,6 +11,9 @@ import { IContact, NewContact } from 'app/entities/projectService/contact/contac
 import { ContactService } from 'app/entities/projectService/contact/service/contact.service';
 import { ISite, NewSite } from 'app/entities/projectService/site/site.model';
 import { SiteService } from 'app/entities/projectService/site/service/site.service';
+import { SiteImportService, ISiteImportResult } from 'app/entities/projectService/site/service/site-import.service';
+import { IVille } from 'app/entities/projectService/ville/ville.model';
+import { VilleService } from 'app/entities/projectService/ville/service/ville.service';
 import { IAffaire } from 'app/entities/projectService/affaire/affaire.model';
 import { AffaireService } from 'app/entities/projectService/affaire/service/affaire.service';
 import { IFacture } from 'app/entities/financeService/facture/facture.model';
@@ -18,41 +21,74 @@ import { FactureService } from 'app/entities/financeService/facture/service/fact
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { TemplateRef, ViewChild } from '@angular/core';
 
+import { IAgence, NewAgence } from 'app/entities/projectService/agence/agence.model';
+import { AgenceService } from 'app/entities/projectService/agence/service/agence.service';
+import { ISociete } from 'app/entities/projectService/societe/societe.model';
+import { SocieteService } from 'app/entities/projectService/societe/service/societe.service';
+
+type AccordionSection = 'general' | 'contacts' | 'sites' | 'affaires' | 'factures' | 'agences';
+
 @Component({
   selector: 'jhi-client-update',
   templateUrl: './client-update.component.html',
+  styleUrls: ['./client-update.component.scss'],
 })
 export class ClientUpdateComponent implements OnInit {
   @ViewChild('contactModal') contactModal!: TemplateRef<unknown>;
   @ViewChild('siteModal') siteModal!: TemplateRef<unknown>;
+  @ViewChild('agenceModal') agenceModal!: TemplateRef<unknown>;
+  @ViewChild('siteImportModal') siteImportModal!: TemplateRef<unknown>;
 
   isSaving = false;
   client: IClient | null = null;
 
   allContacts: IContact[] = [];
   selectedContacts: IContact[] = [];
+  contactSearchTerm = '';
 
   allSites: ISite[] = [];
   selectedSites: ISite[] = [];
+  allVilles: IVille[] = [];
+  siteSearchTerm = '';
+  sitesPage = 0;
+  sitesItemsPerPage = 5;
+  sitesTotalItems = 0;
 
-  allAffaires: IAffaire[] = [];
   selectedAffaires: IAffaire[] = [];
+  affaireSearchTerm = '';
 
-  allFactures: IFacture[] = [];
   selectedFactures: IFacture[] = [];
+  factureSearchTerm = '';
+
+  selectedAgences: IAgence[] = [];
+  agenceSearchTerm = '';
+  allSocietes: ISociete[] = [];
+  newAgence: Partial<NewAgence> = {};
 
   newContact: Partial<NewContact> = {};
   newSite: Partial<NewSite> = {};
 
+  siteImportFile: File | null = null;
+  siteImportInProgress = false;
+  siteImportResult: ISiteImportResult | null = null;
+  siteImportDragOver = false;
+
   editForm: ClientFormGroup = this.clientFormService.createClientFormGroup();
+
+  // === Gestion de l'accordéon ===
+  openSections: Set<AccordionSection> = new Set(['general']);
 
   constructor(
     protected clientService: ClientService,
     protected clientFormService: ClientFormService,
     protected contactService: ContactService,
     protected siteService: SiteService,
+    protected siteImportService: SiteImportService,
+    protected villeService: VilleService,
     protected affaireService: AffaireService,
     protected factureService: FactureService,
+    protected agenceService: AgenceService,
+    protected societeService: SocieteService,
     protected activatedRoute: ActivatedRoute,
     protected modalService: NgbModal
   ) {}
@@ -68,30 +104,32 @@ export class ClientUpdateComponent implements OnInit {
   }
 
   loadRelationships(): void {
-    this.contactService.query().subscribe((res: HttpResponse<IContact[]>) => {
-      this.allContacts = res.body ?? [];
-      if (this.client?.id) {
-        this.selectedContacts = this.allContacts.filter(contact => contact.client?.id === this.client!.id);
-      }
+    this.villeService.query().subscribe((res: HttpResponse<IVille[]>) => {
+      this.allVilles = res.body ?? [];
     });
-    this.siteService.query().subscribe((res: HttpResponse<ISite[]>) => {
-      this.allSites = res.body ?? [];
-      if (this.client?.id) {
-        this.selectedSites = this.allSites.filter(site => site.client?.id === this.client!.id);
-      }
+    this.societeService.query().subscribe((res: HttpResponse<ISociete[]>) => {
+      this.allSocietes = res.body ?? [];
     });
-    this.affaireService.query().subscribe((res: HttpResponse<IAffaire[]>) => {
-      this.allAffaires = res.body ?? [];
-      if (this.client?.id) {
-        this.selectedAffaires = this.allAffaires.filter(affaire => affaire.client?.id === this.client!.id);
-      }
-    });
-    this.factureService.query().subscribe((res: HttpResponse<IFacture[]>) => {
-      this.allFactures = res.body ?? [];
-      if (this.client?.id) {
-        this.selectedFactures = this.allFactures.filter(facture => facture.clientId === this.client!.id);
-      }
-    });
+    if (this.client?.id) {
+      this.loadContacts();
+      this.loadSites();
+      this.loadAffaires();
+      this.loadFactures();
+      this.loadAgences();
+    }
+  }
+
+  // === Accordéon ===
+  toggleSection(section: AccordionSection): void {
+    if (this.openSections.has(section)) {
+      this.openSections.delete(section);
+    } else {
+      this.openSections.add(section);
+    }
+  }
+
+  isSectionOpen(section: AccordionSection): boolean {
+    return this.openSections.has(section);
   }
 
   openContactModal(): void {
@@ -105,8 +143,8 @@ export class ClientUpdateComponent implements OnInit {
       return;
     }
 
-    const createdContact: IContact = {
-      id: this.generateTempId(),
+    const contactToCreate: NewContact = {
+      id: null,
       raisonSociale: this.newContact.raisonSociale.trim(),
       identifiantUnique: this.newContact.identifiantUnique ?? null,
       adresse: this.newContact.adresse ?? null,
@@ -116,40 +154,290 @@ export class ClientUpdateComponent implements OnInit {
       client: clientRef,
     };
 
-    this.selectedContacts = [...this.selectedContacts, createdContact];
-    modal.close();
+    this.contactService.create(contactToCreate).subscribe({
+      next: () => {
+        this.loadContacts();
+        modal.close();
+      },
+      error: () => {
+        // Optionnel : notifier l'utilisateur via jhi-alert-error ou toast
+      },
+    });
+  }
+
+  loadContacts(): void {
+    if (!this.client?.id) {
+      return;
+    }
+    const term = this.contactSearchTerm.trim();
+    const request$ = term ? this.contactService.searchByClientId(this.client.id, term) : this.contactService.findByClientId(this.client.id);
+
+    request$.subscribe((res: HttpResponse<IContact[]>) => {
+      this.selectedContacts = res.body ?? [];
+    });
+  }
+
+  searchContacts(): void {
+    this.loadContacts();
+  }
+
+  loadAffaires(): void {
+    if (!this.client?.id) {
+      return;
+    }
+    const term = this.affaireSearchTerm.trim();
+    const request$ = term ? this.affaireService.searchByClientId(this.client.id, term) : this.affaireService.findByClientId(this.client.id);
+
+    request$.subscribe((res: HttpResponse<IAffaire[]>) => {
+      this.selectedAffaires = res.body ?? [];
+    });
+  }
+
+  searchAffaires(): void {
+    this.loadAffaires();
+  }
+
+  loadFactures(): void {
+    if (!this.client?.id) {
+      return;
+    }
+    const term = this.factureSearchTerm.trim();
+    const request$ = term ? this.factureService.searchByClientId(this.client.id, term) : this.factureService.findByClientId(this.client.id);
+
+    request$.subscribe((res: HttpResponse<IFacture[]>) => {
+      this.selectedFactures = res.body ?? [];
+    });
+  }
+
+  searchFactures(): void {
+    this.loadFactures();
+  }
+
+  loadAgences(): void {
+    if (!this.client?.id) {
+      return;
+    }
+    const term = this.agenceSearchTerm.trim();
+    const request$ = term ? this.agenceService.searchByClientId(this.client.id, term) : this.agenceService.findByClientId(this.client.id);
+
+    request$.subscribe((res: HttpResponse<IAgence[]>) => {
+      this.selectedAgences = res.body ?? [];
+    });
+  }
+
+  searchAgences(): void {
+    this.loadAgences();
+  }
+
+  openAgenceModal(): void {
+    this.newAgence = {};
+    this.modalService.open(this.agenceModal, { size: 'lg', backdrop: 'static', centered: true });
+  }
+
+  saveNewAgence(modal: any): void {
+    if (
+      !this.client?.id ||
+      !this.newAgence.designation?.trim() ||
+      !this.newAgence.adresse?.trim() ||
+      !this.newAgence.ville?.trim() ||
+      !this.newAgence.pays?.trim() ||
+      !this.newAgence.societe
+    ) {
+      return;
+    }
+
+    const agenceToCreate: NewAgence = {
+      id: null,
+      designation: this.newAgence.designation.trim(),
+      adresse: this.newAgence.adresse.trim(),
+      ville: this.newAgence.ville.trim(),
+      pays: this.newAgence.pays.trim(),
+      societe: this.newAgence.societe,
+      clientId: this.client.id,
+    };
+
+    this.agenceService.create(agenceToCreate).subscribe({
+      next: () => {
+        this.loadAgences();
+        modal.close();
+      },
+      error: () => {
+        // Optionnel : notifier l'utilisateur via jhi-alert-error ou toast
+      },
+    });
+  }
+
+  unlinkAgence(): void {
+    // Placeholder: unlink flow will be implemented later.
   }
 
   openSiteModal(): void {
-    this.newSite = {};
+    this.newSite = { ville: null };
     this.modalService.open(this.siteModal, { size: 'lg', backdrop: 'static', centered: true });
   }
 
   saveNewSite(modal: any): void {
     const clientRef = this.client ? { id: this.client.id, raisonSociale: this.client.raisonSociale } : null;
-    if (!clientRef || !this.newSite.code?.trim() || !this.newSite.designation?.trim()) {
+    if (!clientRef || !this.newSite.code?.trim() || !this.newSite.designation?.trim() || !this.newSite.ville) {
       return;
     }
 
-    const createdSite: ISite = {
-      id: this.generateTempId(),
+    const siteToCreate: NewSite = {
+      id: null,
       code: this.newSite.code.trim(),
       designation: this.newSite.designation.trim(),
       gpsX: this.newSite.gpsX ?? null,
       gpsY: this.newSite.gpsY ?? null,
+      ville: this.newSite.ville,
       client: clientRef,
     };
 
-    this.selectedSites = [...this.selectedSites, createdSite];
-    modal.close();
+    this.siteService.create(siteToCreate).subscribe({
+      next: () => {
+        this.loadSites();
+        modal.close();
+      },
+      error: () => {
+        // Optionnel : notifier l'utilisateur via jhi-alert-error ou toast
+      },
+    });
   }
 
-  unlinkContact(): void {
-    // Placeholder: unlink flow will be implemented later.
+  openSiteImportModal(): void {
+    this.siteImportFile = null;
+    this.siteImportResult = null;
+    this.modalService.open(this.siteImportModal, { size: 'lg', backdrop: 'static', centered: true });
   }
 
-  unlinkSite(): void {
-    // Placeholder: unlink flow will be implemented later.
+  onSiteImportFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.siteImportFile = input.files && input.files.length > 0 ? input.files[0] : null;
+    this.siteImportResult = null;
+  }
+
+  submitSiteImport(): void {
+    if (!this.client?.id || !this.siteImportFile) {
+      return;
+    }
+
+    this.siteImportInProgress = true;
+    this.siteImportService.importSites(this.client.id, this.siteImportFile).subscribe({
+      next: response => {
+        this.siteImportResult = response.body;
+        this.siteImportInProgress = false;
+        this.loadSites();
+      },
+      error: () => {
+        this.siteImportInProgress = false;
+      },
+    });
+  }
+
+  downloadSiteTemplate(): void {
+    this.siteImportService.downloadTemplate().subscribe(response => {
+      const blob = response.body;
+      if (!blob) {
+        return;
+      }
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'modele_import_sites.xlsx';
+      link.click();
+      window.URL.revokeObjectURL(url);
+    });
+  }
+
+  onSiteImportDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.siteImportDragOver = true;
+  }
+
+  onSiteImportDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.siteImportDragOver = false;
+  }
+
+  onSiteImportDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.siteImportDragOver = false;
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      this.siteImportFile = files[0];
+      this.siteImportResult = null;
+    }
+  }
+
+  removeSiteImportFile(): void {
+    this.siteImportFile = null;
+    this.siteImportResult = null;
+  }
+
+  unlinkContact(contact: IContact): void {
+    if (!contact.id) {
+      return;
+    }
+    this.contactService.delete(contact.id).subscribe({
+      next: () => {
+        this.loadContacts();
+      },
+      error: () => {
+        // Optionnel : notifier l'utilisateur via jhi-alert-error ou toast
+      },
+    });
+  }
+
+  unlinkSite(site: ISite): void {
+    if (!site.id) {
+      return;
+    }
+    this.siteService.delete(site.id).subscribe({
+      next: () => {
+        this.loadSites();
+      },
+      error: () => {
+        // Optionnel : notifier l'utilisateur via jhi-alert-error ou toast
+      },
+    });
+  }
+
+  loadSites(): void {
+    if (!this.client?.id) {
+      return;
+    }
+    const req = { page: this.sitesPage, size: this.sitesItemsPerPage };
+    const term = this.siteSearchTerm.trim();
+
+    const request$ = term
+      ? this.siteService.searchByClientId(this.client.id, term, req)
+      : this.siteService.findByClientId(this.client.id, req);
+
+    request$.subscribe((res: HttpResponse<ISite[]>) => {
+      this.selectedSites = res.body ?? [];
+      this.sitesTotalItems = Number(res.headers.get('X-Total-Count')) || 0;
+    });
+  }
+
+  searchSites(): void {
+    this.sitesPage = 0;
+    this.loadSites();
+  }
+
+  sitesPreviousPage(): void {
+    if (this.sitesPage > 0) {
+      this.sitesPage--;
+      this.loadSites();
+    }
+  }
+
+  sitesNextPage(): void {
+    if ((this.sitesPage + 1) * this.sitesItemsPerPage < this.sitesTotalItems) {
+      this.sitesPage++;
+      this.loadSites();
+    }
   }
 
   unlinkAffaire(): void {
@@ -170,7 +458,7 @@ export class ClientUpdateComponent implements OnInit {
     if (client.id !== null) {
       this.subscribeToSaveResponse(this.clientService.update(client));
     } else {
-      this.subscribeToSaveResponse(this.clientService.create(client));
+      this.subscribeToSaveResponse(this.clientService.identifierEtEnregistrer(client));
     }
   }
 

@@ -69,6 +69,19 @@ export class FactureService {
       .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 
+  findByClientId(clientId: number): Observable<EntityArrayResponseType> {
+    return this.http
+      .get<RestFacture[]>(`${this.resourceUrl}/client/${clientId}`, { observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
+  searchByClientId(clientId: number, numFacture: string): Observable<EntityArrayResponseType> {
+    const options = createRequestOption({ numFacture });
+    return this.http
+      .get<RestFacture[]>(`${this.resourceUrl}/client/${clientId}/search`, { params: options, observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
   delete(id: number): Observable<HttpResponse<{}>> {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }
