@@ -180,17 +180,17 @@ spring:
   output:
     ansi:
       console-available: true
-  security:
-    oauth2:
-      client:
-        provider:
-          oidc:
-            issuer-uri: http://localhost:9080/realms/Africom
-        registration:
-          oidc:
-            client-id: gpm_app
-            client-secret: O59yB3ltLQ4vbAT2QLh9rEWnLP3mz1tD
-            scope: openid, profile, email, offline_access # last one for refresh tokens
+#  security:
+#    oauth2:
+#      client:
+#        provider:
+#          oidc:
+#            issuer-uri: http://localhost:9080/realms/jhipster
+#        registration:
+#          oidc:
+#            client-id: internal
+#            client-secret: internal
+#            scope: openid, profile, email, offline_access # last one for refresh tokens
 
 server:
   servlet:
