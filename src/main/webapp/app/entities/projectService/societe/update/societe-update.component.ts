@@ -216,6 +216,37 @@ export class SocieteUpdateComponent implements OnInit {
     }
   }
 
+  areAllFilteredPersonnesSelected(): boolean {
+    return (
+      this.filteredOrgaPersonnes.length > 0 &&
+      this.filteredOrgaPersonnes.every(person => this.selectedPersonnes.some(selected => selected.id === person.id))
+    );
+  }
+
+  areSomeFilteredPersonnesSelected(): boolean {
+    const selectedCount = this.filteredOrgaPersonnes.filter(person =>
+      this.selectedPersonnes.some(selected => selected.id === person.id)
+    ).length;
+
+    return selectedCount > 0 && selectedCount < this.filteredOrgaPersonnes.length;
+  }
+
+  toggleSelectAllFiltered(): void {
+    if (this.areAllFilteredPersonnesSelected()) {
+      // Unselect only the currently filtered personnes
+      this.selectedPersonnes = this.selectedPersonnes.filter(
+        selected => !this.filteredOrgaPersonnes.some(person => person.id === selected.id)
+      );
+    } else {
+      // Add only missing personnes
+      this.filteredOrgaPersonnes.forEach(person => {
+        if (!this.selectedPersonnes.some(selected => selected.id === person.id)) {
+          this.selectedPersonnes.push(person);
+        }
+      });
+    }
+  }
+
   protected subscribeToSaveResponse(result: Observable<HttpResponse<ISociete>>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
       next: () => this.onSaveSuccess(),
