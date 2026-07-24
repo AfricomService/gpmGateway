@@ -1,535 +1,515 @@
-<div class="row justify-content-center">
-  <div class="col-md-12 col-lg-10" style="padding-top: 2em">
+<div class="societe-update-page">
+  <button
+    type="button"
+    id="back-to-societe-list"
+    data-cy="entityBackButton"
+    title="Retour à la liste"
+    class="btn-cu-back-floating"
+    [routerLink]="['/societe']"
+  >
+    <fa-icon icon="arrow-left"></fa-icon>
+  </button>
+
+  <div class="cu-container">
     <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-      <h5
-        *ngIf="editForm.controls.id.value === null"
-        style="padding-top: 2em; text-transform: uppercase; font-style: italic"
-        id="jhi-societe-heading"
-        data-cy="SocieteCreateUpdateHeading"
-        class="mb-4"
-      >
-        CRÉATION D'UNE SOCIÉTÉ
-      </h5>
-
-      <h4
-        *ngIf="editForm.controls.id.value !== null"
-        style="padding-top: 2em; text-transform: uppercase; font-style: italic"
-        id="jhi-societe-heading"
-        class="mb-4"
-      >
-        <span>SOCIÉTÉ {{ societe?.raisonSociale }}</span>
-      </h4>
-
       <jhi-alert-error></jhi-alert-error>
 
-      <div class="row">
-        <!-- Section: Informations Générales -->
-        <div class="col-lg-6 mb-4">
-          <div class="card shadow-sm h-100">
-            <div class="card-header bg-light">
-              <h5 class="mb-0">Informations Générales</h5>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-12 mb-3">
-                  <label
-                    class="form-label font-weight-bold"
-                    jhiTranslate="gpmGatewayApp.projectServiceSociete.raisonSociale"
-                    for="field_raisonSociale"
-                    >Raison Sociale</label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="raisonSociale"
-                    id="field_raisonSociale"
-                    data-cy="raisonSociale"
-                    formControlName="raisonSociale"
-                  />
-                  <div
-                    *ngIf="
-                      editForm.get('raisonSociale')!.invalid &&
-                      (editForm.get('raisonSociale')!.dirty || editForm.get('raisonSociale')!.touched)
-                    "
-                  >
-                    <small
-                      class="form-text text-danger"
-                      *ngIf="editForm.get('raisonSociale')?.errors?.required"
-                      jhiTranslate="entity.validation.required"
-                    >
-                      Ce champ est obligatoire.
-                    </small>
-                  </div>
-                </div>
-
-                <div class="col-md-12 mb-3">
-                  <label
-                    class="form-label font-weight-bold"
-                    jhiTranslate="gpmGatewayApp.projectServiceSociete.raisonSocialeAbrege"
-                    for="field_raisonSocialeAbrege"
-                    >Raison Sociale Abrege</label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="raisonSocialeAbrege"
-                    id="field_raisonSocialeAbrege"
-                    data-cy="raisonSocialeAbrege"
-                    formControlName="raisonSocialeAbrege"
-                  />
-                </div>
-
-                <div class="col-md-12 mb-3">
-                  <label
-                    class="form-label font-weight-bold"
-                    jhiTranslate="gpmGatewayApp.projectServiceSociete.identifiantUnique"
-                    for="field_identifiantUnique"
-                    >Identifiant Unique</label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="identifiantUnique"
-                    id="field_identifiantUnique"
-                    data-cy="identifiantUnique"
-                    formControlName="identifiantUnique"
-                  />
-                  <div
-                    *ngIf="
-                      editForm.get('identifiantUnique')!.invalid &&
-                      (editForm.get('identifiantUnique')!.dirty || editForm.get('identifiantUnique')!.touched)
-                    "
-                  >
-                    <small
-                      class="form-text text-danger"
-                      *ngIf="editForm.get('identifiantUnique')?.errors?.required"
-                      jhiTranslate="entity.validation.required"
-                    >
-                      Ce champ est obligatoire.
-                    </small>
-                  </div>
-                </div>
-
-                <div class="col-md-12 mb-3">
-                  <label
-                    class="form-label font-weight-bold"
-                    jhiTranslate="gpmGatewayApp.projectServiceSociete.registreCommerce"
-                    for="field_registreCommerce"
-                    >Registre Commerce</label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="registreCommerce"
-                    id="field_registreCommerce"
-                    data-cy="registreCommerce"
-                    formControlName="registreCommerce"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+      <!-- Toolbar : Raison sociale / Identifiant (gauche) + Enregistrer (droite) -->
+      <div class="cu-toolbar">
+        <div class="cu-toolbar-left">
+          <span class="cu-page-kicker" *ngIf="editForm.get('id')?.value === null" jhiTranslate="entity.action.create"
+            >Création d'une société</span
+          >
+          <ng-container *ngIf="editForm.get('id')?.value !== null">
+            <span class="cu-badge-id" *ngIf="editForm.get('identifiantUnique')?.value">
+              {{ editForm.get('identifiantUnique')?.value }}
+            </span>
+            <span class="cu-page-title">{{ societe?.raisonSociale }}</span>
+          </ng-container>
         </div>
-
-        <!-- Section: Coordonnées -->
-        <div class="col-lg-6 mb-4">
-          <div class="card shadow-sm h-100">
-            <div class="card-header bg-light">
-              <h5 class="mb-0">Coordonnées</h5>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-12 mb-3">
-                  <label class="form-label font-weight-bold" jhiTranslate="gpmGatewayApp.projectServiceSociete.adresse" for="field_adresse"
-                    >Adresse</label
-                  >
-                  <input type="text" class="form-control" name="adresse" id="field_adresse" data-cy="adresse" formControlName="adresse" />
-                  <div *ngIf="editForm.get('adresse')!.invalid && (editForm.get('adresse')!.dirty || editForm.get('adresse')!.touched)">
-                    <small
-                      class="form-text text-danger"
-                      *ngIf="editForm.get('adresse')?.errors?.required"
-                      jhiTranslate="entity.validation.required"
-                    >
-                      Ce champ est obligatoire.
-                    </small>
-                  </div>
-                </div>
-
-                <div class="col-md-12 mb-3">
-                  <label
-                    class="form-label font-weight-bold"
-                    jhiTranslate="gpmGatewayApp.projectServiceSociete.codePostal"
-                    for="field_codePostal"
-                    >Code Postal</label
-                  >
-                  <input
-                    type="number"
-                    class="form-control"
-                    name="codePostal"
-                    id="field_codePostal"
-                    data-cy="codePostal"
-                    formControlName="codePostal"
-                  />
-                </div>
-
-                <div class="col-md-12 mb-3">
-                  <label class="form-label font-weight-bold" jhiTranslate="gpmGatewayApp.projectServiceSociete.pays" for="field_pays"
-                    >Pays</label
-                  >
-                  <input type="text" class="form-control" name="pays" id="field_pays" data-cy="pays" formControlName="pays" />
-                  <div *ngIf="editForm.get('pays')!.invalid && (editForm.get('pays')!.dirty || editForm.get('pays')!.touched)">
-                    <small
-                      class="form-text text-danger"
-                      *ngIf="editForm.get('pays')?.errors?.required"
-                      jhiTranslate="entity.validation.required"
-                    >
-                      Ce champ est obligatoire.
-                    </small>
-                  </div>
-                </div>
-
-                <div class="col-md-12 mb-3">
-                  <label
-                    class="form-label font-weight-bold"
-                    jhiTranslate="gpmGatewayApp.projectServiceSociete.telephone"
-                    for="field_telephone"
-                    >Telephone</label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="telephone"
-                    id="field_telephone"
-                    data-cy="telephone"
-                    formControlName="telephone"
-                  />
-                </div>
-
-                <div class="col-md-12 mb-3">
-                  <label class="form-label font-weight-bold" jhiTranslate="gpmGatewayApp.projectServiceSociete.fax" for="field_fax"
-                    >Fax</label
-                  >
-                  <input type="text" class="form-control" name="fax" id="field_fax" data-cy="fax" formControlName="fax" />
-                </div>
-
-                <div class="col-md-12 mb-3">
-                  <label class="form-label font-weight-bold" jhiTranslate="gpmGatewayApp.projectServiceSociete.email" for="field_email"
-                    >Email</label
-                  >
-                  <input type="text" class="form-control" name="email" id="field_email" data-cy="email" formControlName="email" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ═══════════════════════════════════════════════════════════ -->
-        <!-- Section: Contacts Associés -->
-        <!-- ═══════════════════════════════════════════════════════════ -->
-        <div class="col-lg-12 mb-4">
-          <div class="card shadow-sm">
-            <div class="card-header bg-light d-flex justify-content-between align-items-center">
-              <h5 class="mb-0">
-                <fa-icon icon="address-book" class="me-2"></fa-icon>
-                Contact Associés
-              </h5>
-              <div class="d-flex align-items-center">
-                <span class="badge bg-primary me-3">{{ contactsAssocies.length }} contact(s)</span>
-                <button type="button" class="btn btn-sm btn-outline-primary" (click)="openOrgaModal()">
-                  <fa-icon icon="cloud-download-alt" class="me-1"></fa-icon>
-                  Importer de OrgaCare
-                </button>
-              </div>
-            </div>
-            <div class="card-body p-0">
-              <div class="table-responsive">
-                <table class="table table-hover table-striped mb-0 align-middle">
-                  <thead class="table-light">
-                    <tr>
-                      <th scope="col" style="width: 20%">Nom</th>
-                      <th scope="col" style="width: 20%">Identifiant</th>
-                      <th scope="col" style="width: 20%">Téléphone</th>
-                      <th scope="col" style="width: 20%">Email</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let contact of contactsAssocies">
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <div
-                            class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-2"
-                            style="width: 32px; height: 32px; font-size: 0.75rem; font-weight: 700"
-                          >
-                            {{ (contact.nomPrenom ?? '?').charAt(0) }}
-                          </div>
-                          <span class="fw-semibold">{{ contact.nomPrenom }}</span>
-                        </div>
-                      </td>
-                      <td>{{ contact.matricule }}</td>
-                      <td>
-                        <a [href]="'tel:' + contact.numTel" class="text-decoration-none">
-                          <fa-icon icon="phone" class="me-1 text-success" style="font-size: 0.8rem"></fa-icon>
-                          <span class="small">{{ contact.numTel }}</span>
-                        </a>
-                      </td>
-                      <td>
-                        <a [href]="'mailto:' + contact.email" class="text-decoration-none small">{{ contact.email }}</a>
-                      </td>
-                    </tr>
-                    <tr *ngIf="!isLoadingContacts && contactsAssocies.length === 0">
-                      <td colspan="5" class="text-center text-muted py-4">
-                        <fa-icon icon="info-circle" class="me-2"></fa-icon>
-                        Aucun contact associé à cette société
-                      </td>
-                    </tr>
-                    <tr *ngIf="isLoadingContacts">
-                      <td colspan="5" class="text-center text-muted py-4">
-                        <span class="spinner-border spinner-border-sm me-2"></span>
-                        Chargement des contacts...
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- ═══════════════════════════════════════════════════════════ -->
-      </div>
-
-      <div class="d-flex justify-content-end mb-4">
-        <button
-          type="button"
-          id="cancel-save"
-          data-cy="entityCreateCancelButton"
-          class="btn btn-outline-secondary me-2"
-          (click)="previousState()"
-        >
-          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
-        </button>
 
         <button
           type="submit"
-          id="save-entity"
+          id="save-entity-top"
           data-cy="entityCreateSaveButton"
+          title="Enregistrer"
           [disabled]="editForm.invalid || isSaving"
-          class="btn btn-primary"
+          class="btn-cu-save"
         >
-          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+          <fa-icon icon="save"></fa-icon>
+        </button>
+      </div>
+
+      <!-- Accordéon -->
+      <div class="cu-accordion">
+        <!-- Informations Générales -->
+        <div class="cu-accordion-item" [class.open]="isSectionOpen('general')">
+          <button type="button" class="cu-accordion-header" (click)="toggleSection('general')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="id-card" class="cu-accordion-icon"></fa-icon>
+              <span>Informations Générales</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isSectionOpen('general')">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold" for="field_raisonSociale">
+                  <span jhiTranslate="gpmGatewayApp.projectServiceSociete.raisonSociale">Raison Sociale</span>
+                  <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="raisonSociale"
+                  id="field_raisonSociale"
+                  data-cy="raisonSociale"
+                  formControlName="raisonSociale"
+                />
+                <div
+                  *ngIf="
+                    editForm.get('raisonSociale')!.invalid &&
+                    (editForm.get('raisonSociale')!.dirty || editForm.get('raisonSociale')!.touched)
+                  "
+                >
+                  <small
+                    class="form-text text-danger"
+                    *ngIf="editForm.get('raisonSociale')?.errors?.required"
+                    jhiTranslate="entity.validation.required"
+                  >
+                    Ce champ est obligatoire.
+                  </small>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label
+                  class="form-label fw-bold"
+                  jhiTranslate="gpmGatewayApp.projectServiceSociete.raisonSocialeAbrege"
+                  for="field_raisonSocialeAbrege"
+                  >Raison Sociale Abrégée</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  name="raisonSocialeAbrege"
+                  id="field_raisonSocialeAbrege"
+                  data-cy="raisonSocialeAbrege"
+                  formControlName="raisonSocialeAbrege"
+                />
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold" for="field_identifiantUnique">
+                  <span jhiTranslate="gpmGatewayApp.projectServiceSociete.identifiantUnique">Identifiant Unique</span>
+                  <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="identifiantUnique"
+                  id="field_identifiantUnique"
+                  data-cy="identifiantUnique"
+                  formControlName="identifiantUnique"
+                />
+                <div
+                  *ngIf="
+                    editForm.get('identifiantUnique')!.invalid &&
+                    (editForm.get('identifiantUnique')!.dirty || editForm.get('identifiantUnique')!.touched)
+                  "
+                >
+                  <small
+                    class="form-text text-danger"
+                    *ngIf="editForm.get('identifiantUnique')?.errors?.required"
+                    jhiTranslate="entity.validation.required"
+                  >
+                    Ce champ est obligatoire.
+                  </small>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label
+                  class="form-label fw-bold"
+                  jhiTranslate="gpmGatewayApp.projectServiceSociete.registreCommerce"
+                  for="field_registreCommerce"
+                  >Registre Commerce</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  name="registreCommerce"
+                  id="field_registreCommerce"
+                  data-cy="registreCommerce"
+                  formControlName="registreCommerce"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coordonnées -->
+        <div class="cu-accordion-item" [class.open]="isSectionOpen('coordonnees')">
+          <button type="button" class="cu-accordion-header" (click)="toggleSection('coordonnees')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="map-marker-alt" class="cu-accordion-icon"></fa-icon>
+              <span>Coordonnées</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isSectionOpen('coordonnees')">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold" for="field_adresse">
+                  <span jhiTranslate="gpmGatewayApp.projectServiceSociete.adresse">Adresse</span>
+                  <span class="text-danger">*</span>
+                </label>
+                <input type="text" class="form-control" name="adresse" id="field_adresse" data-cy="adresse" formControlName="adresse" />
+                <div *ngIf="editForm.get('adresse')!.invalid && (editForm.get('adresse')!.dirty || editForm.get('adresse')!.touched)">
+                  <small
+                    class="form-text text-danger"
+                    *ngIf="editForm.get('adresse')?.errors?.required"
+                    jhiTranslate="entity.validation.required"
+                  >
+                    Ce champ est obligatoire.
+                  </small>
+                </div>
+              </div>
+
+              <div class="col-md-3 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceSociete.codePostal" for="field_codePostal"
+                  >Code Postal</label
+                >
+                <input
+                  type="number"
+                  class="form-control"
+                  name="codePostal"
+                  id="field_codePostal"
+                  data-cy="codePostal"
+                  formControlName="codePostal"
+                />
+              </div>
+
+              <div class="col-md-3 mb-3">
+                <label class="form-label fw-bold" for="field_pays">
+                  <span jhiTranslate="gpmGatewayApp.projectServiceSociete.pays">Pays</span>
+                  <span class="text-danger">*</span>
+                </label>
+                <input type="text" class="form-control" name="pays" id="field_pays" data-cy="pays" formControlName="pays" />
+                <div *ngIf="editForm.get('pays')!.invalid && (editForm.get('pays')!.dirty || editForm.get('pays')!.touched)">
+                  <small
+                    class="form-text text-danger"
+                    *ngIf="editForm.get('pays')?.errors?.required"
+                    jhiTranslate="entity.validation.required"
+                  >
+                    Ce champ est obligatoire.
+                  </small>
+                </div>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceSociete.telephone" for="field_telephone"
+                  >Telephone</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  name="telephone"
+                  id="field_telephone"
+                  data-cy="telephone"
+                  formControlName="telephone"
+                />
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceSociete.fax" for="field_fax">Fax</label>
+                <input type="text" class="form-control" name="fax" id="field_fax" data-cy="fax" formControlName="fax" />
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceSociete.email" for="field_email">Email</label>
+                <input type="text" class="form-control" name="email" id="field_email" data-cy="email" formControlName="email" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contacts Associés (uniquement en édition, pas en création) -->
+        <div class="cu-accordion-item" [class.open]="isSectionOpen('contacts')" *ngIf="societe?.id">
+          <button type="button" class="cu-accordion-header" (click)="toggleSection('contacts')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="address-book" class="cu-accordion-icon"></fa-icon>
+              <span>Contacts Associés</span>
+              <span class="cu-accordion-count" *ngIf="contactsAssocies.length">{{ contactsAssocies.length }}</span>
+            </span>
+            <span class="cu-accordion-header-right">
+              <button type="button" class="btn-cu-add" (click)="$event.stopPropagation(); openOrgaModal()">
+                <fa-icon icon="cloud-download-alt"></fa-icon>&nbsp;Importer de OrgaCare
+              </button>
+              <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+            </span>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isSectionOpen('contacts')">
+            <div *ngIf="contactsAssocies.length > 0; else noContacts" class="cu-item-list">
+              <div class="cu-item-card" *ngFor="let contact of contactsAssocies">
+                <div class="cu-item-avatar">{{ (contact.nomPrenom ?? '?').charAt(0) }}</div>
+                <div class="cu-item-info">
+                  <div class="cu-item-title-row">
+                    <div class="cu-item-title">{{ contact.nomPrenom }}</div>
+                    <span class="cu-item-badge-id" *ngIf="contact.matricule">{{ contact.matricule }}</span>
+                  </div>
+                  <div class="cu-item-sub">
+                    <a [href]="'tel:' + contact.numTel" class="cu-item-link">
+                      <fa-icon icon="phone" class="cu-item-link-icon"></fa-icon>{{ contact.numTel || 'Téléphone non renseigné' }}
+                    </a>
+                  </div>
+                  <div class="cu-item-sub">
+                    <a [href]="'mailto:' + contact.email" class="cu-item-link">{{ contact.email || 'Email non renseigné' }}</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <ng-template #noContacts>
+              <div class="cu-empty" *ngIf="!isLoadingContacts">
+                <fa-icon icon="info-circle"></fa-icon>&nbsp;Aucun contact associé à cette société
+              </div>
+              <div class="cu-empty" *ngIf="isLoadingContacts">
+                <span class="spinner-border spinner-border-sm me-2"></span>Chargement des contacts...
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+      <div class="cu-toolbar cu-toolbar-bottom">
+        <span></span>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
         </button>
       </div>
     </form>
   </div>
-</div>
 
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- Modal: Importer de OrgaCare -->
-<!-- ═══════════════════════════════════════════════════════════ -->
-<div class="modal fade" [class.show]="showOrgaModal" [style.display]="showOrgaModal ? 'block' : 'none'" tabindex="-1" *ngIf="showOrgaModal">
-  <div class="modal-dialog modal-dialog-centered" style="max-width: 95vw; width: 1400px">
-    <div class="modal-content">
-      <div class="modal-header py-3 px-4">
-        <h5 class="modal-title">
-          <fa-icon icon="cloud-download-alt" class="me-2"></fa-icon>
-          Importer depuis OrgaCare
-        </h5>
-        <button type="button" class="btn-close" (click)="closeOrgaModal()"></button>
-      </div>
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- Modal: Importer de OrgaCare -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div
+    class="modal fade"
+    [class.show]="showOrgaModal"
+    [style.display]="showOrgaModal ? 'block' : 'none'"
+    tabindex="-1"
+    *ngIf="showOrgaModal"
+  >
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 95vw; width: 1400px">
+      <div class="modal-content">
+        <div class="modal-header py-3 px-4">
+          <h5 class="modal-title">
+            <fa-icon icon="cloud-download-alt" class="me-2"></fa-icon>
+            Importer depuis OrgaCare
+          </h5>
+          <button type="button" class="btn-close" (click)="closeOrgaModal()"></button>
+        </div>
 
-      <div class="modal-body p-4">
-        <div class="row g-4" style="min-height: 500px">
-          <!-- Left: Sociétés list -->
-          <div class="col-md-5">
-            <div class="card h-100">
-              <div class="card-header bg-light">
-                <div class="fw-semibold text-uppercase small text-muted mb-2">Sociétés OrgaCare</div>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text bg-white">
-                    <fa-icon icon="search"></fa-icon>
-                  </span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Rechercher une société..."
-                    [value]="societeSearchTerm"
-                    (input)="onSocieteSearchChange($any($event.target).value)"
-                  />
-                </div>
-              </div>
-              <div class="card-body p-0" style="max-height: 500px; overflow-y: auto">
-                <table class="table table-hover mb-0">
-                  <tbody>
-                    <tr
-                      *ngFor="let orgaSociete of filteredOrgaSocietes"
-                      (click)="selectOrgaSociete(orgaSociete)"
-                      [class.table-active]="selectedOrgaSociete?.id === orgaSociete.id"
-                      style="cursor: pointer"
-                    >
-                      <td class="py-3 px-3">
-                        <fa-icon icon="building" class="me-2 text-muted"></fa-icon>
-                        {{ orgaSociete.raisonSociale }}
-                      </td>
-                    </tr>
-                    <tr *ngIf="!isLoadingOrgaSocietes && filteredOrgaSocietes.length === 0">
-                      <td class="text-center text-muted py-4">
-                        <fa-icon icon="info-circle" class="me-2"></fa-icon>
-                        Aucune société trouvée
-                      </td>
-                    </tr>
-                    <tr *ngIf="isLoadingOrgaSocietes">
-                      <td class="text-center text-muted py-4">
-                        <span class="spinner-border spinner-border-sm me-2"></span>
-                        Chargement...
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- Right: Personnes list -->
-          <div class="col-md-7">
-            <div class="card h-100">
-              <div class="card-header bg-light">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <div class="fw-semibold text-uppercase small text-muted">
-                    Personnes
-                    <span *ngIf="selectedOrgaSociete" class="text-primary"> — {{ selectedOrgaSociete.raisonSociale }}</span>
+        <div class="modal-body p-4">
+          <div class="row g-4" style="min-height: 500px">
+            <!-- Left: Sociétés list -->
+            <div class="col-md-5">
+              <div class="card h-100">
+                <div class="card-header bg-light">
+                  <div class="fw-semibold text-uppercase small text-muted mb-2">Sociétés OrgaCare</div>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white">
+                      <fa-icon icon="search"></fa-icon>
+                    </span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Rechercher une société..."
+                      [value]="societeSearchTerm"
+                      (input)="onSocieteSearchChange($any($event.target).value)"
+                    />
                   </div>
-                  <span class="badge bg-secondary" *ngIf="selectedOrgaSociete">{{ orgaPersonnes.length }}</span>
                 </div>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text bg-white">
-                    <fa-icon icon="search"></fa-icon>
-                  </span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Rechercher une personne..."
-                    [value]="personneSearchTerm"
-                    [disabled]="!selectedOrgaSociete"
-                    (input)="onPersonneSearchChange($any($event.target).value)"
-                  />
+                <div class="card-body p-0" style="max-height: 500px; overflow-y: auto">
+                  <table class="table table-hover mb-0">
+                    <tbody>
+                      <tr
+                        *ngFor="let orgaSociete of filteredOrgaSocietes"
+                        (click)="selectOrgaSociete(orgaSociete)"
+                        [class.table-active]="selectedOrgaSociete?.id === orgaSociete.id"
+                        style="cursor: pointer"
+                      >
+                        <td class="py-3 px-3">
+                          <fa-icon icon="building" class="me-2 text-muted"></fa-icon>
+                          {{ orgaSociete.raisonSociale }}
+                        </td>
+                      </tr>
+                      <tr *ngIf="!isLoadingOrgaSocietes && filteredOrgaSocietes.length === 0">
+                        <td class="text-center text-muted py-4">
+                          <fa-icon icon="info-circle" class="me-2"></fa-icon>
+                          Aucune société trouvée
+                        </td>
+                      </tr>
+                      <tr *ngIf="isLoadingOrgaSocietes">
+                        <td class="text-center text-muted py-4">
+                          <span class="spinner-border spinner-border-sm me-2"></span>
+                          Chargement...
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
-              <div class="card-body p-0" style="max-height: 500px; overflow-y: auto">
-                <table class="table table-hover mb-0" *ngIf="selectedOrgaSociete">
-                  <thead class="table-light">
-                    <tr>
-                      <th style="width: 40px" class="text-center">
-                        <input
-                          type="checkbox"
-                          class="form-check-input"
-                          [checked]="areAllFilteredPersonnesSelected()"
-                          [indeterminate]="areSomeFilteredPersonnesSelected()"
-                          (click)="$event.stopPropagation()"
-                          (change)="toggleSelectAllFiltered()"
-                        />
-                      </th>
-                      <th>Nom</th>
-                      <th>Email</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      *ngFor="let personne of filteredOrgaPersonnes"
-                      style="cursor: pointer"
-                      (click)="togglePersonneSelection(personne)"
-                      [class.table-active]="isPersonneSelected(personne)"
+            </div>
+
+            <!-- Right: Personnes list -->
+            <div class="col-md-7">
+              <div class="card h-100">
+                <div class="card-header bg-light">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="fw-semibold text-uppercase small text-muted">
+                      Personnes
+                      <span *ngIf="selectedOrgaSociete" class="text-primary"> — {{ selectedOrgaSociete.raisonSociale }}</span>
+                    </div>
+                    <span class="badge bg-secondary" *ngIf="selectedOrgaSociete">{{ orgaPersonnes.length }}</span>
+                  </div>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white">
+                      <fa-icon icon="search"></fa-icon>
+                    </span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Rechercher une personne..."
+                      [value]="personneSearchTerm"
+                      [disabled]="!selectedOrgaSociete"
+                      (input)="onPersonneSearchChange($any($event.target).value)"
+                    />
+                  </div>
+                </div>
+                <div class="card-body p-0" style="max-height: 500px; overflow-y: auto">
+                  <table class="table table-hover mb-0" *ngIf="selectedOrgaSociete">
+                    <thead class="table-light">
+                      <tr>
+                        <th style="width: 40px" class="text-center">
+                          <input
+                            type="checkbox"
+                            class="form-check-input"
+                            [checked]="areAllFilteredPersonnesSelected()"
+                            [indeterminate]="areSomeFilteredPersonnesSelected()"
+                            (click)="$event.stopPropagation()"
+                            (change)="toggleSelectAllFiltered()"
+                          />
+                        </th>
+                        <th>Nom</th>
+                        <th>Email</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        *ngFor="let personne of filteredOrgaPersonnes"
+                        style="cursor: pointer"
+                        (click)="togglePersonneSelection(personne)"
+                        [class.table-active]="isPersonneSelected(personne)"
+                      >
+                        <td class="text-center">
+                          <input
+                            type="checkbox"
+                            class="form-check-input"
+                            [checked]="isPersonneSelected(personne)"
+                            (click)="$event.stopPropagation(); togglePersonneSelection(personne)"
+                          />
+                        </td>
+                        <td class="fw-semibold">{{ personne.nomPrenom }}</td>
+                        <td class="small">{{ personne.email }}</td>
+                      </tr>
+                      <tr *ngIf="!isLoadingOrgaPersonnes && filteredOrgaPersonnes.length === 0">
+                        <td colspan="5" class="text-center text-muted py-4">
+                          <fa-icon icon="info-circle" class="me-2"></fa-icon>
+                          Aucune personne trouvée
+                        </td>
+                      </tr>
+                      <tr *ngIf="isLoadingOrgaPersonnes">
+                        <td colspan="5" class="text-center text-muted py-4">
+                          <span class="spinner-border spinner-border-sm me-2"></span>
+                          Chargement...
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <div *ngIf="!selectedOrgaSociete" class="text-center text-muted py-5">
+                    <fa-icon icon="arrow-left" class="me-2"></fa-icon>
+                    Sélectionnez une société pour afficher ses personnes
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom: Personnes sélectionnées -->
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                  <div class="fw-semibold text-uppercase small text-muted">
+                    <fa-icon icon="check-circle" class="me-2 text-success"></fa-icon>
+                    Personnes sélectionnées
+                  </div>
+                  <span class="badge bg-success">{{ selectedPersonnes.length }}</span>
+                </div>
+                <div class="card-body" style="max-height: 200px; overflow-y: auto">
+                  <div *ngIf="selectedPersonnes.length === 0" class="text-center text-muted py-2">Aucune personne sélectionnée</div>
+                  <div class="d-flex flex-wrap gap-2" *ngIf="selectedPersonnes.length > 0">
+                    <span
+                      class="badge bg-light text-dark border d-flex align-items-center py-2 px-3"
+                      style="font-size: 0.85rem"
+                      *ngFor="let personne of selectedPersonnes"
                     >
-                      <td class="text-center">
-                        <input
-                          type="checkbox"
-                          class="form-check-input"
-                          [checked]="isPersonneSelected(personne)"
-                          (click)="$event.stopPropagation(); togglePersonneSelection(personne)"
-                        />
-                      </td>
-                      <td class="fw-semibold">{{ personne.nomPrenom }}</td>
-                      <td class="small">{{ personne.email }}</td>
-                    </tr>
-                    <tr *ngIf="!isLoadingOrgaPersonnes && filteredOrgaPersonnes.length === 0">
-                      <td colspan="5" class="text-center text-muted py-4">
-                        <fa-icon icon="info-circle" class="me-2"></fa-icon>
-                        Aucune personne trouvée
-                      </td>
-                    </tr>
-                    <tr *ngIf="isLoadingOrgaPersonnes">
-                      <td colspan="5" class="text-center text-muted py-4">
-                        <span class="spinner-border spinner-border-sm me-2"></span>
-                        Chargement...
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <div *ngIf="!selectedOrgaSociete" class="text-center text-muted py-5">
-                  <fa-icon icon="arrow-left" class="me-2"></fa-icon>
-                  Sélectionnez une société pour afficher ses personnes
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Bottom: Personnes sélectionnées -->
-          <div class="col-12">
-            <div class="card">
-              <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                <div class="fw-semibold text-uppercase small text-muted">
-                  <fa-icon icon="check-circle" class="me-2 text-success"></fa-icon>
-                  Personnes sélectionnées
-                </div>
-                <span class="badge bg-success">{{ selectedPersonnes.length }}</span>
-              </div>
-              <div class="card-body" style="max-height: 200px; overflow-y: auto">
-                <div *ngIf="selectedPersonnes.length === 0" class="text-center text-muted py-2">Aucune personne sélectionnée</div>
-                <div class="d-flex flex-wrap gap-2" *ngIf="selectedPersonnes.length > 0">
-                  <span
-                    class="badge bg-light text-dark border d-flex align-items-center py-2 px-3"
-                    style="font-size: 0.85rem"
-                    *ngFor="let personne of selectedPersonnes"
-                  >
-                    <fa-icon icon="user" class="me-2 text-primary"></fa-icon>
-                    {{ personne.nomPrenom }}
-                    <button
-                      type="button"
-                      class="btn-close btn-close-sm ms-2"
-                      style="font-size: 0.6rem"
-                      (click)="removeSelectedPersonne(personne)"
-                    ></button>
-                  </span>
+                      <fa-icon icon="user" class="me-2 text-primary"></fa-icon>
+                      {{ personne.nomPrenom }}
+                      <button
+                        type="button"
+                        class="btn-close btn-close-sm ms-2"
+                        style="font-size: 0.6rem"
+                        (click)="removeSelectedPersonne(personne)"
+                      ></button>
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="modal-footer py-3 px-4 d-flex align-items-center">
-        <div class="text-danger small me-auto" *ngIf="importError">
-          <fa-icon icon="exclamation-triangle" class="me-1"></fa-icon>
-          Une erreur est survenue lors de l'import. Veuillez réessayer.
+        <div class="modal-footer py-3 px-4 d-flex align-items-center">
+          <div class="text-danger small me-auto" *ngIf="importError">
+            <fa-icon icon="exclamation-triangle" class="me-1"></fa-icon>
+            Une erreur est survenue lors de l'import. Veuillez réessayer.
+          </div>
+
+          <button type="button" class="btn btn-outline-secondary" [disabled]="isImportingPersonnes" (click)="closeOrgaModal()">
+            Fermer
+          </button>
+          <button
+            type="button"
+            class="btn-cu-save-modal"
+            [disabled]="selectedPersonnes.length === 0 || isImportingPersonnes"
+            (click)="confirmImportPersonnes()"
+          >
+            <span *ngIf="!isImportingPersonnes">
+              <fa-icon icon="download" class="me-1"></fa-icon>
+              Importer ({{ selectedPersonnes.length }})
+            </span>
+            <span *ngIf="isImportingPersonnes">
+              <span class="spinner-border spinner-border-sm me-2"></span>
+              Import en cours...
+            </span>
+          </button>
         </div>
-
-        <button type="button" class="btn btn-outline-secondary" [disabled]="isImportingPersonnes" (click)="closeOrgaModal()">Fermer</button>
-        <button
-          type="button"
-          class="btn btn-primary"
-          [disabled]="selectedPersonnes.length === 0 || isImportingPersonnes"
-          (click)="confirmImportPersonnes()"
-        >
-          <span *ngIf="!isImportingPersonnes">
-            <fa-icon icon="download" class="me-1"></fa-icon>
-            Importer ({{ selectedPersonnes.length }})
-          </span>
-          <span *ngIf="isImportingPersonnes">
-            <span class="spinner-border spinner-border-sm me-2"></span>
-            Import en cours...
-          </span>
-        </button>
       </div>
     </div>
   </div>
+  <div class="modal-backdrop fade show" *ngIf="showOrgaModal"></div>
 </div>
-<div class="modal-backdrop fade show" *ngIf="showOrgaModal"></div>

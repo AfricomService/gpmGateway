@@ -10,13 +10,19 @@ import { SocieteService } from '../service/societe.service';
 import { IContactSociete } from '../contact-societe.model';
 import { IPersonne } from '../personne.model'; // adjust path/name to match your actual model
 
+type AccordionSection = 'general' | 'coordonnees' | 'contacts';
+
 @Component({
   selector: 'jhi-societe-update',
   templateUrl: './societe-update.component.html',
+  styleUrls: ['./societe-update.component.scss'],
 })
 export class SocieteUpdateComponent implements OnInit {
   isSaving = false;
   societe: ISociete | null = null;
+
+  // === Gestion de l'accordéon ===
+  openSections: Set<AccordionSection> = new Set(['general']);
 
   // ── Contacts Associés ─────────────────────────────────────────
   contactsAssocies: IContactSociete[] = [];
@@ -56,6 +62,19 @@ export class SocieteUpdateComponent implements OnInit {
         this.loadContactsAssocies();
       }
     });
+  }
+
+  // === Accordéon ===
+  toggleSection(section: AccordionSection): void {
+    if (this.openSections.has(section)) {
+      this.openSections.delete(section);
+    } else {
+      this.openSections.add(section);
+    }
+  }
+
+  isSectionOpen(section: AccordionSection): boolean {
+    return this.openSections.has(section);
   }
 
   // ── Contacts Associés ─────────────────────────────────────────
