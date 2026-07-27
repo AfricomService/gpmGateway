@@ -28,22 +28,26 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ViewChild, TemplateRef } from '@angular/core';
 import { SocieteService } from '../../societe/service/societe.service';
 import { ISociete } from '../../societe/societe.model';
-import { IAgence } from '../../agence/agence.model';
+import { IAgence } from 'app/entities/projectService/agence/agence.model';
+
+type AccordionSection = 'general' | 'dates' | 'articles' | 'societes';
 
 @Component({
   selector: 'jhi-affaire-update',
   templateUrl: './affaire-update.component.html',
+  styleUrls: ['./affaire-update.component.scss'],
 })
 export class AffaireUpdateComponent implements OnInit {
   @ViewChild('articleModal') articleModal!: TemplateRef<any>;
   @ViewChild('matriceModal') matriceModal!: TemplateRef<any>;
   @ViewChild('societeModal') societeModal!: TemplateRef<any>;
 
-  agencesClient: IAgence[] = [];
-
   isSaving = false;
   affaire: IAffaire | null = null;
   statutAffaireValues = Object.keys(StatutAffaire);
+
+  // === Gestion de l'accordéon ===
+  openSections: Set<AccordionSection> = new Set(['general']);
 
   clientsSharedCollection: IClient[] = [];
   usersSharedCollection: IUser[] = [];
@@ -70,7 +74,12 @@ export class AffaireUpdateComponent implements OnInit {
 
   primarySociete: ISociete | null = null;
 
+  // ── Agences du client sélectionné ────────────────────────────────
+  agencesClient: IAgence[] = [];
+
   editForm: AffaireFormGroup = this.affaireFormService.createAffaireFormGroup();
+
+  societesSharedCollection: ISociete[] = [];
 
   constructor(
     protected affaireService: AffaireService,
@@ -87,13 +96,17 @@ export class AffaireUpdateComponent implements OnInit {
     protected societeService: SocieteService
   ) {}
 
-  loadAgencesClient(clientId: number): void {
-    this.affaireService
-      .getAgencesByClientId({ clientId })
-      .pipe(map((res: HttpResponse<IAgence[]>) => res.body ?? []))
-      .subscribe((agences: IAgence[]) => {
-        this.agencesClient = agences;
-      });
+  // === Accordéon ===
+  toggleSection(section: AccordionSection): void {
+    if (this.openSections.has(section)) {
+      this.openSections.delete(section);
+    } else {
+      this.openSections.add(section);
+    }
+  }
+
+  isSectionOpen(section: AccordionSection): boolean {
+    return this.openSections.has(section);
   }
 
   // ── Article modal ──────────────────────────────────────────────
@@ -236,6 +249,18 @@ export class AffaireUpdateComponent implements OnInit {
     window.history.back();
   }
 
+  loadSocietes(): void {
+    this.societeService
+      .query({
+        page: 0,
+        size: 1000,
+        sort: ['id', 'asc'],
+      })
+      .subscribe(res => {
+        this.societesSharedCollection = res.body ?? [];
+      });
+  }
+
   ngOnInit(): void {
     this.activatedRoute.queryParamMap.subscribe(params => {
       const rawClientId = params.get('clientId');
@@ -243,6 +268,8 @@ export class AffaireUpdateComponent implements OnInit {
       this.clientIdFromQuery = parsedClientId !== null && !Number.isNaN(parsedClientId) ? parsedClientId : null;
       this.applyClientFromQueryParam();
     });
+
+    this.loadSocietes();
 
     this.activatedRoute.data.subscribe(({ affaire }) => {
       this.affaire = affaire;
@@ -253,6 +280,15 @@ export class AffaireUpdateComponent implements OnInit {
       this.loadRelationshipsOptions();
     });
 
+    // Load fake associated companies data
+    this.loadSocietesAssociees();
+
+    const clientId = this.editForm.get('client')?.value?.id;
+
+    if (clientId != null) {
+      this.loadAgencesClient(clientId);
+    }
+
     this.editForm.get('client')?.valueChanges.subscribe(client => {
       this.agencesClient = [];
 
@@ -260,9 +296,16 @@ export class AffaireUpdateComponent implements OnInit {
         this.loadAgencesClient(client.id);
       }
     });
+  }
 
-    // Load fake associated companies data
-    this.loadSocietesAssociees();
+  // ── Agences du client sélectionné ────────────────────────────────
+  loadAgencesClient(clientId: number): void {
+    this.affaireService
+      .getAgencesByClientId({ clientId })
+      .pipe(map((res: HttpResponse<IAgence[]>) => res.body ?? []))
+      .subscribe((agences: IAgence[]) => {
+        this.agencesClient = agences;
+      });
   }
 
   // ── Fake Data Loader for Sociétés Associées ────────────────────

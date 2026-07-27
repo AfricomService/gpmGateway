@@ -1,495 +1,485 @@
-<div class="row justify-content-center">
-  <div class="col-md-12 col-lg-10" style="padding-top: 2em">
-    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-      <h5
-        *ngIf="editForm.controls.id.value === null"
-        style="padding-top: 2em; text-transform: uppercase; font-style: italic"
-        id="jhi-client-heading"
-        class="mb-4"
-      >
-        EDITION D'UN PROJET
-      </h5>
+<div class="affaire-update-page">
+  <button
+    type="button"
+    id="back-to-affaire-list"
+    data-cy="entityBackButton"
+    title="Retour à la liste"
+    class="btn-cu-back-floating"
+    [routerLink]="['/affaire']"
+  >
+    <fa-icon icon="arrow-left"></fa-icon>
+  </button>
 
-      <h4
-        *ngIf="editForm.controls.id.value !== null"
-        style="padding-top: 2em; text-transform: uppercase; font-style: italic"
-        id="jhi-client-heading"
-        class="mb-4"
-      >
-        <span>PROJET {{ affaire?.designationAffaire }}</span>
-        <span style="padding-top: 0.5em" class="d-block">{{ primarySociete?.raisonSociale }}</span>
-      </h4>
+  <div class="cu-container">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
       <jhi-alert-error></jhi-alert-error>
 
-      <div class="row">
-        <!-- Section: Informations Générales -->
-        <div class="col-lg-6 mb-4">
-          <div class="card shadow-sm h-100">
-            <div class="card-header bg-light">
-              <h5 class="mb-0">Informations Générales</h5>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-12 mb-3">
-                  <div
-                    *ngIf="
-                      editForm.get('numAffaire')!.invalid && (editForm.get('numAffaire')!.dirty || editForm.get('numAffaire')!.touched)
-                    "
-                  >
-                    <small
-                      class="form-text text-danger"
-                      *ngIf="editForm.get('numAffaire')?.errors?.required"
-                      jhiTranslate="entity.validation.required"
-                    >
-                      Ce champ est obligatoire.
-                    </small>
-                    <small
-                      class="form-text text-danger"
-                      [hidden]="!editForm.get('numAffaire')?.errors?.number"
-                      jhiTranslate="entity.validation.number"
-                    >
-                      Ce champ doit être un nombre.
-                    </small>
-                  </div>
-                </div>
-
-                <div class="col-md-12 mb-3">
-                  <label
-                    class="form-label font-weight-bold"
-                    jhiTranslate="gpmGatewayApp.projectServiceAffaire.designationAffaire"
-                    for="field_designationAffaire"
-                    >Designation Affaire</label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="designationAffaire"
-                    id="field_designationAffaire"
-                    data-cy="designationAffaire"
-                    formControlName="designationAffaire"
-                  />
-                  <div
-                    *ngIf="
-                      editForm.get('designationAffaire')!.invalid &&
-                      (editForm.get('designationAffaire')!.dirty || editForm.get('designationAffaire')!.touched)
-                    "
-                  >
-                    <small
-                      class="form-text text-danger"
-                      *ngIf="editForm.get('designationAffaire')?.errors?.required"
-                      jhiTranslate="entity.validation.required"
-                    >
-                      Ce champ est obligatoire.
-                    </small>
-                  </div>
-                </div>
-
-                <div class="col-md-12 mb-3">
-                  <label class="form-label font-weight-bold" jhiTranslate="gpmGatewayApp.projectServiceAffaire.statut" for="field_statut"
-                    >Statut</label
-                  >
-                  <select class="form-control" name="statut" formControlName="statut" id="field_statut" data-cy="statut">
-                    <option [ngValue]="null">{{ 'gpmGatewayApp.StatutAffaire.null' | translate }}</option>
-                    <option *ngFor="let statutAffaire of statutAffaireValues" [value]="statutAffaire">
-                      {{ 'gpmGatewayApp.StatutAffaire.' + statutAffaire | translate }}
-                    </option>
-                  </select>
-                  <div *ngIf="editForm.get('statut')!.invalid && (editForm.get('statut')!.dirty || editForm.get('statut')!.touched)">
-                    <small
-                      class="form-text text-danger"
-                      *ngIf="editForm.get('statut')?.errors?.required"
-                      jhiTranslate="entity.validation.required"
-                    >
-                      Ce champ est obligatoire.
-                    </small>
-                  </div>
-                </div>
-
-                <div class="col-md-12 mb-3">
-                  <label class="form-label font-weight-bold" jhiTranslate="gpmGatewayApp.projectServiceAffaire.client" for="field_client"
-                    >Client</label
-                  >
-                  <ng-select
-                    id="field_client"
-                    data-cy="client"
-                    name="client"
-                    formControlName="client"
-                    [items]="clientsSharedCollection"
-                    bindLabel="raisonSociale"
-                    [searchable]="true"
-                    [compareWith]="compareClient"
-                    class="custom-ng-select"
-                    placeholder="Rechercher un client..."
-                  >
-                  </ng-select>
-                  <div *ngIf="editForm.get(['client'])!.invalid && (editForm.get(['client'])!.dirty || editForm.get(['client'])!.touched)">
-                    <small
-                      class="form-text text-danger"
-                      *ngIf="editForm.get(['client'])?.errors?.required"
-                      jhiTranslate="entity.validation.required"
-                    >
-                      Ce champ est obligatoire.
-                    </small>
-                  </div>
-                </div>
-                <div class="col-md-12 mb-3">
-                  <label class="form-label font-weight-bold">Agence Client</label>
-
-                  <div class="border rounded p-2" style="background-color: #f8f9fa; min-height: 42px">
-                    <ng-container *ngIf="agencesClient.length > 0; else noAgence">
-                      <div *ngFor="let agence of agencesClient" class="badge bg-primary me-2 mb-2 px-3 py-2" style="font-size: 0.9rem">
-                        {{ agence.designation }}
-                      </div>
-                    </ng-container>
-
-                    <ng-template #noAgence>
-                      <span class="text-muted fst-italic"> Aucune agence associée à ce client </span>
-                    </ng-template>
-                  </div>
-                </div>
-
-                <div class="col-md-12 mb-3">
-                  <label class="form-label font-weight-bold" for="field_responsable">Responsable Projet</label>
-                  <ng-select
-                    id="field_responsable"
-                    name="responsable"
-                    [items]="usersSharedCollection"
-                    bindLabel="login"
-                    [searchable]="true"
-                    [(ngModel)]="selectedResponsable"
-                    [ngModelOptions]="{ standalone: true }"
-                    class="custom-ng-select"
-                    placeholder="Rechercher un responsable..."
-                  >
-                  </ng-select>
-                </div>
-              </div>
-            </div>
+      <!-- Toolbar : Numéro / Désignation (gauche) + Enregistrer (droite) -->
+      <div class="cu-toolbar">
+        <div class="cu-toolbar-left">
+          <span class="cu-page-kicker" *ngIf="editForm.controls.id.value === null" jhiTranslate="entity.action.edit"
+            >Édition d'un projet</span
+          >
+          <ng-container *ngIf="editForm.controls.id.value !== null">
+            <span class="cu-badge-id" *ngIf="editForm.get('identifiantUnique')?.value">
+              {{ editForm.get('identifiantUnique')?.value }}
+            </span>
+            <span class="cu-page-title-group">
+              <span class="cu-page-title">{{ affaire?.designationAffaire }}</span>
+              <span class="cu-page-subtitle" *ngIf="primarySociete">{{ primarySociete?.raisonSociale }}</span>
+            </span>
+          </ng-container>
+          <div *ngIf="editForm.get('numAffaire')!.invalid && (editForm.get('numAffaire')!.dirty || editForm.get('numAffaire')!.touched)">
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('numAffaire')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              Ce champ est obligatoire.
+            </small>
+            <small
+              class="form-text text-danger"
+              [hidden]="!editForm.get('numAffaire')?.errors?.number"
+              jhiTranslate="entity.validation.number"
+            >
+              Ce champ doit être un nombre.
+            </small>
           </div>
         </div>
-
-        <!-- Section: Dates & Exécution -->
-        <div class="col-lg-6 mb-4">
-          <div class="card shadow-sm h-100">
-            <div class="card-header bg-light">
-              <h5 class="mb-0">Dates & Exécution</h5>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-12 mb-3">
-                  <label
-                    class="form-label font-weight-bold"
-                    jhiTranslate="gpmGatewayApp.projectServiceAffaire.dateDebut"
-                    for="field_dateDebut"
-                    >Date Debut</label
-                  >
-                  <div class="input-group">
-                    <input
-                      id="field_dateDebut"
-                      data-cy="dateDebut"
-                      type="text"
-                      class="form-control"
-                      name="dateDebut"
-                      ngbDatepicker
-                      #dateDebutDp="ngbDatepicker"
-                      formControlName="dateDebut"
-                    />
-                    <button type="button" class="btn btn-secondary" (click)="dateDebutDp.toggle()">
-                      <fa-icon icon="calendar-alt"></fa-icon>
-                    </button>
-                  </div>
-                </div>
-
-                <div class="col-md-12 mb-3">
-                  <label
-                    class="form-label font-weight-bold"
-                    jhiTranslate="gpmGatewayApp.projectServiceAffaire.dateCloture"
-                    for="field_dateCloture"
-                    >Date Cloture</label
-                  >
-                  <div class="input-group">
-                    <input
-                      id="field_dateCloture"
-                      data-cy="dateCloture"
-                      type="text"
-                      class="form-control"
-                      name="dateCloture"
-                      ngbDatepicker
-                      #dateClotureDp="ngbDatepicker"
-                      formControlName="dateCloture"
-                    />
-                    <button type="button" class="btn btn-secondary" (click)="dateClotureDp.toggle()">
-                      <fa-icon icon="calendar-alt"></fa-icon>
-                    </button>
-                  </div>
-                </div>
-
-                <div class="col-md-12 mb-3">
-                  <label
-                    class="form-label font-weight-bold"
-                    jhiTranslate="gpmGatewayApp.projectServiceAffaire.datePassageExecution"
-                    for="field_datePassageExecution"
-                    >Date Passage Execution</label
-                  >
-                  <div class="input-group">
-                    <input
-                      id="field_datePassageExecution"
-                      data-cy="datePassageExecution"
-                      type="text"
-                      class="form-control"
-                      name="datePassageExecution"
-                      ngbDatepicker
-                      #datePassageExecutionDp="ngbDatepicker"
-                      formControlName="datePassageExecution"
-                    />
-                    <button type="button" class="btn btn-secondary" (click)="datePassageExecutionDp.toggle()">
-                      <fa-icon icon="calendar-alt"></fa-icon>
-                    </button>
-                  </div>
-                </div>
-
-                <div class="col-md-12 mb-3 d-flex align-items-center">
-                  <label
-                    class="form-check-label font-weight-bold me-3"
-                    jhiTranslate="gpmGatewayApp.projectServiceAffaire.lieuMultipleParMission"
-                    for="field_lieuMultipleParMission"
-                    >Lieu Multiple Par Mission</label
-                  >
-                  <input
-                    type="checkbox"
-                    class="form-check-input m-0"
-                    style="width: 1.8rem; height: 1.8rem; cursor: pointer"
-                    name="lieuMultipleParMission"
-                    id="field_lieuMultipleParMission"
-                    data-cy="lieuMultipleParMission"
-                    formControlName="lieuMultipleParMission"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section: Articles -->
-        <div class="col-lg-6 mb-4">
-          <div class="card shadow-sm h-100">
-            <div class="card-header bg-light d-flex justify-content-between align-items-center">
-              <h5 class="mb-0">Articles</h5>
-
-              <button type="button" class="btn btn-sm btn-primary fw-bold" (click)="openArticleModal()">Gérer</button>
-            </div>
-
-            <div class="card-body">
-              <!-- Selected Articles (Chips) -->
-              <div *ngIf="selectedArticles.length > 0; else noArticles" style="display: flex; flex-direction: column; gap: 1.5em">
-                <div
-                  class="badge bg-light d-flex align-items-center px-3 py-2 shadow-sm"
-                  style="
-                    color: black;
-                    border-radius: 20px;
-                    font-size: 1rem;
-                    display: flex;
-                    justify-content: space-between;
-                    font-weight: 700;
-                  "
-                  *ngFor="let article of selectedArticles"
-                >
-                  {{ article.code }} - {{ article.designation }}
-
-                  <span class="ms-2 text-danger fw-bold" style="cursor: pointer; font-size: 1rem" (click)="removeArticle(article)">
-                    ✕
-                  </span>
-                </div>
-              </div>
-
-              <ng-template #noArticles>
-                <div class="text-center py-3">Aucun article sélectionné</div>
-              </ng-template>
-            </div>
-          </div>
-        </div>
-
-        <!-- ═══════════════════════════════════════════════════════════ -->
-        <!-- NEW SECTION: Sociétés Associées -->
-        <!-- ═══════════════════════════════════════════════════════════ -->
-        <div class="col-lg-12 mb-4">
-          <div class="card shadow-sm">
-            <div class="card-header bg-light d-flex justify-content-between align-items-center">
-              <h5 class="mb-0">
-                <fa-icon icon="building" class="me-2"></fa-icon>
-                Sociétés Intermédiaires
-              </h5>
-              <div class="d-flex align-items-center gap-2">
-                <button type="button" class="btn btn-edit" (click)="openSocieteModal()">Gérer</button>
-                <span class="badge bg-primary">{{ societesAssociees.length }} société(s)</span>
-              </div>
-            </div>
-            <div class="card-body p-0">
-              <div class="table-responsive">
-                <table class="table table-hover table-striped mb-0 align-middle">
-                  <thead class="table-light">
-                    <tr>
-                      <th scope="col" style="width: 25%">Raison Sociale</th>
-                      <th scope="col" style="width: 18%">Matricule Fiscal</th>
-                      <th scope="col" style="width: 22%">Adresse</th>
-                      <th scope="col" style="width: 15%">Téléphone</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let societe of societesAssociees; let i = index">
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <div
-                            class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-2"
-                            style="width: 32px; height: 32px; font-size: 0.75rem; font-weight: 700"
-                          >
-                            {{ societe.raisonSociale!.charAt(0) }}
-                          </div>
-                          <span class="fw-semibold">{{ societe.raisonSociale }}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <code class="text-dark bg-light px-2 py-1 rounded">{{ societe.identifiantUnique }}</code>
-                      </td>
-                      <td class="text-muted small">{{ societe.adresse }}</td>
-                      <td>
-                        <a [href]="'tel:' + societe.telephone" class="text-decoration-none">
-                          <fa-icon icon="phone" class="me-1 text-success" style="font-size: 0.8rem"></fa-icon>
-                          <span class="small">{{ societe.telephone }}</span>
-                        </a>
-                      </td>
-                    </tr>
-                    <tr *ngIf="societesAssociees.length === 0">
-                      <td colspan="6" class="text-center text-muted py-4">
-                        <fa-icon icon="info-circle" class="me-2"></fa-icon>
-                        Aucune société associée à cette affaire
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- ═══════════════════════════════════════════════════════════ -->
-      </div>
-
-      <div class="d-flex justify-content-end mb-4">
-        <button
-          type="button"
-          id="cancel-save"
-          data-cy="entityCreateCancelButton"
-          class="btn btn-outline-secondary me-2"
-          (click)="previousState()"
-        >
-          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
-        </button>
 
         <button
           type="submit"
-          id="save-entity"
+          id="save-entity-top"
           data-cy="entityCreateSaveButton"
+          title="Enregistrer"
           [disabled]="editForm.invalid || isSaving"
-          class="btn btn-primary"
+          class="btn-cu-save"
         >
-          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+          <fa-icon icon="save"></fa-icon>
+        </button>
+      </div>
+
+      <!-- Accordéon -->
+      <div class="cu-accordion">
+        <!-- Informations Générales -->
+        <div class="cu-accordion-item" [class.open]="isSectionOpen('general')">
+          <button type="button" class="cu-accordion-header" (click)="toggleSection('general')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="id-card" class="cu-accordion-icon"></fa-icon>
+              <span>Informations Générales</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isSectionOpen('general')">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold" for="field_designationAffaire">
+                  <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.designationAffaire">Designation Affaire</span>
+                  <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="designationAffaire"
+                  id="field_designationAffaire"
+                  data-cy="designationAffaire"
+                  formControlName="designationAffaire"
+                />
+                <div
+                  *ngIf="
+                    editForm.get('designationAffaire')!.invalid &&
+                    (editForm.get('designationAffaire')!.dirty || editForm.get('designationAffaire')!.touched)
+                  "
+                >
+                  <small
+                    class="form-text text-danger"
+                    *ngIf="editForm.get('designationAffaire')?.errors?.required"
+                    jhiTranslate="entity.validation.required"
+                  >
+                    Ce champ est obligatoire.
+                  </small>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold" for="field_societeId"> Société Principale </label>
+
+                <ng-select
+                  id="field_societeId"
+                  name="societeId"
+                  formControlName="societeId"
+                  [items]="societesSharedCollection"
+                  bindLabel="raisonSociale"
+                  bindValue="id"
+                  [searchable]="true"
+                  class="custom-ng-select"
+                  placeholder="Rechercher une société..."
+                >
+                </ng-select>
+
+                <div *ngIf="editForm.get('societeId')!.invalid && (editForm.get('societeId')!.dirty || editForm.get('societeId')!.touched)">
+                  <small class="form-text text-danger" *ngIf="editForm.get('societeId')?.errors?.required">
+                    Ce champ est obligatoire.
+                  </small>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold" for="field_statut">
+                  <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.statut">Statut</span>
+                  <span class="text-danger">*</span>
+                </label>
+                <select class="form-control" name="statut" formControlName="statut" id="field_statut" data-cy="statut">
+                  <option [ngValue]="null">{{ 'gpmGatewayApp.StatutAffaire.null' | translate }}</option>
+                  <option *ngFor="let statutAffaire of statutAffaireValues" [value]="statutAffaire">
+                    {{ 'gpmGatewayApp.StatutAffaire.' + statutAffaire | translate }}
+                  </option>
+                </select>
+                <div *ngIf="editForm.get('statut')!.invalid && (editForm.get('statut')!.dirty || editForm.get('statut')!.touched)">
+                  <small
+                    class="form-text text-danger"
+                    *ngIf="editForm.get('statut')?.errors?.required"
+                    jhiTranslate="entity.validation.required"
+                  >
+                    Ce champ est obligatoire.
+                  </small>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold" for="field_client">
+                  <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.client">Client</span>
+                  <span class="text-danger">*</span>
+                </label>
+                <ng-select
+                  id="field_client"
+                  data-cy="client"
+                  name="client"
+                  formControlName="client"
+                  [items]="clientsSharedCollection"
+                  bindLabel="raisonSociale"
+                  [searchable]="true"
+                  [compareWith]="compareClient"
+                  class="custom-ng-select"
+                  placeholder="Rechercher un client..."
+                >
+                </ng-select>
+                <div *ngIf="editForm.get(['client'])!.invalid && (editForm.get(['client'])!.dirty || editForm.get(['client'])!.touched)">
+                  <small
+                    class="form-text text-danger"
+                    *ngIf="editForm.get(['client'])?.errors?.required"
+                    jhiTranslate="entity.validation.required"
+                  >
+                    Ce champ est obligatoire.
+                  </small>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold" for="field_responsable">Responsable Projet</label>
+                <ng-select
+                  id="field_responsable"
+                  name="responsable"
+                  [items]="usersSharedCollection"
+                  bindLabel="login"
+                  [searchable]="true"
+                  [(ngModel)]="selectedResponsable"
+                  [ngModelOptions]="{ standalone: true }"
+                  class="custom-ng-select"
+                  placeholder="Rechercher un responsable..."
+                >
+                </ng-select>
+              </div>
+
+              <div class="col-md-12 mb-3">
+                <label class="form-label fw-bold">Agence Client</label>
+                <div class="cu-agence-box">
+                  <ng-container *ngIf="agencesClient.length > 0; else noAgence">
+                    <span class="cu-agence-chip" *ngFor="let agence of agencesClient">{{ agence.designation }}</span>
+                  </ng-container>
+                  <ng-template #noAgence>
+                    <span class="cu-agence-empty">Aucune agence associée à ce client</span>
+                  </ng-template>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dates & Exécution -->
+        <div class="cu-accordion-item" [class.open]="isSectionOpen('dates')">
+          <button type="button" class="cu-accordion-header" (click)="toggleSection('dates')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="calendar-alt" class="cu-accordion-icon"></fa-icon>
+              <span>Dates &amp; Exécution</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isSectionOpen('dates')">
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceAffaire.dateDebut" for="field_dateDebut"
+                  >Date Debut</label
+                >
+                <div class="input-group">
+                  <input
+                    id="field_dateDebut"
+                    data-cy="dateDebut"
+                    type="text"
+                    class="form-control"
+                    name="dateDebut"
+                    ngbDatepicker
+                    #dateDebutDp="ngbDatepicker"
+                    formControlName="dateDebut"
+                  />
+                  <button type="button" class="btn btn-secondary" (click)="dateDebutDp.toggle()">
+                    <fa-icon icon="calendar-alt"></fa-icon>
+                  </button>
+                </div>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceAffaire.dateCloture" for="field_dateCloture"
+                  >Date Cloture</label
+                >
+                <div class="input-group">
+                  <input
+                    id="field_dateCloture"
+                    data-cy="dateCloture"
+                    type="text"
+                    class="form-control"
+                    name="dateCloture"
+                    ngbDatepicker
+                    #dateClotureDp="ngbDatepicker"
+                    formControlName="dateCloture"
+                  />
+                  <button type="button" class="btn btn-secondary" (click)="dateClotureDp.toggle()">
+                    <fa-icon icon="calendar-alt"></fa-icon>
+                  </button>
+                </div>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label
+                  class="form-label fw-bold"
+                  jhiTranslate="gpmGatewayApp.projectServiceAffaire.datePassageExecution"
+                  for="field_datePassageExecution"
+                  >Date Passage Execution</label
+                >
+                <div class="input-group">
+                  <input
+                    id="field_datePassageExecution"
+                    data-cy="datePassageExecution"
+                    type="text"
+                    class="form-control"
+                    name="datePassageExecution"
+                    ngbDatepicker
+                    #datePassageExecutionDp="ngbDatepicker"
+                    formControlName="datePassageExecution"
+                  />
+                  <button type="button" class="btn btn-secondary" (click)="datePassageExecutionDp.toggle()">
+                    <fa-icon icon="calendar-alt"></fa-icon>
+                  </button>
+                </div>
+              </div>
+
+              <div class="col-md-12 mb-3 cu-checkbox-row">
+                <input
+                  type="checkbox"
+                  class="form-check-input m-0"
+                  name="lieuMultipleParMission"
+                  id="field_lieuMultipleParMission"
+                  data-cy="lieuMultipleParMission"
+                  formControlName="lieuMultipleParMission"
+                />
+                <label
+                  class="form-check-label fw-bold"
+                  jhiTranslate="gpmGatewayApp.projectServiceAffaire.lieuMultipleParMission"
+                  for="field_lieuMultipleParMission"
+                  >Lieu Multiple Par Mission</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Articles -->
+        <div class="cu-accordion-item" [class.open]="isSectionOpen('articles')">
+          <button type="button" class="cu-accordion-header" (click)="toggleSection('articles')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="box" class="cu-accordion-icon"></fa-icon>
+              <span>Articles</span>
+              <span class="cu-accordion-count" *ngIf="selectedArticles.length">{{ selectedArticles.length }}</span>
+            </span>
+            <span class="cu-accordion-header-right">
+              <button type="button" class="btn-cu-add" (click)="$event.stopPropagation(); openArticleModal()">
+                <fa-icon icon="pen"></fa-icon>&nbsp;Gérer
+              </button>
+              <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+            </span>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isSectionOpen('articles')">
+            <div *ngIf="selectedArticles.length > 0; else noArticles" class="cu-item-list">
+              <div class="cu-item-card" *ngFor="let article of selectedArticles">
+                <div class="cu-item-info">
+                  <div class="cu-item-title">{{ article.code }} — {{ article.designation }}</div>
+                </div>
+                <button type="button" class="cu-item-remove" (click)="removeArticle(article)">
+                  <fa-icon icon="times"></fa-icon>
+                </button>
+              </div>
+            </div>
+            <ng-template #noArticles>
+              <div class="cu-empty">Aucun article sélectionné</div>
+            </ng-template>
+          </div>
+        </div>
+
+        <!-- Sociétés Intermédiaires -->
+        <div class="cu-accordion-item" [class.open]="isSectionOpen('societes')">
+          <button type="button" class="cu-accordion-header" (click)="toggleSection('societes')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="building" class="cu-accordion-icon"></fa-icon>
+              <span>Sociétés Intermédiaires</span>
+              <span class="cu-accordion-count" *ngIf="societesAssociees.length">{{ societesAssociees.length }}</span>
+            </span>
+            <span class="cu-accordion-header-right">
+              <button type="button" class="btn-cu-add" (click)="$event.stopPropagation(); openSocieteModal()">
+                <fa-icon icon="pen"></fa-icon>&nbsp;Gérer
+              </button>
+              <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+            </span>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isSectionOpen('societes')">
+            <div *ngIf="societesAssociees.length > 0; else noSocietes" class="cu-item-list">
+              <div class="cu-item-card" *ngFor="let societe of societesAssociees">
+                <div class="cu-item-avatar">{{ societe.raisonSociale!.charAt(0) }}</div>
+                <div class="cu-item-info">
+                  <div class="cu-item-title-row">
+                    <div class="cu-item-title">{{ societe.raisonSociale }}</div>
+                    <span class="cu-item-badge-id" *ngIf="societe.identifiantUnique">{{ societe.identifiantUnique }}</span>
+                  </div>
+                  <div class="cu-item-sub">{{ societe.adresse || 'Adresse non renseignée' }}</div>
+                  <div class="cu-item-sub" *ngIf="societe.telephone">
+                    <a [href]="'tel:' + societe.telephone" class="cu-item-link">
+                      <fa-icon icon="phone" class="cu-item-link-icon"></fa-icon>{{ societe.telephone }}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <ng-template #noSocietes>
+              <div class="cu-empty">Aucune société associée à cette affaire</div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+      <div class="cu-toolbar cu-toolbar-bottom">
+        <span></span>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
         </button>
       </div>
     </form>
   </div>
+
+  <!-- Modal: Article Selection -->
+  <ng-template #articleModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Sélection des Articles</h5>
+      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    </div>
+
+    <div class="modal-body">
+      <input
+        type="text"
+        class="form-control mb-3"
+        placeholder="Rechercher un article..."
+        [(ngModel)]="articleSearchTerm"
+        [ngModelOptions]="{ standalone: true }"
+      />
+
+      <div style="max-height: 350px; overflow-y: auto">
+        <div *ngFor="let article of filteredArticles" class="form-check mb-3">
+          <input
+            type="checkbox"
+            class="form-check-input me-3"
+            style="width: 1.5rem; height: 1.5rem; cursor: pointer; margin-top: 0"
+            [id]="'modal_article_' + article.id"
+            [checked]="isTempArticleSelected(article)"
+            (change)="toggleTempArticleSelection(article)"
+          />
+          <label class="form-check-label" [for]="'modal_article_' + article.id"> {{ article.code }} - {{ article.designation }} </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
+      <button class="btn-cu-save-modal" (click)="confirmArticleSelection(modal)">Confirmer</button>
+    </div>
+  </ng-template>
+
+  <!-- Modal: Societe Selection -->
+  <ng-template #societeModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Sélection des Sociétés Intermédiaires</h5>
+      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    </div>
+
+    <div class="modal-body">
+      <input
+        type="text"
+        class="form-control mb-3"
+        placeholder="Rechercher une société..."
+        [(ngModel)]="societeSearchTerm"
+        [ngModelOptions]="{ standalone: true }"
+      />
+
+      <div style="max-height: 350px; overflow-y: auto">
+        <div *ngFor="let societe of filteredSocietes" class="form-check mb-3">
+          <input
+            type="checkbox"
+            class="form-check-input me-3"
+            style="width: 1.5rem; height: 1.5rem; cursor: pointer; margin-top: 0"
+            [id]="'modal_societe_' + societe.id"
+            [checked]="isTempSocieteSelected(societe)"
+            (change)="toggleTempSocieteSelection(societe)"
+          />
+          <label class="form-check-label" [for]="'modal_societe_' + societe.id">
+            {{ societe.raisonSociale }}
+          </label>
+        </div>
+
+        <div *ngIf="filteredSocietes.length === 0" class="text-center text-muted py-3">Aucune société trouvée</div>
+      </div>
+
+      <hr />
+
+      <div>
+        <strong>Sociétés sélectionnées :</strong>
+        <div *ngIf="tempSelectedSocietes.length > 0; else noSocieteSelected" class="mt-2 d-flex flex-wrap gap-2">
+          <span class="badge bg-primary" *ngFor="let societe of tempSelectedSocietes">
+            {{ societe.raisonSociale }}
+          </span>
+        </div>
+        <ng-template #noSocieteSelected>
+          <div class="text-muted mt-2">Aucune société sélectionnée</div>
+        </ng-template>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline-secondary" (click)="modal.dismiss()" [disabled]="isSavingSocietes">Annuler</button>
+      <button class="btn-cu-save-modal" (click)="confirmSocieteSelection(modal)" [disabled]="isSavingSocietes">
+        <span *ngIf="isSavingSocietes" class="spinner-border spinner-border-sm me-1"></span>
+        Confirmer
+      </button>
+    </div>
+  </ng-template>
 </div>
-
-<!-- Modal: Article Selection -->
-<ng-template #articleModal let-modal>
-  <div class="modal-header">
-    <h5 class="modal-title">Sélection des Articles</h5>
-    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
-  </div>
-
-  <div class="modal-body">
-    <input
-      type="text"
-      class="form-control mb-3"
-      placeholder="Rechercher un article..."
-      [(ngModel)]="articleSearchTerm"
-      [ngModelOptions]="{ standalone: true }"
-    />
-
-    <div style="max-height: 350px; overflow-y: auto">
-      <div *ngFor="let article of filteredArticles" class="form-check mb-3">
-        <input
-          type="checkbox"
-          class="form-check-input me-3"
-          style="width: 1.5rem; height: 1.5rem; cursor: pointer; margin-top: 0"
-          [id]="'modal_article_' + article.id"
-          [checked]="isTempArticleSelected(article)"
-          (change)="toggleTempArticleSelection(article)"
-        />
-        <label class="form-check-label" [for]="'modal_article_' + article.id"> {{ article.code }} - {{ article.designation }} </label>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-footer">
-    <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
-    <button class="btn btn-primary" (click)="confirmArticleSelection(modal)">Confirmer</button>
-  </div>
-</ng-template>
-
-<!-- Modal: Societe Selection -->
-<ng-template #societeModal let-modal>
-  <div class="modal-header">
-    <h5 class="modal-title">Sélection des Sociétés Intermédiaires</h5>
-    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
-  </div>
-
-  <div class="modal-body">
-    <input
-      type="text"
-      class="form-control mb-3"
-      placeholder="Rechercher une société..."
-      [(ngModel)]="societeSearchTerm"
-      [ngModelOptions]="{ standalone: true }"
-    />
-
-    <div style="max-height: 350px; overflow-y: auto">
-      <div *ngFor="let societe of filteredSocietes" class="form-check mb-3">
-        <input
-          type="checkbox"
-          class="form-check-input me-3"
-          style="width: 1.5rem; height: 1.5rem; cursor: pointer; margin-top: 0"
-          [id]="'modal_societe_' + societe.id"
-          [checked]="isTempSocieteSelected(societe)"
-          (change)="toggleTempSocieteSelection(societe)"
-        />
-        <label class="form-check-label" [for]="'modal_societe_' + societe.id">
-          {{ societe.raisonSociale }}
-        </label>
-      </div>
-
-      <div *ngIf="filteredSocietes.length === 0" class="text-center text-muted py-3">Aucune société trouvée</div>
-    </div>
-
-    <hr />
-
-    <div>
-      <strong>Sociétés sélectionnées :</strong>
-      <div *ngIf="tempSelectedSocietes.length > 0; else noSocieteSelected" class="mt-2 d-flex flex-wrap gap-2">
-        <span class="badge bg-primary" *ngFor="let societe of tempSelectedSocietes">
-          {{ societe.raisonSociale }}
-        </span>
-      </div>
-      <ng-template #noSocieteSelected>
-        <div class="text-muted mt-2">Aucune société sélectionnée</div>
-      </ng-template>
-    </div>
-  </div>
-
-  <div class="modal-footer">
-    <button class="btn btn-outline-secondary" (click)="modal.dismiss()" [disabled]="isSavingSocietes">Annuler</button>
-    <button class="btn btn-primary" (click)="confirmSocieteSelection(modal)" [disabled]="isSavingSocietes">
-      <span *ngIf="isSavingSocietes" class="spinner-border spinner-border-sm me-1"></span>
-      Confirmer
-    </button>
-  </div>
-</ng-template>
