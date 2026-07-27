@@ -28,6 +28,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ViewChild, TemplateRef } from '@angular/core';
 import { SocieteService } from '../../societe/service/societe.service';
 import { ISociete } from '../../societe/societe.model';
+import { IAgence } from '../../agence/agence.model';
 
 @Component({
   selector: 'jhi-affaire-update',
@@ -37,6 +38,8 @@ export class AffaireUpdateComponent implements OnInit {
   @ViewChild('articleModal') articleModal!: TemplateRef<any>;
   @ViewChild('matriceModal') matriceModal!: TemplateRef<any>;
   @ViewChild('societeModal') societeModal!: TemplateRef<any>;
+
+  agencesClient: IAgence[] = [];
 
   isSaving = false;
   affaire: IAffaire | null = null;
@@ -83,6 +86,15 @@ export class AffaireUpdateComponent implements OnInit {
     protected modalService: NgbModal,
     protected societeService: SocieteService
   ) {}
+
+  loadAgencesClient(clientId: number): void {
+    this.affaireService
+      .getAgencesByClientId({ clientId })
+      .pipe(map((res: HttpResponse<IAgence[]>) => res.body ?? []))
+      .subscribe((agences: IAgence[]) => {
+        this.agencesClient = agences;
+      });
+  }
 
   // ── Article modal ──────────────────────────────────────────────
   openArticleModal(): void {
@@ -239,6 +251,14 @@ export class AffaireUpdateComponent implements OnInit {
         this.updateForm(affaire);
       }
       this.loadRelationshipsOptions();
+    });
+
+    this.editForm.get('client')?.valueChanges.subscribe(client => {
+      this.agencesClient = [];
+
+      if (client?.id) {
+        this.loadAgencesClient(client.id);
+      }
     });
 
     // Load fake associated companies data

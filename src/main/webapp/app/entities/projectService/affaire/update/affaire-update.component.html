@@ -132,6 +132,21 @@
                     </small>
                   </div>
                 </div>
+                <div class="col-md-12 mb-3">
+                  <label class="form-label font-weight-bold">Agence Client</label>
+
+                  <div class="border rounded p-2" style="background-color: #f8f9fa; min-height: 42px">
+                    <ng-container *ngIf="agencesClient.length > 0; else noAgence">
+                      <div *ngFor="let agence of agencesClient" class="badge bg-primary me-2 mb-2 px-3 py-2" style="font-size: 0.9rem">
+                        {{ agence.designation }}
+                      </div>
+                    </ng-container>
+
+                    <ng-template #noAgence>
+                      <span class="text-muted fst-italic"> Aucune agence associée à ce client </span>
+                    </ng-template>
+                  </div>
+                </div>
 
                 <div class="col-md-12 mb-3">
                   <label class="form-label font-weight-bold" for="field_responsable">Responsable Projet</label>
@@ -294,61 +309,6 @@
           </div>
         </div>
 
-        <!-- Section: Matrices de Facturation -->
-        <div class="col-lg-6 mb-4">
-          <div class="card shadow-sm h-100">
-            <div class="card-header bg-light d-flex justify-content-between align-items-center">
-              <h5 class="mb-0">Matrices de Facturation</h5>
-              <button type="button" class="btn btn-sm btn-primary fw-bold" (click)="openMatriceModal()">Gérer</button>
-            </div>
-            <div class="card-body" style="max-height: 400px; overflow-y: auto">
-              <div *ngIf="selectedMatrices.length > 0; else noMatrices" class="row g-2">
-                <div class="col-4" *ngFor="let matrice of selectedMatrices">
-                  <div class="card border h-100">
-                    <div class="card-body pb-2">
-                      <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                          <span class="badge bg-black me-1">{{ matrice.ville?.nom || 'N/A' }}</span>
-                          <span class="badge bg-info">{{ matrice.zone?.nom || 'N/A' }}</span>
-                        </div>
-                        <button type="button" class="btn btn-sm btn-outline-danger" (click)="deleteMatrice(matrice)">
-                          <fa-icon icon="times"></fa-icon>
-                        </button>
-                      </div>
-                      <div style="color: black" class="small d-flex flex-column gap-1">
-                        <div class="d-flex gap-1">
-                          <span style="font-weight: 700">Tarif Base:</span>
-                          <strong>{{ matrice.tarifBase }} <small class="fw-normal">TND</small></strong>
-                        </div>
-                        <div class="d-flex gap-1">
-                          <span style="font-weight: 700">Dimanche:</span>
-                          <strong>{{ matrice.tarifDimanche }} <small class="fw-normal">TND</small></strong>
-                        </div>
-                        <div class="d-flex gap-1">
-                          <span style="font-weight: 700">Hébergement:</span>
-                          <strong>{{ matrice.tarifHebergement }} <small class="fw-normal">TND</small></strong>
-                        </div>
-                        <div class="d-flex gap-1">
-                          <span style="font-weight: 700">Jour Férié:</span>
-                          <strong>{{ matrice.tarifJourFerie }} <small class="fw-normal">TND</small></strong>
-                        </div>
-                        <div class="d-flex gap-1">
-                          <span style="font-weight: 700">Mission Nuit:</span>
-                          <strong>{{ matrice.tarifMissionNuit }} <small class="fw-normal">TND</small></strong>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <ng-template #noMatrices>
-                <div class="text-center py-3">Aucune matrice associée</div>
-              </ng-template>
-            </div>
-          </div>
-        </div>
-
         <!-- ═══════════════════════════════════════════════════════════ -->
         <!-- NEW SECTION: Sociétés Associées -->
         <!-- ═══════════════════════════════════════════════════════════ -->
@@ -357,7 +317,7 @@
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
               <h5 class="mb-0">
                 <fa-icon icon="building" class="me-2"></fa-icon>
-                Sociétés Associées
+                Sociétés Intermédiaires
               </h5>
               <div class="d-flex align-items-center gap-2">
                 <button type="button" class="btn btn-edit" (click)="openSocieteModal()">Gérer</button>
@@ -476,60 +436,10 @@
   </div>
 </ng-template>
 
-<!-- Modal: Matrice Creation -->
-<ng-template #matriceModal let-modal>
-  <div class="modal-header">
-    <h5 class="modal-title">Nouvelle Matrice de Facturation</h5>
-    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
-  </div>
-  <div class="modal-body">
-    <div class="row g-3">
-      <div class="col-md-6">
-        <label class="form-label fw-bold">Ville</label>
-        <select class="form-control" [(ngModel)]="newMatrice.ville" [ngModelOptions]="{ standalone: true }">
-          <option [ngValue]="null">-- Sélectionner --</option>
-          <option *ngFor="let v of allVilles" [ngValue]="v">{{ v.nom }}</option>
-        </select>
-      </div>
-      <div class="col-md-6">
-        <label class="form-label fw-bold">Zone</label>
-        <select class="form-control" [(ngModel)]="newMatrice.zone" [ngModelOptions]="{ standalone: true }">
-          <option [ngValue]="null">-- Sélectionner --</option>
-          <option *ngFor="let z of allZones" [ngValue]="z">{{ z.nom }}</option>
-        </select>
-      </div>
-      <div class="col-md-6">
-        <label class="form-label fw-bold">Tarif Base</label>
-        <input type="number" class="form-control" [(ngModel)]="newMatrice.tarifBase" [ngModelOptions]="{ standalone: true }" />
-      </div>
-      <div class="col-md-6">
-        <label class="form-label fw-bold">Tarif Mission Nuit</label>
-        <input type="number" class="form-control" [(ngModel)]="newMatrice.tarifMissionNuit" [ngModelOptions]="{ standalone: true }" />
-      </div>
-      <div class="col-md-6">
-        <label class="form-label fw-bold">Tarif Hébergement</label>
-        <input type="number" class="form-control" [(ngModel)]="newMatrice.tarifHebergement" [ngModelOptions]="{ standalone: true }" />
-      </div>
-      <div class="col-md-6">
-        <label class="form-label fw-bold">Tarif Jour Férié</label>
-        <input type="number" class="form-control" [(ngModel)]="newMatrice.tarifJourFerie" [ngModelOptions]="{ standalone: true }" />
-      </div>
-      <div class="col-md-6">
-        <label class="form-label fw-bold">Tarif Dimanche</label>
-        <input type="number" class="form-control" [(ngModel)]="newMatrice.tarifDimanche" [ngModelOptions]="{ standalone: true }" />
-      </div>
-    </div>
-  </div>
-  <div class="modal-footer">
-    <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
-    <button class="btn btn-primary" (click)="saveNewMatrice(modal)">Créer</button>
-  </div>
-</ng-template>
-
 <!-- Modal: Societe Selection -->
 <ng-template #societeModal let-modal>
   <div class="modal-header">
-    <h5 class="modal-title">Sélection des Sociétés Associées</h5>
+    <h5 class="modal-title">Sélection des Sociétés Intermédiaires</h5>
     <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
   </div>
 

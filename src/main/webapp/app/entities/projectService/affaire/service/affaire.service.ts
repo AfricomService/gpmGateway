@@ -9,6 +9,7 @@ import { DATE_FORMAT } from 'app/config/input.constants';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { IAffaire, NewAffaire } from '../affaire.model';
+import { IAgence } from '../../agence/agence.model';
 
 export type PartialUpdateAffaire = Partial<IAffaire> & Pick<IAffaire, 'id'>;
 
@@ -28,10 +29,12 @@ export type PartialUpdateRestAffaire = RestOf<PartialUpdateAffaire>;
 
 export type EntityResponseType = HttpResponse<IAffaire>;
 export type EntityArrayResponseType = HttpResponse<IAffaire[]>;
+export type EntityArrayResponseTypeAgence = HttpResponse<IAgence[]>;
 
 @Injectable({ providedIn: 'root' })
 export class AffaireService {
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/affaires', 'projectservice');
+  protected resourceUrlAg = this.applicationConfigService.getEndpointFor('api/agences', 'projectservice');
 
   constructor(protected http: HttpClient, protected applicationConfigService: ApplicationConfigService) {}
 
@@ -121,6 +124,15 @@ export class AffaireService {
       params: options,
       observe: 'response',
       responseType: 'text',
+    });
+  }
+
+  getAgencesByClientId(req?: any): Observable<EntityArrayResponseTypeAgence> {
+    const options = createRequestOption(req);
+
+    return this.http.get<IAgence[]>(`${this.resourceUrlAg}/by-client-id`, {
+      params: options,
+      observe: 'response',
     });
   }
 
