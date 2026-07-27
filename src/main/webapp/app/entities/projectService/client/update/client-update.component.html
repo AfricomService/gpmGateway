@@ -433,10 +433,71 @@
         </div>
       </div>
       <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-outline-primary"
+          *ngIf="editingContact"
+          [disabled]="creatingKeycloakUser || !editingContact.identifiantUnique || editingContact.statusCompteKeycloak === 'EN_COURS'"
+          (click)="createContactKeycloakUser()"
+        >
+          <fa-icon icon="user-plus"></fa-icon>&nbsp;{{
+            editingContact.statusCompteKeycloak === 'EN_COURS'
+              ? 'Compte Keycloak créé'
+              : creatingKeycloakUser
+              ? 'Création...'
+              : 'Créer utilisateur Keycloak'
+          }}
+        </button>
         <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
         <button class="btn-cu-save-modal" [disabled]="!newContact.nomPrenom?.trim()" (click)="saveContact(modal)">
           {{ editingContact ? 'Enregistrer' : 'Ajouter' }}
         </button>
+      </div>
+    </ng-template>
+
+    <ng-template #keycloakResultModal let-modal>
+      <div
+        class="modal-body kc-result-modal"
+        [class.kc-result-success]="keycloakResult?.success"
+        [class.kc-result-error]="!keycloakResult?.success"
+      >
+        <div class="kc-result-icon">
+          <fa-icon *ngIf="keycloakResult?.success" icon="check-circle"></fa-icon>
+          <fa-icon *ngIf="!keycloakResult?.success" icon="times-circle"></fa-icon>
+        </div>
+
+        <ng-container *ngIf="keycloakResult?.success; else kcError">
+          <h5 class="kc-result-title">Compte Keycloak créé avec succès</h5>
+          <p class="kc-result-text">
+            Le compte est bien créé sur Keycloak. Merci de contacter
+            <strong>{{ keycloakResult?.nomPrenom }}</strong>
+            pour lui communiquer ses identifiants de connexion à l'application.
+          </p>
+
+          <div class="kc-result-credentials">
+            <div class="kc-cred-row">
+              <span class="kc-cred-label">Login</span>
+              <span class="kc-cred-value">{{ keycloakResult?.login }}</span>
+            </div>
+            <div class="kc-cred-row">
+              <span class="kc-cred-label">Mot de passe</span>
+              <span class="kc-cred-value">{{ keycloakResult?.password }}</span>
+            </div>
+          </div>
+
+          <p class="kc-result-note">
+            <fa-icon icon="info-circle"></fa-icon>
+            &nbsp;Ce mot de passe est temporaire : l'utilisateur devra le changer lors de sa première connexion.
+          </p>
+        </ng-container>
+
+        <ng-template #kcError>
+          <h5 class="kc-result-title">Échec de la création du compte</h5>
+          <p class="kc-result-text">{{ keycloakResult?.message }}</p>
+        </ng-template>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cu-save-modal" (click)="modal.close()">Fermer</button>
       </div>
     </ng-template>
 

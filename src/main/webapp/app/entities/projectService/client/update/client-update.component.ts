@@ -38,6 +38,7 @@ export class ClientUpdateComponent implements OnInit {
   @ViewChild('siteModal') siteModal!: TemplateRef<unknown>;
   @ViewChild('agenceModal') agenceModal!: TemplateRef<unknown>;
   @ViewChild('siteImportModal') siteImportModal!: TemplateRef<unknown>;
+  @ViewChild('keycloakResultModal') keycloakResultModal!: TemplateRef<unknown>;
 
   isSaving = false;
   client: IClient | null = null;
@@ -144,6 +145,40 @@ export class ClientUpdateComponent implements OnInit {
     this.editingContact = contact;
     this.newContact = { ...contact };
     this.modalService.open(this.contactModal, { size: 'lg', backdrop: 'static', centered: true });
+  }
+
+  creatingKeycloakUser = false;
+  keycloakResult: { success: boolean; nomPrenom?: string; login?: string; password?: string; message?: string } | null = null;
+
+  createContactKeycloakUser(): void {
+    if (!this.editingContact?.id) {
+      return;
+    }
+    this.creatingKeycloakUser = true;
+    this.contactService.createKeycloakUser(this.editingContact.id).subscribe({
+      next: (res: any) => {
+        this.creatingKeycloakUser = false;
+        const updatedContact = res.body;
+        this.editingContact = updatedContact;
+        this.loadContacts();
+
+        this.keycloakResult = {
+          success: true,
+          nomPrenom: updatedContact?.nomPrenom,
+          login: updatedContact?.identifiantUnique,
+          password: '123456',
+        };
+        this.modalService.open(this.keycloakResultModal, { size: 'md', backdrop: 'static', centered: true });
+      },
+      error: err => {
+        this.creatingKeycloakUser = false;
+        this.keycloakResult = {
+          success: false,
+          message: err.error?.detail ?? err.error?.title ?? 'Erreur lors de la création de l’utilisateur Keycloak',
+        };
+        this.modalService.open(this.keycloakResultModal, { size: 'md', backdrop: 'static', centered: true });
+      },
+    });
   }
 
   saveContact(modal: any): void {

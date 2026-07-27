@@ -69,6 +69,10 @@ export class ContactService {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }
 
+  createKeycloakUser(id: number): Observable<HttpResponse<{}>> {
+    return this.http.post(`${this.resourceUrl}/${id}/create-keycloak-user`, null, { observe: 'response' });
+  }
+
   findByClientId(clientId: number): Observable<EntityArrayResponseType> {
     return this.http
       .get<RestContact[]>(`${this.resourceUrl}/client/${clientId}`, { observe: 'response' })

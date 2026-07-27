@@ -10,6 +10,7 @@ export interface IContact {
   telephone?: string | null;
   fax?: string | null;
   email?: string | null;
+  statusCompteKeycloak?: string | null;
   createdAt?: dayjs.Dayjs | null;
   updatedAt?: dayjs.Dayjs | null;
   createdBy?: string | null;
