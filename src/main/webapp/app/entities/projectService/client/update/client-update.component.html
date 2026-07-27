@@ -160,9 +160,14 @@
                       {{ contact.email || 'Email non renseigné' }} &nbsp;•&nbsp; {{ contact.telephone || 'Téléphone non renseigné' }}
                     </div>
                   </div>
-                  <button type="button" class="cu-item-remove" (click)="unlinkContact(contact)">
-                    <fa-icon icon="times"></fa-icon>
-                  </button>
+                  <div class="cu-item-actions">
+                    <button type="button" class="cu-item-edit" (click)="openEditContactModal(contact)">
+                      <fa-icon icon="pencil-alt"></fa-icon>
+                    </button>
+                    <button type="button" class="cu-item-remove" (click)="unlinkContact(contact)">
+                      <fa-icon icon="times"></fa-icon>
+                    </button>
+                  </div>
                 </div>
               </div>
               <ng-template #noContacts>
@@ -408,7 +413,7 @@
     <!-- Modals -->
     <ng-template #contactModal let-modal>
       <div class="modal-header">
-        <h5 class="modal-title">Nouveau Contact</h5>
+        <h5 class="modal-title">{{ editingContact ? 'Modifier Contact' : 'Nouveau Contact' }}</h5>
         <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
       </div>
       <div class="modal-body">
@@ -429,7 +434,9 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
-        <button class="btn-cu-save-modal" [disabled]="!newContact.nomPrenom?.trim()" (click)="saveNewContact(modal)">Ajouter</button>
+        <button class="btn-cu-save-modal" [disabled]="!newContact.nomPrenom?.trim()" (click)="saveContact(modal)">
+          {{ editingContact ? 'Enregistrer' : 'Ajouter' }}
+        </button>
       </div>
     </ng-template>
 

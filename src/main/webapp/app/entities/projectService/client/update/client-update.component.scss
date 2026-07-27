@@ -330,6 +330,32 @@
   color: var(--cp-text-muted);
 }
 
+.cu-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.cu-item-edit {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 8px;
+  background: var(--cp-accent-soft);
+  color: var(--cp-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.18s ease, color 0.18s ease;
+
+  &:hover {
+    background: var(--cp-accent);
+    color: #ffffff;
+  }
+}
+
 .cu-item-remove {
   width: 30px;
   height: 30px;

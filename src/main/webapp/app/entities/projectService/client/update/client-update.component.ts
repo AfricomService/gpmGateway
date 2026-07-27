@@ -65,7 +65,8 @@ export class ClientUpdateComponent implements OnInit {
   allSocietes: ISociete[] = [];
   newAgence: Partial<NewAgence> = {};
 
-  newContact: Partial<NewContact> = {};
+  newContact: Partial<NewContact | IContact> = {};
+  editingContact: IContact | null = null;
   newSite: Partial<NewSite> = {};
 
   siteImportFile: File | null = null;
@@ -134,13 +135,44 @@ export class ClientUpdateComponent implements OnInit {
   }
 
   openContactModal(): void {
+    this.editingContact = null;
     this.newContact = {};
     this.modalService.open(this.contactModal, { size: 'lg', backdrop: 'static', centered: true });
   }
 
-  saveNewContact(modal: any): void {
+  openEditContactModal(contact: IContact): void {
+    this.editingContact = contact;
+    this.newContact = { ...contact };
+    this.modalService.open(this.contactModal, { size: 'lg', backdrop: 'static', centered: true });
+  }
+
+  saveContact(modal: any): void {
     const clientRef = this.client ? { id: this.client.id, raisonSociale: this.client.raisonSociale } : null;
     if (!clientRef || !this.newContact.nomPrenom?.trim()) {
+      return;
+    }
+
+    if (this.editingContact) {
+      // Mode édition : on repart de l'objet existant pour ne pas écraser
+      // les champs non présents dans la modale (identifiantUnique, createdAt, createdBy, client, etc.)
+      const contactToUpdate: IContact = {
+        ...this.editingContact,
+        nomPrenom: this.newContact.nomPrenom.trim(),
+        adresse: this.newContact.adresse ?? null,
+        telephone: this.newContact.telephone ?? null,
+        fax: this.newContact.fax ?? null,
+        email: this.newContact.email ?? null,
+      };
+
+      this.contactService.update(contactToUpdate).subscribe({
+        next: () => {
+          this.loadContacts();
+          modal.close();
+        },
+        error: () => {
+          // Optionnel : notifier l'utilisateur via jhi-alert-error ou toast
+        },
+      });
       return;
     }
 
