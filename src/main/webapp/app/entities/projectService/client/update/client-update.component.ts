@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
@@ -90,6 +90,7 @@ export class ClientUpdateComponent implements OnInit {
     protected agenceService: AgenceService,
     protected societeService: SocieteService,
     protected activatedRoute: ActivatedRoute,
+    protected router: Router,
     protected modalService: NgbModal
   ) {}
 
@@ -139,13 +140,13 @@ export class ClientUpdateComponent implements OnInit {
 
   saveNewContact(modal: any): void {
     const clientRef = this.client ? { id: this.client.id, raisonSociale: this.client.raisonSociale } : null;
-    if (!clientRef || !this.newContact.raisonSociale?.trim()) {
+    if (!clientRef || !this.newContact.nomPrenom?.trim()) {
       return;
     }
 
     const contactToCreate: NewContact = {
       id: null,
-      raisonSociale: this.newContact.raisonSociale.trim(),
+      nomPrenom: this.newContact.nomPrenom.trim(),
       identifiantUnique: this.newContact.identifiantUnique ?? null,
       adresse: this.newContact.adresse ?? null,
       telephone: this.newContact.telephone ?? null,
@@ -240,8 +241,7 @@ export class ClientUpdateComponent implements OnInit {
       !this.newAgence.designation?.trim() ||
       !this.newAgence.adresse?.trim() ||
       !this.newAgence.ville?.trim() ||
-      !this.newAgence.pays?.trim() ||
-      !this.newAgence.societe
+      !this.newAgence.pays?.trim()
     ) {
       return;
     }
@@ -252,7 +252,6 @@ export class ClientUpdateComponent implements OnInit {
       adresse: this.newAgence.adresse.trim(),
       ville: this.newAgence.ville.trim(),
       pays: this.newAgence.pays.trim(),
-      societe: this.newAgence.societe,
       clientId: this.client.id,
     };
 
@@ -452,25 +451,58 @@ export class ClientUpdateComponent implements OnInit {
     window.history.back();
   }
 
+  activerClient(): void {
+    if (!this.client?.id) {
+      return;
+    }
+    this.clientService.activer(this.client.id).subscribe({
+      next: res => {
+        if (res.body) {
+          this.client = res.body;
+          this.editForm.patchValue({ status: res.body.status });
+        }
+      },
+    });
+  }
+
+  desactiverClient(): void {
+    if (!this.client?.id) {
+      return;
+    }
+    this.clientService.desactiver(this.client.id).subscribe({
+      next: res => {
+        if (res.body) {
+          this.client = res.body;
+          this.editForm.patchValue({ status: res.body.status });
+        }
+      },
+    });
+  }
+
   save(): void {
     this.isSaving = true;
     const client = this.clientFormService.getClient(this.editForm);
-    if (client.id !== null) {
-      this.subscribeToSaveResponse(this.clientService.update(client));
+    const isNewClient = client.id === null;
+    if (!isNewClient) {
+      this.subscribeToSaveResponse(this.clientService.update(client), isNewClient);
     } else {
-      this.subscribeToSaveResponse(this.clientService.identifierEtEnregistrer(client));
+      this.subscribeToSaveResponse(this.clientService.identifierEtEnregistrer(client), isNewClient);
     }
   }
 
-  protected subscribeToSaveResponse(result: Observable<HttpResponse<IClient>>): void {
+  protected subscribeToSaveResponse(result: Observable<HttpResponse<IClient>>, isNewClient: boolean): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
-      next: () => this.onSaveSuccess(),
+      next: res => this.onSaveSuccess(res, isNewClient),
       error: () => this.onSaveError(),
     });
   }
 
-  protected onSaveSuccess(): void {
-    this.previousState();
+  protected onSaveSuccess(res: HttpResponse<IClient>, isNewClient: boolean): void {
+    if (isNewClient && res.body?.id) {
+      this.router.navigate(['/client', res.body.id, 'edit']);
+    } else {
+      this.previousState();
+    }
   }
 
   protected onSaveError(): void {

@@ -4,6 +4,7 @@ import { IClient } from 'app/entities/projectService/client/client.model';
 export interface IContact {
   id: number;
   raisonSociale?: string | null;
+  nomPrenom?: string | null;
   identifiantUnique?: string | null;
   adresse?: string | null;
   telephone?: string | null;

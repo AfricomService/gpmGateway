@@ -75,8 +75,8 @@ export class ContactService {
       .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 
-  searchByClientId(clientId: number, raisonSociale: string): Observable<EntityArrayResponseType> {
-    const params = { raisonSociale };
+  searchByClientId(clientId: number, nomPrenom: string): Observable<EntityArrayResponseType> {
+    const params = { nomPrenom };
     return this.http
       .get<RestContact[]>(`${this.resourceUrl}/client/${clientId}/search`, { params, observe: 'response' })
       .pipe(map(res => this.convertResponseArrayFromServer(res)));

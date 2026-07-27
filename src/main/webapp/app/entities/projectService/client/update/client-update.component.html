@@ -144,7 +144,7 @@
               <input
                 type="text"
                 class="form-control mb-3"
-                placeholder="Rechercher par raison sociale..."
+                placeholder="Rechercher par nom et prénom..."
                 [(ngModel)]="contactSearchTerm"
                 [ngModelOptions]="{ standalone: true }"
                 (ngModelChange)="searchContacts()"
@@ -153,11 +153,12 @@
                 <div class="cu-item-card" *ngFor="let contact of selectedContacts">
                   <div class="cu-item-info">
                     <div class="cu-item-title-row">
-                      <div class="cu-item-title">{{ contact.raisonSociale || '-' }}</div>
                       <span class="cu-item-badge-id" *ngIf="contact.identifiantUnique">{{ contact.identifiantUnique }}</span>
                     </div>
-                    <div class="cu-item-sub">{{ contact.email || 'Email non renseigné' }}</div>
-                    <div class="cu-item-sub">{{ contact.telephone || 'Téléphone non renseigné' }}</div>
+                    <div class="cu-item-title">{{ contact.nomPrenom || '-' }}</div>
+                    <div class="cu-item-sub">
+                      {{ contact.email || 'Email non renseigné' }} &nbsp;•&nbsp; {{ contact.telephone || 'Téléphone non renseigné' }}
+                    </div>
                   </div>
                   <button type="button" class="cu-item-remove" (click)="unlinkContact(contact)">
                     <fa-icon icon="times"></fa-icon>
@@ -374,9 +375,29 @@
       </div>
 
       <div class="cu-toolbar cu-toolbar-bottom">
-        <span *ngIf="editForm.get('status')?.value" class="cu-badge-status">
-          {{ editForm.get('status')?.value }}
-        </span>
+        <div class="cu-toolbar-left">
+          <span *ngIf="editForm.get('status')?.value" class="cu-badge-status">
+            {{ editForm.get('status')?.value }}
+          </span>
+
+          <button
+            type="button"
+            *ngIf="client?.id && editForm.get('status')?.value !== 'ACTIF'"
+            class="btn-cu-activate"
+            (click)="activerClient()"
+          >
+            <fa-icon icon="check"></fa-icon>&nbsp;Activer
+          </button>
+
+          <button
+            type="button"
+            *ngIf="client?.id && editForm.get('status')?.value !== 'DEACTIVATED'"
+            class="btn-cu-deactivate"
+            (click)="desactiverClient()"
+          >
+            <fa-icon icon="ban"></fa-icon>&nbsp;Désactiver
+          </button>
+        </div>
 
         <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
           <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
@@ -393,8 +414,8 @@
       <div class="modal-body">
         <div class="row g-3">
           <div class="col-md-12">
-            <label class="form-label fw-bold">Raison Sociale</label>
-            <input type="text" class="form-control" [(ngModel)]="newContact.raisonSociale" [ngModelOptions]="{ standalone: true }" />
+            <label class="form-label fw-bold">Nom &amp; Prénom</label>
+            <input type="text" class="form-control" [(ngModel)]="newContact.nomPrenom" [ngModelOptions]="{ standalone: true }" />
           </div>
           <div class="col-md-6">
             <label class="form-label fw-bold">Email</label>
@@ -408,7 +429,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
-        <button class="btn-cu-save-modal" [disabled]="!newContact.raisonSociale?.trim()" (click)="saveNewContact(modal)">Ajouter</button>
+        <button class="btn-cu-save-modal" [disabled]="!newContact.nomPrenom?.trim()" (click)="saveNewContact(modal)">Ajouter</button>
       </div>
     </ng-template>
 
@@ -559,28 +580,13 @@
             <label class="form-label fw-bold">Pays</label>
             <input type="text" class="form-control" [(ngModel)]="newAgence.pays" [ngModelOptions]="{ standalone: true }" />
           </div>
-          <div class="col-md-12">
-            <label class="form-label fw-bold">Société</label>
-            <select class="form-control" [(ngModel)]="newAgence.societe" [ngModelOptions]="{ standalone: true }">
-              <option [ngValue]="null">-- Sélectionner une société --</option>
-              <option *ngFor="let societe of allSocietes" [ngValue]="{ id: societe.id, raisonSociale: societe.raisonSociale }">
-                {{ societe.raisonSociale }}
-              </option>
-            </select>
-          </div>
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
         <button
           class="btn-cu-save-modal"
-          [disabled]="
-            !newAgence.designation?.trim() ||
-            !newAgence.adresse?.trim() ||
-            !newAgence.ville?.trim() ||
-            !newAgence.pays?.trim() ||
-            !newAgence.societe
-          "
+          [disabled]="!newAgence.designation?.trim() || !newAgence.adresse?.trim() || !newAgence.ville?.trim() || !newAgence.pays?.trim()"
           (click)="saveNewAgence(modal)"
         >
           Ajouter
