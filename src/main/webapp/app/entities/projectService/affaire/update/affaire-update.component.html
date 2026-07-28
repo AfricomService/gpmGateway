@@ -14,7 +14,7 @@
     <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
       <jhi-alert-error></jhi-alert-error>
 
-      <!-- Toolbar : Numéro / Désignation (gauche) + Enregistrer (droite) -->
+      <!-- Toolbar : Numéro / Désignation (gauche) + Enregistrer/Modifier (droite) -->
       <div class="cu-toolbar">
         <div class="cu-toolbar-left">
           <span class="cu-page-kicker" *ngIf="editForm.controls.id.value === null" jhiTranslate="entity.action.edit"
@@ -47,7 +47,9 @@
           </div>
         </div>
 
+        <!-- Bouton Enregistrer (mode édition) -->
         <button
+          *ngIf="isEditMode"
           type="submit"
           id="save-entity-top"
           data-cy="entityCreateSaveButton"
@@ -56,6 +58,11 @@
           class="btn-cu-save"
         >
           <fa-icon icon="save"></fa-icon>
+        </button>
+
+        <!-- Bouton Modifier (mode lecture sur fiche existante) -->
+        <button *ngIf="!isEditMode && isExisting" type="button" class="btn-cu-edit" (click)="toggleEditMode()" title="Modifier">
+          <fa-icon icon="pen"></fa-icon>&nbsp;<span>Modifier</span>
         </button>
       </div>
 
@@ -85,6 +92,7 @@
                   id="field_designationAffaire"
                   data-cy="designationAffaire"
                   formControlName="designationAffaire"
+                  [attr.disabled]="!isEditMode ? true : null"
                 />
                 <div
                   *ngIf="
@@ -115,6 +123,7 @@
                   [searchable]="true"
                   class="custom-ng-select"
                   placeholder="Rechercher une société..."
+                  [readonly]="!isEditMode"
                 >
                 </ng-select>
 
@@ -125,27 +134,7 @@
                 </div>
               </div>
 
-              <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold" for="field_statut">
-                  <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.statut">Statut</span>
-                  <span class="text-danger">*</span>
-                </label>
-                <select class="form-control" name="statut" formControlName="statut" id="field_statut" data-cy="statut">
-                  <option [ngValue]="null">{{ 'gpmGatewayApp.StatutAffaire.null' | translate }}</option>
-                  <option *ngFor="let statutAffaire of statutAffaireValues" [value]="statutAffaire">
-                    {{ 'gpmGatewayApp.StatutAffaire.' + statutAffaire | translate }}
-                  </option>
-                </select>
-                <div *ngIf="editForm.get('statut')!.invalid && (editForm.get('statut')!.dirty || editForm.get('statut')!.touched)">
-                  <small
-                    class="form-text text-danger"
-                    *ngIf="editForm.get('statut')?.errors?.required"
-                    jhiTranslate="entity.validation.required"
-                  >
-                    Ce champ est obligatoire.
-                  </small>
-                </div>
-              </div>
+              <!-- CHAMP STATUT SUPPRIMÉ DE CETTE SECTION -->
 
               <div class="col-md-6 mb-3">
                 <label class="form-label fw-bold" for="field_client">
@@ -163,6 +152,7 @@
                   [compareWith]="compareClient"
                   class="custom-ng-select"
                   placeholder="Rechercher un client..."
+                  [readonly]="!isEditMode"
                 >
                 </ng-select>
                 <div *ngIf="editForm.get(['client'])!.invalid && (editForm.get(['client'])!.dirty || editForm.get(['client'])!.touched)">
@@ -188,6 +178,7 @@
                   [ngModelOptions]="{ standalone: true }"
                   class="custom-ng-select"
                   placeholder="Rechercher un responsable..."
+                  [readonly]="!isEditMode"
                 >
                 </ng-select>
               </div>
@@ -233,8 +224,11 @@
                     ngbDatepicker
                     #dateDebutDp="ngbDatepicker"
                     formControlName="dateDebut"
+                    readonly
+                    (keydown)="$event.preventDefault()"
+                    [attr.disabled]="!isEditMode ? true : null"
                   />
-                  <button type="button" class="btn btn-secondary" (click)="dateDebutDp.toggle()">
+                  <button *ngIf="isEditMode" type="button" class="btn-cu-date-toggle" (click)="dateDebutDp.toggle()">
                     <fa-icon icon="calendar-alt"></fa-icon>
                   </button>
                 </div>
@@ -254,8 +248,11 @@
                     ngbDatepicker
                     #dateClotureDp="ngbDatepicker"
                     formControlName="dateCloture"
+                    readonly
+                    (keydown)="$event.preventDefault()"
+                    [attr.disabled]="!isEditMode ? true : null"
                   />
-                  <button type="button" class="btn btn-secondary" (click)="dateClotureDp.toggle()">
+                  <button *ngIf="isEditMode" type="button" class="btn-cu-date-toggle" (click)="dateClotureDp.toggle()">
                     <fa-icon icon="calendar-alt"></fa-icon>
                   </button>
                 </div>
@@ -278,8 +275,11 @@
                     ngbDatepicker
                     #datePassageExecutionDp="ngbDatepicker"
                     formControlName="datePassageExecution"
+                    readonly
+                    (keydown)="$event.preventDefault()"
+                    [attr.disabled]="!isEditMode ? true : null"
                   />
-                  <button type="button" class="btn btn-secondary" (click)="datePassageExecutionDp.toggle()">
+                  <button *ngIf="isEditMode" type="button" class="btn-cu-date-toggle" (click)="datePassageExecutionDp.toggle()">
                     <fa-icon icon="calendar-alt"></fa-icon>
                   </button>
                 </div>
@@ -293,6 +293,7 @@
                   id="field_lieuMultipleParMission"
                   data-cy="lieuMultipleParMission"
                   formControlName="lieuMultipleParMission"
+                  [attr.disabled]="!isEditMode ? true : null"
                 />
                 <label
                   class="form-check-label fw-bold"
@@ -314,7 +315,15 @@
               <span class="cu-accordion-count" *ngIf="selectedArticles.length">{{ selectedArticles.length }}</span>
             </span>
             <span class="cu-accordion-header-right">
-              <button type="button" class="btn-cu-add" (click)="$event.stopPropagation(); openArticleModal()">
+              <button
+                *ngIf="isEditMode && isExisting"
+                type="button"
+                class="btn-cu-add"
+                (click)="$event.stopPropagation(); openArticleImportModal()"
+              >
+                <fa-icon icon="file-import"></fa-icon>&nbsp;Importer
+              </button>
+              <button *ngIf="isEditMode" type="button" class="btn-cu-add" (click)="$event.stopPropagation(); openArticleModal()">
                 <fa-icon icon="pen"></fa-icon>&nbsp;Gérer
               </button>
               <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
@@ -325,9 +334,11 @@
             <div *ngIf="selectedArticles.length > 0; else noArticles" class="cu-item-list">
               <div class="cu-item-card" *ngFor="let article of selectedArticles">
                 <div class="cu-item-info">
-                  <div class="cu-item-title">{{ article.code }} — {{ article.designation }}</div>
+                  <div class="cu-item-title">
+                    {{ article.code }} — {{ article.designation }} — {{ article.prixUnitHT }} — {{ article.prixAchat }}
+                  </div>
                 </div>
-                <button type="button" class="cu-item-remove" (click)="removeArticle(article)">
+                <button *ngIf="isEditMode" type="button" class="cu-item-remove" (click)="removeArticle(article)">
                   <fa-icon icon="times"></fa-icon>
                 </button>
               </div>
@@ -347,7 +358,7 @@
               <span class="cu-accordion-count" *ngIf="societesAssociees.length">{{ societesAssociees.length }}</span>
             </span>
             <span class="cu-accordion-header-right">
-              <button type="button" class="btn-cu-add" (click)="$event.stopPropagation(); openSocieteModal()">
+              <button *ngIf="isEditMode" type="button" class="btn-cu-add" (click)="$event.stopPropagation(); openSocieteModal()">
                 <fa-icon icon="pen"></fa-icon>&nbsp;Gérer
               </button>
               <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
@@ -379,8 +390,19 @@
         </div>
       </div>
 
+      <!-- Toolbar du bas : Statut + workflow + Annuler -->
       <div class="cu-toolbar cu-toolbar-bottom">
-        <span></span>
+        <div class="cu-toolbar-bottom-left" *ngIf="editForm.get('statut')?.value">
+          <span class="cu-statut-display">
+            <fa-icon icon="tag" class="cu-statut-icon"></fa-icon>
+            <strong>Statut actuel :</strong>
+            {{ 'gpmGatewayApp.StatutAffaire.' + editForm.get('statut')?.value | translate }}
+          </span>
+          <button *ngIf="nextStatut" type="button" class="btn-cu-statut" (click)="changeStatut()">
+            <fa-icon icon="arrow-right" class="me-1"></fa-icon>
+            Passer vers {{ 'gpmGatewayApp.StatutAffaire.' + nextStatut | translate }}
+          </button>
+        </div>
         <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
           <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
         </button>
@@ -421,7 +443,90 @@
 
     <div class="modal-footer">
       <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
-      <button class="btn-cu-save-modal" (click)="confirmArticleSelection(modal)">Confirmer</button>
+      <button class="btn btn-primary" (click)="confirmArticleSelection(modal)">Confirmer</button>
+    </div>
+  </ng-template>
+
+  <!-- Modal: Import d'articles depuis Excel -->
+  <ng-template #articleImportModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title"><fa-icon icon="file-import"></fa-icon>&nbsp;Importer des articles depuis Excel</h5>
+      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+      <!-- Étape 1 : télécharger le modèle -->
+      <div class="import-step">
+        <div class="import-step-header">
+          <span class="import-step-badge">1</span>
+          <div>
+            <div class="import-step-title">Télécharger le modèle Excel</div>
+            <div class="import-step-subtitle">
+              Téléchargez le fichier modèle vide, remplissez-le avec vos articles, puis importez-le à l'étape 2.
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-outline-secondary btn-sm mt-2" (click)="downloadArticleTemplate()">
+          <fa-icon icon="download"></fa-icon>&nbsp;Télécharger le modèle (.xlsx)
+        </button>
+      </div>
+
+      <hr />
+
+      <!-- Étape 2 : importer le fichier rempli -->
+      <div class="import-step">
+        <div class="import-step-header">
+          <span class="import-step-badge">2</span>
+          <div>
+            <div class="import-step-title">Importer le fichier rempli</div>
+            <div class="import-step-subtitle">Sélectionnez votre fichier Excel complété (.xlsx uniquement).</div>
+          </div>
+        </div>
+
+        <div
+          class="import-dropzone mt-2"
+          [class.import-dropzone-active]="articleImportDragOver"
+          (dragover)="onArticleImportDragOver($event)"
+          (dragleave)="onArticleImportDragLeave($event)"
+          (drop)="onArticleImportDrop($event)"
+        >
+          <ng-container *ngIf="!articleImportFile; else articleFileSelected">
+            <div class="text-muted mb-2">Glissez votre fichier ici, ou</div>
+            <label class="btn btn-outline-secondary btn-sm mb-0">
+              Parcourir...
+              <input type="file" hidden accept=".xlsx" (change)="onArticleImportFileSelected($event)" />
+            </label>
+          </ng-container>
+          <ng-template #articleFileSelected>
+            <div class="import-file-chip">
+              <fa-icon icon="file-excel"></fa-icon>
+              <span>{{ articleImportFile?.name }}</span>
+              <button type="button" class="btn-cu-remove-file" (click)="removeArticleImportFile()">
+                <fa-icon icon="times"></fa-icon>
+              </button>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+
+      <div *ngIf="articleImportInProgress" class="mt-3 text-muted">Import en cours...</div>
+
+      <div *ngIf="articleImportResult" class="mt-3">
+        <div class="alert alert-success" *ngIf="articleImportResult.successCount > 0">
+          {{ articleImportResult.successCount }} article(s) importé(s) avec succès.
+        </div>
+        <div class="alert alert-danger" *ngIf="articleImportResult.errors.length > 0">
+          <div>{{ articleImportResult.errors.length }} erreur(s) :</div>
+          <ul class="mb-0">
+            <li *ngFor="let err of articleImportResult.errors">{{ err }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline-secondary" (click)="modal.dismiss()"><fa-icon icon="times"></fa-icon>&nbsp;Fermer</button>
+      <button class="btn btn-primary" [disabled]="!articleImportFile || articleImportInProgress" (click)="submitArticleImport()">
+        <fa-icon icon="file-import"></fa-icon>&nbsp;Lancer l'import
+      </button>
     </div>
   </ng-template>
 
@@ -476,7 +581,7 @@
 
     <div class="modal-footer">
       <button class="btn btn-outline-secondary" (click)="modal.dismiss()" [disabled]="isSavingSocietes">Annuler</button>
-      <button class="btn-cu-save-modal" (click)="confirmSocieteSelection(modal)" [disabled]="isSavingSocietes">
+      <button class="btn btn-primary" (click)="confirmSocieteSelection(modal)" [disabled]="isSavingSocietes">
         <span *ngIf="isSavingSocietes" class="spinner-border spinner-border-sm me-1"></span>
         Confirmer
       </button>

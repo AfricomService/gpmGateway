@@ -488,6 +488,206 @@
   }
 }
 
+/* ============ MODE LECTURE / EDITION ============ */
+.btn-cu-edit {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 0.9rem;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  background: var(--cp-accent-soft);
+  color: var(--cp-accent);
+  font-weight: 700;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    background: var(--cp-accent);
+    color: #ffffff;
+    box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
+  }
+}
+
+/* Champs verrouillés en mode lecture : lisibles mais visuellement "gelés" */
+.cu-accordion-body {
+  .form-control:disabled,
+  .form-control[readonly] {
+    background: var(--cp-surface-hover);
+    color: var(--cp-text);
+    opacity: 0.85;
+    cursor: not-allowed;
+  }
+
+  ::ng-deep .custom-ng-select.ng-select-disabled .ng-select-container,
+  ::ng-deep .custom-ng-select .ng-select-container[aria-disabled='true'] {
+    background: var(--cp-surface-hover);
+    opacity: 0.85;
+    cursor: not-allowed;
+  }
+}
+
+/* Champs date : saisie clavier bloquée, sélection uniquement via l'agenda */
+input[ngbDatepicker] {
+  cursor: pointer;
+  background: var(--cp-surface);
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+.input-group input[ngbDatepicker]:not(:last-child) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: none;
+}
+
+.btn-cu-date-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  border: 1px solid var(--cp-border);
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+  background: var(--cp-accent-soft);
+  color: var(--cp-accent);
+  transition: background 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    background: var(--cp-accent);
+    color: #ffffff;
+  }
+}
+
+/* ============ TOOLBAR BAS : STATUT & WORKFLOW ============ */
+.cu-toolbar-bottom-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.cu-statut-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  background: var(--cp-accent-soft);
+  color: var(--cp-text);
+  font-size: 0.82rem;
+
+  strong {
+    font-weight: 700;
+    color: var(--cp-text);
+  }
+}
+
+.cu-statut-icon {
+  color: var(--cp-accent);
+}
+
+.btn-cu-statut {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--cp-accent);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
+  transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+
+  &:hover {
+    background: var(--cp-accent-hover);
+    box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.7);
+    transform: translateY(-1px);
+  }
+}
+
+/* ============ MODAL IMPORT (Articles) ============ */
+.import-step {
+  margin-bottom: 0.5rem;
+}
+
+.import-step-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.import-step-badge {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: var(--cp-accent);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.import-step-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--cp-text);
+}
+
+.import-step-subtitle {
+  color: var(--cp-text-muted);
+  font-size: 0.85rem;
+  margin-top: 2px;
+}
+
+.import-dropzone {
+  border: 2px dashed var(--cp-border);
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.import-dropzone-active {
+  border-color: var(--cp-accent);
+  background-color: var(--cp-accent-soft);
+}
+
+.import-file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--cp-accent-soft);
+  color: var(--cp-text);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.btn-cu-remove-file {
+  border: none;
+  background: none;
+  color: var(--cp-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.18s ease;
+
+  &:hover {
+    color: var(--cp-danger);
+  }
+}
+
 /* ============ MODALS (Article / Société) ============ */
 .btn-cu-save-modal {
   display: inline-flex;

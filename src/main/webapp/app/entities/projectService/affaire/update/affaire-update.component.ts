@@ -15,6 +15,7 @@ import { UserService } from 'app/entities/user/user.service';
 
 import { IArticle } from 'app/entities/projectService/article/article.model';
 import { ArticleService } from 'app/entities/projectService/article/service/article.service';
+import { ArticleImportService, IArticleImportResult } from 'app/entities/projectService/article/service/article-import.service';
 import { IMatriceFacturation, NewMatriceFacturation } from 'app/entities/projectService/matrice-facturation/matrice-facturation.model';
 import { MatriceFacturationService } from 'app/entities/projectService/matrice-facturation/service/matrice-facturation.service';
 import { AffaireArticleService } from 'app/entities/projectService/affaire-article/service/affaire-article.service';
@@ -39,12 +40,16 @@ type AccordionSection = 'general' | 'dates' | 'articles' | 'societes';
 })
 export class AffaireUpdateComponent implements OnInit {
   @ViewChild('articleModal') articleModal!: TemplateRef<any>;
+  @ViewChild('articleImportModal') articleImportModal!: TemplateRef<any>;
   @ViewChild('matriceModal') matriceModal!: TemplateRef<any>;
   @ViewChild('societeModal') societeModal!: TemplateRef<any>;
 
   isSaving = false;
   affaire: IAffaire | null = null;
   statutAffaireValues = Object.keys(StatutAffaire);
+
+  /** true = création, false = mise à jour (verrouillé par défaut) */
+  isEditMode = false;
 
   // === Gestion de l'accordéon ===
   openSections: Set<AccordionSection> = new Set(['general']);
@@ -56,6 +61,12 @@ export class AffaireUpdateComponent implements OnInit {
   allArticles: IArticle[] = [];
   selectedArticles: IArticle[] = [];
   tempSelectedArticles: IArticle[] = [];
+
+  // ── Import d'articles depuis Excel ──────────────────────────────
+  articleImportFile: File | null = null;
+  articleImportInProgress = false;
+  articleImportResult: IArticleImportResult | null = null;
+  articleImportDragOver = false;
 
   selectedMatrices: IMatriceFacturation[] = [];
   allVilles: IVille[] = [];
@@ -87,6 +98,7 @@ export class AffaireUpdateComponent implements OnInit {
     protected clientService: ClientService,
     protected userService: UserService,
     protected articleService: ArticleService,
+    protected articleImportService: ArticleImportService,
     protected affaireArticleService: AffaireArticleService,
     protected matriceFacturationService: MatriceFacturationService,
     protected villeService: VilleService,
@@ -107,6 +119,35 @@ export class AffaireUpdateComponent implements OnInit {
 
   isSectionOpen(section: AccordionSection): boolean {
     return this.openSections.has(section);
+  }
+
+  // === Mode lecture / édition ===
+  toggleEditMode(): void {
+    this.isEditMode = !this.isEditMode;
+  }
+
+  get isExisting(): boolean {
+    return this.editForm.controls.id.value !== null;
+  }
+
+  // === Workflow Statut ===
+  get nextStatut(): StatutAffaire | null {
+    const current = this.editForm.get('statut')?.value as StatutAffaire;
+    const flow: Record<string, StatutAffaire | null> = {
+      [StatutAffaire.Brouillon]: StatutAffaire.EtudeOpportunite,
+      [StatutAffaire.EtudeOpportunite]: StatutAffaire.ExecutionDesTravaux,
+      [StatutAffaire.ExecutionDesTravaux]: StatutAffaire.ClotureProjet,
+      [StatutAffaire.ClotureProjet]: StatutAffaire.Fin,
+    };
+    return flow[current as string] ?? null;
+  }
+
+  changeStatut(): void {
+    const next = this.nextStatut;
+    if (next) {
+      this.editForm.patchValue({ statut: next });
+      // TODO: appeler le backend pour persister le changement de statut si besoin
+    }
   }
 
   // ── Article modal ──────────────────────────────────────────────
@@ -145,6 +186,90 @@ export class AffaireUpdateComponent implements OnInit {
     return this.allArticles.filter(
       a => (a.code?.toLowerCase() ?? '').includes(term) || (a.designation?.toLowerCase() ?? '').includes(term)
     );
+  }
+
+  // ── Import d'articles depuis Excel ──────────────────────────────
+  openArticleImportModal(): void {
+    this.articleImportFile = null;
+    this.articleImportResult = null;
+    this.modalService.open(this.articleImportModal, { size: 'lg', backdrop: 'static', centered: true });
+  }
+
+  onArticleImportFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.articleImportFile = input.files && input.files.length > 0 ? input.files[0] : null;
+    this.articleImportResult = null;
+  }
+
+  submitArticleImport(): void {
+    if (!this.affaire?.id || !this.articleImportFile) {
+      return;
+    }
+
+    this.articleImportInProgress = true;
+    this.articleImportService.importArticles(this.affaire.id, this.articleImportFile).subscribe({
+      next: response => {
+        this.articleImportResult = response.body;
+        this.articleImportInProgress = false;
+        this.reloadSelectedArticles();
+      },
+      error: () => {
+        this.articleImportInProgress = false;
+      },
+    });
+  }
+
+  downloadArticleTemplate(): void {
+    this.articleImportService.downloadTemplate().subscribe(response => {
+      const blob = response.body;
+      if (!blob) {
+        return;
+      }
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'modele_import_articles.xlsx';
+      link.click();
+      window.URL.revokeObjectURL(url);
+    });
+  }
+
+  onArticleImportDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.articleImportDragOver = true;
+  }
+
+  onArticleImportDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.articleImportDragOver = false;
+  }
+
+  onArticleImportDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.articleImportDragOver = false;
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      this.articleImportFile = files[0];
+      this.articleImportResult = null;
+    }
+  }
+
+  removeArticleImportFile(): void {
+    this.articleImportFile = null;
+    this.articleImportResult = null;
+  }
+
+  reloadSelectedArticles(): void {
+    if (!this.affaire?.id) {
+      return;
+    }
+    this.affaireArticleService.findByAffaireId(this.affaire.id).subscribe((res: HttpResponse<IAffaireArticle[]>) => {
+      const affaireArticles = res.body ?? [];
+      this.selectedArticles = affaireArticles.filter(aa => aa.article).map(aa => aa.article as IArticle);
+    });
   }
 
   // ── Matrice modal ──────────────────────────────────────────────
@@ -352,7 +477,14 @@ export class AffaireUpdateComponent implements OnInit {
 
   protected updateForm(affaire: IAffaire): void {
     this.affaire = affaire;
+    // Création => édition directe ; Mise à jour => lecture seule
+    this.isEditMode = !affaire.id;
     this.affaireFormService.resetForm(this.editForm, affaire);
+
+    // Par défaut, une nouvelle affaire démarre au statut Brouillon
+    if (!affaire.id && !this.editForm.get('statut')?.value) {
+      this.editForm.patchValue({ statut: StatutAffaire.Brouillon });
+    }
 
     if (affaire.responsableProjetId && affaire.responsableProjetUserLogin) {
       this.selectedResponsable = {
@@ -364,10 +496,7 @@ export class AffaireUpdateComponent implements OnInit {
     this.clientsSharedCollection = this.clientService.addClientToCollectionIfMissing<IClient>(this.clientsSharedCollection, affaire.client);
 
     if (affaire.id) {
-      this.affaireArticleService.findByAffaireId(affaire.id).subscribe((res: HttpResponse<IAffaireArticle[]>) => {
-        const affaireArticles = res.body ?? [];
-        this.selectedArticles = affaireArticles.filter(aa => aa.article).map(aa => aa.article as IArticle);
-      });
+      this.reloadSelectedArticles();
 
       this.matriceFacturationService.findMatriceByAffaireId(affaire.id).subscribe((res: HttpResponse<IMatriceFacturation[]>) => {
         this.selectedMatrices = res.body ?? [];

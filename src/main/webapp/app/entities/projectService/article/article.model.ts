@@ -5,6 +5,12 @@ export interface IArticle {
   code?: string | null;
   designation?: string | null;
   uniteMesure?: string | null;
+
+  codeClient?: string | null;
+  prixUnitHT?: number | null;
+  prixAchat?: number | null;
+  granularite?: string | null;
+
   createdAt?: dayjs.Dayjs | null;
   updatedAt?: dayjs.Dayjs | null;
   createdBy?: string | null;
