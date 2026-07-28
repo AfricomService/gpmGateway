@@ -341,8 +341,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  max-height: 340px;
-  overflow-y: auto;
+  max-height: 600px;
 }
 
 .cu-item-card {
@@ -715,5 +714,76 @@ input[ngbDatepicker] {
     cursor: default;
     box-shadow: none;
     transform: none;
+  }
+}
+
+/* Fix Layout Shift (Page Shaking) */
+.articles-content-wrapper {
+  min-height: 400px; /* Reserves vertical space so the container size stays constant */
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  position: relative;
+}
+
+.articles-spinner-overlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 3rem 0;
+}
+
+.text-orange {
+  color: #ff6b00 !important;
+}
+
+/* Modern Orange ngb-pagination */
+::ng-deep .modern-orange-pagination {
+  .pagination {
+    margin-bottom: 0;
+    gap: 6px; /* Spacing between page numbers */
+  }
+
+  .page-item {
+    .page-link {
+      border: 1px solid #e9ecef;
+      border-radius: 8px !important; /* Soft pill-shaped buttons */
+      color: #495057;
+      font-weight: 500;
+      font-size: 0.875rem;
+      padding: 6px 12px;
+      transition: all 0.2s ease-in-out;
+      background-color: #ffffff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+
+      &:hover {
+        color: #ff6b00;
+        background-color: #fff6f0;
+        border-color: #ffc299;
+        transform: translateY(-1px);
+      }
+
+      &:focus {
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 0, 0.2);
+      }
+    }
+
+    /* Active Page Style */
+    &.active .page-link {
+      background-color: #ff6b00 !important;
+      border-color: #ff6b00 !important;
+      color: #ffffff !important;
+      font-weight: 600;
+      box-shadow: 0 3px 8px rgba(255, 107, 0, 0.35);
+    }
+
+    /* Disabled Arrow Buttons */
+    &.disabled .page-link {
+      color: #ced4da;
+      background-color: #f8f9fa;
+      border-color: #f1f3f5;
+      box-shadow: none;
+    }
   }
 }

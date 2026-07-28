@@ -323,9 +323,9 @@
               >
                 <fa-icon icon="file-import"></fa-icon>&nbsp;Importer
               </button>
-              <button *ngIf="isEditMode" type="button" class="btn-cu-add" (click)="$event.stopPropagation(); openArticleModal()">
-                <fa-icon icon="pen"></fa-icon>&nbsp;Gérer
-              </button>
+              <!--              <button *ngIf="isEditMode" type="button" class="btn-cu-add" (click)="$event.stopPropagation(); openArticleModal()">-->
+              <!--                <fa-icon icon="pen"></fa-icon>&nbsp;Gérer-->
+              <!--              </button>-->
               <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
             </span>
           </button>
@@ -336,53 +336,62 @@
               <input
                 type="text"
                 class="form-control"
-                placeholder="Rechercher par désignation..."
+                placeholder="Rechercher par désignation, code, code client..."
                 [ngModel]="articlesSearchTerm"
                 [ngModelOptions]="{ standalone: true }"
                 (ngModelChange)="onArticlesSearchChange($event)"
               />
             </div>
 
-            <!-- Spinner during loading -->
-            <div *ngIf="isLoadingArticles" class="text-center my-3">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Chargement...</span>
+            <!-- Wrapper with reserved height to eliminate page jump/shake -->
+            <div class="articles-content-wrapper">
+              <!-- Spinner Overlay -->
+              <div *ngIf="isLoadingArticles" class="articles-spinner-overlay">
+                <div class="spinner-border text-orange" role="status">
+                  <span class="visually-hidden">Chargement...</span>
+                </div>
               </div>
-            </div>
 
-            <!-- Articles List -->
-            <div *ngIf="!isLoadingArticles">
-              <div *ngIf="selectedArticles.length > 0; else noArticles" class="cu-item-list">
-                <div class="cu-item-card" *ngFor="let article of selectedArticles">
-                  <div class="cu-item-info">
-                    <div class="cu-item-title">
-                      <strong>{{ article.code }}</strong> — {{ article.designation }}
-                      <span class="text-muted ms-2">(Prix HT: {{ article.prixUnitHT }} €)</span>
+              <!-- Articles List -->
+              <div *ngIf="!isLoadingArticles" class="w-100">
+                <div *ngIf="selectedArticles.length > 0; else noArticles" class="cu-item-list">
+                  <div class="cu-item-card" *ngFor="let article of selectedArticles">
+                    <div class="cu-item-info">
+                      <div class="cu-item-title">
+                        <strong>{{ article.code }} - ({{ article.codeClient }}) </strong> — {{ article.designation }}
+                        <span class="text-muted ms-2">(Prix HT: {{ article.prixUnitHT }} DT - Prix Achat: {{ article.prixAchat }} DT)</span>
+                      </div>
                     </div>
+                    <button *ngIf="isEditMode" type="button" class="cu-item-remove" (click)="removeArticle(article)">
+                      <fa-icon icon="times"></fa-icon>
+                    </button>
                   </div>
-                  <button *ngIf="isEditMode" type="button" class="cu-item-remove" (click)="removeArticle(article)">
-                    <fa-icon icon="times"></fa-icon>
-                  </button>
+
+                  <!-- Modernized Orange Pagination Controls -->
+                  <div
+                    class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top"
+                    *ngIf="articlesTotalItems > articlesItemsPerPage"
+                  >
+                    <span class="small text-muted fw-medium">
+                      Total: <strong class="text-dark">{{ articlesTotalItems }}</strong> article(s)
+                    </span>
+                    <ngb-pagination
+                      class="modern-orange-pagination"
+                      [collectionSize]="articlesTotalItems"
+                      [(page)]="articlesPage"
+                      [pageSize]="articlesItemsPerPage"
+                      [maxSize]="5"
+                      [rotate]="true"
+                      [boundaryLinks]="true"
+                      (pageChange)="onArticlesPageChange($event)"
+                    ></ngb-pagination>
+                  </div>
                 </div>
 
-                <!-- Server-Side Pagination Controls -->
-                <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="articlesTotalItems > articlesItemsPerPage">
-                  <span class="small text-muted"> Total: {{ articlesTotalItems }} article(s) </span>
-                  <ngb-pagination
-                    [collectionSize]="articlesTotalItems"
-                    [(page)]="articlesPage"
-                    [pageSize]="articlesItemsPerPage"
-                    [maxSize]="5"
-                    [rotate]="true"
-                    [boundaryLinks]="true"
-                    (pageChange)="onArticlesPageChange($event)"
-                  ></ngb-pagination>
-                </div>
+                <ng-template #noArticles>
+                  <div class="cu-empty">Aucun article trouvé</div>
+                </ng-template>
               </div>
-
-              <ng-template #noArticles>
-                <div class="cu-empty">Aucun article trouvé</div>
-              </ng-template>
             </div>
           </div>
         </div>
@@ -434,7 +443,7 @@
           <span class="cu-statut-display">
             <fa-icon icon="tag" class="cu-statut-icon"></fa-icon>
             <strong>Statut actuel :</strong>
-            {{ 'gpmGatewayApp.StatutAffaire.' + editForm.get('statut')?.value | translate }}
+            <strong>{{ 'gpmGatewayApp.StatutAffaire.' + editForm.get('statut')?.value | translate }}</strong>
           </span>
           <button *ngIf="nextStatut" type="button" class="btn-cu-statut" (click)="changeStatut()" [disabled]="isChangingStatut">
             <fa-icon icon="arrow-right" class="me-1"></fa-icon>
@@ -449,43 +458,43 @@
   </div>
 
   <!-- Modal: Article Selection -->
-  <ng-template #articleModal let-modal>
-    <div class="modal-header">
-      <h5 class="modal-title">Sélection des Articles</h5>
-      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
-    </div>
+  <!--  <ng-template #articleModal let-modal>-->
+  <!--    <div class="modal-header">-->
+  <!--      <h5 class="modal-title">Sélection des Articles</h5>-->
+  <!--      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>-->
+  <!--    </div>-->
 
-    <div class="modal-body">
-      <input
-        type="text"
-        class="form-control mb-3"
-        placeholder="Filtrer la liste des articles..."
-        [(ngModel)]="modalArticleSearchTerm"
-        [ngModelOptions]="{ standalone: true }"
-      />
+  <!--    <div class="modal-body">-->
+  <!--      <input-->
+  <!--        type="text"-->
+  <!--        class="form-control mb-3"-->
+  <!--        placeholder="Filtrer la liste des articles..."-->
+  <!--        [(ngModel)]="modalArticleSearchTerm"-->
+  <!--        [ngModelOptions]="{ standalone: true }"-->
+  <!--      />-->
 
-      <div style="max-height: 350px; overflow-y: auto">
-        <div *ngFor="let article of filteredModalArticles" class="form-check mb-3">
-          <input
-            type="checkbox"
-            class="form-check-input me-3"
-            style="width: 1.5rem; height: 1.5rem; cursor: pointer; margin-top: 0"
-            [id]="'modal_article_' + article.id"
-            [checked]="isTempArticleSelected(article)"
-            (change)="toggleTempArticleSelection(article)"
-          />
-          <label class="form-check-label" [for]="'modal_article_' + article.id">
-            <strong>{{ article.code }}</strong> - {{ article.designation }}
-          </label>
-        </div>
-      </div>
-    </div>
+  <!--      <div style="max-height: 350px; overflow-y: auto">-->
+  <!--        <div *ngFor="let article of filteredModalArticles" class="form-check mb-3">-->
+  <!--          <input-->
+  <!--            type="checkbox"-->
+  <!--            class="form-check-input me-3"-->
+  <!--            style="width: 1.5rem; height: 1.5rem; cursor: pointer; margin-top: 0"-->
+  <!--            [id]="'modal_article_' + article.id"-->
+  <!--            [checked]="isTempArticleSelected(article)"-->
+  <!--            (change)="toggleTempArticleSelection(article)"-->
+  <!--          />-->
+  <!--          <label class="form-check-label" [for]="'modal_article_' + article.id">-->
+  <!--            <strong>{{ article.code }}</strong> - {{ article.designation }}-->
+  <!--          </label>-->
+  <!--        </div>-->
+  <!--      </div>-->
+  <!--    </div>-->
 
-    <div class="modal-footer">
-      <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
-      <button class="btn btn-primary" (click)="confirmArticleSelection(modal)">Confirmer</button>
-    </div>
-  </ng-template>
+  <!--    <div class="modal-footer">-->
+  <!--      <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>-->
+  <!--      <button class="btn btn-primary" (click)="confirmArticleSelection(modal)">Confirmer</button>-->
+  <!--    </div>-->
+  <!--  </ng-template>-->
 
   <!-- Modal: Import d'articles depuis Excel -->
   <ng-template #articleImportModal let-modal>
