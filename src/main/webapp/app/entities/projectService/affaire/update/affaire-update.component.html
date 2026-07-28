@@ -398,7 +398,7 @@
             <strong>Statut actuel :</strong>
             {{ 'gpmGatewayApp.StatutAffaire.' + editForm.get('statut')?.value | translate }}
           </span>
-          <button *ngIf="nextStatut" type="button" class="btn-cu-statut" (click)="changeStatut()">
+          <button *ngIf="nextStatut" type="button" class="btn-cu-statut" (click)="changeStatut()" [disabled]="isChangingStatut">
             <fa-icon icon="arrow-right" class="me-1"></fa-icon>
             Passer vers {{ 'gpmGatewayApp.StatutAffaire.' + nextStatut | translate }}
           </button>

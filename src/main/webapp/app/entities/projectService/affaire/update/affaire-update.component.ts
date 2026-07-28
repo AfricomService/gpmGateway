@@ -142,12 +142,28 @@ export class AffaireUpdateComponent implements OnInit {
     return flow[current as string] ?? null;
   }
 
+  isChangingStatut = false;
+
   changeStatut(): void {
     const next = this.nextStatut;
-    if (next) {
-      this.editForm.patchValue({ statut: next });
-      // TODO: appeler le backend pour persister le changement de statut si besoin
+    const affaireId = this.editForm.get('id')?.value;
+
+    if (!next || !affaireId) {
+      return;
     }
+
+    this.isChangingStatut = true;
+
+    this.affaireService.changeStatut(affaireId, next).subscribe({
+      next: () => {
+        this.editForm.patchValue({ statut: next });
+        this.isChangingStatut = false;
+      },
+      error: err => {
+        console.error(err);
+        this.isChangingStatut = false;
+      },
+    });
   }
 
   // ── Article modal ──────────────────────────────────────────────

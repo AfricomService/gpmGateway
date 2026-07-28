@@ -136,6 +136,15 @@ export class AffaireService {
     });
   }
 
+  changeStatut(affaireId: number, statut: string): Observable<HttpResponse<void>> {
+    return this.http.patch<void>(`${this.resourceUrl}/${affaireId}/statut`, null, {
+      params: {
+        statut,
+      },
+      observe: 'response',
+    });
+  }
+
   protected convertDateFromClient<T extends IAffaire | NewAffaire | PartialUpdateAffaire>(affaire: T): RestOf<T> {
     return {
       ...affaire,
