@@ -1,12 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, TemplateRef } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
-import { Observable } from 'rxjs';
-import { finalize, map } from 'rxjs/operators';
+import { Observable, Subject } from 'rxjs';
+import { finalize, map, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { AffaireFormService, AffaireFormGroup } from './affaire-form.service';
 import { IAffaire } from '../affaire.model';
-import { AffaireService } from '../service/affaire.service';
+import { AffaireService, RestPage } from '../service/affaire.service';
 import { IClient } from 'app/entities/projectService/client/client.model';
 import { ClientService } from 'app/entities/projectService/client/service/client.service';
 import { StatutAffaire } from 'app/entities/enumerations/statut-affaire.model';
@@ -19,14 +20,10 @@ import { ArticleImportService, IArticleImportResult } from 'app/entities/project
 import { IMatriceFacturation, NewMatriceFacturation } from 'app/entities/projectService/matrice-facturation/matrice-facturation.model';
 import { MatriceFacturationService } from 'app/entities/projectService/matrice-facturation/service/matrice-facturation.service';
 import { AffaireArticleService } from 'app/entities/projectService/affaire-article/service/affaire-article.service';
-import { IAffaireArticle } from 'app/entities/projectService/affaire-article/affaire-article.model';
 import { IVille } from 'app/entities/projectService/ville/ville.model';
 import { VilleService } from 'app/entities/projectService/ville/service/ville.service';
 import { IZone } from 'app/entities/projectService/zone/zone.model';
 import { ZoneService } from 'app/entities/projectService/zone/service/zone.service';
-
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ViewChild, TemplateRef } from '@angular/core';
 import { SocieteService } from '../../societe/service/societe.service';
 import { ISociete } from '../../societe/societe.model';
 import { IAgence } from 'app/entities/projectService/agence/agence.model';
@@ -48,21 +45,30 @@ export class AffaireUpdateComponent implements OnInit {
   affaire: IAffaire | null = null;
   statutAffaireValues = Object.keys(StatutAffaire);
 
-  /** true = création, false = mise à jour (verrouillé par défaut) */
   isEditMode = false;
 
-  // === Gestion de l'accordéon ===
+  // Accordion management
   openSections: Set<AccordionSection> = new Set(['general']);
+  isChangingStatut = false;
 
   clientsSharedCollection: IClient[] = [];
   usersSharedCollection: IUser[] = [];
   selectedResponsable: IUser | null = null;
 
-  allArticles: IArticle[] = [];
+  // ── Server-Side Paginated Articles for Affaire ───────────────────
   selectedArticles: IArticle[] = [];
-  tempSelectedArticles: IArticle[] = [];
+  articlesTotalItems = 0;
+  articlesPage = 1; // 1-indexed for ngb-pagination
+  articlesItemsPerPage = 5;
+  articlesSearchTerm = '';
+  isLoadingArticles = false;
 
-  // ── Import d'articles depuis Excel ──────────────────────────────
+  // Articles lookup list for the Modal selection
+  allArticles: IArticle[] = [];
+  tempSelectedArticles: IArticle[] = [];
+  modalArticleSearchTerm = '';
+
+  // ── Import Articles ──────────────────────────────────────────────
   articleImportFile: File | null = null;
   articleImportInProgress = false;
   articleImportResult: IArticleImportResult | null = null;
@@ -73,7 +79,6 @@ export class AffaireUpdateComponent implements OnInit {
   allZones: IZone[] = [];
   newMatrice: Partial<NewMatriceFacturation> = {};
 
-  articleSearchTerm = '';
   clientIdFromQuery: number | null = null;
 
   // ── Sociétés Associées ─────────────────────────────────────────
@@ -82,15 +87,13 @@ export class AffaireUpdateComponent implements OnInit {
   tempSelectedSocietes: ISociete[] = [];
   societeSearchTerm = '';
   isSavingSocietes = false;
-
   primarySociete: ISociete | null = null;
 
-  // ── Agences du client sélectionné ────────────────────────────────
   agencesClient: IAgence[] = [];
-
   editForm: AffaireFormGroup = this.affaireFormService.createAffaireFormGroup();
-
   societesSharedCollection: ISociete[] = [];
+
+  private articleSearchSubject = new Subject<string>();
 
   constructor(
     protected affaireService: AffaireService,
@@ -108,72 +111,109 @@ export class AffaireUpdateComponent implements OnInit {
     protected societeService: SocieteService
   ) {}
 
-  // === Accordéon ===
-  toggleSection(section: AccordionSection): void {
-    if (this.openSections.has(section)) {
-      this.openSections.delete(section);
-    } else {
-      this.openSections.add(section);
-    }
-  }
+  ngOnInit(): void {
+    // Setup debounced search for the main articles list
+    this.articleSearchSubject.pipe(debounceTime(300), distinctUntilChanged()).subscribe(searchTerm => {
+      this.articlesSearchTerm = searchTerm;
+      this.articlesPage = 1;
+      this.loadArticlesByAffaire();
+    });
 
-  isSectionOpen(section: AccordionSection): boolean {
-    return this.openSections.has(section);
-  }
+    this.activatedRoute.queryParamMap.subscribe(params => {
+      const rawClientId = params.get('clientId');
+      const parsedClientId = rawClientId ? Number(rawClientId) : null;
+      this.clientIdFromQuery = parsedClientId !== null && !Number.isNaN(parsedClientId) ? parsedClientId : null;
+      this.applyClientFromQueryParam();
+    });
 
-  // === Mode lecture / édition ===
-  toggleEditMode(): void {
-    this.isEditMode = !this.isEditMode;
-  }
+    this.loadSocietes();
 
-  get isExisting(): boolean {
-    return this.editForm.controls.id.value !== null;
-  }
+    this.activatedRoute.data.subscribe(({ affaire }) => {
+      this.affaire = affaire;
+      if (affaire) {
+        if (this.affaire?.societeId) {
+          this.societeService.find(this.affaire.societeId).subscribe(res => (this.primarySociete = res.body));
+        }
+        this.updateForm(affaire);
+      }
+      this.loadRelationshipsOptions();
+    });
 
-  // === Workflow Statut ===
-  get nextStatut(): StatutAffaire | null {
-    const current = this.editForm.get('statut')?.value as StatutAffaire;
-    const flow: Record<string, StatutAffaire | null> = {
-      [StatutAffaire.Brouillon]: StatutAffaire.EtudeOpportunite,
-      [StatutAffaire.EtudeOpportunite]: StatutAffaire.ExecutionDesTravaux,
-      [StatutAffaire.ExecutionDesTravaux]: StatutAffaire.ClotureProjet,
-      [StatutAffaire.ClotureProjet]: StatutAffaire.Fin,
-    };
-    return flow[current as string] ?? null;
-  }
+    this.loadSocietesAssociees();
 
-  isChangingStatut = false;
-
-  changeStatut(): void {
-    const next = this.nextStatut;
-    const affaireId = this.editForm.get('id')?.value;
-
-    if (!next || !affaireId) {
-      return;
+    const clientId = this.editForm.get('client')?.value?.id;
+    if (clientId != null) {
+      this.loadAgencesClient(clientId);
     }
 
-    this.isChangingStatut = true;
-
-    this.affaireService.changeStatut(affaireId, next).subscribe({
-      next: () => {
-        this.editForm.patchValue({ statut: next });
-        this.isChangingStatut = false;
-      },
-      error: err => {
-        console.error(err);
-        this.isChangingStatut = false;
-      },
+    this.editForm.get('client')?.valueChanges.subscribe(client => {
+      this.agencesClient = [];
+      if (client?.id) {
+        this.loadAgencesClient(client.id);
+      }
     });
   }
 
-  // ── Article modal ──────────────────────────────────────────────
-  openArticleModal(): void {
-    this.tempSelectedArticles = [...this.selectedArticles];
-    this.modalService.open(this.articleModal, { size: 'lg', backdrop: 'static', centered: true });
+  // ── Articles Server-Side Operations ──────────────────────────────
+  loadArticlesByAffaire(): void {
+    if (!this.affaire?.id) {
+      return;
+    }
+
+    this.isLoadingArticles = true;
+
+    const requestParams = {
+      page: this.articlesPage - 1, // Spring Data uses 0-based index
+      size: this.articlesItemsPerPage,
+      searchTerm: this.articlesSearchTerm,
+    };
+
+    this.affaireService
+      .getArticlesByAffaire(this.affaire.id, requestParams)
+      .pipe(finalize(() => (this.isLoadingArticles = false)))
+      .subscribe({
+        next: (res: HttpResponse<RestPage<IArticle>>) => {
+          if (res.body) {
+            this.selectedArticles = res.body.content;
+            this.articlesTotalItems = res.body.totalElements;
+          }
+        },
+        error: err => console.error('Failed to load articles', err),
+      });
+  }
+
+  onArticlesSearchChange(term: string): void {
+    this.articleSearchSubject.next(term);
+  }
+
+  onArticlesPageChange(page: number): void {
+    this.articlesPage = page;
+    this.loadArticlesByAffaire();
   }
 
   removeArticle(article: IArticle): void {
-    this.selectedArticles = this.selectedArticles.filter(a => a.id !== article.id);
+    if (!article.id) {
+      return;
+    }
+
+    if (this.affaire?.id) {
+      // Server call to delete relation
+      this.affaireService.removeRelation(this.affaire.id, article.id).subscribe({
+        next: () => {
+          this.loadArticlesByAffaire();
+        },
+        error: err => console.error('Error removing article relation', err),
+      });
+    } else {
+      // Local removal for unsaved Affaire
+      this.selectedArticles = this.selectedArticles.filter(a => a.id !== article.id);
+    }
+  }
+
+  // ── Article Selection Modal ──────────────────────────────────────
+  openArticleModal(): void {
+    this.tempSelectedArticles = [...this.selectedArticles];
+    this.modalService.open(this.articleModal, { size: 'lg', backdrop: 'static', centered: true });
   }
 
   toggleTempArticleSelection(article: IArticle): void {
@@ -186,19 +226,33 @@ export class AffaireUpdateComponent implements OnInit {
   }
 
   isTempArticleSelected(article: IArticle): boolean {
-    return this.tempSelectedArticles.findIndex(a => a.id === article.id) > -1;
+    return this.tempSelectedArticles.some(a => a.id === article.id);
   }
 
   confirmArticleSelection(modal: any): void {
-    this.selectedArticles = [...this.tempSelectedArticles];
-    modal.close();
+    const selectedIds = this.tempSelectedArticles.map(a => a.id).filter((id): id is number => id != null);
+
+    if (this.affaire?.id) {
+      // Server-side replace relation
+      this.affaireService.replaceArticlesForAffaire(this.affaire.id, selectedIds).subscribe({
+        next: () => {
+          this.loadArticlesByAffaire();
+          modal.close();
+        },
+        error: err => console.error('Error replacing articles', err),
+      });
+    } else {
+      // Unsaved entity local state
+      this.selectedArticles = [...this.tempSelectedArticles];
+      modal.close();
+    }
   }
 
-  get filteredArticles(): IArticle[] {
-    if (!this.articleSearchTerm) {
+  get filteredModalArticles(): IArticle[] {
+    if (!this.modalArticleSearchTerm) {
       return this.allArticles;
     }
-    const term = this.articleSearchTerm.toLowerCase();
+    const term = this.modalArticleSearchTerm.toLowerCase();
     return this.allArticles.filter(
       a => (a.code?.toLowerCase() ?? '').includes(term) || (a.designation?.toLowerCase() ?? '').includes(term)
     );
@@ -227,7 +281,7 @@ export class AffaireUpdateComponent implements OnInit {
       next: response => {
         this.articleImportResult = response.body;
         this.articleImportInProgress = false;
-        this.reloadSelectedArticles();
+        this.loadArticlesByAffaire();
       },
       error: () => {
         this.articleImportInProgress = false;
@@ -278,17 +332,59 @@ export class AffaireUpdateComponent implements OnInit {
     this.articleImportResult = null;
   }
 
-  reloadSelectedArticles(): void {
-    if (!this.affaire?.id) {
+  // ── Accordion, Mode & Form standard logic ──────────────────────
+  toggleSection(section: AccordionSection): void {
+    if (this.openSections.has(section)) {
+      this.openSections.delete(section);
+    } else {
+      this.openSections.add(section);
+    }
+  }
+
+  isSectionOpen(section: AccordionSection): boolean {
+    return this.openSections.has(section);
+  }
+
+  toggleEditMode(): void {
+    this.isEditMode = !this.isEditMode;
+  }
+
+  get isExisting(): boolean {
+    return this.editForm.controls.id.value !== null;
+  }
+
+  get nextStatut(): StatutAffaire | null {
+    const current = this.editForm.get('statut')?.value as StatutAffaire;
+    const flow: Record<string, StatutAffaire | null> = {
+      [StatutAffaire.Brouillon]: StatutAffaire.EtudeOpportunite,
+      [StatutAffaire.EtudeOpportunite]: StatutAffaire.ExecutionDesTravaux,
+      [StatutAffaire.ExecutionDesTravaux]: StatutAffaire.ClotureProjet,
+      [StatutAffaire.ClotureProjet]: StatutAffaire.Fin,
+    };
+    return flow[current as string] ?? null;
+  }
+
+  changeStatut(): void {
+    const next = this.nextStatut;
+    const affaireId = this.editForm.get('id')?.value;
+    if (!next || !affaireId) {
       return;
     }
-    this.affaireArticleService.findByAffaireId(this.affaire.id).subscribe((res: HttpResponse<IAffaireArticle[]>) => {
-      const affaireArticles = res.body ?? [];
-      this.selectedArticles = affaireArticles.filter(aa => aa.article).map(aa => aa.article as IArticle);
+
+    this.isChangingStatut = true;
+    this.affaireService.changeStatut(affaireId, next).subscribe({
+      next: () => {
+        this.editForm.patchValue({ statut: next });
+        this.isChangingStatut = false;
+      },
+      error: err => {
+        console.error(err);
+        this.isChangingStatut = false;
+      },
     });
   }
 
-  // ── Matrice modal ──────────────────────────────────────────────
+  // ── Matrice Modal ──────────────────────────────────────────────
   openMatriceModal(): void {
     this.newMatrice = {};
     this.modalService.open(this.matriceModal, { size: 'lg', backdrop: 'static', centered: true });
@@ -323,7 +419,7 @@ export class AffaireUpdateComponent implements OnInit {
     });
   }
 
-  // ── Societe modal ──────────────────────────────────────────────
+  // ── Societe Modal ──────────────────────────────────────────────
   openSocieteModal(): void {
     this.tempSelectedSocietes = [...this.societesAssociees];
     if (this.allSocietes.length === 0) {
@@ -349,7 +445,7 @@ export class AffaireUpdateComponent implements OnInit {
   }
 
   isTempSocieteSelected(societe: ISociete): boolean {
-    return this.tempSelectedSocietes.findIndex(s => s.id === societe.id) > -1;
+    return this.tempSelectedSocietes.some(s => s.id === societe.id);
   }
 
   get filteredSocietes(): ISociete[] {
@@ -377,13 +473,13 @@ export class AffaireUpdateComponent implements OnInit {
           this.societesAssociees = [...this.tempSelectedSocietes];
           modal.close();
         },
-        error: () => {
-          // Intentionally left blank; wire to jhi-alert-error if desired.
+        error: err => {
+          console.error(err);
         },
       });
   }
 
-  // ── Shared ─────────────────────────────────────────────────────
+  // ── Shared Helpers ─────────────────────────────────────────────
   compareClient = (o1: IClient | null, o2: IClient | null): boolean => this.clientService.compareClient(o1, o2);
 
   previousState(): void {
@@ -391,69 +487,24 @@ export class AffaireUpdateComponent implements OnInit {
   }
 
   loadSocietes(): void {
-    this.societeService
-      .query({
-        page: 0,
-        size: 1000,
-        sort: ['id', 'asc'],
-      })
-      .subscribe(res => {
-        this.societesSharedCollection = res.body ?? [];
-      });
-  }
-
-  ngOnInit(): void {
-    this.activatedRoute.queryParamMap.subscribe(params => {
-      const rawClientId = params.get('clientId');
-      const parsedClientId = rawClientId ? Number(rawClientId) : null;
-      this.clientIdFromQuery = parsedClientId !== null && !Number.isNaN(parsedClientId) ? parsedClientId : null;
-      this.applyClientFromQueryParam();
-    });
-
-    this.loadSocietes();
-
-    this.activatedRoute.data.subscribe(({ affaire }) => {
-      this.affaire = affaire;
-      if (affaire) {
-        this.societeService.find(this.affaire!.societeId!).subscribe(res => (this.primarySociete = res.body));
-        this.updateForm(affaire);
-      }
-      this.loadRelationshipsOptions();
-    });
-
-    // Load fake associated companies data
-    this.loadSocietesAssociees();
-
-    const clientId = this.editForm.get('client')?.value?.id;
-
-    if (clientId != null) {
-      this.loadAgencesClient(clientId);
-    }
-
-    this.editForm.get('client')?.valueChanges.subscribe(client => {
-      this.agencesClient = [];
-
-      if (client?.id) {
-        this.loadAgencesClient(client.id);
-      }
+    this.societeService.query({ page: 0, size: 1000, sort: ['id', 'asc'] }).subscribe(res => {
+      this.societesSharedCollection = res.body ?? [];
     });
   }
 
-  // ── Agences du client sélectionné ────────────────────────────────
   loadAgencesClient(clientId: number): void {
     this.affaireService
       .getAgencesByClientId({ clientId })
       .pipe(map((res: HttpResponse<IAgence[]>) => res.body ?? []))
-      .subscribe((agences: IAgence[]) => {
-        this.agencesClient = agences;
-      });
+      .subscribe((agences: IAgence[]) => (this.agencesClient = agences));
   }
 
-  // ── Fake Data Loader for Sociétés Associées ────────────────────
   loadSocietesAssociees(): void {
-    this.societeService.findAllSocieteByAffaireId({ affaireId: this.affaire?.id }).subscribe((res: HttpResponse<any[]>) => {
-      this.societesAssociees = res.body!;
-    });
+    if (this.affaire?.id) {
+      this.societeService.findAllSocieteByAffaireId({ affaireId: this.affaire.id }).subscribe((res: HttpResponse<any[]>) => {
+        this.societesAssociees = res.body ?? [];
+      });
+    }
   }
 
   save(): void {
@@ -475,29 +526,27 @@ export class AffaireUpdateComponent implements OnInit {
   }
 
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IAffaire>>): void {
-    result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
-      next: () => this.onSaveSuccess(),
-      error: () => this.onSaveError(),
+    result.pipe(finalize(() => (this.isSaving = false))).subscribe({
+      next: res => {
+        // If creating a brand new Affaire, attach the selected articles on save
+        if (!this.affaire?.id && res.body?.id && this.selectedArticles.length > 0) {
+          const ids = this.selectedArticles.map(a => a.id).filter((id): id is number => id != null);
+          this.affaireService.replaceArticlesForAffaire(res.body.id, ids).subscribe(() => this.previousState());
+        } else {
+          this.previousState();
+        }
+      },
+      error: err => {
+        console.error(err);
+      },
     });
-  }
-
-  protected onSaveSuccess(): void {
-    this.previousState();
-  }
-  protected onSaveError(): void {
-    // Intentionally left blank for component extension hooks.
-  }
-  protected onSaveFinalize(): void {
-    this.isSaving = false;
   }
 
   protected updateForm(affaire: IAffaire): void {
     this.affaire = affaire;
-    // Création => édition directe ; Mise à jour => lecture seule
     this.isEditMode = !affaire.id;
     this.affaireFormService.resetForm(this.editForm, affaire);
 
-    // Par défaut, une nouvelle affaire démarre au statut Brouillon
     if (!affaire.id && !this.editForm.get('statut')?.value) {
       this.editForm.patchValue({ statut: StatutAffaire.Brouillon });
     }
@@ -512,7 +561,7 @@ export class AffaireUpdateComponent implements OnInit {
     this.clientsSharedCollection = this.clientService.addClientToCollectionIfMissing<IClient>(this.clientsSharedCollection, affaire.client);
 
     if (affaire.id) {
-      this.reloadSelectedArticles();
+      this.loadArticlesByAffaire();
 
       this.matriceFacturationService.findMatriceByAffaireId(affaire.id).subscribe((res: HttpResponse<IMatriceFacturation[]>) => {
         this.selectedMatrices = res.body ?? [];
@@ -560,7 +609,6 @@ export class AffaireUpdateComponent implements OnInit {
     if (this.clientIdFromQuery === null || this.editForm.controls.id.value !== null) {
       return;
     }
-
     const queryClient = this.clientsSharedCollection.find(client => client.id === this.clientIdFromQuery);
     if (queryClient) {
       this.editForm.patchValue({ client: queryClient });

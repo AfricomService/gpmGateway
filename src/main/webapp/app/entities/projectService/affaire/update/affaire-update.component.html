@@ -17,9 +17,9 @@
       <!-- Toolbar : Numéro / Désignation (gauche) + Enregistrer/Modifier (droite) -->
       <div class="cu-toolbar">
         <div class="cu-toolbar-left">
-          <span class="cu-page-kicker" *ngIf="editForm.controls.id.value === null" jhiTranslate="entity.action.edit"
-            >Édition d'un projet</span
-          >
+          <span class="cu-page-kicker" *ngIf="editForm.controls.id.value === null" jhiTranslate="entity.action.edit">
+            Édition d'un projet
+          </span>
           <ng-container *ngIf="editForm.controls.id.value !== null">
             <span class="cu-badge-id" *ngIf="editForm.get('identifiantUnique')?.value">
               {{ editForm.get('identifiantUnique')?.value }}
@@ -134,8 +134,6 @@
                 </div>
               </div>
 
-              <!-- CHAMP STATUT SUPPRIMÉ DE CETTE SECTION -->
-
               <div class="col-md-6 mb-3">
                 <label class="form-label fw-bold" for="field_client">
                   <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.client">Client</span>
@@ -211,9 +209,9 @@
           <div class="cu-accordion-body" *ngIf="isSectionOpen('dates')">
             <div class="row">
               <div class="col-md-4 mb-3">
-                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceAffaire.dateDebut" for="field_dateDebut"
-                  >Date Debut</label
-                >
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceAffaire.dateDebut" for="field_dateDebut">
+                  Date Debut
+                </label>
                 <div class="input-group">
                   <input
                     id="field_dateDebut"
@@ -235,9 +233,9 @@
               </div>
 
               <div class="col-md-4 mb-3">
-                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceAffaire.dateCloture" for="field_dateCloture"
-                  >Date Cloture</label
-                >
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceAffaire.dateCloture" for="field_dateCloture">
+                  Date Cloture
+                </label>
                 <div class="input-group">
                   <input
                     id="field_dateCloture"
@@ -263,8 +261,9 @@
                   class="form-label fw-bold"
                   jhiTranslate="gpmGatewayApp.projectServiceAffaire.datePassageExecution"
                   for="field_datePassageExecution"
-                  >Date Passage Execution</label
                 >
+                  Date Passage Execution
+                </label>
                 <div class="input-group">
                   <input
                     id="field_datePassageExecution"
@@ -299,26 +298,27 @@
                   class="form-check-label fw-bold"
                   jhiTranslate="gpmGatewayApp.projectServiceAffaire.lieuMultipleParMission"
                   for="field_lieuMultipleParMission"
-                  >Lieu Multiple Par Mission</label
                 >
+                  Lieu Multiple Par Mission
+                </label>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Articles -->
+        <!-- Articles Accordion Item -->
         <div class="cu-accordion-item" [class.open]="isSectionOpen('articles')">
           <button type="button" class="cu-accordion-header" (click)="toggleSection('articles')">
             <span class="cu-accordion-header-left">
               <fa-icon icon="box" class="cu-accordion-icon"></fa-icon>
               <span>Articles</span>
-              <span class="cu-accordion-count" *ngIf="selectedArticles.length">{{ selectedArticles.length }}</span>
+              <span class="cu-accordion-count" *ngIf="articlesTotalItems">{{ articlesTotalItems }}</span>
             </span>
             <span class="cu-accordion-header-right">
               <button
                 *ngIf="isEditMode && isExisting"
                 type="button"
-                class="btn-cu-add"
+                class="btn-cu-add me-2"
                 (click)="$event.stopPropagation(); openArticleImportModal()"
               >
                 <fa-icon icon="file-import"></fa-icon>&nbsp;Importer
@@ -331,21 +331,59 @@
           </button>
 
           <div class="cu-accordion-body" *ngIf="isSectionOpen('articles')">
-            <div *ngIf="selectedArticles.length > 0; else noArticles" class="cu-item-list">
-              <div class="cu-item-card" *ngFor="let article of selectedArticles">
-                <div class="cu-item-info">
-                  <div class="cu-item-title">
-                    {{ article.code }} — {{ article.designation }} — {{ article.prixUnitHT }} — {{ article.prixAchat }}
-                  </div>
-                </div>
-                <button *ngIf="isEditMode" type="button" class="cu-item-remove" (click)="removeArticle(article)">
-                  <fa-icon icon="times"></fa-icon>
-                </button>
+            <!-- Server Search Input for Attached Articles -->
+            <div class="mb-3" *ngIf="isExisting">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Rechercher par désignation..."
+                [ngModel]="articlesSearchTerm"
+                [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="onArticlesSearchChange($event)"
+              />
+            </div>
+
+            <!-- Spinner during loading -->
+            <div *ngIf="isLoadingArticles" class="text-center my-3">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Chargement...</span>
               </div>
             </div>
-            <ng-template #noArticles>
-              <div class="cu-empty">Aucun article sélectionné</div>
-            </ng-template>
+
+            <!-- Articles List -->
+            <div *ngIf="!isLoadingArticles">
+              <div *ngIf="selectedArticles.length > 0; else noArticles" class="cu-item-list">
+                <div class="cu-item-card" *ngFor="let article of selectedArticles">
+                  <div class="cu-item-info">
+                    <div class="cu-item-title">
+                      <strong>{{ article.code }}</strong> — {{ article.designation }}
+                      <span class="text-muted ms-2">(Prix HT: {{ article.prixUnitHT }} €)</span>
+                    </div>
+                  </div>
+                  <button *ngIf="isEditMode" type="button" class="cu-item-remove" (click)="removeArticle(article)">
+                    <fa-icon icon="times"></fa-icon>
+                  </button>
+                </div>
+
+                <!-- Server-Side Pagination Controls -->
+                <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="articlesTotalItems > articlesItemsPerPage">
+                  <span class="small text-muted"> Total: {{ articlesTotalItems }} article(s) </span>
+                  <ngb-pagination
+                    [collectionSize]="articlesTotalItems"
+                    [(page)]="articlesPage"
+                    [pageSize]="articlesItemsPerPage"
+                    [maxSize]="5"
+                    [rotate]="true"
+                    [boundaryLinks]="true"
+                    (pageChange)="onArticlesPageChange($event)"
+                  ></ngb-pagination>
+                </div>
+              </div>
+
+              <ng-template #noArticles>
+                <div class="cu-empty">Aucun article trouvé</div>
+              </ng-template>
+            </div>
           </div>
         </div>
 
@@ -368,7 +406,7 @@
           <div class="cu-accordion-body" *ngIf="isSectionOpen('societes')">
             <div *ngIf="societesAssociees.length > 0; else noSocietes" class="cu-item-list">
               <div class="cu-item-card" *ngFor="let societe of societesAssociees">
-                <div class="cu-item-avatar">{{ societe.raisonSociale!.charAt(0) }}</div>
+                <div class="cu-item-avatar">{{ societe.raisonSociale?.charAt(0) }}</div>
                 <div class="cu-item-info">
                   <div class="cu-item-title-row">
                     <div class="cu-item-title">{{ societe.raisonSociale }}</div>
@@ -421,13 +459,13 @@
       <input
         type="text"
         class="form-control mb-3"
-        placeholder="Rechercher un article..."
-        [(ngModel)]="articleSearchTerm"
+        placeholder="Filtrer la liste des articles..."
+        [(ngModel)]="modalArticleSearchTerm"
         [ngModelOptions]="{ standalone: true }"
       />
 
       <div style="max-height: 350px; overflow-y: auto">
-        <div *ngFor="let article of filteredArticles" class="form-check mb-3">
+        <div *ngFor="let article of filteredModalArticles" class="form-check mb-3">
           <input
             type="checkbox"
             class="form-check-input me-3"
@@ -436,7 +474,9 @@
             [checked]="isTempArticleSelected(article)"
             (change)="toggleTempArticleSelection(article)"
           />
-          <label class="form-check-label" [for]="'modal_article_' + article.id"> {{ article.code }} - {{ article.designation }} </label>
+          <label class="form-check-label" [for]="'modal_article_' + article.id">
+            <strong>{{ article.code }}</strong> - {{ article.designation }}
+          </label>
         </div>
       </div>
     </div>
