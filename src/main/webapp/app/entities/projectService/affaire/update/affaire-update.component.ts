@@ -48,7 +48,7 @@ export class AffaireUpdateComponent implements OnInit {
   isEditMode = false;
 
   // Accordion management
-  openSections: Set<AccordionSection> = new Set(['general']);
+  openSections: Set<AccordionSection> = new Set(['general', 'dates']);
   isChangingStatut = false;
 
   clientsSharedCollection: IClient[] = [];
@@ -129,13 +129,23 @@ export class AffaireUpdateComponent implements OnInit {
     this.loadSocietes();
 
     this.activatedRoute.data.subscribe(({ affaire }) => {
-      this.affaire = affaire;
+      this.affaire = affaire ?? null;
+
       if (affaire) {
+        // Existing affaire: updateForm handles isEditMode = !affaire.id (false)
         if (this.affaire?.societeId) {
           this.societeService.find(this.affaire.societeId).subscribe(res => (this.primarySociete = res.body));
         }
         this.updateForm(affaire);
+      } else {
+        // NEW affaire: force edit mode so the form is editable immediately
+        this.isEditMode = true;
+        // Apply the same default statut logic that updateForm normally handles
+        if (!this.editForm.get('statut')?.value) {
+          this.editForm.patchValue({ statut: StatutAffaire.Brouillon });
+        }
       }
+
       this.loadRelationshipsOptions();
     });
 

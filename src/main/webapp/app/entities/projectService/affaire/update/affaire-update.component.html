@@ -307,7 +307,7 @@
         </div>
 
         <!-- Articles Accordion Item -->
-        <div class="cu-accordion-item" [class.open]="isSectionOpen('articles')">
+        <div *ngIf="isExisting" class="cu-accordion-item" [class.open]="isSectionOpen('articles')">
           <button type="button" class="cu-accordion-header" (click)="toggleSection('articles')">
             <span class="cu-accordion-header-left">
               <fa-icon icon="box" class="cu-accordion-icon"></fa-icon>
@@ -397,7 +397,7 @@
         </div>
 
         <!-- Sociétés Intermédiaires -->
-        <div class="cu-accordion-item" [class.open]="isSectionOpen('societes')">
+        <div *ngIf="isExisting" class="cu-accordion-item" [class.open]="isSectionOpen('societes')">
           <button type="button" class="cu-accordion-header" (click)="toggleSection('societes')">
             <span class="cu-accordion-header-left">
               <fa-icon icon="building" class="cu-accordion-icon"></fa-icon>
@@ -439,7 +439,7 @@
 
       <!-- Toolbar du bas : Statut + workflow + Annuler -->
       <div class="cu-toolbar cu-toolbar-bottom">
-        <div class="cu-toolbar-bottom-left" *ngIf="editForm.get('statut')?.value">
+        <div class="cu-toolbar-bottom-left" *ngIf="isExisting">
           <span class="cu-statut-display">
             <fa-icon icon="tag" class="cu-statut-icon"></fa-icon>
             <strong>Statut actuel :</strong>
