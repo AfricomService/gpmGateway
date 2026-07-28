@@ -150,7 +150,7 @@
                 (ngModelChange)="searchContacts()"
               />
               <div *ngIf="selectedContacts.length > 0; else noContacts" class="cu-item-list">
-                <div class="cu-item-card" *ngFor="let contact of selectedContacts">
+                <div class="cu-item-card cu-item-card-clickable" *ngFor="let contact of selectedContacts" (click)="goToContact(contact)">
                   <div class="cu-item-info">
                     <div class="cu-item-title-row">
                       <span class="cu-item-badge-id" *ngIf="contact.identifiantUnique">{{ contact.identifiantUnique }}</span>
@@ -161,10 +161,10 @@
                     </div>
                   </div>
                   <div class="cu-item-actions">
-                    <button type="button" class="cu-item-edit" (click)="openEditContactModal(contact)">
+                    <button type="button" class="cu-item-edit" (click)="$event.stopPropagation(); openEditContactModal(contact)">
                       <fa-icon icon="pencil-alt"></fa-icon>
                     </button>
-                    <button type="button" class="cu-item-remove" (click)="unlinkContact(contact)">
+                    <button type="button" class="cu-item-remove" (click)="$event.stopPropagation(); unlinkContact(contact)">
                       <fa-icon icon="times"></fa-icon>
                     </button>
                   </div>
@@ -205,12 +205,12 @@
                 (ngModelChange)="searchSites()"
               />
               <div *ngIf="selectedSites.length > 0; else noSites" class="cu-item-list">
-                <div class="cu-item-card" *ngFor="let site of selectedSites">
+                <div class="cu-item-card cu-item-card-clickable" *ngFor="let site of selectedSites" (click)="goToSite(site)">
                   <div class="cu-item-info">
                     <div class="cu-item-title">{{ site.code || '-' }}</div>
                     <div class="cu-item-sub">{{ site.designation || 'Désignation non renseignée' }}</div>
                   </div>
-                  <button type="button" class="cu-item-remove" (click)="unlinkSite(site)">
+                  <button type="button" class="cu-item-remove" (click)="$event.stopPropagation(); unlinkSite(site)">
                     <fa-icon icon="times"></fa-icon>
                   </button>
                 </div>
@@ -268,12 +268,12 @@
                 (ngModelChange)="searchAffaires()"
               />
               <div *ngIf="selectedAffaires.length > 0; else noAffaires" class="cu-item-list">
-                <div class="cu-item-card" *ngFor="let affaire of selectedAffaires">
+                <div class="cu-item-card cu-item-card-clickable" *ngFor="let affaire of selectedAffaires" (click)="goToAffaire(affaire)">
                   <div class="cu-item-info">
                     <div class="cu-item-title">{{ affaire.numAffaire || '-' }}</div>
                     <div class="cu-item-sub">{{ affaire.designationAffaire || 'Désignation non renseignée' }}</div>
                   </div>
-                  <button type="button" class="cu-item-remove" (click)="unlinkAffaire()">
+                  <button type="button" class="cu-item-remove" (click)="$event.stopPropagation(); unlinkAffaire()">
                     <fa-icon icon="times"></fa-icon>
                   </button>
                 </div>
@@ -316,12 +316,12 @@
                 (ngModelChange)="searchFactures()"
               />
               <div *ngIf="selectedFactures.length > 0; else noFactures" class="cu-item-list">
-                <div class="cu-item-card" *ngFor="let facture of selectedFactures">
+                <div class="cu-item-card cu-item-card-clickable" *ngFor="let facture of selectedFactures" (click)="goToFacture(facture)">
                   <div class="cu-item-info">
                     <div class="cu-item-title">{{ facture.numFacture || '-' }}</div>
                     <div class="cu-item-sub">{{ facture.montantFacture || 0 }} TND</div>
                   </div>
-                  <button type="button" class="cu-item-remove" (click)="unlinkFacture()">
+                  <button type="button" class="cu-item-remove" (click)="$event.stopPropagation(); unlinkFacture()">
                     <fa-icon icon="times"></fa-icon>
                   </button>
                 </div>
@@ -358,7 +358,7 @@
                 (ngModelChange)="searchAgences()"
               />
               <div *ngIf="selectedAgences.length > 0; else noAgences" class="cu-item-list">
-                <div class="cu-item-card" *ngFor="let agence of selectedAgences">
+                <div class="cu-item-card cu-item-card-clickable" *ngFor="let agence of selectedAgences" (click)="goToAgence(agence)">
                   <div class="cu-item-info">
                     <div class="cu-item-title-row">
                       <div class="cu-item-title">{{ agence.designation || '-' }}</div>
@@ -366,7 +366,7 @@
                     </div>
                     <div class="cu-item-sub">{{ agence.ville || 'Ville non renseignée' }}, {{ agence.pays || 'Pays non renseigné' }}</div>
                   </div>
-                  <button type="button" class="cu-item-remove" (click)="unlinkAgence()">
+                  <button type="button" class="cu-item-remove" (click)="$event.stopPropagation(); unlinkAgence()">
                     <fa-icon icon="times"></fa-icon>
                   </button>
                 </div>

@@ -147,6 +147,42 @@ export class ClientUpdateComponent implements OnInit {
     this.modalService.open(this.contactModal, { size: 'lg', backdrop: 'static', centered: true });
   }
 
+  // === Navigation vers les interfaces d'édition ===
+  goToContact(contact: IContact): void {
+    if (!contact.id) {
+      return;
+    }
+    this.router.navigate(['/contact', contact.id, 'edit']);
+  }
+
+  goToSite(site: ISite): void {
+    if (!site.id) {
+      return;
+    }
+    this.router.navigate(['/site', site.id, 'edit']);
+  }
+
+  goToAffaire(affaire: IAffaire): void {
+    if (!affaire.id) {
+      return;
+    }
+    this.router.navigate(['/affaire', affaire.id, 'edit']);
+  }
+
+  goToFacture(facture: IFacture): void {
+    if (!facture.id) {
+      return;
+    }
+    this.router.navigate(['/facture', facture.id, 'edit']);
+  }
+
+  goToAgence(agence: IAgence): void {
+    if (!agence.id) {
+      return;
+    }
+    this.router.navigate(['/agence', agence.id, 'edit']);
+  }
+
   creatingKeycloakUser = false;
   keycloakResult: { success: boolean; nomPrenom?: string; login?: string; password?: string; message?: string } | null = null;
 
