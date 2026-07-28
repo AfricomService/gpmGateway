@@ -8,9 +8,9 @@
       <li class="breadcrumb-item">
         <a routerLink="/">Accueil</a>
       </li>
-      <li *ngFor="let crumb of breadcrumbs; let last = last" class="breadcrumb-item" [class.active]="last">
-        <a *ngIf="!last" [routerLink]="crumb.url">{{ crumb.label }}</a>
-        <span *ngIf="last">{{ crumb.label }}</span>
+      <li *ngFor="let crumb of breadcrumbs; let last = last" class="breadcrumb-item" [class.active]="last && !hideCurrentCrumb">
+        <a *ngIf="!last || hideCurrentCrumb" [routerLink]="crumb.url">{{ crumb.label }}</a>
+        <span *ngIf="last && !hideCurrentCrumb">{{ crumb.label }}</span>
       </li>
     </ol>
   </nav>

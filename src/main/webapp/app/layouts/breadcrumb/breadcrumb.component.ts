@@ -17,6 +17,7 @@ export interface Breadcrumb {
 })
 export class BreadcrumbComponent implements OnInit, OnDestroy {
   breadcrumbs: Breadcrumb[] = [];
+  hideCurrentCrumb = false;
   private routerSubscription?: Subscription;
 
   constructor(
@@ -27,13 +28,14 @@ export class BreadcrumbComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.hideCurrentCrumb = false;
     this.breadcrumbs = this.buildBreadcrumbs(this.activatedRoute.root);
 
     this.routerSubscription = this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => {
+      this.hideCurrentCrumb = false;
       this.breadcrumbs = this.buildBreadcrumbs(this.activatedRoute.root);
     });
   }
-
   ngOnDestroy(): void {
     this.routerSubscription?.unsubscribe();
   }
@@ -48,18 +50,15 @@ export class BreadcrumbComponent implements OnInit, OnDestroy {
       const nextUrl = routeUrl ? `${url}/${routeUrl}` : url;
       const pageTitleKey = child.snapshot.data?.['pageTitle'];
 
-      if (routeUrl) {
-        // Cette route consomme un vrai segment d'URL (ex: 'agence', 'new', ':id/edit') -> elle mérite sa propre miette
-        let label = pageTitleKey ? this.translateService.instant(pageTitleKey) : routeUrl;
+      const isTransientPage = routeUrl === 'new' || routeUrl.endsWith('/edit') || routeUrl.endsWith('/view');
 
-        if (routeUrl === 'new') {
-          label = 'Nouveau';
-        } else if (routeUrl.endsWith('/edit')) {
-          label = 'Modifier';
-        } else if (routeUrl.endsWith('/view')) {
-          label = 'Détail';
-        }
-
+      if (routeUrl && isTransientPage) {
+        // Page "Nouveau" / "Modifier" / "Détail" : pas de miette dédiée,
+        // la miette précédente redevient donc la dernière et doit rester cliquable.
+        this.hideCurrentCrumb = true;
+      } else if (routeUrl) {
+        // Cette route consomme un vrai segment d'URL (ex: 'agence') -> elle mérite sa propre miette
+        const label = pageTitleKey ? this.translateService.instant(pageTitleKey) : routeUrl;
         breadcrumbs.push({ label: this.cleanLabel(label), url: nextUrl });
       } else if (pageTitleKey && depth > 0 && !breadcrumbs.length) {
         // Route "vide" MAIS imbriquée sous un vrai segment (ex: 'ressources/agences') -> section réelle, on l'affiche
