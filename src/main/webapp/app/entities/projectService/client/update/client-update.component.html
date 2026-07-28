@@ -97,7 +97,18 @@
 
               <div class="col-md-4 mb-3">
                 <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceClient.email" for="field_email">Email</label>
-                <input type="email" class="form-control" name="email" id="field_email" data-cy="email" formControlName="email" />
+                <input
+                  type="email"
+                  class="form-control"
+                  [class.is-invalid]="editForm.get('email')!.invalid && (editForm.get('email')!.dirty || editForm.get('email')!.touched)"
+                  name="email"
+                  id="field_email"
+                  data-cy="email"
+                  formControlName="email"
+                />
+                <div *ngIf="editForm.get('email')!.invalid && (editForm.get('email')!.dirty || editForm.get('email')!.touched)">
+                  <small class="form-text text-danger" *ngIf="editForm.get('email')?.errors?.email"> Adresse email invalide. </small>
+                </div>
               </div>
 
               <div class="col-md-4 mb-3">
@@ -105,13 +116,21 @@
                   >Telephone</label
                 >
                 <input
-                  type="text"
+                  type="tel"
                   class="form-control"
+                  [class.is-invalid]="
+                    editForm.get('telephone')!.invalid && (editForm.get('telephone')!.dirty || editForm.get('telephone')!.touched)
+                  "
                   name="telephone"
                   id="field_telephone"
                   data-cy="telephone"
                   formControlName="telephone"
                 />
+                <div *ngIf="editForm.get('telephone')!.invalid && (editForm.get('telephone')!.dirty || editForm.get('telephone')!.touched)">
+                  <small class="form-text text-danger" *ngIf="editForm.get('telephone')?.errors?.pattern">
+                    Numéro de téléphone invalide (8 à 15 chiffres, espaces, tirets ou + autorisés).
+                  </small>
+                </div>
               </div>
 
               <div class="col-md-4 mb-3">
@@ -424,11 +443,36 @@
           </div>
           <div class="col-md-6">
             <label class="form-label fw-bold">Email</label>
-            <input type="email" class="form-control" [(ngModel)]="newContact.email" [ngModelOptions]="{ standalone: true }" />
+            <input
+              type="email"
+              class="form-control"
+              [class.is-invalid]="contactEmailField.invalid && (contactEmailField.dirty || contactEmailField.touched)"
+              [(ngModel)]="newContact.email"
+              [ngModelOptions]="{ standalone: true }"
+              #contactEmailField="ngModel"
+              pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+            />
+            <small
+              class="form-text text-danger"
+              *ngIf="contactEmailField.invalid && (contactEmailField.dirty || contactEmailField.touched)"
+            >
+              Adresse email invalide.
+            </small>
           </div>
           <div class="col-md-6">
             <label class="form-label fw-bold">Téléphone</label>
-            <input type="text" class="form-control" [(ngModel)]="newContact.telephone" [ngModelOptions]="{ standalone: true }" />
+            <input
+              type="tel"
+              class="form-control"
+              [class.is-invalid]="contactTelField.invalid && (contactTelField.dirty || contactTelField.touched)"
+              [(ngModel)]="newContact.telephone"
+              [ngModelOptions]="{ standalone: true }"
+              #contactTelField="ngModel"
+              pattern="^[+]?[0-9\s-]{8,15}$"
+            />
+            <small class="form-text text-danger" *ngIf="contactTelField.invalid && (contactTelField.dirty || contactTelField.touched)">
+              Numéro de téléphone invalide (8 à 15 chiffres, espaces, tirets ou + autorisés).
+            </small>
           </div>
         </div>
       </div>
@@ -449,7 +493,11 @@
           }}
         </button>
         <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
-        <button class="btn-cu-save-modal" [disabled]="!newContact.nomPrenom?.trim()" (click)="saveContact(modal)">
+        <button
+          class="btn-cu-save-modal"
+          [disabled]="!newContact.nomPrenom?.trim() || contactEmailField.invalid || contactTelField.invalid"
+          (click)="saveContact(modal)"
+        >
           {{ editingContact ? 'Enregistrer' : 'Ajouter' }}
         </button>
       </div>
@@ -509,27 +557,47 @@
       <div class="modal-body">
         <div class="row g-3">
           <div class="col-md-6">
-            <label class="form-label fw-bold">Code</label>
+            <label class="form-label fw-bold">Code <span class="text-danger">*</span></label>
             <input type="text" class="form-control" [(ngModel)]="newSite.code" [ngModelOptions]="{ standalone: true }" />
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-bold">Désignation</label>
+            <label class="form-label fw-bold">Désignation <span class="text-danger">*</span></label>
             <input type="text" class="form-control" [(ngModel)]="newSite.designation" [ngModelOptions]="{ standalone: true }" />
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-bold">Ville</label>
+            <label class="form-label fw-bold">Gouvernorat <span class="text-danger">*</span></label>
             <select class="form-control" [(ngModel)]="newSite.ville" [ngModelOptions]="{ standalone: true }">
               <option [ngValue]="null">-- Sélectionner une ville --</option>
               <option *ngFor="let ville of allVilles" [ngValue]="{ id: ville.id, nom: ville.nom }">{{ ville.nom }}</option>
             </select>
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-bold">GPS X</label>
+            <label class="form-label fw-bold">Zone</label>
+            <input type="text" class="form-control" [(ngModel)]="newSite.zoneNom" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Longitude (GPS X)</label>
             <input type="number" class="form-control" [(ngModel)]="newSite.gpsX" [ngModelOptions]="{ standalone: true }" />
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-bold">GPS Y</label>
+            <label class="form-label fw-bold">Latitude (GPS Y)</label>
             <input type="number" class="form-control" [(ngModel)]="newSite.gpsY" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Nodale GPM</label>
+            <input type="text" class="form-control" [(ngModel)]="newSite.nodaleGpm" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Site Priority Label</label>
+            <input type="text" class="form-control" [(ngModel)]="newSite.sitePriority" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Type</label>
+            <input type="text" class="form-control" [(ngModel)]="newSite.typeSite" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Région</label>
+            <input type="text" class="form-control" [(ngModel)]="newSite.regionSite" [ngModelOptions]="{ standalone: true }" />
           </div>
         </div>
       </div>

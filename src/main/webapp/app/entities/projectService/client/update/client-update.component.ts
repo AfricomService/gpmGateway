@@ -390,6 +390,11 @@ export class ClientUpdateComponent implements OnInit {
       designation: this.newSite.designation.trim(),
       gpsX: this.newSite.gpsX ?? null,
       gpsY: this.newSite.gpsY ?? null,
+      nodaleGpm: this.newSite.nodaleGpm?.trim() ?? null,
+      sitePriority: this.newSite.sitePriority?.trim() ?? null,
+      typeSite: this.newSite.typeSite?.trim() ?? null,
+      regionSite: this.newSite.regionSite?.trim() ?? null,
+      zoneNom: this.newSite.zoneNom?.trim() ?? null,
       ville: this.newSite.ville,
       client: clientRef,
     };
