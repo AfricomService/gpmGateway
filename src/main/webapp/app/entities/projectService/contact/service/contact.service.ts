@@ -25,6 +25,11 @@ export type PartialUpdateRestContact = RestOf<PartialUpdateContact>;
 export type EntityResponseType = HttpResponse<IContact>;
 export type EntityArrayResponseType = HttpResponse<IContact[]>;
 
+export interface IKeycloakUserCreationResult {
+  contact: IContact;
+  generatedPassword: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ContactService {
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/contacts', 'projectservice');
@@ -69,8 +74,10 @@ export class ContactService {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }
 
-  createKeycloakUser(id: number): Observable<HttpResponse<{}>> {
-    return this.http.post(`${this.resourceUrl}/${id}/create-keycloak-user`, null, { observe: 'response' });
+  createKeycloakUser(id: number): Observable<HttpResponse<IKeycloakUserCreationResult>> {
+    return this.http.post<IKeycloakUserCreationResult>(`${this.resourceUrl}/${id}/create-keycloak-user`, null, {
+      observe: 'response',
+    });
   }
 
   findByClientId(clientId: number): Observable<EntityArrayResponseType> {

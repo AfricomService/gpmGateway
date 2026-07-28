@@ -480,16 +480,17 @@
         <button
           type="button"
           class="btn btn-outline-primary"
+          [class.btn-cu-kc-created]="editingContact.statusCompteKeycloak === 'EN_COURS'"
           *ngIf="editingContact"
           [disabled]="creatingKeycloakUser || !editingContact.identifiantUnique || editingContact.statusCompteKeycloak === 'EN_COURS'"
           (click)="createContactKeycloakUser()"
         >
           <fa-icon icon="user-plus"></fa-icon>&nbsp;{{
             editingContact.statusCompteKeycloak === 'EN_COURS'
-              ? 'Compte Keycloak créé'
+              ? 'Compte utilisateur créé'
               : creatingKeycloakUser
               ? 'Création...'
-              : 'Créer utilisateur Keycloak'
+              : 'Créer un compte utilisateur'
           }}
         </button>
         <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
@@ -515,9 +516,9 @@
         </div>
 
         <ng-container *ngIf="keycloakResult?.success; else kcError">
-          <h5 class="kc-result-title">Compte Keycloak créé avec succès</h5>
+          <h5 class="kc-result-title">Compte utilisateur créé avec succès</h5>
           <p class="kc-result-text">
-            Le compte est bien créé sur Keycloak. Merci de contacter
+            Le compte a bien été créé. Merci de contacter
             <strong>{{ keycloakResult?.nomPrenom }}</strong>
             pour lui communiquer ses identifiants de connexion à l'application.
           </p>

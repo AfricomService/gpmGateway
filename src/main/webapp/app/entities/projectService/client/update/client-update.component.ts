@@ -192,17 +192,18 @@ export class ClientUpdateComponent implements OnInit {
     }
     this.creatingKeycloakUser = true;
     this.contactService.createKeycloakUser(this.editingContact.id).subscribe({
-      next: (res: any) => {
+      next: res => {
         this.creatingKeycloakUser = false;
-        const updatedContact = res.body;
-        this.editingContact = updatedContact;
+        const result = res.body;
+        const updatedContact = result?.contact;
+        this.editingContact = updatedContact ?? this.editingContact;
         this.loadContacts();
 
         this.keycloakResult = {
           success: true,
-          nomPrenom: updatedContact?.nomPrenom,
-          login: updatedContact?.identifiantUnique,
-          password: '123456',
+          nomPrenom: updatedContact?.nomPrenom ?? undefined,
+          login: updatedContact?.identifiantUnique ?? undefined,
+          password: result?.generatedPassword ?? undefined,
         };
         this.modalService.open(this.keycloakResultModal, { size: 'md', backdrop: 'static', centered: true });
       },
