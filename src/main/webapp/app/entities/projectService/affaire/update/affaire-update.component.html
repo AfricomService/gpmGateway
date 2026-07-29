@@ -17,9 +17,7 @@
       <!-- Toolbar : Numéro / Désignation (gauche) + Enregistrer/Modifier (droite) -->
       <div class="cu-toolbar">
         <div class="cu-toolbar-left">
-          <span class="cu-page-kicker" *ngIf="editForm.controls.id.value === null" jhiTranslate="entity.action.edit">
-            Édition d'un projet
-          </span>
+          <span class="cu-page-kicker" *ngIf="editForm.controls.id.value === null"> Création d'une nouvelle affaire </span>
           <ng-container *ngIf="editForm.controls.id.value !== null">
             <span class="cu-badge-id" *ngIf="editForm.get('identifiantUnique')?.value">
               {{ editForm.get('identifiantUnique')?.value }}

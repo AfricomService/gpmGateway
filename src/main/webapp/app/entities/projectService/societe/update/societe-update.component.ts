@@ -22,7 +22,7 @@ export class SocieteUpdateComponent implements OnInit {
   societe: ISociete | null = null;
 
   // === Gestion de l'accordéon ===
-  openSections: Set<AccordionSection> = new Set(['general']);
+  openSections: Set<AccordionSection> = new Set(['general', 'coordonnees']);
 
   // ── Contacts Associés ─────────────────────────────────────────
   contactsAssocies: IContactSociete[] = [];

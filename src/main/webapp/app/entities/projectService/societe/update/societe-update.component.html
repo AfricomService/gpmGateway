@@ -17,9 +17,7 @@
       <!-- Toolbar : Raison sociale / Identifiant (gauche) + Enregistrer (droite) -->
       <div class="cu-toolbar">
         <div class="cu-toolbar-left">
-          <span class="cu-page-kicker" *ngIf="editForm.get('id')?.value === null" jhiTranslate="entity.action.create"
-            >Création d'une société</span
-          >
+          <span class="cu-page-kicker" *ngIf="editForm.get('id')?.value === null">Création d'une société</span>
           <ng-container *ngIf="editForm.get('id')?.value !== null">
             <span class="cu-badge-id" *ngIf="editForm.get('identifiantUnique')?.value">
               {{ editForm.get('identifiantUnique')?.value }}
@@ -101,27 +99,29 @@
               </div>
 
               <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold" for="field_identifiantUnique">
-                  <span jhiTranslate="gpmGatewayApp.projectServiceSociete.identifiantUnique">Identifiant Unique</span>
+                <label class="form-label fw-bold" for="field_matriculeFiscale">
+                  <span>Matricule Fiscale</span>
                   <span class="text-danger">*</span>
                 </label>
+
                 <input
                   type="text"
                   class="form-control"
-                  name="identifiantUnique"
-                  id="field_identifiantUnique"
-                  data-cy="identifiantUnique"
-                  formControlName="identifiantUnique"
+                  name="matriculeFiscale"
+                  id="field_matriculeFiscale"
+                  data-cy="matriculeFiscale"
+                  formControlName="matriculeFiscale"
                 />
+
                 <div
                   *ngIf="
-                    editForm.get('identifiantUnique')!.invalid &&
-                    (editForm.get('identifiantUnique')!.dirty || editForm.get('identifiantUnique')!.touched)
+                    editForm.get('matriculeFiscale')!.invalid &&
+                    (editForm.get('matriculeFiscale')!.dirty || editForm.get('matriculeFiscale')!.touched)
                   "
                 >
                   <small
                     class="form-text text-danger"
-                    *ngIf="editForm.get('identifiantUnique')?.errors?.required"
+                    *ngIf="editForm.get('matriculeFiscale')?.errors?.required"
                     jhiTranslate="entity.validation.required"
                   >
                     Ce champ est obligatoire.
