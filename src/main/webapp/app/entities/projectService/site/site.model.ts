@@ -19,6 +19,7 @@ export interface ISite {
   typeSite?: string | null;
   regionSite?: string | null;
   zoneId?: number | null;
+  zoneNom?: string | null;
   ville?: Pick<IVille, 'id' | 'nom'> | null;
   client?: Pick<IClient, 'id' | 'raisonSociale'> | null;
 }

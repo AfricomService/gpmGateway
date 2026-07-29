@@ -71,9 +71,13 @@ export class ClientFormService {
       adresse: new FormControl(clientRawValue.adresse, {
         validators: [Validators.required],
       }),
-      telephone: new FormControl(clientRawValue.telephone),
+      telephone: new FormControl(clientRawValue.telephone, {
+        validators: [Validators.pattern(/^[+]?[0-9\s-]{8,15}$/)],
+      }),
       fax: new FormControl(clientRawValue.fax),
-      email: new FormControl(clientRawValue.email),
+      email: new FormControl(clientRawValue.email, {
+        validators: [Validators.email],
+      }),
       createdAt: new FormControl(clientRawValue.createdAt),
       updatedAt: new FormControl(clientRawValue.updatedAt),
       createdBy: new FormControl(clientRawValue.createdBy),

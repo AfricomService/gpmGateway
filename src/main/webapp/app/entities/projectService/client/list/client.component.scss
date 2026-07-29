@@ -17,7 +17,7 @@
   display: flex;
   /* La navbar est en fixed-top (min-height: 72px) : on réserve l'espace
      nécessaire pour que le header (titre + boutons) ne soit plus masqué. */
-  padding: 96px 1.5rem 1.5rem;
+  padding: 1.5rem;
   align-items: flex-start;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
@@ -405,7 +405,7 @@
 /* ============ RESPONSIVE ============ */
 @media (max-width: 900px) {
   .clients-page {
-    padding: 88px 1rem 1rem;
+    padding: 1rem;
   }
 
   .clients-toolbar-right {

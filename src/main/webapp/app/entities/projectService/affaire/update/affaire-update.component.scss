@@ -1,4 +1,4 @@
-.client-update-page {
+.affaire-update-page {
   --cp-accent: #f5822a;
   --cp-accent-hover: #ff9a4d;
   --cp-accent-soft: rgba(245, 130, 42, 0.12);
@@ -15,7 +15,7 @@
   justify-content: center;
   align-items: flex-start;
   gap: 16px;
-  padding: 1.5rem 1.5rem 2rem;
+  padding: 96px 1.5rem 2rem;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
   color: var(--cp-text);
 }
@@ -78,35 +78,40 @@
   display: flex;
   align-items: center;
   gap: 0.85rem;
+  min-width: 0;
 }
 
-.btn-cu-identify {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  border-radius: 8px;
-  border: none;
-  background: var(--cp-accent);
-  color: #ffffff;
+.cu-page-kicker {
+  font-weight: 700;
   font-size: 0.85rem;
-  box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
-  transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-style: italic;
+  color: var(--cp-text-muted);
+}
 
-  &:hover:not(:disabled) {
-    background: var(--cp-accent-hover);
-    box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.7);
-    transform: translateY(-1px);
-  }
+.cu-page-title-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
 
-  &:disabled {
-    opacity: 0.55;
-    cursor: default;
-    box-shadow: none;
-    transform: none;
-  }
+.cu-page-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--cp-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cu-page-subtitle {
+  font-size: 0.78rem;
+  color: var(--cp-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cu-badge-id {
@@ -116,6 +121,7 @@
   background: var(--cp-accent-soft);
   padding: 0.4rem 0.75rem;
   border-radius: 8px;
+  flex-shrink: 0;
 }
 
 .btn-cu-save {
@@ -153,12 +159,6 @@
   flex-direction: column;
   gap: 0.85rem;
   margin-bottom: 1.5rem;
-}
-
-.cu-accordion-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.85rem;
 }
 
 .cu-accordion-item {
@@ -282,13 +282,66 @@
   }
 }
 
+.cu-agence-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 42px;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--cp-border);
+  border-radius: 10px;
+  background: var(--cp-surface-hover);
+}
+
+.cu-agence-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: var(--cp-accent-soft);
+  color: var(--cp-accent);
+  font-weight: 600;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.cu-agence-empty {
+  color: var(--cp-text-muted);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+.cu-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+
+  .form-check-input {
+    width: 1.4rem;
+    height: 1.4rem;
+    cursor: pointer;
+    flex-shrink: 0;
+
+    &:checked {
+      background-color: var(--cp-accent);
+      border-color: var(--cp-accent);
+    }
+  }
+
+  .form-check-label {
+    font-size: 0.9rem;
+    color: var(--cp-text);
+    cursor: pointer;
+  }
+}
+
 /* ============ LISTES D'ELEMENTS LIES ============ */
 .cu-item-list {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  max-height: 240px;
-  overflow-y: auto;
+  max-height: 600px;
 }
 
 .cu-item-card {
@@ -302,15 +355,23 @@
   padding: 0.75rem 1rem;
 }
 
-.cu-item-card-clickable {
-  cursor: pointer;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+.cu-item-avatar {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--cp-accent-soft);
+  color: var(--cp-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
 
-  &:hover {
-    border-color: var(--cp-accent);
-    box-shadow: 0 6px 16px -10px rgba(245, 130, 42, 0.5);
-    transform: translateY(-1px);
-  }
+.cu-item-info {
+  min-width: 0;
+  flex: 1;
 }
 
 .cu-item-title-row {
@@ -341,30 +402,21 @@
   color: var(--cp-text-muted);
 }
 
-.cu-item-actions {
-  display: flex;
+.cu-item-link {
+  display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  flex-shrink: 0;
-}
-
-.cu-item-edit {
-  width: 30px;
-  height: 30px;
-  flex-shrink: 0;
-  border: none;
-  border-radius: 8px;
-  background: var(--cp-accent-soft);
-  color: var(--cp-accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.18s ease, color 0.18s ease;
+  gap: 0.35rem;
+  color: var(--cp-text-muted);
+  text-decoration: none;
 
   &:hover {
-    background: var(--cp-accent);
-    color: #ffffff;
+    color: var(--cp-accent);
   }
+}
+
+.cu-item-link-icon {
+  font-size: 0.75rem;
+  color: #2e9e5b;
 }
 
 .cu-item-remove {
@@ -394,11 +446,6 @@
 }
 
 /* ============ FOOTER ============ */
-.cu-footer {
-  display: flex;
-  justify-content: flex-end;
-}
-
 .btn-cu-cancel {
   display: flex;
   align-items: center;
@@ -424,38 +471,10 @@
   padding: 0.3rem 0.75rem;
 }
 
-.cu-badge-status {
-  font-weight: 700;
-  font-size: 0.85rem;
-  color: #2e9e5b;
-  background: none;
-  padding: 0.4rem 0.25rem;
-  text-transform: uppercase;
-}
-
-.cu-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  margin-top: 0.75rem;
-
-  .cu-pagination-info {
-    font-size: 0.8rem;
-    color: var(--cp-text-muted);
-  }
-}
-
 /* ============ RESPONSIVE ============ */
-@media (max-width: 900px) {
-  .cu-accordion-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 @media (max-width: 768px) {
-  .client-update-page {
-    padding: 1rem 1rem 1.5rem;
+  .affaire-update-page {
+    padding: 88px 1rem 1.5rem;
   }
 
   .cu-toolbar {
@@ -468,38 +487,131 @@
   }
 }
 
-/* Bouton d'enregistrement texte, utilisé dans les modals NgbModal (Contact, Site, Agence...) */
-/* Non scopé car NgbModal rend son contenu hors de l'arbre DOM du composant (ngb-modal-window) */
-.btn-cu-save-modal {
-  display: inline-flex;
+/* ============ MODE LECTURE / EDITION ============ */
+.btn-cu-edit {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0.5rem 1.25rem;
+  gap: 0.4rem;
+  padding: 0 0.9rem;
+  height: 34px;
   border-radius: 8px;
   border: none;
-  background: #f5822a;
+  background: var(--cp-accent-soft);
+  color: var(--cp-accent);
+  font-weight: 700;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    background: var(--cp-accent);
+    color: #ffffff;
+    box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
+  }
+}
+
+/* Champs verrouillés en mode lecture : lisibles mais visuellement "gelés" */
+.cu-accordion-body {
+  .form-control:disabled,
+  .form-control[readonly] {
+    background: var(--cp-surface-hover);
+    color: var(--cp-text);
+    opacity: 0.85;
+    cursor: not-allowed;
+  }
+
+  ::ng-deep .custom-ng-select.ng-select-disabled .ng-select-container,
+  ::ng-deep .custom-ng-select .ng-select-container[aria-disabled='true'] {
+    background: var(--cp-surface-hover);
+    opacity: 0.85;
+    cursor: not-allowed;
+  }
+}
+
+/* Champs date : saisie clavier bloquée, sélection uniquement via l'agenda */
+input[ngbDatepicker] {
+  cursor: pointer;
+  background: var(--cp-surface);
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+.input-group input[ngbDatepicker]:not(:last-child) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: none;
+}
+
+.btn-cu-date-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  border: 1px solid var(--cp-border);
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+  background: var(--cp-accent-soft);
+  color: var(--cp-accent);
+  transition: background 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    background: var(--cp-accent);
+    color: #ffffff;
+  }
+}
+
+/* ============ TOOLBAR BAS : STATUT & WORKFLOW ============ */
+.cu-toolbar-bottom-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.cu-statut-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  background: var(--cp-accent-soft);
+  color: var(--cp-text);
+  font-size: 0.82rem;
+
+  strong {
+    font-weight: 700;
+    color: var(--cp-text);
+  }
+}
+
+.cu-statut-icon {
+  color: var(--cp-accent);
+}
+
+.btn-cu-statut {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--cp-accent);
   color: #ffffff;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   white-space: nowrap;
   box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
   transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 
-  &:hover:not(:disabled) {
-    background: #ff9a4d;
+  &:hover {
+    background: var(--cp-accent-hover);
     box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.7);
     transform: translateY(-1px);
   }
-
-  &:disabled {
-    opacity: 0.55;
-    cursor: default;
-    box-shadow: none;
-    transform: none;
-  }
 }
-/* ============ IMPORT MODAL (Sites) ============ */
-/* Non scopé car NgbModal rend son contenu hors de l'arbre DOM du composant */
+
+/* ============ MODAL IMPORT (Articles) ============ */
 .import-step {
   margin-bottom: 0.5rem;
 }
@@ -515,7 +627,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background-color: #f5822a;
+  background-color: var(--cp-accent);
   color: #ffffff;
   font-weight: 700;
   font-size: 0.85rem;
@@ -527,17 +639,17 @@
 .import-step-title {
   font-weight: 700;
   font-size: 0.92rem;
-  color: #1a2233;
+  color: var(--cp-text);
 }
 
 .import-step-subtitle {
-  color: #8a93a3;
+  color: var(--cp-text-muted);
   font-size: 0.85rem;
   margin-top: 2px;
 }
 
 .import-dropzone {
-  border: 2px dashed #e7e9ee;
+  border: 2px dashed var(--cp-border);
   border-radius: 12px;
   padding: 32px;
   text-align: center;
@@ -545,16 +657,16 @@
 }
 
 .import-dropzone-active {
-  border-color: #f5822a;
-  background-color: rgba(245, 130, 42, 0.08);
+  border-color: var(--cp-accent);
+  background-color: var(--cp-accent-soft);
 }
 
 .import-file-chip {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background-color: rgba(245, 130, 42, 0.12);
-  color: #1a2233;
+  background-color: var(--cp-accent-soft);
+  color: var(--cp-text);
   padding: 6px 12px;
   border-radius: 8px;
   font-weight: 600;
@@ -564,131 +676,114 @@
 .btn-cu-remove-file {
   border: none;
   background: none;
-  color: #8a93a3;
+  color: var(--cp-text-muted);
   cursor: pointer;
   display: flex;
   align-items: center;
   transition: color 0.18s ease;
 
   &:hover {
-    color: #e0524d;
-  }
-}
-.btn-cu-activate {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.85rem;
-  border-radius: 8px;
-  border: none;
-  background: rgba(46, 158, 91, 0.12);
-  color: #2e9e5b;
-  font-weight: 600;
-  font-size: 0.8rem;
-  transition: background 0.2s ease, color 0.2s ease;
-
-  &:hover {
-    background: #2e9e5b;
-    color: #ffffff;
+    color: var(--cp-danger);
   }
 }
 
-.btn-cu-deactivate {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.85rem;
-  border-radius: 8px;
-  border: none;
-  background: var(--cp-danger-soft);
-  color: var(--cp-danger);
-  font-weight: 600;
-  font-size: 0.8rem;
-  transition: background 0.2s ease, color 0.2s ease;
-
-  &:hover {
-    background: var(--cp-danger);
-    color: #ffffff;
-  }
-}
-
-/* Bouton "Compte utilisateur créé" - état succès dans le modal Contact */
-/* Non scopé car NgbModal rend son contenu hors de l'arbre DOM du composant */
-.btn-cu-kc-created {
-  background-color: rgba(46, 158, 91, 0.12) !important;
-  border-color: #2e9e5b !important;
-  color: #2e9e5b !important;
-  opacity: 1 !important;
-}
-.kc-result-modal {
-  text-align: center;
-  padding: 2rem 1.5rem 1rem;
-}
-
-.kc-result-icon {
-  font-size: 2.75rem;
-  margin-bottom: 0.75rem;
-}
-
-.kc-result-success .kc-result-icon {
-  color: #2e9e5b;
-}
-
-.kc-result-error .kc-result-icon {
-  color: #e0524d;
-}
-
-.kc-result-title {
-  font-weight: 700;
-  font-size: 1.1rem;
-  margin-bottom: 0.75rem;
-  color: #1a2233;
-}
-
-.kc-result-text {
-  color: #4a5266;
-  font-size: 0.92rem;
-  margin-bottom: 1.25rem;
-  line-height: 1.5;
-}
-
-.kc-result-credentials {
-  background: #f2f4f8;
-  border: 1px solid #e7e9ee;
-  border-radius: 10px;
-  padding: 0.9rem 1.1rem;
-  margin-bottom: 1rem;
-  text-align: left;
-}
-
-.kc-cred-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.35rem 0;
-
-  & + .kc-cred-row {
-    border-top: 1px dashed #e7e9ee;
-  }
-}
-
-.kc-cred-label {
-  font-size: 0.8rem;
-  color: #8a93a3;
-  font-weight: 600;
-}
-
-.kc-cred-value {
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: #f5822a;
-  font-family: 'Courier New', monospace;
-}
-
-.kc-result-note {
-  display: flex;
+/* ============ MODALS (Article / Société) ============ */
+.btn-cu-save-modal {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
-  color: #8a93a3;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--cp-accent);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
+  transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--cp-accent-hover);
+    box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.7);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: default;
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+/* Fix Layout Shift (Page Shaking) */
+.articles-content-wrapper {
+  min-height: 400px; /* Reserves vertical space so the container size stays constant */
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  position: relative;
+}
+
+.articles-spinner-overlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 3rem 0;
+}
+
+.text-orange {
+  color: #ff6b00 !important;
+}
+
+/* Modern Orange ngb-pagination */
+::ng-deep .modern-orange-pagination {
+  .pagination {
+    margin-bottom: 0;
+    gap: 6px; /* Spacing between page numbers */
+  }
+
+  .page-item {
+    .page-link {
+      border: 1px solid #e9ecef;
+      border-radius: 8px !important; /* Soft pill-shaped buttons */
+      color: #495057;
+      font-weight: 500;
+      font-size: 0.875rem;
+      padding: 6px 12px;
+      transition: all 0.2s ease-in-out;
+      background-color: #ffffff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+
+      &:hover {
+        color: #ff6b00;
+        background-color: #fff6f0;
+        border-color: #ffc299;
+        transform: translateY(-1px);
+      }
+
+      &:focus {
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 0, 0.2);
+      }
+    }
+
+    /* Active Page Style */
+    &.active .page-link {
+      background-color: #ff6b00 !important;
+      border-color: #ff6b00 !important;
+      color: #ffffff !important;
+      font-weight: 600;
+      box-shadow: 0 3px 8px rgba(255, 107, 0, 0.35);
+    }
+
+    /* Disabled Arrow Buttons */
+    &.disabled .page-link {
+      color: #ced4da;
+      background-color: #f8f9fa;
+      border-color: #f1f3f5;
+      box-shadow: none;
+    }
+  }
 }

@@ -5,6 +5,7 @@ export interface ISociete {
   raisonSociale?: string | null;
   raisonSocialeAbrege?: string | null;
   identifiantUnique?: string | null;
+  matriculeFiscale?: string | null;
   registreCommerce?: string | null;
   codeArticle?: string | null;
   adresse?: string | null;

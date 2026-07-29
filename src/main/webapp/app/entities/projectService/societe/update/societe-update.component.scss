@@ -1,4 +1,4 @@
-.client-update-page {
+.societe-update-page {
   --cp-accent: #f5822a;
   --cp-accent-hover: #ff9a4d;
   --cp-accent-soft: rgba(245, 130, 42, 0.12);
@@ -15,7 +15,7 @@
   justify-content: center;
   align-items: flex-start;
   gap: 16px;
-  padding: 1.5rem 1.5rem 2rem;
+  padding: 96px 1.5rem 2rem;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
   color: var(--cp-text);
 }
@@ -78,35 +78,25 @@
   display: flex;
   align-items: center;
   gap: 0.85rem;
+  min-width: 0;
 }
 
-.btn-cu-identify {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  border-radius: 8px;
-  border: none;
-  background: var(--cp-accent);
-  color: #ffffff;
+.cu-page-kicker {
+  font-weight: 700;
   font-size: 0.85rem;
-  box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
-  transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-style: italic;
+  color: var(--cp-text-muted);
+}
 
-  &:hover:not(:disabled) {
-    background: var(--cp-accent-hover);
-    box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.7);
-    transform: translateY(-1px);
-  }
-
-  &:disabled {
-    opacity: 0.55;
-    cursor: default;
-    box-shadow: none;
-    transform: none;
-  }
+.cu-page-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--cp-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cu-badge-id {
@@ -116,6 +106,7 @@
   background: var(--cp-accent-soft);
   padding: 0.4rem 0.75rem;
   border-radius: 8px;
+  flex-shrink: 0;
 }
 
 .btn-cu-save {
@@ -153,12 +144,6 @@
   flex-direction: column;
   gap: 0.85rem;
   margin-bottom: 1.5rem;
-}
-
-.cu-accordion-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.85rem;
 }
 
 .cu-accordion-item {
@@ -287,14 +272,13 @@
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  max-height: 240px;
+  max-height: 340px;
   overflow-y: auto;
 }
 
 .cu-item-card {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 1rem;
   background: var(--cp-surface-hover);
   border: 1px solid var(--cp-border);
@@ -302,15 +286,23 @@
   padding: 0.75rem 1rem;
 }
 
-.cu-item-card-clickable {
-  cursor: pointer;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+.cu-item-avatar {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--cp-accent-soft);
+  color: var(--cp-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
 
-  &:hover {
-    border-color: var(--cp-accent);
-    box-shadow: 0 6px 16px -10px rgba(245, 130, 42, 0.5);
-    transform: translateY(-1px);
-  }
+.cu-item-info {
+  min-width: 0;
+  flex: 1;
 }
 
 .cu-item-title-row {
@@ -341,30 +333,21 @@
   color: var(--cp-text-muted);
 }
 
-.cu-item-actions {
-  display: flex;
+.cu-item-link {
+  display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  flex-shrink: 0;
-}
-
-.cu-item-edit {
-  width: 30px;
-  height: 30px;
-  flex-shrink: 0;
-  border: none;
-  border-radius: 8px;
-  background: var(--cp-accent-soft);
-  color: var(--cp-accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.18s ease, color 0.18s ease;
+  gap: 0.35rem;
+  color: var(--cp-text-muted);
+  text-decoration: none;
 
   &:hover {
-    background: var(--cp-accent);
-    color: #ffffff;
+    color: var(--cp-accent);
   }
+}
+
+.cu-item-link-icon {
+  font-size: 0.75rem;
+  color: #2e9e5b;
 }
 
 .cu-item-remove {
@@ -394,11 +377,6 @@
 }
 
 /* ============ FOOTER ============ */
-.cu-footer {
-  display: flex;
-  justify-content: flex-end;
-}
-
 .btn-cu-cancel {
   display: flex;
   align-items: center;
@@ -424,38 +402,10 @@
   padding: 0.3rem 0.75rem;
 }
 
-.cu-badge-status {
-  font-weight: 700;
-  font-size: 0.85rem;
-  color: #2e9e5b;
-  background: none;
-  padding: 0.4rem 0.25rem;
-  text-transform: uppercase;
-}
-
-.cu-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  margin-top: 0.75rem;
-
-  .cu-pagination-info {
-    font-size: 0.8rem;
-    color: var(--cp-text-muted);
-  }
-}
-
 /* ============ RESPONSIVE ============ */
-@media (max-width: 900px) {
-  .cu-accordion-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 @media (max-width: 768px) {
-  .client-update-page {
-    padding: 1rem 1rem 1.5rem;
+  .societe-update-page {
+    padding: 88px 1rem 1.5rem;
   }
 
   .cu-toolbar {
@@ -468,8 +418,7 @@
   }
 }
 
-/* Bouton d'enregistrement texte, utilisé dans les modals NgbModal (Contact, Site, Agence...) */
-/* Non scopé car NgbModal rend son contenu hors de l'arbre DOM du composant (ngb-modal-window) */
+/* ============ MODAL OrgaCare (import) ============ */
 .btn-cu-save-modal {
   display: inline-flex;
   align-items: center;
@@ -477,7 +426,7 @@
   padding: 0.5rem 1.25rem;
   border-radius: 8px;
   border: none;
-  background: #f5822a;
+  background: var(--cp-accent);
   color: #ffffff;
   font-weight: 600;
   font-size: 0.85rem;
@@ -486,7 +435,7 @@
   transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 
   &:hover:not(:disabled) {
-    background: #ff9a4d;
+    background: var(--cp-accent-hover);
     box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.7);
     transform: translateY(-1px);
   }
@@ -497,198 +446,4 @@
     box-shadow: none;
     transform: none;
   }
-}
-/* ============ IMPORT MODAL (Sites) ============ */
-/* Non scopé car NgbModal rend son contenu hors de l'arbre DOM du composant */
-.import-step {
-  margin-bottom: 0.5rem;
-}
-
-.import-step-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.import-step-badge {
-  flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background-color: #f5822a;
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 0.85rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.import-step-title {
-  font-weight: 700;
-  font-size: 0.92rem;
-  color: #1a2233;
-}
-
-.import-step-subtitle {
-  color: #8a93a3;
-  font-size: 0.85rem;
-  margin-top: 2px;
-}
-
-.import-dropzone {
-  border: 2px dashed #e7e9ee;
-  border-radius: 12px;
-  padding: 32px;
-  text-align: center;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
-}
-
-.import-dropzone-active {
-  border-color: #f5822a;
-  background-color: rgba(245, 130, 42, 0.08);
-}
-
-.import-file-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background-color: rgba(245, 130, 42, 0.12);
-  color: #1a2233;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.85rem;
-}
-
-.btn-cu-remove-file {
-  border: none;
-  background: none;
-  color: #8a93a3;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  transition: color 0.18s ease;
-
-  &:hover {
-    color: #e0524d;
-  }
-}
-.btn-cu-activate {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.85rem;
-  border-radius: 8px;
-  border: none;
-  background: rgba(46, 158, 91, 0.12);
-  color: #2e9e5b;
-  font-weight: 600;
-  font-size: 0.8rem;
-  transition: background 0.2s ease, color 0.2s ease;
-
-  &:hover {
-    background: #2e9e5b;
-    color: #ffffff;
-  }
-}
-
-.btn-cu-deactivate {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.85rem;
-  border-radius: 8px;
-  border: none;
-  background: var(--cp-danger-soft);
-  color: var(--cp-danger);
-  font-weight: 600;
-  font-size: 0.8rem;
-  transition: background 0.2s ease, color 0.2s ease;
-
-  &:hover {
-    background: var(--cp-danger);
-    color: #ffffff;
-  }
-}
-
-/* Bouton "Compte utilisateur créé" - état succès dans le modal Contact */
-/* Non scopé car NgbModal rend son contenu hors de l'arbre DOM du composant */
-.btn-cu-kc-created {
-  background-color: rgba(46, 158, 91, 0.12) !important;
-  border-color: #2e9e5b !important;
-  color: #2e9e5b !important;
-  opacity: 1 !important;
-}
-.kc-result-modal {
-  text-align: center;
-  padding: 2rem 1.5rem 1rem;
-}
-
-.kc-result-icon {
-  font-size: 2.75rem;
-  margin-bottom: 0.75rem;
-}
-
-.kc-result-success .kc-result-icon {
-  color: #2e9e5b;
-}
-
-.kc-result-error .kc-result-icon {
-  color: #e0524d;
-}
-
-.kc-result-title {
-  font-weight: 700;
-  font-size: 1.1rem;
-  margin-bottom: 0.75rem;
-  color: #1a2233;
-}
-
-.kc-result-text {
-  color: #4a5266;
-  font-size: 0.92rem;
-  margin-bottom: 1.25rem;
-  line-height: 1.5;
-}
-
-.kc-result-credentials {
-  background: #f2f4f8;
-  border: 1px solid #e7e9ee;
-  border-radius: 10px;
-  padding: 0.9rem 1.1rem;
-  margin-bottom: 1rem;
-  text-align: left;
-}
-
-.kc-cred-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.35rem 0;
-
-  & + .kc-cred-row {
-    border-top: 1px dashed #e7e9ee;
-  }
-}
-
-.kc-cred-label {
-  font-size: 0.8rem;
-  color: #8a93a3;
-  font-weight: 600;
-}
-
-.kc-cred-value {
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: #f5822a;
-  font-family: 'Courier New', monospace;
-}
-
-.kc-result-note {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.8rem;
-  color: #8a93a3;
 }

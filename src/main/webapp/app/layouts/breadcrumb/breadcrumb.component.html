@@ -1,0 +1,17 @@
+<div class="breadcrumb-bar" *ngIf="breadcrumbs.length > 0">
+  <button type="button" class="breadcrumb-back" (click)="goBack()" title="Retour">
+    <fa-icon icon="arrow-left"></fa-icon>
+  </button>
+
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb-trail">
+      <li class="breadcrumb-item">
+        <a routerLink="/">Accueil</a>
+      </li>
+      <li *ngFor="let crumb of breadcrumbs; let last = last" class="breadcrumb-item" [class.active]="last && !hideCurrentCrumb">
+        <a *ngIf="!last || hideCurrentCrumb" [routerLink]="crumb.url">{{ crumb.label }}</a>
+        <span *ngIf="last && !hideCurrentCrumb">{{ crumb.label }}</span>
+      </li>
+    </ol>
+  </nav>
+</div>

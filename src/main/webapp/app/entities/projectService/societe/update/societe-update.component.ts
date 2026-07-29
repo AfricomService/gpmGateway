@@ -10,13 +10,19 @@ import { SocieteService } from '../service/societe.service';
 import { IContactSociete } from '../contact-societe.model';
 import { IPersonne } from '../personne.model'; // adjust path/name to match your actual model
 
+type AccordionSection = 'general' | 'coordonnees' | 'contacts';
+
 @Component({
   selector: 'jhi-societe-update',
   templateUrl: './societe-update.component.html',
+  styleUrls: ['./societe-update.component.scss'],
 })
 export class SocieteUpdateComponent implements OnInit {
   isSaving = false;
   societe: ISociete | null = null;
+
+  // === Gestion de l'accordéon ===
+  openSections: Set<AccordionSection> = new Set(['general', 'coordonnees']);
 
   // ── Contacts Associés ─────────────────────────────────────────
   contactsAssocies: IContactSociete[] = [];
@@ -56,6 +62,19 @@ export class SocieteUpdateComponent implements OnInit {
         this.loadContactsAssocies();
       }
     });
+  }
+
+  // === Accordéon ===
+  toggleSection(section: AccordionSection): void {
+    if (this.openSections.has(section)) {
+      this.openSections.delete(section);
+    } else {
+      this.openSections.add(section);
+    }
+  }
+
+  isSectionOpen(section: AccordionSection): boolean {
+    return this.openSections.has(section);
   }
 
   // ── Contacts Associés ─────────────────────────────────────────
@@ -213,6 +232,37 @@ export class SocieteUpdateComponent implements OnInit {
       this.subscribeToSaveResponse(this.societeService.update(societe));
     } else {
       this.subscribeToSaveResponse(this.societeService.create(societe));
+    }
+  }
+
+  areAllFilteredPersonnesSelected(): boolean {
+    return (
+      this.filteredOrgaPersonnes.length > 0 &&
+      this.filteredOrgaPersonnes.every(person => this.selectedPersonnes.some(selected => selected.id === person.id))
+    );
+  }
+
+  areSomeFilteredPersonnesSelected(): boolean {
+    const selectedCount = this.filteredOrgaPersonnes.filter(person =>
+      this.selectedPersonnes.some(selected => selected.id === person.id)
+    ).length;
+
+    return selectedCount > 0 && selectedCount < this.filteredOrgaPersonnes.length;
+  }
+
+  toggleSelectAllFiltered(): void {
+    if (this.areAllFilteredPersonnesSelected()) {
+      // Unselect only the currently filtered personnes
+      this.selectedPersonnes = this.selectedPersonnes.filter(
+        selected => !this.filteredOrgaPersonnes.some(person => person.id === selected.id)
+      );
+    } else {
+      // Add only missing personnes
+      this.filteredOrgaPersonnes.forEach(person => {
+        if (!this.selectedPersonnes.some(selected => selected.id === person.id)) {
+          this.selectedPersonnes.push(person);
+        }
+      });
     }
   }
 

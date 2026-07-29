@@ -55,6 +55,7 @@ type AffaireFormGroupContent = {
   updatedByUserLogin: FormControl<AffaireFormRawValue['updatedByUserLogin']>;
   client: FormControl<AffaireFormRawValue['client']>;
   societeId: FormControl<AffaireFormRawValue['societeId']>;
+  identifiantUnique: FormControl<AffaireFormRawValue['identifiantUnique']>;
 };
 
 export type AffaireFormGroup = FormGroup<AffaireFormGroupContent>;
@@ -74,9 +75,7 @@ export class AffaireFormService {
           validators: [Validators.required],
         }
       ),
-      numAffaire: new FormControl(affaireRawValue.numAffaire, {
-        validators: [Validators.required],
-      }),
+      numAffaire: new FormControl(affaireRawValue.numAffaire),
       designationAffaire: new FormControl(affaireRawValue.designationAffaire, {
         validators: [Validators.required],
       }),
@@ -90,9 +89,7 @@ export class AffaireFormService {
       montantVente: new FormControl(affaireRawValue.montantVente),
       montantBudgetaireMateriel: new FormControl(affaireRawValue.montantBudgetaireMateriel),
       montantBudgetaireService: new FormControl(affaireRawValue.montantBudgetaireService),
-      statut: new FormControl(affaireRawValue.statut, {
-        validators: [Validators.required],
-      }),
+      statut: new FormControl(affaireRawValue.statut),
       responsableProjetId: new FormControl(affaireRawValue.responsableProjetId),
       responsableProjetUserLogin: new FormControl(affaireRawValue.responsableProjetUserLogin),
       createdAt: new FormControl(affaireRawValue.createdAt),
@@ -105,6 +102,7 @@ export class AffaireFormService {
         validators: [Validators.required],
       }),
       societeId: new FormControl(affaireRawValue.societeId),
+      identifiantUnique: new FormControl(affaireRawValue.identifiantUnique),
     });
   }
 

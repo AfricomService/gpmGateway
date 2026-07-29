@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
@@ -38,6 +38,7 @@ export class ClientUpdateComponent implements OnInit {
   @ViewChild('siteModal') siteModal!: TemplateRef<unknown>;
   @ViewChild('agenceModal') agenceModal!: TemplateRef<unknown>;
   @ViewChild('siteImportModal') siteImportModal!: TemplateRef<unknown>;
+  @ViewChild('keycloakResultModal') keycloakResultModal!: TemplateRef<unknown>;
 
   isSaving = false;
   client: IClient | null = null;
@@ -65,7 +66,8 @@ export class ClientUpdateComponent implements OnInit {
   allSocietes: ISociete[] = [];
   newAgence: Partial<NewAgence> = {};
 
-  newContact: Partial<NewContact> = {};
+  newContact: Partial<NewContact | IContact> = {};
+  editingContact: IContact | null = null;
   newSite: Partial<NewSite> = {};
 
   siteImportFile: File | null = null;
@@ -90,6 +92,7 @@ export class ClientUpdateComponent implements OnInit {
     protected agenceService: AgenceService,
     protected societeService: SocieteService,
     protected activatedRoute: ActivatedRoute,
+    protected router: Router,
     protected modalService: NgbModal
   ) {}
 
@@ -133,19 +136,121 @@ export class ClientUpdateComponent implements OnInit {
   }
 
   openContactModal(): void {
+    this.editingContact = null;
     this.newContact = {};
     this.modalService.open(this.contactModal, { size: 'lg', backdrop: 'static', centered: true });
   }
 
-  saveNewContact(modal: any): void {
+  openEditContactModal(contact: IContact): void {
+    this.editingContact = contact;
+    this.newContact = { ...contact };
+    this.modalService.open(this.contactModal, { size: 'lg', backdrop: 'static', centered: true });
+  }
+
+  // === Navigation vers les interfaces d'édition ===
+  goToContact(contact: IContact): void {
+    if (!contact.id) {
+      return;
+    }
+    this.router.navigate(['/contact', contact.id, 'edit']);
+  }
+
+  goToSite(site: ISite): void {
+    if (!site.id) {
+      return;
+    }
+    this.router.navigate(['/site', site.id, 'edit']);
+  }
+
+  goToAffaire(affaire: IAffaire): void {
+    if (!affaire.id) {
+      return;
+    }
+    this.router.navigate(['/affaire', affaire.id, 'edit']);
+  }
+
+  goToFacture(facture: IFacture): void {
+    if (!facture.id) {
+      return;
+    }
+    this.router.navigate(['/facture', facture.id, 'edit']);
+  }
+
+  goToAgence(agence: IAgence): void {
+    if (!agence.id) {
+      return;
+    }
+    this.router.navigate(['/agence', agence.id, 'edit']);
+  }
+
+  creatingKeycloakUser = false;
+  keycloakResult: { success: boolean; nomPrenom?: string; login?: string; password?: string; message?: string } | null = null;
+
+  createContactKeycloakUser(): void {
+    if (!this.editingContact?.id) {
+      return;
+    }
+    this.creatingKeycloakUser = true;
+    this.contactService.createKeycloakUser(this.editingContact.id).subscribe({
+      next: res => {
+        this.creatingKeycloakUser = false;
+        const result = res.body;
+        const updatedContact = result?.contact;
+        this.editingContact = updatedContact ?? this.editingContact;
+        this.loadContacts();
+
+        this.keycloakResult = {
+          success: true,
+          nomPrenom: updatedContact?.nomPrenom ?? undefined,
+          login: updatedContact?.identifiantUnique ?? undefined,
+          password: result?.generatedPassword ?? undefined,
+        };
+        this.modalService.open(this.keycloakResultModal, { size: 'md', backdrop: 'static', centered: true });
+      },
+      error: err => {
+        this.creatingKeycloakUser = false;
+        this.keycloakResult = {
+          success: false,
+          message: err.error?.detail ?? err.error?.title ?? 'Erreur lors de la création de l’utilisateur Keycloak',
+        };
+        this.modalService.open(this.keycloakResultModal, { size: 'md', backdrop: 'static', centered: true });
+      },
+    });
+  }
+
+  saveContact(modal: any): void {
     const clientRef = this.client ? { id: this.client.id, raisonSociale: this.client.raisonSociale } : null;
-    if (!clientRef || !this.newContact.raisonSociale?.trim()) {
+    if (!clientRef || !this.newContact.nomPrenom?.trim()) {
+      return;
+    }
+
+    if (this.editingContact) {
+      // Mode édition : on repart de l'objet existant pour ne pas écraser
+      // les champs non présents dans la modale (identifiantUnique, createdAt, createdBy, client, etc.)
+      const contactToUpdate: IContact = {
+        ...this.editingContact,
+        nomPrenom: this.newContact.nomPrenom.trim(),
+        adresse: this.newContact.adresse ?? null,
+        telephone: this.newContact.telephone ?? null,
+        fax: this.newContact.fax ?? null,
+        email: this.newContact.email ?? null,
+      };
+
+      this.contactService.update(contactToUpdate).subscribe({
+        next: () => {
+          this.loadContacts();
+          modal.close();
+        },
+        error: () => {
+          // Optionnel : notifier l'utilisateur via jhi-alert-error ou toast
+        },
+      });
       return;
     }
 
     const contactToCreate: NewContact = {
       id: null,
-      raisonSociale: this.newContact.raisonSociale.trim(),
+      nomPrenom: this.newContact.nomPrenom.trim(),
       identifiantUnique: this.newContact.identifiantUnique ?? null,
       adresse: this.newContact.adresse ?? null,
       telephone: this.newContact.telephone ?? null,
@@ -240,8 +345,7 @@ export class ClientUpdateComponent implements OnInit {
       !this.newAgence.designation?.trim() ||
       !this.newAgence.adresse?.trim() ||
       !this.newAgence.ville?.trim() ||
-      !this.newAgence.pays?.trim() ||
-      !this.newAgence.societe
+      !this.newAgence.pays?.trim()
     ) {
       return;
     }
@@ -252,7 +356,6 @@ export class ClientUpdateComponent implements OnInit {
       adresse: this.newAgence.adresse.trim(),
       ville: this.newAgence.ville.trim(),
       pays: this.newAgence.pays.trim(),
-      societe: this.newAgence.societe,
       clientId: this.client.id,
     };
 
@@ -288,6 +391,11 @@ export class ClientUpdateComponent implements OnInit {
       designation: this.newSite.designation.trim(),
       gpsX: this.newSite.gpsX ?? null,
       gpsY: this.newSite.gpsY ?? null,
+      nodaleGpm: this.newSite.nodaleGpm?.trim() ?? null,
+      sitePriority: this.newSite.sitePriority?.trim() ?? null,
+      typeSite: this.newSite.typeSite?.trim() ?? null,
+      regionSite: this.newSite.regionSite?.trim() ?? null,
+      zoneNom: this.newSite.zoneNom?.trim() ?? null,
       ville: this.newSite.ville,
       client: clientRef,
     };
@@ -452,25 +560,58 @@ export class ClientUpdateComponent implements OnInit {
     window.history.back();
   }
 
+  activerClient(): void {
+    if (!this.client?.id) {
+      return;
+    }
+    this.clientService.activer(this.client.id).subscribe({
+      next: res => {
+        if (res.body) {
+          this.client = res.body;
+          this.editForm.patchValue({ status: res.body.status });
+        }
+      },
+    });
+  }
+
+  desactiverClient(): void {
+    if (!this.client?.id) {
+      return;
+    }
+    this.clientService.desactiver(this.client.id).subscribe({
+      next: res => {
+        if (res.body) {
+          this.client = res.body;
+          this.editForm.patchValue({ status: res.body.status });
+        }
+      },
+    });
+  }
+
   save(): void {
     this.isSaving = true;
     const client = this.clientFormService.getClient(this.editForm);
-    if (client.id !== null) {
-      this.subscribeToSaveResponse(this.clientService.update(client));
+    const isNewClient = client.id === null;
+    if (!isNewClient) {
+      this.subscribeToSaveResponse(this.clientService.update(client), isNewClient);
     } else {
-      this.subscribeToSaveResponse(this.clientService.identifierEtEnregistrer(client));
+      this.subscribeToSaveResponse(this.clientService.identifierEtEnregistrer(client), isNewClient);
     }
   }
 
-  protected subscribeToSaveResponse(result: Observable<HttpResponse<IClient>>): void {
+  protected subscribeToSaveResponse(result: Observable<HttpResponse<IClient>>, isNewClient: boolean): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
-      next: () => this.onSaveSuccess(),
+      next: res => this.onSaveSuccess(res, isNewClient),
       error: () => this.onSaveError(),
     });
   }
 
-  protected onSaveSuccess(): void {
-    this.previousState();
+  protected onSaveSuccess(res: HttpResponse<IClient>, isNewClient: boolean): void {
+    if (isNewClient && res.body?.id) {
+      this.router.navigate(['/client', res.body.id, 'edit']);
+    } else {
+      this.previousState();
+    }
   }
 
   protected onSaveError(): void {

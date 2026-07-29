@@ -119,6 +119,7 @@
         (dblclick)="goToEdit(affaire)"
       >
         <div class="affaire-card-header">
+          <h3 class="affaire-title">{{ affaire.identifiantUnique }}</h3>
           <span [ngClass]="getStatutClass(affaire.statut!)" class="badge statut-badge">
             {{ affaire.statut }}
           </span>
@@ -153,6 +154,9 @@
       <table class="affaires-table" aria-describedby="page-heading">
         <thead>
           <tr (sortChange)="navigateToWithComponentValues()" [(ascending)]="ascending" [(predicate)]="predicate" jhiSort>
+            <th jhiSortBy="Identifiant" scope="col">
+              <div class="d-flex"><span>Identifiant</span><fa-icon class="p-1" icon="sort"></fa-icon></div>
+            </th>
             <th jhiSortBy="designationAffaire" scope="col">
               <div class="d-flex"><span>Désignation</span><fa-icon class="p-1" icon="sort"></fa-icon></div>
             </th>
@@ -184,6 +188,7 @@
             title="Double-cliquer pour éditer"
             (dblclick)="goToEdit(affaire)"
           >
+            <td>{{ affaire.identifiantUnique }}</td>
             <td>{{ affaire.designationAffaire }}</td>
             <td>{{ affaire.montant }}</td>
             <td>{{ affaire.devise }}</td>

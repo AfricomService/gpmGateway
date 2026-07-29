@@ -85,6 +85,18 @@ export class ClientService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
+  activer(id: number): Observable<EntityResponseType> {
+    return this.http
+      .patch<RestClient>(`${this.resourceUrl}/${id}/activer`, {}, { observe: 'response' })
+      .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+
+  desactiver(id: number): Observable<EntityResponseType> {
+    return this.http
+      .patch<RestClient>(`${this.resourceUrl}/${id}/desactiver`, {}, { observe: 'response' })
+      .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+
   getContactsByClientId(clientId: number): Observable<HttpResponse<any[]>> {
     return this.http.get<any[]>(`${this.applicationConfigService.getEndpointFor('api/contacts/client', 'projectservice')}/${clientId}`, {
       observe: 'response',

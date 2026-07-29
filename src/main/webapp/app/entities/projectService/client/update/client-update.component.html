@@ -97,7 +97,18 @@
 
               <div class="col-md-4 mb-3">
                 <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceClient.email" for="field_email">Email</label>
-                <input type="email" class="form-control" name="email" id="field_email" data-cy="email" formControlName="email" />
+                <input
+                  type="email"
+                  class="form-control"
+                  [class.is-invalid]="editForm.get('email')!.invalid && (editForm.get('email')!.dirty || editForm.get('email')!.touched)"
+                  name="email"
+                  id="field_email"
+                  data-cy="email"
+                  formControlName="email"
+                />
+                <div *ngIf="editForm.get('email')!.invalid && (editForm.get('email')!.dirty || editForm.get('email')!.touched)">
+                  <small class="form-text text-danger" *ngIf="editForm.get('email')?.errors?.email"> Adresse email invalide. </small>
+                </div>
               </div>
 
               <div class="col-md-4 mb-3">
@@ -105,13 +116,21 @@
                   >Telephone</label
                 >
                 <input
-                  type="text"
+                  type="tel"
                   class="form-control"
+                  [class.is-invalid]="
+                    editForm.get('telephone')!.invalid && (editForm.get('telephone')!.dirty || editForm.get('telephone')!.touched)
+                  "
                   name="telephone"
                   id="field_telephone"
                   data-cy="telephone"
                   formControlName="telephone"
                 />
+                <div *ngIf="editForm.get('telephone')!.invalid && (editForm.get('telephone')!.dirty || editForm.get('telephone')!.touched)">
+                  <small class="form-text text-danger" *ngIf="editForm.get('telephone')?.errors?.pattern">
+                    Numéro de téléphone invalide (8 à 15 chiffres, espaces, tirets ou + autorisés).
+                  </small>
+                </div>
               </div>
 
               <div class="col-md-4 mb-3">
@@ -144,24 +163,30 @@
               <input
                 type="text"
                 class="form-control mb-3"
-                placeholder="Rechercher par raison sociale..."
+                placeholder="Rechercher par nom et prénom..."
                 [(ngModel)]="contactSearchTerm"
                 [ngModelOptions]="{ standalone: true }"
                 (ngModelChange)="searchContacts()"
               />
               <div *ngIf="selectedContacts.length > 0; else noContacts" class="cu-item-list">
-                <div class="cu-item-card" *ngFor="let contact of selectedContacts">
+                <div class="cu-item-card cu-item-card-clickable" *ngFor="let contact of selectedContacts" (click)="goToContact(contact)">
                   <div class="cu-item-info">
                     <div class="cu-item-title-row">
-                      <div class="cu-item-title">{{ contact.raisonSociale || '-' }}</div>
                       <span class="cu-item-badge-id" *ngIf="contact.identifiantUnique">{{ contact.identifiantUnique }}</span>
                     </div>
-                    <div class="cu-item-sub">{{ contact.email || 'Email non renseigné' }}</div>
-                    <div class="cu-item-sub">{{ contact.telephone || 'Téléphone non renseigné' }}</div>
+                    <div class="cu-item-title">{{ contact.nomPrenom || '-' }}</div>
+                    <div class="cu-item-sub">
+                      {{ contact.email || 'Email non renseigné' }} &nbsp;•&nbsp; {{ contact.telephone || 'Téléphone non renseigné' }}
+                    </div>
                   </div>
-                  <button type="button" class="cu-item-remove" (click)="unlinkContact(contact)">
-                    <fa-icon icon="times"></fa-icon>
-                  </button>
+                  <div class="cu-item-actions">
+                    <button type="button" class="cu-item-edit" (click)="$event.stopPropagation(); openEditContactModal(contact)">
+                      <fa-icon icon="pencil-alt"></fa-icon>
+                    </button>
+                    <button type="button" class="cu-item-remove" (click)="$event.stopPropagation(); unlinkContact(contact)">
+                      <fa-icon icon="times"></fa-icon>
+                    </button>
+                  </div>
                 </div>
               </div>
               <ng-template #noContacts>
@@ -199,12 +224,12 @@
                 (ngModelChange)="searchSites()"
               />
               <div *ngIf="selectedSites.length > 0; else noSites" class="cu-item-list">
-                <div class="cu-item-card" *ngFor="let site of selectedSites">
+                <div class="cu-item-card cu-item-card-clickable" *ngFor="let site of selectedSites" (click)="goToSite(site)">
                   <div class="cu-item-info">
                     <div class="cu-item-title">{{ site.code || '-' }}</div>
                     <div class="cu-item-sub">{{ site.designation || 'Désignation non renseignée' }}</div>
                   </div>
-                  <button type="button" class="cu-item-remove" (click)="unlinkSite(site)">
+                  <button type="button" class="cu-item-remove" (click)="$event.stopPropagation(); unlinkSite(site)">
                     <fa-icon icon="times"></fa-icon>
                   </button>
                 </div>
@@ -262,12 +287,12 @@
                 (ngModelChange)="searchAffaires()"
               />
               <div *ngIf="selectedAffaires.length > 0; else noAffaires" class="cu-item-list">
-                <div class="cu-item-card" *ngFor="let affaire of selectedAffaires">
+                <div class="cu-item-card cu-item-card-clickable" *ngFor="let affaire of selectedAffaires" (click)="goToAffaire(affaire)">
                   <div class="cu-item-info">
                     <div class="cu-item-title">{{ affaire.numAffaire || '-' }}</div>
                     <div class="cu-item-sub">{{ affaire.designationAffaire || 'Désignation non renseignée' }}</div>
                   </div>
-                  <button type="button" class="cu-item-remove" (click)="unlinkAffaire()">
+                  <button type="button" class="cu-item-remove" (click)="$event.stopPropagation(); unlinkAffaire()">
                     <fa-icon icon="times"></fa-icon>
                   </button>
                 </div>
@@ -310,12 +335,12 @@
                 (ngModelChange)="searchFactures()"
               />
               <div *ngIf="selectedFactures.length > 0; else noFactures" class="cu-item-list">
-                <div class="cu-item-card" *ngFor="let facture of selectedFactures">
+                <div class="cu-item-card cu-item-card-clickable" *ngFor="let facture of selectedFactures" (click)="goToFacture(facture)">
                   <div class="cu-item-info">
                     <div class="cu-item-title">{{ facture.numFacture || '-' }}</div>
                     <div class="cu-item-sub">{{ facture.montantFacture || 0 }} TND</div>
                   </div>
-                  <button type="button" class="cu-item-remove" (click)="unlinkFacture()">
+                  <button type="button" class="cu-item-remove" (click)="$event.stopPropagation(); unlinkFacture()">
                     <fa-icon icon="times"></fa-icon>
                   </button>
                 </div>
@@ -352,7 +377,7 @@
                 (ngModelChange)="searchAgences()"
               />
               <div *ngIf="selectedAgences.length > 0; else noAgences" class="cu-item-list">
-                <div class="cu-item-card" *ngFor="let agence of selectedAgences">
+                <div class="cu-item-card cu-item-card-clickable" *ngFor="let agence of selectedAgences" (click)="goToAgence(agence)">
                   <div class="cu-item-info">
                     <div class="cu-item-title-row">
                       <div class="cu-item-title">{{ agence.designation || '-' }}</div>
@@ -360,7 +385,7 @@
                     </div>
                     <div class="cu-item-sub">{{ agence.ville || 'Ville non renseignée' }}, {{ agence.pays || 'Pays non renseigné' }}</div>
                   </div>
-                  <button type="button" class="cu-item-remove" (click)="unlinkAgence()">
+                  <button type="button" class="cu-item-remove" (click)="$event.stopPropagation(); unlinkAgence()">
                     <fa-icon icon="times"></fa-icon>
                   </button>
                 </div>
@@ -374,9 +399,29 @@
       </div>
 
       <div class="cu-toolbar cu-toolbar-bottom">
-        <span *ngIf="editForm.get('status')?.value" class="cu-badge-status">
-          {{ editForm.get('status')?.value }}
-        </span>
+        <div class="cu-toolbar-left">
+          <span *ngIf="editForm.get('status')?.value" class="cu-badge-status">
+            {{ editForm.get('status')?.value }}
+          </span>
+
+          <button
+            type="button"
+            *ngIf="client?.id && editForm.get('status')?.value !== 'ACTIF'"
+            class="btn-cu-activate"
+            (click)="activerClient()"
+          >
+            <fa-icon icon="check"></fa-icon>&nbsp;Activer
+          </button>
+
+          <button
+            type="button"
+            *ngIf="client?.id && editForm.get('status')?.value !== 'DEACTIVATED'"
+            class="btn-cu-deactivate"
+            (click)="desactiverClient()"
+          >
+            <fa-icon icon="ban"></fa-icon>&nbsp;Désactiver
+          </button>
+        </div>
 
         <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
           <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
@@ -387,28 +432,121 @@
     <!-- Modals -->
     <ng-template #contactModal let-modal>
       <div class="modal-header">
-        <h5 class="modal-title">Nouveau Contact</h5>
+        <h5 class="modal-title">{{ editingContact ? 'Modifier Contact' : 'Nouveau Contact' }}</h5>
         <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
       </div>
       <div class="modal-body">
         <div class="row g-3">
           <div class="col-md-12">
-            <label class="form-label fw-bold">Raison Sociale</label>
-            <input type="text" class="form-control" [(ngModel)]="newContact.raisonSociale" [ngModelOptions]="{ standalone: true }" />
+            <label class="form-label fw-bold">Nom &amp; Prénom</label>
+            <input type="text" class="form-control" [(ngModel)]="newContact.nomPrenom" [ngModelOptions]="{ standalone: true }" />
           </div>
           <div class="col-md-6">
             <label class="form-label fw-bold">Email</label>
-            <input type="email" class="form-control" [(ngModel)]="newContact.email" [ngModelOptions]="{ standalone: true }" />
+            <input
+              type="email"
+              class="form-control"
+              [class.is-invalid]="contactEmailField.invalid && (contactEmailField.dirty || contactEmailField.touched)"
+              [(ngModel)]="newContact.email"
+              [ngModelOptions]="{ standalone: true }"
+              #contactEmailField="ngModel"
+              pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+            />
+            <small
+              class="form-text text-danger"
+              *ngIf="contactEmailField.invalid && (contactEmailField.dirty || contactEmailField.touched)"
+            >
+              Adresse email invalide.
+            </small>
           </div>
           <div class="col-md-6">
             <label class="form-label fw-bold">Téléphone</label>
-            <input type="text" class="form-control" [(ngModel)]="newContact.telephone" [ngModelOptions]="{ standalone: true }" />
+            <input
+              type="tel"
+              class="form-control"
+              [class.is-invalid]="contactTelField.invalid && (contactTelField.dirty || contactTelField.touched)"
+              [(ngModel)]="newContact.telephone"
+              [ngModelOptions]="{ standalone: true }"
+              #contactTelField="ngModel"
+              pattern="^[+]?[0-9\s-]{8,15}$"
+            />
+            <small class="form-text text-danger" *ngIf="contactTelField.invalid && (contactTelField.dirty || contactTelField.touched)">
+              Numéro de téléphone invalide (8 à 15 chiffres, espaces, tirets ou + autorisés).
+            </small>
           </div>
         </div>
       </div>
       <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-outline-primary"
+          [class.btn-cu-kc-created]="editingContact.statusCompteKeycloak === 'EN_COURS'"
+          *ngIf="editingContact"
+          [disabled]="creatingKeycloakUser || !editingContact.identifiantUnique || editingContact.statusCompteKeycloak === 'EN_COURS'"
+          (click)="createContactKeycloakUser()"
+        >
+          <fa-icon icon="user-plus"></fa-icon>&nbsp;{{
+            editingContact.statusCompteKeycloak === 'EN_COURS'
+              ? 'Compte utilisateur créé'
+              : creatingKeycloakUser
+              ? 'Création...'
+              : 'Créer un compte utilisateur'
+          }}
+        </button>
         <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
-        <button class="btn-cu-save-modal" [disabled]="!newContact.raisonSociale?.trim()" (click)="saveNewContact(modal)">Ajouter</button>
+        <button
+          class="btn-cu-save-modal"
+          [disabled]="!newContact.nomPrenom?.trim() || contactEmailField.invalid || contactTelField.invalid"
+          (click)="saveContact(modal)"
+        >
+          {{ editingContact ? 'Enregistrer' : 'Ajouter' }}
+        </button>
+      </div>
+    </ng-template>
+
+    <ng-template #keycloakResultModal let-modal>
+      <div
+        class="modal-body kc-result-modal"
+        [class.kc-result-success]="keycloakResult?.success"
+        [class.kc-result-error]="!keycloakResult?.success"
+      >
+        <div class="kc-result-icon">
+          <fa-icon *ngIf="keycloakResult?.success" icon="check-circle"></fa-icon>
+          <fa-icon *ngIf="!keycloakResult?.success" icon="times-circle"></fa-icon>
+        </div>
+
+        <ng-container *ngIf="keycloakResult?.success; else kcError">
+          <h5 class="kc-result-title">Compte utilisateur créé avec succès</h5>
+          <p class="kc-result-text">
+            Le compte a bien été créé. Merci de contacter
+            <strong>{{ keycloakResult?.nomPrenom }}</strong>
+            pour lui communiquer ses identifiants de connexion à l'application.
+          </p>
+
+          <div class="kc-result-credentials">
+            <div class="kc-cred-row">
+              <span class="kc-cred-label">Login</span>
+              <span class="kc-cred-value">{{ keycloakResult?.login }}</span>
+            </div>
+            <div class="kc-cred-row">
+              <span class="kc-cred-label">Mot de passe</span>
+              <span class="kc-cred-value">{{ keycloakResult?.password }}</span>
+            </div>
+          </div>
+
+          <p class="kc-result-note">
+            <fa-icon icon="info-circle"></fa-icon>
+            &nbsp;Ce mot de passe est temporaire : l'utilisateur devra le changer lors de sa première connexion.
+          </p>
+        </ng-container>
+
+        <ng-template #kcError>
+          <h5 class="kc-result-title">Échec de la création du compte</h5>
+          <p class="kc-result-text">{{ keycloakResult?.message }}</p>
+        </ng-template>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cu-save-modal" (click)="modal.close()">Fermer</button>
       </div>
     </ng-template>
 
@@ -420,27 +558,47 @@
       <div class="modal-body">
         <div class="row g-3">
           <div class="col-md-6">
-            <label class="form-label fw-bold">Code</label>
+            <label class="form-label fw-bold">Code <span class="text-danger">*</span></label>
             <input type="text" class="form-control" [(ngModel)]="newSite.code" [ngModelOptions]="{ standalone: true }" />
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-bold">Désignation</label>
+            <label class="form-label fw-bold">Désignation <span class="text-danger">*</span></label>
             <input type="text" class="form-control" [(ngModel)]="newSite.designation" [ngModelOptions]="{ standalone: true }" />
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-bold">Ville</label>
+            <label class="form-label fw-bold">Gouvernorat <span class="text-danger">*</span></label>
             <select class="form-control" [(ngModel)]="newSite.ville" [ngModelOptions]="{ standalone: true }">
               <option [ngValue]="null">-- Sélectionner une ville --</option>
               <option *ngFor="let ville of allVilles" [ngValue]="{ id: ville.id, nom: ville.nom }">{{ ville.nom }}</option>
             </select>
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-bold">GPS X</label>
+            <label class="form-label fw-bold">Zone</label>
+            <input type="text" class="form-control" [(ngModel)]="newSite.zoneNom" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Longitude (GPS X)</label>
             <input type="number" class="form-control" [(ngModel)]="newSite.gpsX" [ngModelOptions]="{ standalone: true }" />
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-bold">GPS Y</label>
+            <label class="form-label fw-bold">Latitude (GPS Y)</label>
             <input type="number" class="form-control" [(ngModel)]="newSite.gpsY" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Nodale GPM</label>
+            <input type="text" class="form-control" [(ngModel)]="newSite.nodaleGpm" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Site Priority Label</label>
+            <input type="text" class="form-control" [(ngModel)]="newSite.sitePriority" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Type</label>
+            <input type="text" class="form-control" [(ngModel)]="newSite.typeSite" [ngModelOptions]="{ standalone: true }" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Région</label>
+            <input type="text" class="form-control" [(ngModel)]="newSite.regionSite" [ngModelOptions]="{ standalone: true }" />
           </div>
         </div>
       </div>
@@ -559,28 +717,13 @@
             <label class="form-label fw-bold">Pays</label>
             <input type="text" class="form-control" [(ngModel)]="newAgence.pays" [ngModelOptions]="{ standalone: true }" />
           </div>
-          <div class="col-md-12">
-            <label class="form-label fw-bold">Société</label>
-            <select class="form-control" [(ngModel)]="newAgence.societe" [ngModelOptions]="{ standalone: true }">
-              <option [ngValue]="null">-- Sélectionner une société --</option>
-              <option *ngFor="let societe of allSocietes" [ngValue]="{ id: societe.id, raisonSociale: societe.raisonSociale }">
-                {{ societe.raisonSociale }}
-              </option>
-            </select>
-          </div>
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
         <button
           class="btn-cu-save-modal"
-          [disabled]="
-            !newAgence.designation?.trim() ||
-            !newAgence.adresse?.trim() ||
-            !newAgence.ville?.trim() ||
-            !newAgence.pays?.trim() ||
-            !newAgence.societe
-          "
+          [disabled]="!newAgence.designation?.trim() || !newAgence.adresse?.trim() || !newAgence.ville?.trim() || !newAgence.pays?.trim()"
           (click)="saveNewAgence(modal)"
         >
           Ajouter

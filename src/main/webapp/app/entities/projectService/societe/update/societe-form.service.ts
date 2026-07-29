@@ -35,6 +35,7 @@ type SocieteFormGroupContent = {
   raisonSociale: FormControl<SocieteFormRawValue['raisonSociale']>;
   raisonSocialeAbrege: FormControl<SocieteFormRawValue['raisonSocialeAbrege']>;
   identifiantUnique: FormControl<SocieteFormRawValue['identifiantUnique']>;
+  matriculeFiscale: FormControl<SocieteFormRawValue['matriculeFiscale']>;
   registreCommerce: FormControl<SocieteFormRawValue['registreCommerce']>;
   codeArticle: FormControl<SocieteFormRawValue['codeArticle']>;
   adresse: FormControl<SocieteFormRawValue['adresse']>;
@@ -72,7 +73,8 @@ export class SocieteFormService {
         validators: [Validators.required],
       }),
       raisonSocialeAbrege: new FormControl(societeRawValue.raisonSocialeAbrege),
-      identifiantUnique: new FormControl(societeRawValue.identifiantUnique, {
+      identifiantUnique: new FormControl(societeRawValue.identifiantUnique),
+      matriculeFiscale: new FormControl(societeRawValue.matriculeFiscale, {
         validators: [Validators.required],
       }),
       registreCommerce: new FormControl(societeRawValue.registreCommerce),
