@@ -9,6 +9,8 @@ import { DATE_FORMAT } from 'app/config/input.constants';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { IAffaire, NewAffaire } from '../affaire.model';
+import { IAgence } from '../../agence/agence.model';
+import { IArticle } from '../../article/article.model';
 
 export type PartialUpdateAffaire = Partial<IAffaire> & Pick<IAffaire, 'id'>;
 
@@ -20,6 +22,14 @@ type RestOf<T extends IAffaire | NewAffaire> = Omit<T, 'dateDebut' | 'dateClotur
   updatedAt?: string | null;
 };
 
+export interface RestPage<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}
+
 export type RestAffaire = RestOf<IAffaire>;
 
 export type NewRestAffaire = RestOf<NewAffaire>;
@@ -28,12 +38,41 @@ export type PartialUpdateRestAffaire = RestOf<PartialUpdateAffaire>;
 
 export type EntityResponseType = HttpResponse<IAffaire>;
 export type EntityArrayResponseType = HttpResponse<IAffaire[]>;
+export type EntityArrayResponseTypeAgence = HttpResponse<IAgence[]>;
 
 @Injectable({ providedIn: 'root' })
 export class AffaireService {
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/affaires', 'projectservice');
+  protected resourceUrlAffAr = this.applicationConfigService.getEndpointFor('api/affaire-articles', 'projectservice');
+  protected resourceUrlAg = this.applicationConfigService.getEndpointFor('api/agences', 'projectservice');
 
   constructor(protected http: HttpClient, protected applicationConfigService: ApplicationConfigService) {}
+
+  getArticlesByAffaire(affaireId: number, req?: any): Observable<HttpResponse<RestPage<IArticle>>> {
+    const options = createRequestOption(req);
+    return this.http.get<RestPage<IArticle>>(`${this.resourceUrlAffAr}/${affaireId}/articles`, {
+      params: options,
+      observe: 'response',
+    });
+  }
+
+  /**
+   * DELETE /api/affaires/{affaireId}/articles/{articleId}
+   */
+  removeRelation(affaireId: number, articleId: number): Observable<HttpResponse<void>> {
+    return this.http.delete<void>(`${this.resourceUrlAffAr}/${affaireId}/articles/${articleId}`, {
+      observe: 'response',
+    });
+  }
+
+  /**
+   * PUT /api/affaires/{affaireId}/articles
+   */
+  replaceArticlesForAffaire(affaireId: number, articleIds: number[]): Observable<HttpResponse<void>> {
+    return this.http.put<void>(`${this.resourceUrlAffAr}/${affaireId}/articles`, articleIds, {
+      observe: 'response',
+    });
+  }
 
   create(affaire: NewAffaire): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(affaire);
@@ -121,6 +160,24 @@ export class AffaireService {
       params: options,
       observe: 'response',
       responseType: 'text',
+    });
+  }
+
+  getAgencesByClientId(req?: any): Observable<EntityArrayResponseTypeAgence> {
+    const options = createRequestOption(req);
+
+    return this.http.get<IAgence[]>(`${this.resourceUrlAg}/by-client-id`, {
+      params: options,
+      observe: 'response',
+    });
+  }
+
+  changeStatut(affaireId: number, statut: string): Observable<HttpResponse<void>> {
+    return this.http.patch<void>(`${this.resourceUrl}/${affaireId}/statut`, null, {
+      params: {
+        statut,
+      },
+      observe: 'response',
     });
   }
 

@@ -27,6 +27,7 @@ export interface IAffaire {
   updatedByUserLogin?: string | null;
   client?: Pick<IClient, 'id' | 'raisonSociale'> | null;
   societeId?: number | null;
+  identifiantUnique?: string | null;
 }
 
 export type NewAffaire = Omit<IAffaire, 'id'> & { id: null };
