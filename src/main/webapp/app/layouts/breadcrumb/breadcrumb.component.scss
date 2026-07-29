@@ -1,0 +1,58 @@
+.breadcrumb-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1.5rem;
+  background: #f9fafb;
+  border-bottom: 1px solid #e7e9ee;
+  margin-top: 72px; // hauteur de la navbar fixed-top, pour ne pas passer dessous
+}
+
+.breadcrumb-back {
+  border: none;
+  background: transparent;
+  color: #57606f;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  &:hover {
+    background: #f2f4f8;
+    color: #1a2233;
+  }
+}
+
+.breadcrumb-trail {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.85rem;
+}
+
+.breadcrumb-item {
+  color: #8a93a3;
+
+  &:not(:last-child)::after {
+    content: '/';
+    margin: 0 0.5rem;
+    color: #c7cdd6;
+  }
+
+  a {
+    color: #57606f;
+    text-decoration: none;
+    &:hover {
+      color: #f5822a;
+    }
+  }
+
+  &.active {
+    color: #1a2233;
+    font-weight: 600;
+  }
+}
