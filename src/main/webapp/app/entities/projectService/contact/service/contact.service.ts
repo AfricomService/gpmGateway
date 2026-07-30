@@ -80,6 +80,12 @@ export class ContactService {
     });
   }
 
+  resetKeycloakPassword(id: number): Observable<HttpResponse<IKeycloakUserCreationResult>> {
+    return this.http.post<IKeycloakUserCreationResult>(`${this.resourceUrl}/${id}/reset-keycloak-password`, null, {
+      observe: 'response',
+    });
+  }
+
   findByClientId(clientId: number): Observable<EntityArrayResponseType> {
     return this.http
       .get<RestContact[]>(`${this.resourceUrl}/client/${clientId}`, { observe: 'response' })

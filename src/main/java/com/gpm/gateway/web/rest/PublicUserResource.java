@@ -65,4 +65,16 @@ public class PublicUserResource {
     public Mono<String> getCurrentUserId() {
         return userService.getCurrentUserId().switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE)));
     }
+
+    /**
+     * {@code GET /users/exists} : vérifie si un user existe avec ce login.
+     * Utilisé par les microservices via Feign (ex: GPM ContactService).
+     *
+     * @param login le login à vérifier.
+     * @return {@code true} si un user existe, {@code false} sinon.
+     */
+    @GetMapping("/users/exists")
+    public Mono<Boolean> userExists(@RequestParam("login") String login) {
+        return userService.existsByLogin(login);
+    }
 }
