@@ -104,6 +104,14 @@ export class ClientUpdateComponent implements OnInit {
       }
       this.loadRelationships();
     });
+
+    this.editForm.get('raisonSociale')?.valueChanges.subscribe(() => {
+      const control = this.editForm.get('raisonSociale');
+      if (control?.errors?.raisonSocialeExists) {
+        const { raisonSocialeExists, ...rest } = control.errors;
+        control.setErrors(Object.keys(rest).length ? rest : null);
+      }
+    });
   }
 
   loadRelationships(): void {
@@ -632,7 +640,7 @@ export class ClientUpdateComponent implements OnInit {
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IClient>>, isNewClient: boolean): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
       next: res => this.onSaveSuccess(res, isNewClient),
-      error: () => this.onSaveError(),
+      error: err => this.onSaveError(err),
     });
   }
 
@@ -644,8 +652,11 @@ export class ClientUpdateComponent implements OnInit {
     }
   }
 
-  protected onSaveError(): void {
-    // Api for inheritance.
+  protected onSaveError(err?: any): void {
+    if (err?.error?.errorKey === 'raisonsocialeexists') {
+      this.editForm.get('raisonSociale')?.setErrors({ raisonSocialeExists: true });
+      this.editForm.get('raisonSociale')?.markAsTouched();
+    }
   }
 
   protected onSaveFinalize(): void {

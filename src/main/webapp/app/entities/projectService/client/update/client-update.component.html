@@ -75,6 +75,9 @@
                   >
                     Ce champ est obligatoire.
                   </small>
+                  <small class="form-text text-danger" *ngIf="editForm.get('raisonSociale')?.errors?.raisonSocialeExists">
+                    Un client avec cette raison sociale existe déjà.
+                  </small>
                 </div>
               </div>
 
