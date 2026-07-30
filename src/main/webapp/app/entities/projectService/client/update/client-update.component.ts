@@ -218,6 +218,36 @@ export class ClientUpdateComponent implements OnInit {
     });
   }
 
+  resettingPassword = false;
+
+  resetContactPassword(): void {
+    if (!this.editingContact?.id) {
+      return;
+    }
+    this.resettingPassword = true;
+    this.contactService.resetKeycloakPassword(this.editingContact.id).subscribe({
+      next: res => {
+        this.resettingPassword = false;
+        const result = res.body;
+        this.keycloakResult = {
+          success: true,
+          nomPrenom: result?.contact?.nomPrenom ?? undefined,
+          login: result?.contact?.identifiantUnique ?? undefined,
+          password: result?.generatedPassword ?? undefined,
+        };
+        this.modalService.open(this.keycloakResultModal, { size: 'md', backdrop: 'static', centered: true });
+      },
+      error: err => {
+        this.resettingPassword = false;
+        this.keycloakResult = {
+          success: false,
+          message: err.error?.detail ?? err.error?.title ?? 'Erreur lors de la réinitialisation du mot de passe',
+        };
+        this.modalService.open(this.keycloakResultModal, { size: 'md', backdrop: 'static', centered: true });
+      },
+    });
+  }
+
   saveContact(modal: any): void {
     const clientRef = this.client ? { id: this.client.id, raisonSociale: this.client.raisonSociale } : null;
     if (!clientRef || !this.newContact.nomPrenom?.trim()) {

@@ -123,6 +123,19 @@ public class UserService {
     }
 
     /**
+     * Vérifie si un utilisateur existe dans jhi_user avec ce login (insensible à la casse).
+     * Utilisé par les microservices (ex: GPM) pour savoir si un contact s'est déjà connecté
+     * au moins une fois via Keycloak après création de son compte.
+     *
+     * @param login le login à vérifier (généralement l'identifiantUnique du contact en minuscules).
+     * @return true si un user existe avec ce login, false sinon.
+     */
+    @Transactional(readOnly = true)
+    public Mono<Boolean> existsByLogin(String login) {
+        return userRepository.existsByLoginIgnoreCase(login);
+    }
+
+    /**
      * Gets a list of all the authorities.
      * @return a list of all the authorities.
      */
