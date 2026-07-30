@@ -11,8 +11,15 @@
   </button>
 
   <div class="cu-container">
-    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+    <form name="editForm" role="form" novalidate [formGroup]="editForm">
       <jhi-alert-error></jhi-alert-error>
+
+      <!-- Success message -->
+      <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+        <fa-icon icon="check-circle" class="me-2"></fa-icon>
+        {{ successMessage }}
+        <button type="button" class="btn-close" (click)="dismissSuccessMessage()"></button>
+      </div>
 
       <!-- Toolbar : Raison sociale / Identifiant (gauche) + Enregistrer (droite) -->
       <div class="cu-toolbar">
@@ -27,12 +34,13 @@
         </div>
 
         <button
-          type="submit"
+          type="button"
           id="save-entity-top"
           data-cy="entityCreateSaveButton"
           title="Enregistrer"
           [disabled]="editForm.invalid || isSaving"
           class="btn-cu-save"
+          (click)="save()"
         >
           <fa-icon icon="save"></fa-icon>
         </button>

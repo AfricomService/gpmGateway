@@ -14,6 +14,13 @@
     <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
       <jhi-alert-error></jhi-alert-error>
 
+      <!-- Success message -->
+      <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+        <fa-icon icon="check-circle" class="me-2"></fa-icon>
+        {{ successMessage }}
+        <button type="button" class="btn-close" (click)="dismissSuccessMessage()"></button>
+      </div>
+
       <!-- Toolbar : Numéro / Désignation (gauche) + Enregistrer/Modifier (droite) -->
       <div class="cu-toolbar">
         <div class="cu-toolbar-left">
@@ -48,12 +55,13 @@
         <!-- Bouton Enregistrer (mode édition) -->
         <button
           *ngIf="isEditMode"
-          type="submit"
+          type="button"
           id="save-entity-top"
           data-cy="entityCreateSaveButton"
           title="Enregistrer"
           [disabled]="editForm.invalid || isSaving"
           class="btn-cu-save"
+          (click)="save()"
         >
           <fa-icon icon="save"></fa-icon>
         </button>

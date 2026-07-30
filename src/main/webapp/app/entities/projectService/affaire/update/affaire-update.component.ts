@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild, TemplateRef } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { Observable, Subject } from 'rxjs';
 import { finalize, map, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -89,6 +90,10 @@ export class AffaireUpdateComponent implements OnInit {
   isSavingSocietes = false;
   primarySociete: ISociete | null = null;
 
+  // ── Success message ─────────────────────────────────────────────
+  successMessage: string | null = null;
+  private successMessageTimeout: ReturnType<typeof setTimeout> | null = null;
+
   agencesClient: IAgence[] = [];
   editForm: AffaireFormGroup = this.affaireFormService.createAffaireFormGroup();
   societesSharedCollection: ISociete[] = [];
@@ -108,7 +113,9 @@ export class AffaireUpdateComponent implements OnInit {
     protected zoneService: ZoneService,
     protected activatedRoute: ActivatedRoute,
     protected modalService: NgbModal,
-    protected societeService: SocieteService
+    protected societeService: SocieteService,
+    protected router: Router,
+    protected location: Location
   ) {}
 
   ngOnInit(): void {
@@ -528,28 +535,67 @@ export class AffaireUpdateComponent implements OnInit {
     }
 
     const affaire = this.affaireFormService.getAffaire(this.editForm);
-    if (affaire.id !== null) {
-      this.subscribeToSaveResponse(this.affaireService.update(affaire));
+    const isCreation = affaire.id === null;
+    if (!isCreation) {
+      this.subscribeToSaveResponse(this.affaireService.update(affaire), isCreation);
     } else {
-      this.subscribeToSaveResponse(this.affaireService.create(affaire));
+      this.subscribeToSaveResponse(this.affaireService.create(affaire), isCreation);
     }
   }
 
-  protected subscribeToSaveResponse(result: Observable<HttpResponse<IAffaire>>): void {
+  protected subscribeToSaveResponse(result: Observable<HttpResponse<IAffaire>>, isCreation: boolean): void {
     result.pipe(finalize(() => (this.isSaving = false))).subscribe({
       next: res => {
-        // If creating a brand new Affaire, attach the selected articles on save
-        if (!this.affaire?.id && res.body?.id && this.selectedArticles.length > 0) {
+        const affaire = res.body;
+        if (!affaire) {
+          return;
+        }
+
+        if (isCreation && affaire.id !== null && this.selectedArticles.length > 0) {
           const ids = this.selectedArticles.map(a => a.id).filter((id): id is number => id != null);
-          this.affaireService.replaceArticlesForAffaire(res.body.id, ids).subscribe(() => this.previousState());
+          this.affaireService.replaceArticlesForAffaire(affaire.id, ids).subscribe({
+            next: () => this.onSaveSuccess(affaire, isCreation),
+            error: err => {
+              console.error(err);
+              this.onSaveSuccess(affaire, isCreation);
+            },
+          });
         } else {
-          this.previousState();
+          this.onSaveSuccess(affaire, isCreation);
         }
       },
       error: err => {
         console.error(err);
       },
     });
+  }
+
+  protected onSaveSuccess(affaire: IAffaire, isCreation: boolean): void {
+    this.affaire = affaire;
+    this.updateForm(affaire);
+
+    if (isCreation && affaire.id !== null) {
+      const editUrl = this.router.createUrlTree(['/affaire', affaire.id, 'edit']).toString();
+      this.location.replaceState(editUrl);
+    }
+
+    this.loadSocietesAssociees();
+
+    this.successMessage = isCreation ? 'Affaire créée avec succès.' : 'Affaire mise à jour avec succès.';
+
+    if (this.successMessageTimeout) {
+      clearTimeout(this.successMessageTimeout);
+    }
+    this.successMessageTimeout = setTimeout(() => {
+      this.successMessage = null;
+    }, 4000);
+  }
+
+  dismissSuccessMessage(): void {
+    this.successMessage = null;
+    if (this.successMessageTimeout) {
+      clearTimeout(this.successMessageTimeout);
+    }
   }
 
   protected updateForm(affaire: IAffaire): void {

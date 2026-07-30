@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
@@ -48,10 +49,15 @@ export class SocieteUpdateComponent implements OnInit {
 
   editForm: SocieteFormGroup = this.societeFormService.createSocieteFormGroup();
 
+  successMessage: string | null = null;
+  private successMessageTimeout: ReturnType<typeof setTimeout> | null = null;
+
   constructor(
     protected societeService: SocieteService,
     protected societeFormService: SocieteFormService,
-    protected activatedRoute: ActivatedRoute
+    protected activatedRoute: ActivatedRoute,
+    protected router: Router, // <-- add
+    protected location: Location // <-- add
   ) {}
 
   ngOnInit(): void {
@@ -228,10 +234,12 @@ export class SocieteUpdateComponent implements OnInit {
   save(): void {
     this.isSaving = true;
     const societe = this.societeFormService.getSociete(this.editForm);
-    if (societe.id !== null) {
-      this.subscribeToSaveResponse(this.societeService.update(societe));
+    const isCreation = societe.id === null;
+
+    if (!isCreation) {
+      this.subscribeToSaveResponse(this.societeService.update(societe), isCreation);
     } else {
-      this.subscribeToSaveResponse(this.societeService.create(societe));
+      this.subscribeToSaveResponse(this.societeService.create(societe), isCreation);
     }
   }
 
@@ -266,15 +274,44 @@ export class SocieteUpdateComponent implements OnInit {
     }
   }
 
-  protected subscribeToSaveResponse(result: Observable<HttpResponse<ISociete>>): void {
+  dismissSuccessMessage(): void {
+    this.successMessage = null;
+    if (this.successMessageTimeout) {
+      clearTimeout(this.successMessageTimeout);
+    }
+  }
+
+  protected subscribeToSaveResponse(result: Observable<HttpResponse<ISociete>>, isCreation: boolean): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
-      next: () => this.onSaveSuccess(),
+      next: res => this.onSaveSuccess(res.body, isCreation),
       error: () => this.onSaveError(),
     });
   }
 
-  protected onSaveSuccess(): void {
-    this.previousState();
+  protected onSaveSuccess(societe: ISociete | null, isCreation: boolean): void {
+    if (!societe) {
+      return;
+    }
+
+    this.societe = societe;
+    this.updateForm(societe);
+
+    if (isCreation && societe.id !== null) {
+      const editUrl = this.router.createUrlTree(['/societe', societe.id, 'edit']).toString();
+      this.location.replaceState(editUrl);
+    }
+
+    this.loadContactsAssocies();
+
+    // ── Success banner ─────────────────────────────
+    this.successMessage = isCreation ? 'Société créée avec succès.' : 'Société mise à jour avec succès.';
+
+    if (this.successMessageTimeout) {
+      clearTimeout(this.successMessageTimeout);
+    }
+    this.successMessageTimeout = setTimeout(() => {
+      this.successMessage = null;
+    }, 2500);
   }
 
   protected onSaveError(): void {
