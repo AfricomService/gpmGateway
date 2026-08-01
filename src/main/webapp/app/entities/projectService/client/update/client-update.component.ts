@@ -70,6 +70,8 @@ export class ClientUpdateComponent implements OnInit {
   editingContact: IContact | null = null;
   newSite: Partial<NewSite> = {};
 
+  editingSite: ISite | null = null;
+
   siteImportFile: File | null = null;
   siteImportInProgress = false;
   siteImportResult: ISiteImportResult | null = null;
@@ -153,21 +155,6 @@ export class ClientUpdateComponent implements OnInit {
     this.editingContact = contact;
     this.newContact = { ...contact };
     this.modalService.open(this.contactModal, { size: 'lg', backdrop: 'static', centered: true });
-  }
-
-  // === Navigation vers les interfaces d'édition ===
-  goToContact(contact: IContact): void {
-    if (!contact.id) {
-      return;
-    }
-    this.router.navigate(['/contact', contact.id, 'edit']);
-  }
-
-  goToSite(site: ISite): void {
-    if (!site.id) {
-      return;
-    }
-    this.router.navigate(['/site', site.id, 'edit']);
   }
 
   goToAffaire(affaire: IAffaire): void {
@@ -417,9 +404,46 @@ export class ClientUpdateComponent implements OnInit {
     this.modalService.open(this.siteModal, { size: 'lg', backdrop: 'static', centered: true });
   }
 
-  saveNewSite(modal: any): void {
+  openEditSiteModal(site: ISite): void {
+    this.editingSite = site;
+    const { id, ...siteWithoutId } = site;
+    this.newSite = { ...siteWithoutId };
+    this.modalService.open(this.siteModal, { size: 'lg', backdrop: 'static', centered: true });
+  }
+
+  compareVille = (o1: IVille | { id: number; nom: string } | null, o2: IVille | { id: number; nom: string } | null): boolean =>
+    o1 && o2 ? o1.id === o2.id : o1 === o2;
+
+  saveSite(modal: any): void {
     const clientRef = this.client ? { id: this.client.id, raisonSociale: this.client.raisonSociale } : null;
     if (!clientRef || !this.newSite.code?.trim() || !this.newSite.designation?.trim() || !this.newSite.ville) {
+      return;
+    }
+
+    if (this.editingSite) {
+      const siteToUpdate: ISite = {
+        ...this.editingSite,
+        code: this.newSite.code.trim(),
+        designation: this.newSite.designation.trim(),
+        gpsX: this.newSite.gpsX ?? null,
+        gpsY: this.newSite.gpsY ?? null,
+        nodaleGpm: this.newSite.nodaleGpm?.trim() ?? null,
+        sitePriority: this.newSite.sitePriority?.trim() ?? null,
+        typeSite: this.newSite.typeSite?.trim() ?? null,
+        regionSite: this.newSite.regionSite?.trim() ?? null,
+        zoneNom: this.newSite.zoneNom?.trim() ?? null,
+        ville: this.newSite.ville,
+      };
+
+      this.siteService.update(siteToUpdate).subscribe({
+        next: () => {
+          this.loadSites();
+          modal.close();
+        },
+        error: () => {
+          // Optionnel : notifier l'utilisateur via jhi-alert-error ou toast
+        },
+      });
       return;
     }
 
