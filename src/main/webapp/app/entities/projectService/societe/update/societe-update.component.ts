@@ -11,6 +11,10 @@ import { SocieteService } from '../service/societe.service';
 import { IContactSociete } from '../contact-societe.model';
 import { IPersonne } from '../personne.model'; // adjust path/name to match your actual model
 
+import { IRoleContactSociete } from '../role-contact-societe.model';
+import { IUserAuthSociete } from '../user-auth-societe.model';
+import { IAssignRole } from '../assign-role.model';
+
 type AccordionSection = 'general' | 'coordonnees' | 'contacts';
 
 @Component({
@@ -21,6 +25,13 @@ type AccordionSection = 'general' | 'coordonnees' | 'contacts';
 export class SocieteUpdateComponent implements OnInit {
   isSaving = false;
   societe: ISociete | null = null;
+
+  // ── Roles Contacts Société ─────────────────────────────────────
+  roles: IRoleContactSociete[] = [];
+  assignments: IUserAuthSociete[] = [];
+
+  selectedRoles: Record<number, number> = {};
+  isAssigningRoleContactId: number | null = null;
 
   // === Gestion de l'accordéon ===
   openSections: Set<AccordionSection> = new Set(['general', 'coordonnees', 'contacts']);
@@ -69,8 +80,77 @@ export class SocieteUpdateComponent implements OnInit {
       if (societe) {
         this.updateForm(societe);
         this.loadContactsAssocies();
+        this.loadContactsAssocies();
+        this.loadRoles();
+        this.loadAssignments();
       }
     });
+  }
+
+  loadRoles(): void {
+    this.societeService.getRoles().subscribe({
+      next: roles => {
+        this.roles = roles;
+      },
+      error: () => {
+        this.roles = [];
+      },
+    });
+  }
+
+  loadAssignments(): void {
+    if (!this.societe?.id) {
+      return;
+    }
+
+    this.societeService.getAssignments(this.societe.id).subscribe({
+      next: assignments => {
+        this.assignments = assignments;
+      },
+      error: () => {
+        this.assignments = [];
+      },
+    });
+  }
+
+  getContactRoles(contactId: number): IRoleContactSociete[] {
+    const roleIds = this.assignments.filter(a => a.contactSocieteId === contactId).map(a => a.roleContactSocieteId);
+
+    return this.roles.filter(role => role.id && roleIds.includes(role.id));
+  }
+
+  hasRole(contactId: number): boolean {
+    return this.getContactRoles(contactId).length > 0;
+  }
+
+  assignRole(contactId: number): void {
+    if (!this.societe?.id) {
+      return;
+    }
+
+    const roleId = this.selectedRoles[contactId];
+
+    if (!roleId) {
+      return;
+    }
+
+    this.isAssigningRoleContactId = contactId;
+
+    const body: IAssignRole = {
+      societeId: this.societe.id,
+      contactSocieteId: contactId,
+      roleContactSocieteId: roleId,
+    };
+
+    this.societeService
+      .assignRole(body)
+      .pipe(finalize(() => (this.isAssigningRoleContactId = null)))
+      .subscribe({
+        next: () => {
+          delete this.selectedRoles[contactId];
+          this.loadAssignments();
+        },
+      });
   }
 
   // === Accordéon ===

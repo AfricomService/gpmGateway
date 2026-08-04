@@ -9,6 +9,9 @@ import { ApplicationConfigService } from 'app/core/config/application-config.ser
 import { createRequestOption } from 'app/core/request/request-util';
 import { ISociete, NewSociete } from '../societe.model';
 import { IPersonne } from '../personne.model';
+import { IRoleContactSociete } from '../role-contact-societe.model';
+import { IUserAuthSociete } from '../user-auth-societe.model';
+import { IAssignRole } from '../assign-role.model';
 
 export type PartialUpdateSociete = Partial<ISociete> & Pick<ISociete, 'id'>;
 
@@ -135,6 +138,36 @@ export class SocieteService {
     });
   }
 
+  searchContacts(req?: any): Observable<EntityArrayResponseType> {
+    const options = createRequestOption(req);
+    return this.http
+      .get<RestSociete[]>(`${this.resourceUrlContactSoc}/search`, { params: options, observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
+  deleteContact(contactId: number): Observable<HttpResponse<{}>> {
+    return this.http.delete(`${this.resourceUrlContactSoc}/${contactId}`, { observe: 'response' });
+  }
+
+  getRoles(): Observable<IRoleContactSociete[]> {
+    return this.http.get<IRoleContactSociete[]>(
+      this.applicationConfigService.getEndpointFor('api/role-contact-societes', 'projectservice')
+    );
+  }
+
+  getAssignments(societeId: number): Observable<IUserAuthSociete[]> {
+    return this.http.get<IUserAuthSociete[]>(
+      this.applicationConfigService.getEndpointFor(`api/user-auth-societes/by-societe/${societeId}`, 'projectservice')
+    );
+  }
+
+  assignRole(body: IAssignRole): Observable<IUserAuthSociete> {
+    return this.http.post<IUserAuthSociete>(
+      this.applicationConfigService.getEndpointFor('api/user-auth-societes/assign-role', 'projectservice'),
+      body
+    );
+  }
+
   protected convertDateFromClient<T extends ISociete | NewSociete | PartialUpdateSociete>(societe: T): RestOf<T> {
     return {
       ...societe,
@@ -161,16 +194,5 @@ export class SocieteService {
     return res.clone({
       body: res.body ? res.body.map(item => this.convertDateFromServer(item)) : null,
     });
-  }
-
-  searchContacts(req?: any): Observable<EntityArrayResponseType> {
-    const options = createRequestOption(req);
-    return this.http
-      .get<RestSociete[]>(`${this.resourceUrlContactSoc}/search`, { params: options, observe: 'response' })
-      .pipe(map(res => this.convertResponseArrayFromServer(res)));
-  }
-
-  deleteContact(contactId: number): Observable<HttpResponse<{}>> {
-    return this.http.delete(`${this.resourceUrlContactSoc}/${contactId}`, { observe: 'response' });
   }
 }

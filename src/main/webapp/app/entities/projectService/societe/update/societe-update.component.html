@@ -289,6 +289,46 @@
                   <div class="cu-item-sub">
                     <a [href]="'mailto:' + contact.email" class="cu-item-link">{{ contact.email || 'Email non renseigné' }}</a>
                   </div>
+
+                  <div class="cu-item-sub mt-2">
+                    <!-- Roles exist -->
+                    <div *ngIf="hasRole(contact.id!)">
+                      <strong>Rôles :</strong>
+
+                      <span class="badge bg-primary me-1" *ngFor="let role of getContactRoles(contact.id!)">
+                        {{ role.label }}
+                      </span>
+                    </div>
+
+                    <!-- No role -->
+                    <div *ngIf="!hasRole(contact.id!)" class="d-flex align-items-center gap-2 mt-2">
+                      <select
+                        class="form-select form-select-sm"
+                        style="width: 220px"
+                        [(ngModel)]="selectedRoles[contact.id!]"
+                        [ngModelOptions]="{ standalone: true }"
+                      >
+                        <option [ngValue]="undefined">Choisir un rôle...</option>
+
+                        <option *ngFor="let role of roles" [ngValue]="role.id">
+                          {{ role.label }}
+                        </option>
+                      </select>
+
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-primary"
+                        [disabled]="!selectedRoles[contact.id!] || isAssigningRoleContactId === contact.id"
+                        (click)="assignRole(contact.id!)"
+                      >
+                        <span *ngIf="isAssigningRoleContactId === contact.id" class="spinner-border spinner-border-sm"> </span>
+
+                        <fa-icon *ngIf="isAssigningRoleContactId !== contact.id" icon="check"> </fa-icon>
+
+                        Affecter
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <button
                   type="button"
