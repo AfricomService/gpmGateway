@@ -28,6 +28,7 @@ import { ZoneService } from 'app/entities/projectService/zone/service/zone.servi
 import { SocieteService } from '../../societe/service/societe.service';
 import { ISociete } from '../../societe/societe.model';
 import { IAgence } from 'app/entities/projectService/agence/agence.model';
+import { Authority } from '../../../../config/authority.constants';
 
 type AccordionSection = 'general' | 'dates' | 'articles' | 'societes';
 
@@ -64,6 +65,8 @@ export class AffaireUpdateComponent implements OnInit {
   articlesSearchTerm = '';
   isLoadingArticles = false;
 
+  Authority = Authority;
+
   // Articles lookup list for the Modal selection
   allArticles: IArticle[] = [];
   tempSelectedArticles: IArticle[] = [];
@@ -90,13 +93,13 @@ export class AffaireUpdateComponent implements OnInit {
   isSavingSocietes = false;
   primarySociete: ISociete | null = null;
 
-  // ── Success message ─────────────────────────────────────────────
-  successMessage: string | null = null;
-  private successMessageTimeout: ReturnType<typeof setTimeout> | null = null;
-
   agencesClient: IAgence[] = [];
   editForm: AffaireFormGroup = this.affaireFormService.createAffaireFormGroup();
   societesSharedCollection: ISociete[] = [];
+
+  // ── Success message ─────────────────────────────────────────────
+  successMessage: string | null = null;
+  private successMessageTimeout: ReturnType<typeof setTimeout> | null = null;
 
   private articleSearchSubject = new Subject<string>();
 
@@ -117,6 +120,16 @@ export class AffaireUpdateComponent implements OnInit {
     protected router: Router,
     protected location: Location
   ) {}
+
+  onResponsableChange(user: IUser | null): void {
+    this.selectedResponsable = user;
+    this.editForm.patchValue({
+      responsableProjetId: user?.id ?? null,
+      responsableProjetUserLogin: user?.login ?? null,
+    });
+    this.editForm.get('responsableProjetId')?.markAsDirty();
+    this.editForm.get('responsableProjetId')?.markAsTouched();
+  }
 
   ngOnInit(): void {
     // Setup debounced search for the main articles list
@@ -636,7 +649,7 @@ export class AffaireUpdateComponent implements OnInit {
       });
 
     this.userService
-      .query()
+      .queryManagers()
       .pipe(map((res: HttpResponse<IUser[]>) => res.body ?? []))
       .subscribe((users: IUser[]) => {
         this.usersSharedCollection = users;

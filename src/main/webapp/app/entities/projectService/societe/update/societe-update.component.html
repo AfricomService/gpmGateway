@@ -261,6 +261,18 @@
           </button>
 
           <div class="cu-accordion-body" *ngIf="isSectionOpen('contacts')">
+            <!-- Search -->
+            <div class="mb-3">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Rechercher par nom/prénom ou matricule..."
+                [ngModel]="contactsSearchTerm"
+                [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="onContactsSearchChange($event)"
+              />
+            </div>
+
             <div *ngIf="contactsAssocies.length > 0; else noContacts" class="cu-item-list">
               <div class="cu-item-card" *ngFor="let contact of contactsAssocies">
                 <div class="cu-item-avatar">{{ (contact.nomPrenom ?? '?').charAt(0) }}</div>
@@ -278,6 +290,16 @@
                     <a [href]="'mailto:' + contact.email" class="cu-item-link">{{ contact.email || 'Email non renseigné' }}</a>
                   </div>
                 </div>
+                <button
+                  type="button"
+                  class="cu-item-remove"
+                  [disabled]="isDeletingContactId === contact.id"
+                  (click)="deleteContact(contact)"
+                  title="Supprimer ce contact"
+                >
+                  <span *ngIf="isDeletingContactId === contact.id" class="spinner-border spinner-border-sm"></span>
+                  <fa-icon *ngIf="isDeletingContactId !== contact.id" icon="times"></fa-icon>
+                </button>
               </div>
             </div>
             <ng-template #noContacts>

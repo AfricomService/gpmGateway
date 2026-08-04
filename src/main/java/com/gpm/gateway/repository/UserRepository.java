@@ -49,6 +49,9 @@ public interface UserRepository extends R2dbcRepository<User, String>, UserRepos
 
     @Query("DELETE FROM jhi_user_authority WHERE user_id = :userId")
     Mono<Void> deleteUserAuthorities(String userId);
+
+    @Query("DELETE FROM jhi_user_authority WHERE user_id = :userId AND authority_name = :authority")
+    Mono<Void> deleteUserAuthority(String userId, String authority);
 }
 
 interface UserRepositoryInternal {
@@ -57,6 +60,8 @@ interface UserRepositoryInternal {
     Mono<User> create(User user);
 
     Flux<User> findAllWithAuthorities(Pageable pageable);
+
+    Flux<User> findAllByAuthority(String authority);
 }
 
 class UserRepositoryInternalImpl implements UserRepositoryInternal {
@@ -100,6 +105,23 @@ class UserRepositoryInternalImpl implements UserRepositoryInternal {
             )
             .skip(page * size)
             .take(size);
+    }
+
+    @Override
+    public Flux<User> findAllByAuthority(String authority) {
+        return db
+            .sql(
+                "SELECT * FROM jhi_user u " +
+                "LEFT JOIN jhi_user_authority ua ON u.id = ua.user_id " +
+                "WHERE u.id IN (SELECT user_id FROM jhi_user_authority WHERE authority_name = :authority)"
+            )
+            .bind("authority", authority)
+            .map((row, metadata) ->
+                Tuples.of(r2dbcConverter.read(User.class, row, metadata), Optional.ofNullable(row.get("authority_name", String.class)))
+            )
+            .all()
+            .groupBy(t -> t.getT1().getLogin())
+            .flatMap(l -> l.collectList().map(t -> updateUserWithAuthorities(t.get(0).getT1(), t)));
     }
 
     @Override

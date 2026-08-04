@@ -23,7 +23,10 @@ export class SocieteUpdateComponent implements OnInit {
   societe: ISociete | null = null;
 
   // === Gestion de l'accordéon ===
-  openSections: Set<AccordionSection> = new Set(['general', 'coordonnees']);
+  openSections: Set<AccordionSection> = new Set(['general', 'coordonnees', 'contacts']);
+
+  contactsSearchTerm = '';
+  isDeletingContactId: number | null = null;
 
   // ── Contacts Associés ─────────────────────────────────────────
   contactsAssocies: IContactSociete[] = [];
@@ -90,16 +93,41 @@ export class SocieteUpdateComponent implements OnInit {
     }
 
     this.isLoadingContacts = true;
+
+    const term = this.contactsSearchTerm.trim();
+    const request$ = term
+      ? this.societeService.searchContacts({
+          societeId: this.societe.id,
+          nomPrenom: term,
+          matricule: term,
+        })
+      : this.societeService.queryContacts({ societeId: this.societe.id });
+
+    request$.pipe(finalize(() => (this.isLoadingContacts = false))).subscribe({
+      next: (res: HttpResponse<IContactSociete[]>) => {
+        this.contactsAssocies = res.body ?? [];
+      },
+      error: () => {
+        this.contactsAssocies = [];
+      },
+    });
+  }
+
+  onContactsSearchChange(value: string): void {
+    this.contactsSearchTerm = value;
+    this.loadContactsAssocies();
+  }
+
+  deleteContact(contact: IContactSociete): void {
+    if (!contact.id) {
+      return;
+    }
+    this.isDeletingContactId = contact.id;
     this.societeService
-      .queryContacts({ societeId: this.societe.id })
-      .pipe(finalize(() => (this.isLoadingContacts = false)))
+      .deleteContact(contact.id)
+      .pipe(finalize(() => (this.isDeletingContactId = null)))
       .subscribe({
-        next: (res: HttpResponse<IContactSociete[]>) => {
-          this.contactsAssocies = res.body ?? [];
-        },
-        error: () => {
-          this.contactsAssocies = [];
-        },
+        next: () => this.loadContactsAssocies(),
       });
   }
 

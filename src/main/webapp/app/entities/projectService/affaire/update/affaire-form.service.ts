@@ -90,7 +90,9 @@ export class AffaireFormService {
       montantBudgetaireMateriel: new FormControl(affaireRawValue.montantBudgetaireMateriel),
       montantBudgetaireService: new FormControl(affaireRawValue.montantBudgetaireService),
       statut: new FormControl(affaireRawValue.statut),
-      responsableProjetId: new FormControl(affaireRawValue.responsableProjetId),
+      responsableProjetId: new FormControl(affaireRawValue.responsableProjetId, {
+        validators: [Validators.required],
+      }),
       responsableProjetUserLogin: new FormControl(affaireRawValue.responsableProjetUserLogin),
       createdAt: new FormControl(affaireRawValue.createdAt),
       updatedAt: new FormControl(affaireRawValue.updatedAt),

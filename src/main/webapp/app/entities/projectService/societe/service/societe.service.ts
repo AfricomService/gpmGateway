@@ -162,4 +162,15 @@ export class SocieteService {
       body: res.body ? res.body.map(item => this.convertDateFromServer(item)) : null,
     });
   }
+
+  searchContacts(req?: any): Observable<EntityArrayResponseType> {
+    const options = createRequestOption(req);
+    return this.http
+      .get<RestSociete[]>(`${this.resourceUrlContactSoc}/search`, { params: options, observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
+  deleteContact(contactId: number): Observable<HttpResponse<{}>> {
+    return this.http.delete(`${this.resourceUrlContactSoc}/${contactId}`, { observe: 'response' });
+  }
 }

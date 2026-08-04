@@ -171,20 +171,36 @@
               </div>
 
               <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold" for="field_responsable">Responsable Projet</label>
+                <label class="form-label fw-bold" for="field_responsable">
+                  Responsable Projet
+                  <span class="text-danger">*</span>
+                </label>
                 <ng-select
                   id="field_responsable"
                   name="responsable"
                   [items]="usersSharedCollection"
-                  bindLabel="login"
                   [searchable]="true"
                   [(ngModel)]="selectedResponsable"
                   [ngModelOptions]="{ standalone: true }"
+                  (ngModelChange)="onResponsableChange($event)"
                   class="custom-ng-select"
                   placeholder="Rechercher un responsable..."
                   [readonly]="!isEditMode"
                 >
+                  <ng-template ng-label-tmp let-item="item"> {{ item.firstName }} {{ item.lastName }} </ng-template>
+
+                  <ng-template ng-option-tmp let-item="item"> {{ item.firstName }} {{ item.lastName }} </ng-template>
                 </ng-select>
+                <div
+                  *ngIf="
+                    editForm.get('responsableProjetId')!.invalid &&
+                    (editForm.get('responsableProjetId')!.dirty || editForm.get('responsableProjetId')!.touched)
+                  "
+                >
+                  <small class="form-text text-danger" *ngIf="editForm.get('responsableProjetId')?.errors?.required">
+                    Ce champ est obligatoire.
+                  </small>
+                </div>
               </div>
 
               <div class="col-md-12 mb-3">

@@ -165,7 +165,7 @@
   background: var(--cp-surface);
   border: 1px solid var(--cp-border);
   border-radius: 14px;
-  overflow: hidden;
+  //overflow: hidden;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
   &.open {
