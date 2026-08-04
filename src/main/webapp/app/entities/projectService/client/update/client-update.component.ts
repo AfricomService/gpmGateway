@@ -157,6 +157,10 @@ export class ClientUpdateComponent implements OnInit {
     this.modalService.open(this.contactModal, { size: 'lg', backdrop: 'static', centered: true });
   }
 
+  isEmailFieldLocked(): boolean {
+    return !!this.editingContact && this.editingContact.statusCompteKeycloak !== 'DEACTIVE';
+  }
+
   goToAffaire(affaire: IAffaire): void {
     if (!affaire.id) {
       return;

@@ -457,6 +457,8 @@
               [class.is-invalid]="contactEmailField.invalid && (contactEmailField.dirty || contactEmailField.touched)"
               [(ngModel)]="newContact.email"
               [ngModelOptions]="{ standalone: true }"
+              [readonly]="isEmailFieldLocked()"
+              [class.cu-field-locked]="isEmailFieldLocked()"
               #contactEmailField="ngModel"
               pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
             />
@@ -465,6 +467,9 @@
               *ngIf="contactEmailField.invalid && (contactEmailField.dirty || contactEmailField.touched)"
             >
               Adresse email invalide.
+            </small>
+            <small class="form-text text-muted" *ngIf="isEmailFieldLocked()">
+              <fa-icon icon="lock"></fa-icon>&nbsp;Email non modifiable : le compte utilisateur est déjà créé ou en cours de création.
             </small>
           </div>
           <div class="col-md-6">
