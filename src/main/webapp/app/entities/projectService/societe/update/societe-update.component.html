@@ -246,9 +246,6 @@
 
         <!-- Contacts Associés (uniquement en édition, pas en création) -->
         <div class="cu-accordion-item" [class.open]="isSectionOpen('contacts')" *ngIf="societe?.id">
-          <button type="button" class="btn-cu-add me-2" (click)="$event.stopPropagation(); openCreateContactModal()">
-            <fa-icon icon="plus"></fa-icon>&nbsp;Ajouter un nouveau contact
-          </button>
           <button type="button" class="cu-accordion-header" (click)="toggleSection('contacts')">
             <span class="cu-accordion-header-left">
               <fa-icon icon="address-book" class="cu-accordion-icon"></fa-icon>
@@ -256,6 +253,9 @@
               <span class="cu-accordion-count" *ngIf="contactsAssocies.length">{{ contactsAssocies.length }}</span>
             </span>
             <span class="cu-accordion-header-right">
+              <button (click)="$event.stopPropagation(); openCreateContactModal()" class="btn-cu-add me-2" type="button">
+                <fa-icon icon="plus"></fa-icon>&nbsp;Ajouter un nouveau contact
+              </button>
               <button type="button" class="btn-cu-add" (click)="$event.stopPropagation(); openOrgaModal()">
                 <fa-icon icon="cloud-download-alt"></fa-icon>&nbsp;Importer de OrgaCare
               </button>
