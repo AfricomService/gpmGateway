@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
@@ -14,6 +14,7 @@ import { IPersonne } from '../personne.model'; // adjust path/name to match your
 import { IRoleContactSociete } from '../role-contact-societe.model';
 import { IUserAuthSociete } from '../user-auth-societe.model';
 import { IAssignRole } from '../assign-role.model';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 type AccordionSection = 'general' | 'coordonnees' | 'contacts';
 
@@ -64,6 +65,16 @@ export class SocieteUpdateComponent implements OnInit {
   editForm: SocieteFormGroup = this.societeFormService.createSocieteFormGroup();
 
   successMessage: string | null = null;
+  @ViewChild('contactSocieteModal') contactSocieteModal!: TemplateRef<unknown>;
+  @ViewChild('keycloakResultModal') keycloakResultModal!: TemplateRef<unknown>;
+
+  editingContactSociete: IContactSociete | null = null;
+  newContactSociete: Partial<IContactSociete> = {};
+
+  creatingKeycloakUser = false;
+  resettingPassword = false;
+  keycloakResult: { success: boolean; nomPrenom?: string; login?: string; password?: string; message?: string } | null = null;
+
   private successMessageTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
@@ -71,8 +82,104 @@ export class SocieteUpdateComponent implements OnInit {
     protected societeFormService: SocieteFormService,
     protected activatedRoute: ActivatedRoute,
     protected router: Router, // <-- add
-    protected location: Location // <-- add
+    protected location: Location, // <-- add
+    protected modalService: NgbModal
   ) {}
+
+  openContactSocieteModal(contact: IContactSociete): void {
+    this.editingContactSociete = contact;
+    this.newContactSociete = { ...contact };
+    this.modalService.open(this.contactSocieteModal, { size: 'lg', backdrop: 'static', centered: true });
+  }
+
+  saveContactSociete(modal: any): void {
+    if (!this.editingContactSociete?.id || !this.newContactSociete.nomPrenom?.trim()) {
+      return;
+    }
+
+    const contactToUpdate: IContactSociete = {
+      ...this.editingContactSociete,
+      matricule: this.newContactSociete.matricule ?? null,
+      nomPrenom: this.newContactSociete.nomPrenom.trim(),
+      email: this.newContactSociete.email ?? null,
+      numTel: this.newContactSociete.numTel ?? null,
+    };
+
+    this.societeService.updateContact(contactToUpdate).subscribe({
+      next: res => {
+        // Keep the modal's local reference in sync (status, etc. stay from server response)
+        if (res.body) {
+          this.editingContactSociete = res.body;
+          this.newContactSociete = { ...res.body };
+        }
+        this.loadContactsAssocies();
+        modal.close();
+      },
+      error: () => {
+        // Optionnel : notifier l'utilisateur via jhi-alert-error ou toast
+      },
+    });
+  }
+
+  createContactSocieteKeycloakUser(): void {
+    if (!this.editingContactSociete?.id) {
+      return;
+    }
+    this.creatingKeycloakUser = true;
+    this.societeService.createContactKeycloakUser(this.editingContactSociete.id).subscribe({
+      next: res => {
+        this.creatingKeycloakUser = false;
+        const result = res.body;
+        const updated = result?.contactSociete;
+        this.editingContactSociete = updated ?? this.editingContactSociete;
+        this.loadContactsAssocies();
+
+        this.keycloakResult = {
+          success: true,
+          nomPrenom: updated?.nomPrenom ?? undefined,
+          login: updated?.matricule ?? undefined,
+          password: result?.generatedPassword ?? undefined,
+        };
+        this.modalService.open(this.keycloakResultModal, { size: 'md', backdrop: 'static', centered: true });
+      },
+      error: err => {
+        this.creatingKeycloakUser = false;
+        this.keycloakResult = {
+          success: false,
+          message: err.error?.detail ?? err.error?.title ?? 'Erreur lors de la création de l’utilisateur Keycloak',
+        };
+        this.modalService.open(this.keycloakResultModal, { size: 'md', backdrop: 'static', centered: true });
+      },
+    });
+  }
+
+  resetContactSocietePassword(): void {
+    if (!this.editingContactSociete?.id) {
+      return;
+    }
+    this.resettingPassword = true;
+    this.societeService.resetContactKeycloakPassword(this.editingContactSociete.id).subscribe({
+      next: res => {
+        this.resettingPassword = false;
+        const result = res.body;
+        this.keycloakResult = {
+          success: true,
+          nomPrenom: result?.contactSociete?.nomPrenom ?? undefined,
+          login: result?.contactSociete?.matricule ?? undefined,
+          password: result?.generatedPassword ?? undefined,
+        };
+        this.modalService.open(this.keycloakResultModal, { size: 'md', backdrop: 'static', centered: true });
+      },
+      error: err => {
+        this.resettingPassword = false;
+        this.keycloakResult = {
+          success: false,
+          message: err.error?.detail ?? err.error?.title ?? 'Erreur lors de la réinitialisation du mot de passe',
+        };
+        this.modalService.open(this.keycloakResultModal, { size: 'md', backdrop: 'static', centered: true });
+      },
+    });
+  }
 
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ societe }) => {

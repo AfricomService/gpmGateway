@@ -12,6 +12,7 @@ import { IPersonne } from '../personne.model';
 import { IRoleContactSociete } from '../role-contact-societe.model';
 import { IUserAuthSociete } from '../user-auth-societe.model';
 import { IAssignRole } from '../assign-role.model';
+import { IContactSociete } from '../contact-societe.model';
 
 export type PartialUpdateSociete = Partial<ISociete> & Pick<ISociete, 'id'>;
 
@@ -30,6 +31,11 @@ export type EntityResponseType = HttpResponse<ISociete>;
 export type EntityArrayResponseType = HttpResponse<ISociete[]>;
 export type EntityArrayResponseTypePeronne = HttpResponse<IPersonne[]>;
 
+export interface IContactSocieteKeycloakResult {
+  contactSociete: IContactSociete;
+  generatedPassword: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class SocieteService {
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/societes', 'projectservice');
@@ -37,6 +43,24 @@ export class SocieteService {
   protected resourceUrlOrga = this.applicationConfigService.getEndpointFor('api', 'orgacare');
 
   constructor(protected http: HttpClient, protected applicationConfigService: ApplicationConfigService) {}
+
+  updateContact(contactSociete: IContactSociete): Observable<HttpResponse<IContactSociete>> {
+    return this.http.put<IContactSociete>(`${this.resourceUrlContactSoc}/${contactSociete.id}`, contactSociete, { observe: 'response' });
+  }
+
+  createContactKeycloakUser(contactSocieteId: number): Observable<HttpResponse<IContactSocieteKeycloakResult>> {
+    return this.http.post<IContactSocieteKeycloakResult>(`${this.resourceUrlContactSoc}/${contactSocieteId}/create-keycloak-user`, null, {
+      observe: 'response',
+    });
+  }
+
+  resetContactKeycloakPassword(contactSocieteId: number): Observable<HttpResponse<IContactSocieteKeycloakResult>> {
+    return this.http.post<IContactSocieteKeycloakResult>(
+      `${this.resourceUrlContactSoc}/${contactSocieteId}/reset-keycloak-password`,
+      null,
+      { observe: 'response' }
+    );
+  }
 
   // GET /societes (paginée)
   queryOrgaSoc(req?: any): Observable<EntityArrayResponseType> {

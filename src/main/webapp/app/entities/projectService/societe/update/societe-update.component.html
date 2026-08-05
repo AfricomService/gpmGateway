@@ -330,16 +330,22 @@
                     </div>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  class="cu-item-remove"
-                  [disabled]="isDeletingContactId === contact.id"
-                  (click)="deleteContact(contact)"
-                  title="Supprimer ce contact"
-                >
-                  <span *ngIf="isDeletingContactId === contact.id" class="spinner-border spinner-border-sm"></span>
-                  <fa-icon *ngIf="isDeletingContactId !== contact.id" icon="times"></fa-icon>
-                </button>
+                <div class="cu-item-actions d-flex gap-1">
+                  <button type="button" class="cu-item-edit" (click)="openContactSocieteModal(contact)" title="Voir / modifier ce contact">
+                    <fa-icon icon="pencil-alt"></fa-icon>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="cu-item-remove"
+                    [disabled]="isDeletingContactId === contact.id"
+                    (click)="deleteContact(contact)"
+                    title="Supprimer ce contact"
+                  >
+                    <span *ngIf="isDeletingContactId === contact.id" class="spinner-border spinner-border-sm"></span>
+                    <fa-icon *ngIf="isDeletingContactId !== contact.id" icon="times"></fa-icon>
+                  </button>
+                </div>
               </div>
             </div>
             <ng-template #noContacts>
@@ -582,4 +588,141 @@
     </div>
   </div>
   <div class="modal-backdrop fade show" *ngIf="showOrgaModal"></div>
+  <ng-template #keycloakResultModal let-modal>
+    <div
+      class="modal-body kc-result-modal"
+      [class.kc-result-success]="keycloakResult?.success"
+      [class.kc-result-error]="!keycloakResult?.success"
+    >
+      <div class="kc-result-icon">
+        <fa-icon *ngIf="keycloakResult?.success" icon="check-circle"></fa-icon>
+        <fa-icon *ngIf="!keycloakResult?.success" icon="times-circle"></fa-icon>
+      </div>
+
+      <ng-container *ngIf="keycloakResult?.success; else kcError">
+        <h5 class="kc-result-title">Compte utilisateur créé avec succès</h5>
+        <p class="kc-result-text">
+          Le compte a bien été créé. Merci de contacter
+          <strong>{{ keycloakResult?.nomPrenom }}</strong>
+          pour lui communiquer ses identifiants de connexion à l'application.
+        </p>
+
+        <div class="kc-result-credentials">
+          <div class="kc-cred-row">
+            <span class="kc-cred-label">Login</span>
+            <span class="kc-cred-value">{{ keycloakResult?.login }}</span>
+          </div>
+          <div class="kc-cred-row">
+            <span class="kc-cred-label">Mot de passe</span>
+            <span class="kc-cred-value">{{ keycloakResult?.password }}</span>
+          </div>
+        </div>
+
+        <p class="kc-result-note">
+          <fa-icon icon="info-circle"></fa-icon>
+          &nbsp;Ce mot de passe est temporaire : l'utilisateur devra le changer lors de sa première connexion.
+        </p>
+      </ng-container>
+
+      <ng-template #kcError>
+        <h5 class="kc-result-title">Échec de la création du compte</h5>
+        <p class="kc-result-text">{{ keycloakResult?.message }}</p>
+      </ng-template>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cu-save-modal" (click)="modal.close()">Fermer</button>
+    </div>
+  </ng-template>
+
+  <ng-template #contactSocieteModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Détails du Contact Société</h5>
+      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label fw-bold">Matricule</label>
+          <input type="text" class="form-control" [(ngModel)]="newContactSociete.matricule" [ngModelOptions]="{ standalone: true }" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-bold">Nom &amp; Prénom <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" [(ngModel)]="newContactSociete.nomPrenom" [ngModelOptions]="{ standalone: true }" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-bold">Email</label>
+          <input
+            type="email"
+            class="form-control"
+            [class.is-invalid]="contactSocieteEmailField.invalid && (contactSocieteEmailField.dirty || contactSocieteEmailField.touched)"
+            [(ngModel)]="newContactSociete.email"
+            [ngModelOptions]="{ standalone: true }"
+            #contactSocieteEmailField="ngModel"
+            pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+          />
+          <small
+            class="form-text text-danger"
+            *ngIf="contactSocieteEmailField.invalid && (contactSocieteEmailField.dirty || contactSocieteEmailField.touched)"
+          >
+            Adresse email invalide.
+          </small>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-bold">Téléphone</label>
+          <input
+            type="tel"
+            class="form-control"
+            [class.is-invalid]="contactSocieteTelField.invalid && (contactSocieteTelField.dirty || contactSocieteTelField.touched)"
+            [(ngModel)]="newContactSociete.numTel"
+            [ngModelOptions]="{ standalone: true }"
+            #contactSocieteTelField="ngModel"
+            pattern="^[+]?[0-9\s-]{8,15}$"
+          />
+          <small
+            class="form-text text-danger"
+            *ngIf="contactSocieteTelField.invalid && (contactSocieteTelField.dirty || contactSocieteTelField.touched)"
+          >
+            Numéro de téléphone invalide (8 à 15 chiffres, espaces, tirets ou + autorisés).
+          </small>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button
+        type="button"
+        class="btn btn-outline-primary"
+        [class.btn-cu-kc-created]="editingContactSociete?.statusCompteKeycloak === 'EN_COURS'"
+        *ngIf="editingContactSociete && editingContactSociete.statusCompteKeycloak !== 'ACTIF'"
+        [disabled]="creatingKeycloakUser || !editingContactSociete.matricule || editingContactSociete.statusCompteKeycloak === 'EN_COURS'"
+        (click)="createContactSocieteKeycloakUser()"
+      >
+        <fa-icon icon="user-plus"></fa-icon>&nbsp;{{
+          editingContactSociete.statusCompteKeycloak === 'EN_COURS'
+            ? 'Compte utilisateur créé'
+            : creatingKeycloakUser
+            ? 'Création...'
+            : 'Créer un compte utilisateur'
+        }}
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-outline-warning"
+        *ngIf="editingContactSociete && editingContactSociete.statusCompteKeycloak === 'ACTIF'"
+        [disabled]="resettingPassword"
+        (click)="resetContactSocietePassword()"
+      >
+        <fa-icon icon="key"></fa-icon>&nbsp;{{ resettingPassword ? 'Réinitialisation...' : 'Réinitialiser le mot de passe' }}
+      </button>
+
+      <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
+      <button
+        class="btn-cu-save-modal"
+        [disabled]="!newContactSociete.nomPrenom?.trim() || contactSocieteEmailField.invalid || contactSocieteTelField.invalid"
+        (click)="saveContactSociete(modal)"
+      >
+        Enregistrer
+      </button>
+    </div>
+  </ng-template>
 </div>
