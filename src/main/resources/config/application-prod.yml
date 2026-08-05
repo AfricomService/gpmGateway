@@ -15,9 +15,12 @@
 
 logging:
   level:
-    ROOT: INFO
-    tech.jhipster: INFO
-    com.gpm.gateway: INFO
+    ROOT: DEBUG
+    tech.jhipster: DEBUG
+    org.hibernate.SQL: DEBUG
+    com.gpm.gateway: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: TRACE
 
 eureka:
   instance:
