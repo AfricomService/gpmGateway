@@ -70,6 +70,8 @@ export class ClientUpdateComponent implements OnInit {
   editingContact: IContact | null = null;
   newSite: Partial<NewSite> = {};
 
+  editingSite: ISite | null = null;
+
   siteImportFile: File | null = null;
   siteImportInProgress = false;
   siteImportResult: ISiteImportResult | null = null;
@@ -103,6 +105,14 @@ export class ClientUpdateComponent implements OnInit {
         this.updateForm(client);
       }
       this.loadRelationships();
+    });
+
+    this.editForm.get('raisonSociale')?.valueChanges.subscribe(() => {
+      const control = this.editForm.get('raisonSociale');
+      if (control?.errors?.raisonSocialeExists) {
+        const { raisonSocialeExists, ...rest } = control.errors;
+        control.setErrors(Object.keys(rest).length ? rest : null);
+      }
     });
   }
 
@@ -147,19 +157,8 @@ export class ClientUpdateComponent implements OnInit {
     this.modalService.open(this.contactModal, { size: 'lg', backdrop: 'static', centered: true });
   }
 
-  // === Navigation vers les interfaces d'édition ===
-  goToContact(contact: IContact): void {
-    if (!contact.id) {
-      return;
-    }
-    this.router.navigate(['/contact', contact.id, 'edit']);
-  }
-
-  goToSite(site: ISite): void {
-    if (!site.id) {
-      return;
-    }
-    this.router.navigate(['/site', site.id, 'edit']);
+  isEmailFieldLocked(): boolean {
+    return !!this.editingContact && this.editingContact.statusCompteKeycloak !== 'DEACTIVE';
   }
 
   goToAffaire(affaire: IAffaire): void {
@@ -409,9 +408,46 @@ export class ClientUpdateComponent implements OnInit {
     this.modalService.open(this.siteModal, { size: 'lg', backdrop: 'static', centered: true });
   }
 
-  saveNewSite(modal: any): void {
+  openEditSiteModal(site: ISite): void {
+    this.editingSite = site;
+    const { id, ...siteWithoutId } = site;
+    this.newSite = { ...siteWithoutId };
+    this.modalService.open(this.siteModal, { size: 'lg', backdrop: 'static', centered: true });
+  }
+
+  compareVille = (o1: IVille | { id: number; nom: string } | null, o2: IVille | { id: number; nom: string } | null): boolean =>
+    o1 && o2 ? o1.id === o2.id : o1 === o2;
+
+  saveSite(modal: any): void {
     const clientRef = this.client ? { id: this.client.id, raisonSociale: this.client.raisonSociale } : null;
     if (!clientRef || !this.newSite.code?.trim() || !this.newSite.designation?.trim() || !this.newSite.ville) {
+      return;
+    }
+
+    if (this.editingSite) {
+      const siteToUpdate: ISite = {
+        ...this.editingSite,
+        code: this.newSite.code.trim(),
+        designation: this.newSite.designation.trim(),
+        gpsX: this.newSite.gpsX ?? null,
+        gpsY: this.newSite.gpsY ?? null,
+        nodaleGpm: this.newSite.nodaleGpm?.trim() ?? null,
+        sitePriority: this.newSite.sitePriority?.trim() ?? null,
+        typeSite: this.newSite.typeSite?.trim() ?? null,
+        regionSite: this.newSite.regionSite?.trim() ?? null,
+        zoneNom: this.newSite.zoneNom?.trim() ?? null,
+        ville: this.newSite.ville,
+      };
+
+      this.siteService.update(siteToUpdate).subscribe({
+        next: () => {
+          this.loadSites();
+          modal.close();
+        },
+        error: () => {
+          // Optionnel : notifier l'utilisateur via jhi-alert-error ou toast
+        },
+      });
       return;
     }
 
@@ -632,7 +668,7 @@ export class ClientUpdateComponent implements OnInit {
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IClient>>, isNewClient: boolean): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
       next: res => this.onSaveSuccess(res, isNewClient),
-      error: () => this.onSaveError(),
+      error: err => this.onSaveError(err),
     });
   }
 
@@ -644,8 +680,11 @@ export class ClientUpdateComponent implements OnInit {
     }
   }
 
-  protected onSaveError(): void {
-    // Api for inheritance.
+  protected onSaveError(err?: any): void {
+    if (err?.error?.errorKey === 'raisonsocialeexists') {
+      this.editForm.get('raisonSociale')?.setErrors({ raisonSocialeExists: true });
+      this.editForm.get('raisonSociale')?.markAsTouched();
+    }
   }
 
   protected onSaveFinalize(): void {
