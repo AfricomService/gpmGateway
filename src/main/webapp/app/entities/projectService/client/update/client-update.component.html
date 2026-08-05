@@ -75,6 +75,9 @@
                   >
                     Ce champ est obligatoire.
                   </small>
+                  <small class="form-text text-danger" *ngIf="editForm.get('raisonSociale')?.errors?.raisonSocialeExists">
+                    Un client avec cette raison sociale existe déjà.
+                  </small>
                 </div>
               </div>
 
@@ -169,7 +172,7 @@
                 (ngModelChange)="searchContacts()"
               />
               <div *ngIf="selectedContacts.length > 0; else noContacts" class="cu-item-list">
-                <div class="cu-item-card cu-item-card-clickable" *ngFor="let contact of selectedContacts" (click)="goToContact(contact)">
+                <div class="cu-item-card" *ngFor="let contact of selectedContacts">
                   <div class="cu-item-info">
                     <div class="cu-item-title-row">
                       <span class="cu-item-badge-id" *ngIf="contact.identifiantUnique">{{ contact.identifiantUnique }}</span>
@@ -180,10 +183,10 @@
                     </div>
                   </div>
                   <div class="cu-item-actions">
-                    <button type="button" class="cu-item-edit" (click)="$event.stopPropagation(); openEditContactModal(contact)">
+                    <button type="button" class="cu-item-edit" (click)="openEditContactModal(contact)">
                       <fa-icon icon="pencil-alt"></fa-icon>
                     </button>
-                    <button type="button" class="cu-item-remove" (click)="$event.stopPropagation(); unlinkContact(contact)">
+                    <button type="button" class="cu-item-remove" (click)="unlinkContact(contact)">
                       <fa-icon icon="times"></fa-icon>
                     </button>
                   </div>
@@ -224,14 +227,19 @@
                 (ngModelChange)="searchSites()"
               />
               <div *ngIf="selectedSites.length > 0; else noSites" class="cu-item-list">
-                <div class="cu-item-card cu-item-card-clickable" *ngFor="let site of selectedSites" (click)="goToSite(site)">
+                <div class="cu-item-card" *ngFor="let site of selectedSites">
                   <div class="cu-item-info">
                     <div class="cu-item-title">{{ site.code || '-' }}</div>
                     <div class="cu-item-sub">{{ site.designation || 'Désignation non renseignée' }}</div>
                   </div>
-                  <button type="button" class="cu-item-remove" (click)="$event.stopPropagation(); unlinkSite(site)">
-                    <fa-icon icon="times"></fa-icon>
-                  </button>
+                  <div class="cu-item-actions">
+                    <button type="button" class="cu-item-edit" (click)="openEditSiteModal(site)">
+                      <fa-icon icon="pencil-alt"></fa-icon>
+                    </button>
+                    <button type="button" class="cu-item-remove" (click)="unlinkSite(site)">
+                      <fa-icon icon="times"></fa-icon>
+                    </button>
+                  </div>
                 </div>
               </div>
               <ng-template #noSites>
@@ -449,6 +457,8 @@
               [class.is-invalid]="contactEmailField.invalid && (contactEmailField.dirty || contactEmailField.touched)"
               [(ngModel)]="newContact.email"
               [ngModelOptions]="{ standalone: true }"
+              [readonly]="isEmailFieldLocked()"
+              [class.cu-field-locked]="isEmailFieldLocked()"
               #contactEmailField="ngModel"
               pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
             />
@@ -457,6 +467,9 @@
               *ngIf="contactEmailField.invalid && (contactEmailField.dirty || contactEmailField.touched)"
             >
               Adresse email invalide.
+            </small>
+            <small class="form-text text-muted" *ngIf="isEmailFieldLocked()">
+              <fa-icon icon="lock"></fa-icon>&nbsp;Email non modifiable : le compte utilisateur est déjà créé ou en cours de création.
             </small>
           </div>
           <div class="col-md-6">
@@ -562,7 +575,7 @@
 
     <ng-template #siteModal let-modal>
       <div class="modal-header">
-        <h5 class="modal-title">Nouveau Site</h5>
+        <h5 class="modal-title">{{ editingSite ? 'Modifier Site' : 'Nouveau Site' }}</h5>
         <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
       </div>
       <div class="modal-body">
@@ -577,7 +590,7 @@
           </div>
           <div class="col-md-6">
             <label class="form-label fw-bold">Gouvernorat <span class="text-danger">*</span></label>
-            <select class="form-control" [(ngModel)]="newSite.ville" [ngModelOptions]="{ standalone: true }">
+            <select class="form-control" [(ngModel)]="newSite.ville" [ngModelOptions]="{ standalone: true }" [compareWith]="compareVille">
               <option [ngValue]="null">-- Sélectionner une ville --</option>
               <option *ngFor="let ville of allVilles" [ngValue]="{ id: ville.id, nom: ville.nom }">{{ ville.nom }}</option>
             </select>
@@ -617,9 +630,9 @@
         <button
           class="btn-cu-save-modal"
           [disabled]="!newSite.code?.trim() || !newSite.designation?.trim() || !newSite.ville"
-          (click)="saveNewSite(modal)"
+          (click)="saveSite(modal)"
         >
-          Ajouter
+          {{ editingSite ? 'Enregistrer' : 'Ajouter' }}
         </button>
       </div>
     </ng-template>

@@ -14,6 +14,13 @@
     <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
       <jhi-alert-error></jhi-alert-error>
 
+      <!-- Success message -->
+      <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+        <fa-icon icon="check-circle" class="me-2"></fa-icon>
+        {{ successMessage }}
+        <button type="button" class="btn-close" (click)="dismissSuccessMessage()"></button>
+      </div>
+
       <!-- Toolbar : Numéro / Désignation (gauche) + Enregistrer/Modifier (droite) -->
       <div class="cu-toolbar">
         <div class="cu-toolbar-left">
@@ -48,12 +55,13 @@
         <!-- Bouton Enregistrer (mode édition) -->
         <button
           *ngIf="isEditMode"
-          type="submit"
+          type="button"
           id="save-entity-top"
           data-cy="entityCreateSaveButton"
           title="Enregistrer"
           [disabled]="editForm.invalid || isSaving"
           class="btn-cu-save"
+          (click)="save()"
         >
           <fa-icon icon="save"></fa-icon>
         </button>
@@ -163,20 +171,36 @@
               </div>
 
               <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold" for="field_responsable">Responsable Projet</label>
+                <label class="form-label fw-bold" for="field_responsable">
+                  Responsable Projet
+                  <span class="text-danger">*</span>
+                </label>
                 <ng-select
                   id="field_responsable"
                   name="responsable"
                   [items]="usersSharedCollection"
-                  bindLabel="login"
                   [searchable]="true"
                   [(ngModel)]="selectedResponsable"
                   [ngModelOptions]="{ standalone: true }"
+                  (ngModelChange)="onResponsableChange($event)"
                   class="custom-ng-select"
                   placeholder="Rechercher un responsable..."
                   [readonly]="!isEditMode"
                 >
+                  <ng-template ng-label-tmp let-item="item"> {{ item.firstName }} {{ item.lastName }} </ng-template>
+
+                  <ng-template ng-option-tmp let-item="item"> {{ item.firstName }} {{ item.lastName }} </ng-template>
                 </ng-select>
+                <div
+                  *ngIf="
+                    editForm.get('responsableProjetId')!.invalid &&
+                    (editForm.get('responsableProjetId')!.dirty || editForm.get('responsableProjetId')!.touched)
+                  "
+                >
+                  <small class="form-text text-danger" *ngIf="editForm.get('responsableProjetId')?.errors?.required">
+                    Ce champ est obligatoire.
+                  </small>
+                </div>
               </div>
 
               <div class="col-md-12 mb-3">

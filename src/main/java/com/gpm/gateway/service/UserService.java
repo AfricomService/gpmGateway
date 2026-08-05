@@ -122,6 +122,11 @@ public class UserService {
         return userRepository.findOneWithAuthoritiesByLogin(login);
     }
 
+    @Transactional(readOnly = true)
+    public Flux<AdminUserDTO> getAllManagedUsersByAuthority(String authority) {
+        return userRepository.findAllByAuthority(authority).map(AdminUserDTO::new);
+    }
+
     /**
      * Vérifie si un utilisateur existe dans jhi_user avec ce login (insensible à la casse).
      * Utilisé par les microservices (ex: GPM) pour savoir si un contact s'est déjà connecté
@@ -164,10 +169,10 @@ public class UserService {
             })
             .doOnNext(authority -> log.debug("Saving authority '{}' in local database", authority))
             .flatMap(authorityRepository::save)
-            .then(userRepository.findOneByLogin(user.getLogin()))
+            .then(userRepository.findOneWithAuthoritiesByLogin(user.getLogin())) // was findOneByLogin
             .switchIfEmpty(saveUser(user, true))
             .flatMap(existingUser -> {
-                // if IdP sends last updated information, use it to determine if an update should happen
+                Mono<Void> profileUpdate;
                 if (details.get("updated_at") != null) {
                     Instant dbModifiedDate = existingUser.getLastModifiedDate();
                     Instant idpModifiedDate;
@@ -176,16 +181,18 @@ public class UserService {
                     } else {
                         idpModifiedDate = Instant.ofEpochSecond((Integer) details.get("updated_at"));
                     }
-                    if (idpModifiedDate.isAfter(dbModifiedDate)) {
-                        log.debug("Updating user '{}' in local database", user.getLogin());
-                        return updateUser(user.getFirstName(), user.getLastName(), user.getEmail(), user.getLangKey(), user.getImageUrl());
-                    }
-                    // no last updated info, blindly update
+                    profileUpdate =
+                        idpModifiedDate.isAfter(dbModifiedDate)
+                            ? updateUser(user.getFirstName(), user.getLastName(), user.getEmail(), user.getLangKey(), user.getImageUrl())
+                            : Mono.empty();
                 } else {
-                    log.debug("Updating user '{}' in local database", user.getLogin());
-                    return updateUser(user.getFirstName(), user.getLastName(), user.getEmail(), user.getLangKey(), user.getImageUrl());
+                    profileUpdate =
+                        updateUser(user.getFirstName(), user.getLastName(), user.getEmail(), user.getLangKey(), user.getImageUrl());
                 }
-                return Mono.empty();
+
+                // authorities sync happens every login, regardless of updated_at
+                Set<String> tokenAuthorities = user.getAuthorities().stream().map(Authority::getName).collect(Collectors.toSet());
+                return profileUpdate.then(syncUserAuthorities(existingUser, tokenAuthorities));
             })
             .thenReturn(user);
     }
@@ -294,5 +301,29 @@ public class UserService {
                 return userId != null ? userId : "";
             })
             .switchIfEmpty(Mono.error(new RuntimeException("User not found")));
+    }
+
+    private Mono<Void> syncUserAuthorities(User existingUser, Set<String> tokenAuthorities) {
+        Set<String> dbAuthorities = existingUser.getAuthorities().stream().map(Authority::getName).collect(Collectors.toSet());
+
+        Set<String> toAdd = new HashSet<>(tokenAuthorities);
+        toAdd.removeAll(dbAuthorities);
+
+        Set<String> toRemove = new HashSet<>(dbAuthorities);
+        toRemove.removeAll(tokenAuthorities);
+
+        Mono<Void> additions = Flux
+            .fromIterable(toAdd)
+            .doOnNext(authority -> log.debug("Adding authority '{}' for user '{}'", authority, existingUser.getLogin()))
+            .flatMap(authority -> userRepository.saveUserAuthority(existingUser.getId(), authority))
+            .then();
+
+        Mono<Void> removals = Flux
+            .fromIterable(toRemove)
+            .doOnNext(authority -> log.debug("Removing authority '{}' for user '{}'", authority, existingUser.getLogin()))
+            .flatMap(authority -> userRepository.deleteUserAuthority(existingUser.getId(), authority))
+            .then();
+
+        return additions.then(removals);
     }
 }

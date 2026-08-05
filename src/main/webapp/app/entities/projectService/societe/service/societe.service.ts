@@ -9,6 +9,10 @@ import { ApplicationConfigService } from 'app/core/config/application-config.ser
 import { createRequestOption } from 'app/core/request/request-util';
 import { ISociete, NewSociete } from '../societe.model';
 import { IPersonne } from '../personne.model';
+import { IRoleContactSociete } from '../role-contact-societe.model';
+import { IUserAuthSociete } from '../user-auth-societe.model';
+import { IAssignRole } from '../assign-role.model';
+import { IContactSociete } from '../contact-societe.model';
 
 export type PartialUpdateSociete = Partial<ISociete> & Pick<ISociete, 'id'>;
 
@@ -27,6 +31,11 @@ export type EntityResponseType = HttpResponse<ISociete>;
 export type EntityArrayResponseType = HttpResponse<ISociete[]>;
 export type EntityArrayResponseTypePeronne = HttpResponse<IPersonne[]>;
 
+export interface IContactSocieteKeycloakResult {
+  contactSociete: IContactSociete;
+  generatedPassword: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class SocieteService {
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/societes', 'projectservice');
@@ -34,6 +43,28 @@ export class SocieteService {
   protected resourceUrlOrga = this.applicationConfigService.getEndpointFor('api', 'orgacare');
 
   constructor(protected http: HttpClient, protected applicationConfigService: ApplicationConfigService) {}
+
+  createContact(contactSociete: IContactSociete): Observable<HttpResponse<IContactSociete>> {
+    return this.http.post<IContactSociete>(this.resourceUrlContactSoc, contactSociete, { observe: 'response' });
+  }
+
+  updateContact(contactSociete: IContactSociete): Observable<HttpResponse<IContactSociete>> {
+    return this.http.put<IContactSociete>(`${this.resourceUrlContactSoc}/${contactSociete.id}`, contactSociete, { observe: 'response' });
+  }
+
+  createContactKeycloakUser(contactSocieteId: number): Observable<HttpResponse<IContactSocieteKeycloakResult>> {
+    return this.http.post<IContactSocieteKeycloakResult>(`${this.resourceUrlContactSoc}/${contactSocieteId}/create-keycloak-user`, null, {
+      observe: 'response',
+    });
+  }
+
+  resetContactKeycloakPassword(contactSocieteId: number): Observable<HttpResponse<IContactSocieteKeycloakResult>> {
+    return this.http.post<IContactSocieteKeycloakResult>(
+      `${this.resourceUrlContactSoc}/${contactSocieteId}/reset-keycloak-password`,
+      null,
+      { observe: 'response' }
+    );
+  }
 
   // GET /societes (paginée)
   queryOrgaSoc(req?: any): Observable<EntityArrayResponseType> {
@@ -133,6 +164,36 @@ export class SocieteService {
       },
       observe: 'response',
     });
+  }
+
+  searchContacts(req?: any): Observable<EntityArrayResponseType> {
+    const options = createRequestOption(req);
+    return this.http
+      .get<RestSociete[]>(`${this.resourceUrlContactSoc}/search`, { params: options, observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
+  deleteContact(contactId: number): Observable<HttpResponse<{}>> {
+    return this.http.delete(`${this.resourceUrlContactSoc}/${contactId}`, { observe: 'response' });
+  }
+
+  getRoles(): Observable<IRoleContactSociete[]> {
+    return this.http.get<IRoleContactSociete[]>(
+      this.applicationConfigService.getEndpointFor('api/role-contact-societes', 'projectservice')
+    );
+  }
+
+  getAssignments(societeId: number): Observable<IUserAuthSociete[]> {
+    return this.http.get<IUserAuthSociete[]>(
+      this.applicationConfigService.getEndpointFor(`api/user-auth-societes/by-societe/${societeId}`, 'projectservice')
+    );
+  }
+
+  assignRole(body: IAssignRole): Observable<IUserAuthSociete> {
+    return this.http.post<IUserAuthSociete>(
+      this.applicationConfigService.getEndpointFor('api/user-auth-societes/assign-role', 'projectservice'),
+      body
+    );
   }
 
   protected convertDateFromClient<T extends ISociete | NewSociete | PartialUpdateSociete>(societe: T): RestOf<T> {

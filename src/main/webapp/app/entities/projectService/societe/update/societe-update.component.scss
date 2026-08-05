@@ -20,6 +20,25 @@
   color: var(--cp-text);
 }
 
+.cu-item-edit {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 8px;
+  background: var(--cp-accent-soft);
+  color: var(--cp-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.18s ease, color 0.18s ease;
+
+  &:hover {
+    background: var(--cp-accent);
+    color: #ffffff;
+  }
+}
+
 .btn-cu-back-floating {
   display: flex;
   align-items: center;
@@ -107,6 +126,35 @@
   padding: 0.4rem 0.75rem;
   border-radius: 8px;
   flex-shrink: 0;
+}
+
+.btn-cu-save-modal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  border: none;
+  background: #f5822a;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
+  transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+
+  &:hover:not(:disabled) {
+    background: #ff9a4d;
+    box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.7);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: default;
+    box-shadow: none;
+    transform: none;
+  }
 }
 
 .btn-cu-save {
@@ -419,31 +467,112 @@
 }
 
 /* ============ MODAL OrgaCare (import) ============ */
-.btn-cu-save-modal {
-  display: inline-flex;
+//.btn-cu-save-modal {
+//  display: inline-flex;
+//  align-items: center;
+//  justify-content: center;
+//  padding: 0.5rem 1.25rem;
+//  border-radius: 8px;
+//  border: none;
+//  background: var(--cp-accent);
+//  color: #ffffff;
+//  font-weight: 600;
+//  font-size: 0.85rem;
+//  white-space: nowrap;
+//  box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
+//  transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+//
+//  &:hover:not(:disabled) {
+//    background: var(--cp-accent-hover);
+//    box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.7);
+//    transform: translateY(-1px);
+//  }
+//
+//  &:disabled {
+//    opacity: 0.55;
+//    cursor: default;
+//    box-shadow: none;
+//    transform: none;
+//  }
+//}
+
+/* Bouton "Compte utilisateur créé" - état succès dans le modal Contact */
+/* Non scopé car NgbModal rend son contenu hors de l'arbre DOM du composant */
+.btn-cu-kc-created {
+  background-color: rgba(46, 158, 91, 0.12) !important;
+  border-color: #2e9e5b !important;
+  color: #2e9e5b !important;
+  opacity: 1 !important;
+}
+.kc-result-modal {
+  text-align: center;
+  padding: 2rem 1.5rem 1rem;
+}
+
+.kc-result-icon {
+  font-size: 2.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.kc-result-success .kc-result-icon {
+  color: #2e9e5b;
+}
+
+.kc-result-error .kc-result-icon {
+  color: #e0524d;
+}
+
+.kc-result-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  color: #1a2233;
+}
+
+.kc-result-text {
+  color: #4a5266;
+  font-size: 0.92rem;
+  margin-bottom: 1.25rem;
+  line-height: 1.5;
+}
+
+.kc-result-credentials {
+  background: #f2f4f8;
+  border: 1px solid #e7e9ee;
+  border-radius: 10px;
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.kc-cred-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.35rem 0;
+
+  & + .kc-cred-row {
+    border-top: 1px dashed #e7e9ee;
+  }
+}
+
+.kc-cred-label {
+  font-size: 0.8rem;
+  color: #8a93a3;
+  font-weight: 600;
+}
+
+.kc-cred-value {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #f5822a;
+  font-family: 'Courier New', monospace;
+}
+
+.kc-result-note {
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem 1.25rem;
-  border-radius: 8px;
-  border: none;
-  background: var(--cp-accent);
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 0.85rem;
-  white-space: nowrap;
-  box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
-  transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
-
-  &:hover:not(:disabled) {
-    background: var(--cp-accent-hover);
-    box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.7);
-    transform: translateY(-1px);
-  }
-
-  &:disabled {
-    opacity: 0.55;
-    cursor: default;
-    box-shadow: none;
-    transform: none;
-  }
+  font-size: 0.8rem;
+  color: #8a93a3;
 }

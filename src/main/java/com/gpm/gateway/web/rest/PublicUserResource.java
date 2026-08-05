@@ -1,6 +1,7 @@
 package com.gpm.gateway.web.rest;
 
 import com.gpm.gateway.service.UserService;
+import com.gpm.gateway.service.dto.AdminUserDTO;
 import com.gpm.gateway.service.dto.UserDTO;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +30,17 @@ public class PublicUserResource {
 
     public PublicUserResource(UserService userService) {
         this.userService = userService;
+    }
+
+    /**
+     * {@code GET /users/managers} : get all users with ROLE_MANAGER.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of manager users in body.
+     */
+    @GetMapping("/users/managers")
+    public Mono<List<AdminUserDTO>> getAllManagers() {
+        log.debug("REST request to get all users with ROLE_MANAGER");
+        return userService.getAllManagedUsersByAuthority("ROLE_MANAGER").collectList();
     }
 
     /**

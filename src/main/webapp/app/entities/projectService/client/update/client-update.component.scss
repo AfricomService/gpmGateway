@@ -692,3 +692,9 @@
   font-size: 0.8rem;
   color: #8a93a3;
 }
+
+.cu-field-locked {
+  background-color: #f2f4f8 !important;
+  color: #8a93a3;
+  cursor: not-allowed;
+}
