@@ -44,6 +44,10 @@ export class SocieteService {
 
   constructor(protected http: HttpClient, protected applicationConfigService: ApplicationConfigService) {}
 
+  createContact(contactSociete: IContactSociete): Observable<HttpResponse<IContactSociete>> {
+    return this.http.post<IContactSociete>(this.resourceUrlContactSoc, contactSociete, { observe: 'response' });
+  }
+
   updateContact(contactSociete: IContactSociete): Observable<HttpResponse<IContactSociete>> {
     return this.http.put<IContactSociete>(`${this.resourceUrlContactSoc}/${contactSociete.id}`, contactSociete, { observe: 'response' });
   }

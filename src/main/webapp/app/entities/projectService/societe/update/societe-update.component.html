@@ -246,6 +246,9 @@
 
         <!-- Contacts Associés (uniquement en édition, pas en création) -->
         <div class="cu-accordion-item" [class.open]="isSectionOpen('contacts')" *ngIf="societe?.id">
+          <button type="button" class="btn-cu-add me-2" (click)="$event.stopPropagation(); openCreateContactModal()">
+            <fa-icon icon="plus"></fa-icon>&nbsp;Ajouter un nouveau contact
+          </button>
           <button type="button" class="cu-accordion-header" (click)="toggleSection('contacts')">
             <span class="cu-accordion-header-left">
               <fa-icon icon="address-book" class="cu-accordion-icon"></fa-icon>
@@ -636,7 +639,9 @@
 
   <ng-template #contactSocieteModal let-modal>
     <div class="modal-header">
-      <h5 class="modal-title">Détails du Contact Société</h5>
+      <h5 class="modal-title">
+        {{ isCreatingContact ? 'Nouveau Contact Société' : 'Détails du Contact Société' }}
+      </h5>
       <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
     </div>
     <div class="modal-body">
@@ -692,7 +697,7 @@
         type="button"
         class="btn btn-outline-primary"
         [class.btn-cu-kc-created]="editingContactSociete?.statusCompteKeycloak === 'EN_COURS'"
-        *ngIf="editingContactSociete && editingContactSociete.statusCompteKeycloak !== 'ACTIF'"
+        *ngIf="!isCreatingContact && editingContactSociete && editingContactSociete.statusCompteKeycloak !== 'ACTIF'"
         [disabled]="creatingKeycloakUser || !editingContactSociete.matricule || editingContactSociete.statusCompteKeycloak === 'EN_COURS'"
         (click)="createContactSocieteKeycloakUser()"
       >
@@ -719,7 +724,7 @@
       <button
         class="btn-cu-save-modal"
         [disabled]="!newContactSociete.nomPrenom?.trim() || contactSocieteEmailField.invalid || contactSocieteTelField.invalid"
-        (click)="saveContactSociete(modal)"
+        (click)="isCreatingContact ? createContactSociete(modal) : saveContactSociete(modal)"
       >
         Enregistrer
       </button>

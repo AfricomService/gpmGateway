@@ -75,6 +75,8 @@ export class SocieteUpdateComponent implements OnInit {
   resettingPassword = false;
   keycloakResult: { success: boolean; nomPrenom?: string; login?: string; password?: string; message?: string } | null = null;
 
+  isCreatingContact = false;
+
   private successMessageTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
@@ -86,10 +88,59 @@ export class SocieteUpdateComponent implements OnInit {
     protected modalService: NgbModal
   ) {}
 
+  openCreateContactModal(): void {
+    this.isCreatingContact = true;
+    this.editingContactSociete = null;
+
+    this.newContactSociete = {
+      matricule: '',
+      nomPrenom: '',
+      email: '',
+      numTel: '',
+    };
+
+    this.modalService.open(this.contactSocieteModal, {
+      size: 'lg',
+      backdrop: 'static',
+      centered: true,
+    });
+  }
+
   openContactSocieteModal(contact: IContactSociete): void {
+    this.isCreatingContact = false;
+
     this.editingContactSociete = contact;
     this.newContactSociete = { ...contact };
-    this.modalService.open(this.contactSocieteModal, { size: 'lg', backdrop: 'static', centered: true });
+
+    this.modalService.open(this.contactSocieteModal, {
+      size: 'lg',
+      backdrop: 'static',
+      centered: true,
+    });
+  }
+
+  createContactSociete(modal: any): void {
+    if (!this.societe?.id || !this.newContactSociete.nomPrenom?.trim()) {
+      return;
+    }
+
+    const contactToCreate: IContactSociete = {
+      matricule: this.newContactSociete.matricule ?? null,
+      nomPrenom: this.newContactSociete.nomPrenom.trim(),
+      email: this.newContactSociete.email ?? null,
+      numTel: this.newContactSociete.numTel ?? null,
+      societeId: this.societe.id,
+    } as IContactSociete;
+
+    this.societeService.createContact(contactToCreate).subscribe({
+      next: () => {
+        this.loadContactsAssocies();
+        modal.close();
+      },
+      error: () => {
+        // Optional: show an error toast
+      },
+    });
   }
 
   saveContactSociete(modal: any): void {
