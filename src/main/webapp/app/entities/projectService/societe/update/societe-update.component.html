@@ -664,6 +664,10 @@
             [ngModelOptions]="{ standalone: true }"
             #contactSocieteEmailField="ngModel"
             pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+            [readonly]="
+              !isCreatingContact &&
+              (editingContactSociete?.statusCompteKeycloak === 'EN_COURS' || editingContactSociete?.statusCompteKeycloak === 'ACTIF')
+            "
           />
           <small
             class="form-text text-danger"
