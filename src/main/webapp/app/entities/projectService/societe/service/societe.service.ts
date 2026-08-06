@@ -196,6 +196,17 @@ export class SocieteService {
     );
   }
 
+  unassignRole(societeId: number, contactSocieteId: number, roleContactSocieteId: number): Observable<HttpResponse<void>> {
+    return this.http.delete<void>(this.applicationConfigService.getEndpointFor('api/user-auth-societes/unassign-role', 'projectservice'), {
+      params: {
+        societeId: societeId.toString(),
+        contactSocieteId: contactSocieteId.toString(),
+        roleContactSocieteId: roleContactSocieteId.toString(),
+      },
+      observe: 'response',
+    });
+  }
+
   protected convertDateFromClient<T extends ISociete | NewSociete | PartialUpdateSociete>(societe: T): RestOf<T> {
     return {
       ...societe,
