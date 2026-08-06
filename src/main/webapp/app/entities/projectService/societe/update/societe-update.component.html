@@ -295,25 +295,29 @@
 
                   <div class="cu-item-sub mt-2">
                     <!-- Roles exist -->
-                    <div *ngIf="hasRole(contact.id!)">
+                    <div class="d-flex align-items-center flex-wrap gap-1 mb-2" *ngIf="hasRole(contact.id!)">
                       <strong>Rôles :</strong>
-
-                      <span class="badge bg-primary me-1" *ngFor="let role of getContactRoles(contact.id!)">
+                      <span class="badge bg-primary d-flex align-items-center me-1" *ngFor="let role of getContactRoles(contact.id!)">
                         {{ role.label }}
+                        <button
+                          type="button"
+                          class="btn-close btn-close-white btn-close-sm ms-2"
+                          style="font-size: 0.55rem"
+                          title="Retirer ce rôle"
+                          (click)="removeRole(contact.id!, role.id!)"
+                        ></button>
                       </span>
                     </div>
 
-                    <!-- No role -->
-                    <div *ngIf="!hasRole(contact.id!)" class="d-flex align-items-center gap-2 mt-2">
+                    <div class="d-flex align-items-center gap-2" *ngIf="getAvailableRolesForContact(contact.id!).length">
                       <select
                         class="form-select form-select-sm"
                         style="width: 220px"
                         [(ngModel)]="selectedRoles[contact.id!]"
                         [ngModelOptions]="{ standalone: true }"
                       >
-                        <option [ngValue]="undefined">Choisir un rôle...</option>
-
-                        <option *ngFor="let role of roles" [ngValue]="role.id">
+                        <option [ngValue]="undefined">Ajouter un rôle...</option>
+                        <option *ngFor="let role of getAvailableRolesForContact(contact.id!)" [ngValue]="role.id">
                           {{ role.label }}
                         </option>
                       </select>
@@ -324,10 +328,8 @@
                         [disabled]="!selectedRoles[contact.id!] || isAssigningRoleContactId === contact.id"
                         (click)="assignRole(contact.id!)"
                       >
-                        <span *ngIf="isAssigningRoleContactId === contact.id" class="spinner-border spinner-border-sm"> </span>
-
-                        <fa-icon *ngIf="isAssigningRoleContactId !== contact.id" icon="check"> </fa-icon>
-
+                        <span *ngIf="isAssigningRoleContactId === contact.id" class="spinner-border spinner-border-sm"></span>
+                        <fa-icon *ngIf="isAssigningRoleContactId !== contact.id" icon="check"></fa-icon>
                         Affecter
                       </button>
                     </div>
@@ -693,6 +695,21 @@
           >
             Numéro de téléphone invalide (8 à 15 chiffres, espaces, tirets ou + autorisés).
           </small>
+        </div>
+        <div class="col-12" *ngIf="!isCreatingContact && editingContactSociete">
+          <label class="form-label fw-bold">Rôles</label>
+          <div class="d-flex flex-wrap gap-3">
+            <div class="form-check" *ngFor="let role of roles">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                [id]="'role-check-' + role.id"
+                [checked]="isRoleAssignedToContact(editingContactSociete.id!, role.id!)"
+                (change)="onToggleContactRole(editingContactSociete.id!, role.id!, $any($event.target).checked)"
+              />
+              <label class="form-check-label" [for]="'role-check-' + role.id">{{ role.label }}</label>
+            </div>
+          </div>
         </div>
       </div>
     </div>

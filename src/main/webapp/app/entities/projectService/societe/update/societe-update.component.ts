@@ -341,6 +341,40 @@ export class SocieteUpdateComponent implements OnInit {
       });
   }
 
+  getAvailableRolesForContact(contactId: number): IRoleContactSociete[] {
+    const assignedIds = this.getContactRoles(contactId).map(r => r.id);
+    return this.roles.filter(role => !assignedIds.includes(role.id));
+  }
+
+  isRoleAssignedToContact(contactId: number, roleId: number): boolean {
+    return this.assignments.some(a => a.contactSocieteId === contactId && a.roleContactSocieteId === roleId);
+  }
+
+  removeRole(contactId: number, roleId: number): void {
+    if (!this.societe?.id) {
+      return;
+    }
+    this.isAssigningRoleContactId = contactId;
+    this.societeService
+      .unassignRole(this.societe.id, contactId, roleId)
+      .pipe(finalize(() => (this.isAssigningRoleContactId = null)))
+      .subscribe({ next: () => this.loadAssignments() });
+  }
+
+  onToggleContactRole(contactId: number, roleId: number, checked: boolean): void {
+    if (!this.societe?.id) {
+      return;
+    }
+
+    if (checked) {
+      this.societeService
+        .assignRole({ societeId: this.societe.id, contactSocieteId: contactId, roleContactSocieteId: roleId })
+        .subscribe({ next: () => this.loadAssignments() });
+    } else {
+      this.societeService.unassignRole(this.societe.id, contactId, roleId).subscribe({ next: () => this.loadAssignments() });
+    }
+  }
+
   // === Accordéon ===
   toggleSection(section: AccordionSection): void {
     if (this.openSections.has(section)) {
