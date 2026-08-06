@@ -14,7 +14,7 @@ import { IPersonne } from '../personne.model'; // adjust path/name to match your
 import { IRoleContactSociete } from '../role-contact-societe.model';
 import { IUserAuthSociete } from '../user-auth-societe.model';
 import { IAssignRole } from '../assign-role.model';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 
 type AccordionSection = 'general' | 'coordonnees' | 'contacts';
 
@@ -77,6 +77,9 @@ export class SocieteUpdateComponent implements OnInit {
 
   isCreatingContact = false;
 
+  contactToDelete?: IContactSociete;
+  private deleteModalRef?: NgbModalRef;
+
   private successMessageTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
@@ -87,6 +90,33 @@ export class SocieteUpdateComponent implements OnInit {
     protected location: Location, // <-- add
     protected modalService: NgbModal
   ) {}
+
+  openDeleteContactModal(content: any, contact: IContactSociete): void {
+    this.contactToDelete = contact;
+    this.deleteModalRef = this.modalService.open(content, {
+      centered: true,
+      backdrop: 'static',
+    });
+  }
+
+  confirmDeleteContact(): void {
+    if (!this.contactToDelete?.id) {
+      return;
+    }
+
+    this.isDeletingContactId = this.contactToDelete.id;
+
+    this.societeService
+      .deleteContact(this.contactToDelete.id)
+      .pipe(finalize(() => (this.isDeletingContactId = null)))
+      .subscribe({
+        next: () => {
+          this.deleteModalRef?.close();
+          this.contactToDelete = undefined;
+          this.loadContactsAssocies();
+        },
+      });
+  }
 
   openCreateContactModal(): void {
     this.isCreatingContact = true;
