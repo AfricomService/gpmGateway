@@ -1,0 +1,64 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="ressource">
+      <h2 data-cy="ressourceDetailsHeading"><span jhiTranslate="gpmGatewayApp.projectServiceRessource.detail.title">Ressource</span></h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ ressource.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceRessource.nom">Nom</span></dt>
+        <dd>
+          <span>{{ ressource.nom }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceRessource.code">Code</span></dt>
+        <dd>
+          <span>{{ ressource.code }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceRessource.categorie">Categorie</span></dt>
+        <dd>
+          <span>{{ ressource.categorie }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceRessource.description">Description</span></dt>
+        <dd>
+          <span>{{ ressource.description }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceRessource.dateMiseEnService">Date Mise En Service</span></dt>
+        <dd>
+          <span>{{ ressource.dateMiseEnService | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceRessource.dateDerniereMaintenance">Date Derniere Maintenance</span></dt>
+        <dd>
+          <span>{{ ressource.dateDerniereMaintenance | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceRessource.dateProchaineMaintenance">Date Prochaine Maintenance</span></dt>
+        <dd>
+          <span>{{ ressource.dateProchaineMaintenance | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceRessource.typeRessourceId">Type Ressource Id</span></dt>
+        <dd>
+          <span>{{ ressource.typeRessourceId }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceRessource.statut">Statut</span></dt>
+        <dd>
+          <span>{{ ressource.statut }}</span>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/ressource', ressource.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

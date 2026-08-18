@@ -17,10 +17,7 @@ export class RessourcesShellComponent {
 
   navItems: RessourceNavItem[] = [
     { label: 'Vehicules', route: 'vehicules', icon: ['fas', 'truck'] },
-    { label: 'Articles', route: 'articles', icon: ['fas', 'th-list'] },
-    { label: 'Agences', route: 'agences', icon: ['fas', 'users'] },
-    { label: 'Sites', route: 'sites', icon: ['fas', 'road'] },
-    { label: 'Zones', route: 'zones', icon: ['fas', 'th'] },
+    { label: 'Ressources', route: 'ressources', icon: ['fas', 'wrench'] },
   ];
 
   toggleSidebar(): void {

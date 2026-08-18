@@ -1,0 +1,36 @@
+{
+  "gpmGatewayApp": {
+    "projectServiceRessource": {
+      "home": {
+        "title": "Ressources",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Ressource",
+        "createOrEditLabel": "Créer ou éditer un Ressource",
+        "notFound": "Aucun Ressource trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Ressource {{ id }} ?"
+      },
+      "detail": {
+        "title": "Ressource"
+      },
+      "id": "ID",
+      "nom": "Nom",
+      "code": "Code",
+      "categorie": "Categorie",
+      "description": "Description",
+      "dateMiseEnService": "Date Mise En Service",
+      "dateDerniereMaintenance": "Date Derniere Maintenance",
+      "dateProchaineMaintenance": "Date Prochaine Maintenance",
+      "typeRessourceId": "Type Ressource Id",
+      "statut": "Statut"
+    }
+  },
+  "projectServiceApp": {
+    "projectServiceRessource": {
+      "created": "Un nouveau Ressource a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Ressource avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Ressource avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

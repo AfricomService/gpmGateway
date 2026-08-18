@@ -35,6 +35,10 @@ const routes: Routes = [
         path: 'zones',
         loadChildren: () => import('app/entities/projectService/zone/zone.module').then(m => m.ProjectServiceZoneModule),
       },
+      {
+        path: 'ressources',
+        loadChildren: () => import('app/entities/projectService/ressource/ressource.module').then(m => m.ProjectServiceRessourceModule),
+      },
     ],
   },
 ];

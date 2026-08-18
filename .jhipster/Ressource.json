@@ -1,0 +1,52 @@
+{
+  "changelogDate": "20260818091415",
+  "clientRootFolder": "projectService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "nom",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "code",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "categorie",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "description",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "dateMiseEnService",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "dateDerniereMaintenance",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "dateProchaineMaintenance",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "typeRessourceId",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "statut",
+      "fieldType": "String"
+    }
+  ],
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "projectService",
+  "microservicePath": "D:\\CODE\\GPM\\projectService",
+  "name": "Ressource",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceClass"
+}
