@@ -74,6 +74,7 @@
       "Zone",
       "Numsequentielle",
       "Ressource",
+      "TypeRessource",
       "DetailRessource"
     ],
     "entitySuffix": "",

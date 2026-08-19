@@ -27,7 +27,10 @@ export class RessourcesShellComponent {
     {
       label: 'Paramètre ressources',
       icon: ['fas', 'cog'],
-      children: [{ label: 'Detail Ressource', route: 'detail-ressource' }],
+      children: [
+        { label: 'Detail Ressource', route: 'detail-ressource' },
+        { label: 'Type Ressource', route: 'type-ressource' },
+      ],
     },
   ];
 

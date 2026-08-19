@@ -1,0 +1,29 @@
+{
+  "gpmGatewayApp": {
+    "projectServiceTypeRessource": {
+      "home": {
+        "title": "TypeRessources",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Type Ressource",
+        "createOrEditLabel": "Créer ou éditer un Type Ressource",
+        "notFound": "Aucun Type Ressource trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Type Ressource {{ id }} ?"
+      },
+      "detail": {
+        "title": "Type Ressource"
+      },
+      "id": "ID",
+      "type": "Type",
+      "code": "Code"
+    }
+  },
+  "projectServiceApp": {
+    "projectServiceTypeRessource": {
+      "created": "Un nouveau Type Ressource a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Type Ressource avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Type Ressource avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

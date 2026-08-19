@@ -1,0 +1,86 @@
+<div class="type-ressource-update-page">
+  <div class="cu-container">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <jhi-alert-error></jhi-alert-error>
+
+      <!-- Toolbar : Enregistrer (droite) -->
+      <div class="cu-toolbar cu-toolbar-end">
+        <button
+          type="submit"
+          id="save-entity-top"
+          data-cy="entityCreateSaveButton"
+          title="Enregistrer"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn-cu-save"
+        >
+          <fa-icon icon="save"></fa-icon>
+        </button>
+      </div>
+
+      <!-- Accordéon -->
+      <div class="cu-accordion">
+        <!-- Informations Générales -->
+        <div class="cu-accordion-item" [class.open]="isSectionOpen('general')">
+          <button type="button" class="cu-accordion-header" (click)="toggleSection('general')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="clipboard" class="cu-accordion-icon"></fa-icon>
+              <span jhiTranslate="gpmGatewayApp.projectServiceTypeRessource.home.createOrEditLabel">Informations Générales</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isSectionOpen('general')">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceTypeRessource.type" for="field_type"
+                  >Type</label
+                >
+                <input type="text" class="form-control" name="type" id="field_type" data-cy="type" formControlName="type" />
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceTypeRessource.code" for="field_code"
+                  >Code</label
+                >
+                <input type="text" class="form-control" name="code" id="field_code" data-cy="code" formControlName="code" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Détails associés -->
+        <div class="cu-accordion-item" [class.open]="isSectionOpen('details')">
+          <button type="button" class="cu-accordion-header" (click)="toggleSection('details')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="list" class="cu-accordion-icon"></fa-icon>
+              <span>Détails associés</span>
+              <span class="cu-badge-count" *ngIf="selectedDetailIds.size > 0">{{ selectedDetailIds.size }}</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isSectionOpen('details')">
+            <div *ngIf="isLoadingDetails" class="cu-details-loading">Chargement...</div>
+
+            <div *ngIf="!isLoadingDetails && availableDetails.length === 0" class="cu-details-empty">
+              Aucun Detail Ressource disponible.
+            </div>
+
+            <div class="cu-details-grid" *ngIf="!isLoadingDetails && availableDetails.length > 0">
+              <label class="cu-detail-checkbox" *ngFor="let detail of availableDetails">
+                <input type="checkbox" [checked]="isDetailSelected(detail.id)" (change)="toggleDetail(detail.id)" />
+                <span class="cu-detail-label">{{ detail.label ?? detail.code }}</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cu-toolbar cu-toolbar-bottom">
+        <div class="cu-toolbar-left"></div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
