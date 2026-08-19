@@ -8,15 +8,21 @@ import { RessourceFormService, RessourceFormGroup } from './ressource-form.servi
 import { IRessource } from '../ressource.model';
 import { RessourceService } from '../service/ressource.service';
 
+type AccordionSection = 'general' | 'maintenance';
+
 @Component({
   selector: 'jhi-ressource-update',
   templateUrl: './ressource-update.component.html',
+  styleUrls: ['./ressource-update.component.scss'],
 })
 export class RessourceUpdateComponent implements OnInit {
   isSaving = false;
   ressource: IRessource | null = null;
 
   editForm: RessourceFormGroup = this.ressourceFormService.createRessourceFormGroup();
+
+  // === Gestion de l'accordéon ===
+  openSections: Set<AccordionSection> = new Set(['general', 'maintenance']);
 
   constructor(
     protected ressourceService: RessourceService,
@@ -31,6 +37,19 @@ export class RessourceUpdateComponent implements OnInit {
         this.updateForm(ressource);
       }
     });
+  }
+
+  // === Accordéon ===
+  toggleSection(section: AccordionSection): void {
+    if (this.openSections.has(section)) {
+      this.openSections.delete(section);
+    } else {
+      this.openSections.add(section);
+    }
+  }
+
+  isSectionOpen(section: AccordionSection): boolean {
+    return this.openSections.has(section);
   }
 
   previousState(): void {

@@ -1,141 +1,179 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
+<div class="ressource-update-page">
+  <div class="cu-container">
     <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-      <h2
-        id="jhi-ressource-heading"
-        data-cy="RessourceCreateUpdateHeading"
-        jhiTranslate="gpmGatewayApp.projectServiceRessource.home.createOrEditLabel"
-      >
-        Créer ou éditer un Ressource
-      </h2>
+      <jhi-alert-error></jhi-alert-error>
 
-      <div>
-        <jhi-alert-error></jhi-alert-error>
-
-        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
-          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
-          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+      <!-- Toolbar : ID (gauche) + Enregistrer (droite) -->
+      <div class="cu-toolbar">
+        <div class="cu-toolbar-left">
+          <span *ngIf="editForm.get('id')?.value" class="cu-badge-id"> ID&nbsp;{{ editForm.get('id')?.value }} </span>
         </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceRessource.nom" for="field_nom">Nom</label>
-          <input type="text" class="form-control" name="nom" id="field_nom" data-cy="nom" formControlName="nom" />
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceRessource.code" for="field_code">Code</label>
-          <input type="text" class="form-control" name="code" id="field_code" data-cy="code" formControlName="code" />
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceRessource.categorie" for="field_categorie">Categorie</label>
-          <input type="text" class="form-control" name="categorie" id="field_categorie" data-cy="categorie" formControlName="categorie" />
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceRessource.description" for="field_description"
-            >Description</label
-          >
-          <input
-            type="text"
-            class="form-control"
-            name="description"
-            id="field_description"
-            data-cy="description"
-            formControlName="description"
-          />
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceRessource.dateMiseEnService" for="field_dateMiseEnService"
-            >Date Mise En Service</label
-          >
-          <div class="d-flex">
-            <input
-              id="field_dateMiseEnService"
-              data-cy="dateMiseEnService"
-              type="datetime-local"
-              class="form-control"
-              name="dateMiseEnService"
-              formControlName="dateMiseEnService"
-              placeholder="YYYY-MM-DD HH:mm"
-            />
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <label
-            class="form-label"
-            jhiTranslate="gpmGatewayApp.projectServiceRessource.dateDerniereMaintenance"
-            for="field_dateDerniereMaintenance"
-            >Date Derniere Maintenance</label
-          >
-          <div class="d-flex">
-            <input
-              id="field_dateDerniereMaintenance"
-              data-cy="dateDerniereMaintenance"
-              type="datetime-local"
-              class="form-control"
-              name="dateDerniereMaintenance"
-              formControlName="dateDerniereMaintenance"
-              placeholder="YYYY-MM-DD HH:mm"
-            />
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <label
-            class="form-label"
-            jhiTranslate="gpmGatewayApp.projectServiceRessource.dateProchaineMaintenance"
-            for="field_dateProchaineMaintenance"
-            >Date Prochaine Maintenance</label
-          >
-          <div class="d-flex">
-            <input
-              id="field_dateProchaineMaintenance"
-              data-cy="dateProchaineMaintenance"
-              type="datetime-local"
-              class="form-control"
-              name="dateProchaineMaintenance"
-              formControlName="dateProchaineMaintenance"
-              placeholder="YYYY-MM-DD HH:mm"
-            />
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceRessource.typeRessourceId" for="field_typeRessourceId"
-            >Type Ressource Id</label
-          >
-          <input
-            type="number"
-            class="form-control"
-            name="typeRessourceId"
-            id="field_typeRessourceId"
-            data-cy="typeRessourceId"
-            formControlName="typeRessourceId"
-          />
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceRessource.statut" for="field_statut">Statut</label>
-          <input type="text" class="form-control" name="statut" id="field_statut" data-cy="statut" formControlName="statut" />
-        </div>
-      </div>
-
-      <div>
-        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
-          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
-        </button>
 
         <button
           type="submit"
-          id="save-entity"
+          id="save-entity-top"
           data-cy="entityCreateSaveButton"
+          title="Enregistrer"
           [disabled]="editForm.invalid || isSaving"
-          class="btn btn-primary"
+          class="btn-cu-save"
         >
-          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+          <fa-icon icon="save"></fa-icon>
+        </button>
+      </div>
+
+      <!-- Accordéon -->
+      <div class="cu-accordion">
+        <!-- Informations Générales -->
+        <div class="cu-accordion-item" [class.open]="isSectionOpen('general')">
+          <button type="button" class="cu-accordion-header" (click)="toggleSection('general')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="clipboard" class="cu-accordion-icon"></fa-icon>
+              <span jhiTranslate="gpmGatewayApp.projectServiceRessource.home.createOrEditLabel">Informations Générales</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isSectionOpen('general')">
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceRessource.nom" for="field_nom">Nom</label>
+                <input type="text" class="form-control" name="nom" id="field_nom" data-cy="nom" formControlName="nom" />
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceRessource.code" for="field_code">Code</label>
+                <input type="text" class="form-control" name="code" id="field_code" data-cy="code" formControlName="code" />
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceRessource.categorie" for="field_categorie"
+                  >Categorie</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  name="categorie"
+                  id="field_categorie"
+                  data-cy="categorie"
+                  formControlName="categorie"
+                />
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label
+                  class="form-label fw-bold"
+                  jhiTranslate="gpmGatewayApp.projectServiceRessource.typeRessourceId"
+                  for="field_typeRessourceId"
+                  >Type Ressource Id</label
+                >
+                <input
+                  type="number"
+                  class="form-control"
+                  name="typeRessourceId"
+                  id="field_typeRessourceId"
+                  data-cy="typeRessourceId"
+                  formControlName="typeRessourceId"
+                />
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceRessource.statut" for="field_statut"
+                  >Statut</label
+                >
+                <input type="text" class="form-control" name="statut" id="field_statut" data-cy="statut" formControlName="statut" />
+              </div>
+
+              <div class="col-md-8 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceRessource.description" for="field_description"
+                  >Description</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  name="description"
+                  id="field_description"
+                  data-cy="description"
+                  formControlName="description"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Maintenance -->
+        <div class="cu-accordion-item" [class.open]="isSectionOpen('maintenance')">
+          <button type="button" class="cu-accordion-header" (click)="toggleSection('maintenance')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="wrench" class="cu-accordion-icon"></fa-icon>
+              <span>Maintenance</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isSectionOpen('maintenance')">
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label
+                  class="form-label fw-bold"
+                  jhiTranslate="gpmGatewayApp.projectServiceRessource.dateMiseEnService"
+                  for="field_dateMiseEnService"
+                  >Date Mise En Service</label
+                >
+                <input
+                  id="field_dateMiseEnService"
+                  data-cy="dateMiseEnService"
+                  type="datetime-local"
+                  class="form-control"
+                  name="dateMiseEnService"
+                  formControlName="dateMiseEnService"
+                  placeholder="YYYY-MM-DD HH:mm"
+                />
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label
+                  class="form-label fw-bold"
+                  jhiTranslate="gpmGatewayApp.projectServiceRessource.dateDerniereMaintenance"
+                  for="field_dateDerniereMaintenance"
+                  >Date Derniere Maintenance</label
+                >
+                <input
+                  id="field_dateDerniereMaintenance"
+                  data-cy="dateDerniereMaintenance"
+                  type="datetime-local"
+                  class="form-control"
+                  name="dateDerniereMaintenance"
+                  formControlName="dateDerniereMaintenance"
+                  placeholder="YYYY-MM-DD HH:mm"
+                />
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label
+                  class="form-label fw-bold"
+                  jhiTranslate="gpmGatewayApp.projectServiceRessource.dateProchaineMaintenance"
+                  for="field_dateProchaineMaintenance"
+                  >Date Prochaine Maintenance</label
+                >
+                <input
+                  id="field_dateProchaineMaintenance"
+                  data-cy="dateProchaineMaintenance"
+                  type="datetime-local"
+                  class="form-control"
+                  name="dateProchaineMaintenance"
+                  formControlName="dateProchaineMaintenance"
+                  placeholder="YYYY-MM-DD HH:mm"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cu-toolbar cu-toolbar-bottom">
+        <div class="cu-toolbar-left"></div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
         </button>
       </div>
     </form>
