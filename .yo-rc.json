@@ -73,7 +73,8 @@
       "WoUtilisateur",
       "Zone",
       "Numsequentielle",
-      "Ressource"
+      "Ressource",
+      "DetailRessource"
     ],
     "entitySuffix": "",
     "gradleEnterpriseHost": "",

@@ -71,10 +71,58 @@
   font-weight: 500;
   font-size: 0.92rem;
   transition: background 0.2s ease, color 0.2s ease;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
 
   fa-icon {
     width: 18px;
     text-align: center;
+  }
+}
+
+// bouton "groupe" (Paramètre ressources)
+.nav-link-group {
+  justify-content: flex-start;
+
+  .chevron {
+    transition: transform 0.2s ease;
+    margin-left: auto;
+    color: var(--rsb-text-muted);
+
+    &.rotated {
+      transform: rotate(180deg);
+      color: var(--rsb-accent);
+    }
+  }
+}
+
+// sous-liste (Detail Ressource, etc.)
+.nav-sublist {
+  display: flex;
+  flex-direction: column;
+  padding-left: 1.75rem;
+  margin-bottom: 0.3rem;
+  border-left: 2px solid var(--rsb-border);
+
+  .nav-link-child {
+    font-size: 0.85rem;
+    padding: 0.45rem 0.6rem;
+    margin-bottom: 0.15rem;
+    color: var(--rsb-text-muted);
+
+    &:hover {
+      background: var(--rsb-surface-hover);
+      color: var(--rsb-text);
+    }
+
+    &.active {
+      background: var(--rsb-accent-soft);
+      color: var(--rsb-accent);
+      font-weight: 600;
+    }
   }
 }
 
@@ -94,6 +142,10 @@
 
 .ressources-sidebar.is-collapsed .nav-link fa-icon {
   margin-right: 0 !important;
+}
+
+.ressources-sidebar.is-collapsed .nav-sublist {
+  display: none; // pas de sous-liste visible en mode réduit
 }
 
 .ressources-sidebar .nav-link:hover {
@@ -137,5 +189,11 @@
 
   .ressources-sidebar .nav-link {
     margin-bottom: 0;
+  }
+
+  .nav-sublist {
+    grid-column: 1 / -1;
+    border-left: none;
+    padding-left: 0.5rem;
   }
 }

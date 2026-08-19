@@ -1,0 +1,40 @@
+{
+  "changelogDate": "20260818094649",
+  "clientRootFolder": "projectService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "status",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "label",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "code",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "required",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "inputType",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "multipleChoiceOption",
+      "fieldType": "String"
+    }
+  ],
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "projectService",
+  "microservicePath": "D:\\CODE\\GPM\\projectService",
+  "name": "DetailRessource",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceClass"
+}

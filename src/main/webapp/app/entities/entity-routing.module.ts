@@ -232,6 +232,17 @@ import { RouterModule } from '@angular/router';
         data: { pageTitle: 'gpmGatewayApp.projectServiceRessource.home.title' },
         loadChildren: () => import('./projectService/ressource/ressource.module').then(m => m.ProjectServiceRessourceModule),
       },
+      {
+        path: 'detail-ressource',
+        pathMatch: 'full',
+        redirectTo: 'ressources/detail-ressource',
+      },
+      {
+        path: 'detail-ressource',
+        data: { pageTitle: 'gpmGatewayApp.projectServiceDetailRessource.home.title' },
+        loadChildren: () =>
+          import('./projectService/detail-ressource/detail-ressource.module').then(m => m.ProjectServiceDetailRessourceModule),
+      },
       /* jhipster-needle-add-entity-route - JHipster will add entity modules routes here */
     ]),
   ],

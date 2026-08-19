@@ -1,0 +1,54 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="detailRessource">
+      <h2 data-cy="detailRessourceDetailsHeading">
+        <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.detail.title">Detail Ressource</span>
+      </h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ detailRessource.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.status">Status</span></dt>
+        <dd>
+          <span>{{ detailRessource.status }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.label">Label</span></dt>
+        <dd>
+          <span>{{ detailRessource.label }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.code">Code</span></dt>
+        <dd>
+          <span>{{ detailRessource.code }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.required">Required</span></dt>
+        <dd>
+          <span>{{ detailRessource.required }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.inputType">Input Type</span></dt>
+        <dd>
+          <span>{{ detailRessource.inputType }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.multipleChoiceOption">Multiple Choice Option</span></dt>
+        <dd>
+          <span>{{ detailRessource.multipleChoiceOption }}</span>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/detail-ressource', detailRessource.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>
