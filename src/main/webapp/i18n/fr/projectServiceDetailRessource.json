@@ -1,0 +1,33 @@
+{
+  "gpmGatewayApp": {
+    "projectServiceDetailRessource": {
+      "home": {
+        "title": "DetailRessources",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Detail Ressource",
+        "createOrEditLabel": "Créer ou éditer un Detail Ressource",
+        "notFound": "Aucun Detail Ressource trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Detail Ressource {{ id }} ?"
+      },
+      "detail": {
+        "title": "Detail Ressource"
+      },
+      "id": "ID",
+      "status": "Status",
+      "label": "Label",
+      "code": "Code",
+      "required": "Required",
+      "inputType": "Input Type",
+      "multipleChoiceOption": "Multiple Choice Option"
+    }
+  },
+  "projectServiceApp": {
+    "projectServiceDetailRessource": {
+      "created": "Un nouveau Detail Ressource a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Detail Ressource avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Detail Ressource avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

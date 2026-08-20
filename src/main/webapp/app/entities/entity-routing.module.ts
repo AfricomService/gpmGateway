@@ -222,6 +222,37 @@ import { RouterModule } from '@angular/router';
         loadChildren: () =>
           import('./projectService/numsequentielle/numsequentielle.module').then(m => m.ProjectServiceNumsequentielleModule),
       },
+      {
+        path: 'ressource',
+        pathMatch: 'full',
+        redirectTo: 'ressources/ressources',
+      },
+      {
+        path: 'ressource',
+        data: { pageTitle: 'gpmGatewayApp.projectServiceRessource.home.title' },
+        loadChildren: () => import('./projectService/ressource/ressource.module').then(m => m.ProjectServiceRessourceModule),
+      },
+      {
+        path: 'detail-ressource',
+        pathMatch: 'full',
+        redirectTo: 'ressources/detail-ressource',
+      },
+      {
+        path: 'detail-ressource',
+        data: { pageTitle: 'gpmGatewayApp.projectServiceDetailRessource.home.title' },
+        loadChildren: () =>
+          import('./projectService/detail-ressource/detail-ressource.module').then(m => m.ProjectServiceDetailRessourceModule),
+      },
+      {
+        path: 'type-ressource',
+        pathMatch: 'full',
+        redirectTo: 'ressources/type-ressource',
+      },
+      {
+        path: 'type-ressource',
+        data: { pageTitle: 'gpmGatewayApp.projectServiceTypeRessource.home.title' },
+        loadChildren: () => import('./projectService/type-ressource/type-ressource.module').then(m => m.ProjectServiceTypeRessourceModule),
+      },
       /* jhipster-needle-add-entity-route - JHipster will add entity modules routes here */
     ]),
   ],

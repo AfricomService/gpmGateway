@@ -1,0 +1,295 @@
+<div class="ressource-update-page">
+  <div class="cu-container">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <jhi-alert-error></jhi-alert-error>
+
+      <!-- Toolbar : Enregistrer (droite) -->
+      <div class="cu-toolbar cu-toolbar-end">
+        <button
+          type="submit"
+          id="save-entity-top"
+          data-cy="entityCreateSaveButton"
+          title="Enregistrer"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn-cu-save"
+        >
+          <fa-icon icon="save"></fa-icon>
+        </button>
+      </div>
+
+      <!-- Accordéon -->
+      <div class="cu-accordion">
+        <!-- Informations Générales -->
+        <div class="cu-accordion-item" [class.open]="isSectionOpen('general')">
+          <button type="button" class="cu-accordion-header" (click)="toggleSection('general')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="clipboard" class="cu-accordion-icon"></fa-icon>
+              <span jhiTranslate="gpmGatewayApp.projectServiceRessource.home.createOrEditLabel">Informations Générales</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isSectionOpen('general')">
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceRessource.nom" for="field_nom">Nom</label>
+                <input type="text" class="form-control" name="nom" id="field_nom" data-cy="nom" formControlName="nom" />
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceRessource.code" for="field_code">Code</label>
+                <input type="text" class="form-control" name="code" id="field_code" data-cy="code" formControlName="code" />
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceRessource.categorie" for="field_categorie"
+                  >Categorie</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  name="categorie"
+                  id="field_categorie"
+                  data-cy="categorie"
+                  formControlName="categorie"
+                />
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label
+                  class="form-label fw-bold"
+                  jhiTranslate="gpmGatewayApp.projectServiceRessource.typeRessourceId"
+                  for="field_typeRessourceId"
+                  >Type Ressource</label
+                >
+                <select
+                  class="form-select form-control"
+                  name="typeRessourceId"
+                  id="field_typeRessourceId"
+                  data-cy="typeRessourceId"
+                  formControlName="typeRessourceId"
+                  (change)="onTypeRessourceChange()"
+                >
+                  <option [ngValue]="null">-- Choisir --</option>
+                  <option *ngFor="let type of typeRessources" [ngValue]="type.id">{{ type.type }}</option>
+                </select>
+              </div>
+
+              <div class="col-md-8 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceRessource.description" for="field_description"
+                  >Description</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  name="description"
+                  id="field_description"
+                  data-cy="description"
+                  formControlName="description"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Détails de la ressource (dynamique selon Type Ressource) -->
+        <div
+          class="cu-accordion-item"
+          [class.open]="isSectionOpen('detail')"
+          *ngIf="detailRessourceFields.length > 0 || loadingDetailRessourceFields"
+        >
+          <button type="button" class="cu-accordion-header" (click)="toggleSection('detail')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="list" class="cu-accordion-icon"></fa-icon>
+              <span>Détails de la ressource</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isSectionOpen('detail')">
+            <div class="cu-detail-loading" *ngIf="loadingDetailRessourceFields">
+              <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+              Chargement des détails...
+            </div>
+
+            <div class="row" *ngIf="!loadingDetailRessourceFields">
+              <div class="col-md-6 mb-3" *ngFor="let field of detailRessourceFields">
+                <label class="form-label fw-bold">
+                  {{ field.label }}
+                  <span *ngIf="field.required" class="text-danger">*</span>
+                </label>
+
+                <!-- texte / email -->
+                <input
+                  *ngIf="field.inputType === 'text' || field.inputType === 'email'"
+                  [type]="field.inputType"
+                  class="form-control"
+                  [class.is-invalid]="validationDetailRessourceErrors[field.code!]"
+                  [(ngModel)]="detailRessourceValues[field.code!]"
+                  [ngModelOptions]="{ standalone: true }"
+                  [name]="'detailval_' + field.code"
+                />
+
+                <!-- textarea -->
+                <textarea
+                  *ngIf="field.inputType === 'textarea'"
+                  class="form-control"
+                  rows="3"
+                  [class.is-invalid]="validationDetailRessourceErrors[field.code!]"
+                  [(ngModel)]="detailRessourceValues[field.code!]"
+                  [ngModelOptions]="{ standalone: true }"
+                  [name]="'detailval_' + field.code"
+                ></textarea>
+
+                <!-- nombre -->
+                <input
+                  *ngIf="field.inputType === 'number'"
+                  type="number"
+                  class="form-control"
+                  [class.is-invalid]="validationDetailRessourceErrors[field.code!]"
+                  [(ngModel)]="detailRessourceValues[field.code!]"
+                  [ngModelOptions]="{ standalone: true }"
+                  [name]="'detailval_' + field.code"
+                />
+
+                <!-- date -->
+                <input
+                  *ngIf="field.inputType === 'date'"
+                  type="date"
+                  class="form-control"
+                  [class.is-invalid]="validationDetailRessourceErrors[field.code!]"
+                  [(ngModel)]="detailRessourceValues[field.code!]"
+                  [ngModelOptions]="{ standalone: true }"
+                  [name]="'detailval_' + field.code"
+                />
+
+                <!-- switch / checkbox -->
+                <div *ngIf="field.inputType === 'checkbox'" class="cu-detail-checkbox">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    [(ngModel)]="detailRessourceValues[field.code!]"
+                    [ngModelOptions]="{ standalone: true }"
+                    [name]="'detailval_' + field.code"
+                  />
+                </div>
+
+                <!-- select -->
+                <select
+                  *ngIf="field.inputType === 'select'"
+                  class="form-select"
+                  [class.is-invalid]="validationDetailRessourceErrors[field.code!]"
+                  [(ngModel)]="detailRessourceValues[field.code!]"
+                  [ngModelOptions]="{ standalone: true }"
+                  [name]="'detailval_' + field.code"
+                >
+                  <option value="">-- Choisir --</option>
+                  <option *ngFor="let opt of getMultipleChoiceOptions(field)" [value]="opt">{{ opt }}</option>
+                </select>
+
+                <!-- radio -->
+                <div *ngIf="field.inputType === 'radio'" class="cu-detail-radio-group">
+                  <div class="cu-detail-radio-item" *ngFor="let opt of getMultipleChoiceOptions(field)">
+                    <input
+                      type="radio"
+                      [value]="opt"
+                      [(ngModel)]="detailRessourceValues[field.code!]"
+                      [ngModelOptions]="{ standalone: true }"
+                      [name]="'detailval_' + field.code"
+                      [id]="'detailval_' + field.code + '_' + opt"
+                    />
+                    <label [for]="'detailval_' + field.code + '_' + opt">{{ opt }}</label>
+                  </div>
+                </div>
+
+                <div class="invalid-feedback" *ngIf="validationDetailRessourceErrors[field.code!]">
+                  {{ validationDetailRessourceErrors[field.code!] }}
+                </div>
+              </div>
+            </div>
+
+            <div class="cu-detail-empty" *ngIf="!loadingDetailRessourceFields && detailRessourceFields.length === 0">
+              Aucun détail supplémentaire pour ce type de ressource.
+            </div>
+          </div>
+        </div>
+
+        <!-- Maintenance -->
+        <div class="cu-accordion-item" [class.open]="isSectionOpen('maintenance')">
+          <button type="button" class="cu-accordion-header" (click)="toggleSection('maintenance')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="wrench" class="cu-accordion-icon"></fa-icon>
+              <span>Maintenance</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isSectionOpen('maintenance')">
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label
+                  class="form-label fw-bold"
+                  jhiTranslate="gpmGatewayApp.projectServiceRessource.dateMiseEnService"
+                  for="field_dateMiseEnService"
+                  >Date Mise En Service</label
+                >
+                <input
+                  id="field_dateMiseEnService"
+                  data-cy="dateMiseEnService"
+                  type="datetime-local"
+                  class="form-control"
+                  name="dateMiseEnService"
+                  formControlName="dateMiseEnService"
+                  placeholder="YYYY-MM-DD HH:mm"
+                />
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label
+                  class="form-label fw-bold"
+                  jhiTranslate="gpmGatewayApp.projectServiceRessource.dateDerniereMaintenance"
+                  for="field_dateDerniereMaintenance"
+                  >Date Derniere Maintenance</label
+                >
+                <input
+                  id="field_dateDerniereMaintenance"
+                  data-cy="dateDerniereMaintenance"
+                  type="datetime-local"
+                  class="form-control"
+                  name="dateDerniereMaintenance"
+                  formControlName="dateDerniereMaintenance"
+                  placeholder="YYYY-MM-DD HH:mm"
+                />
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label
+                  class="form-label fw-bold"
+                  jhiTranslate="gpmGatewayApp.projectServiceRessource.dateProchaineMaintenance"
+                  for="field_dateProchaineMaintenance"
+                  >Date Prochaine Maintenance</label
+                >
+                <input
+                  id="field_dateProchaineMaintenance"
+                  data-cy="dateProchaineMaintenance"
+                  type="datetime-local"
+                  class="form-control"
+                  name="dateProchaineMaintenance"
+                  formControlName="dateProchaineMaintenance"
+                  placeholder="YYYY-MM-DD HH:mm"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cu-toolbar cu-toolbar-bottom">
+        <div class="cu-toolbar-left"></div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

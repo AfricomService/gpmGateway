@@ -1,0 +1,137 @@
+<div class="detail-ressource-update-page">
+  <div class="cu-container">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <jhi-alert-error></jhi-alert-error>
+
+      <!-- Toolbar : Enregistrer (droite) -->
+      <div class="cu-toolbar cu-toolbar-end">
+        <button
+          type="submit"
+          id="save-entity-top"
+          data-cy="entityCreateSaveButton"
+          title="Enregistrer"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn-cu-save"
+        >
+          <fa-icon icon="save"></fa-icon>
+        </button>
+      </div>
+
+      <!-- Accordéon -->
+      <div class="cu-accordion">
+        <!-- Informations Générales -->
+        <div class="cu-accordion-item" [class.open]="isSectionOpen('general')">
+          <button type="button" class="cu-accordion-header" (click)="toggleSection('general')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="clipboard" class="cu-accordion-icon"></fa-icon>
+              <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.home.createOrEditLabel">Informations Générales</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isSectionOpen('general')">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.label" for="field_label"
+                  >Label</label
+                >
+                <input type="text" class="form-control" name="label" id="field_label" data-cy="label" formControlName="label" />
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.code" for="field_code"
+                  >Code</label
+                >
+                <input type="text" class="form-control" name="code" id="field_code" data-cy="code" formControlName="code" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Configuration du champ -->
+        <div class="cu-accordion-item" [class.open]="isSectionOpen('config')">
+          <button type="button" class="cu-accordion-header" (click)="toggleSection('config')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="cogs" class="cu-accordion-icon"></fa-icon>
+              <span>Configuration du champ</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isSectionOpen('config')">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.inputType" for="field_inputType"
+                  >Type de champ</label
+                >
+                <select class="form-select" name="inputType" id="field_inputType" data-cy="inputType" formControlName="inputType">
+                  <option [ngValue]="null">-- Choisir --</option>
+                  <option *ngFor="let type of inputTypes" [value]="type.value">{{ type.label }}</option>
+                </select>
+              </div>
+
+              <div class="col-md-6 mb-3 cu-toggles">
+                <div class="cu-toggle-row">
+                  <label class="cu-switch">
+                    <input type="checkbox" name="status" id="field_status" data-cy="status" formControlName="status" />
+                    <span class="cu-switch-slider"></span>
+                  </label>
+                  <span class="cu-toggle-label" jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.status">Actif</span>
+                </div>
+
+                <div class="cu-toggle-row">
+                  <label class="cu-switch">
+                    <input type="checkbox" name="required" id="field_required" data-cy="required" formControlName="required" />
+                    <span class="cu-switch-slider"></span>
+                  </label>
+                  <span class="cu-toggle-label" jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.required">Obligatoire</span>
+                </div>
+              </div>
+
+              <!-- Options (visible seulement pour select / radio / checkbox) -->
+              <div class="col-12 mb-3" *ngIf="requiresOptions()">
+                <label
+                  class="form-label fw-bold"
+                  jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.multipleChoiceOption"
+                  for="field_newOption"
+                  >Options</label
+                >
+
+                <div class="cu-chips" *ngIf="options.length > 0">
+                  <span class="cu-chip" *ngFor="let option of options; let i = index">
+                    {{ option }}
+                    <button type="button" class="cu-chip-remove" (click)="removeOption(i)">
+                      <fa-icon icon="times"></fa-icon>
+                    </button>
+                  </span>
+                </div>
+
+                <div class="cu-chip-input">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="field_newOption"
+                    placeholder="Ajouter une option puis Entrée"
+                    [(ngModel)]="newOption"
+                    [ngModelOptions]="{ standalone: true }"
+                    (keydown.enter)="$event.preventDefault(); addOption()"
+                  />
+                  <button type="button" class="btn-cu-add-option" (click)="addOption()">
+                    <fa-icon icon="plus"></fa-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cu-toolbar cu-toolbar-bottom">
+        <div class="cu-toolbar-left"></div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
