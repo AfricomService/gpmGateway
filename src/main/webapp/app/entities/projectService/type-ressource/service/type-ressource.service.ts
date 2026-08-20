@@ -44,6 +44,10 @@ export class TypeRessourceService {
     return this.http.get<ITypeRessource[]>(this.resourceUrl, { params: options, observe: 'response' });
   }
 
+  queryList(): Observable<HttpResponse<ITypeRessource[]>> {
+    return this.http.get<ITypeRessource[]>(`${this.resourceUrl}/list`, { observe: 'response' });
+  }
+
   delete(id: number): Observable<HttpResponse<{}>> {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }

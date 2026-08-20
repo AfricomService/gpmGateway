@@ -14,6 +14,7 @@ import { DetailRessourceDeleteDialogComponent } from '../delete/detail-ressource
 @Component({
   selector: 'jhi-detail-ressource',
   templateUrl: './detail-ressource.component.html',
+  styleUrls: ['./detail-ressource.component.scss'],
 })
 export class DetailRessourceComponent implements OnInit {
   detailRessources?: IDetailRessource[];
@@ -37,6 +38,10 @@ export class DetailRessourceComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+  }
+
+  onRowDoubleClick(detailRessource: IDetailRessource): void {
+    this.router.navigate(['/detail-ressource', detailRessource.id, 'edit']);
   }
 
   delete(detailRessource: IDetailRessource): void {

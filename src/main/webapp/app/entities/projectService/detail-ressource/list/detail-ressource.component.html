@@ -1,141 +1,143 @@
-<div>
-  <h2 id="page-heading" data-cy="DetailRessourceHeading">
-    <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.home.title">DetailRessources</span>
+<div class="detail-ressource-list-page">
+  <div class="dr-container">
+    <!-- Header -->
+    <div class="dr-header">
+      <div class="dr-header-left">
+        <h2 id="page-heading" data-cy="DetailRessourceHeading" class="dr-title">
+          <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.home.title">DetailRessources</span>
+        </h2>
+        <span class="dr-count" *ngIf="detailRessources">{{ totalItems }} élément(s)</span>
+      </div>
 
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
-        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
-        <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.home.refreshListLabel">Actualiser la liste</span>
-      </button>
+      <div class="dr-header-actions">
+        <button type="button" class="btn-dr-refresh" (click)="load()" [disabled]="isLoading" title="Actualiser">
+          <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        </button>
 
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-detail-ressource"
-        [routerLink]="['/detail-ressource/new']"
-      >
-        <fa-icon icon="plus"></fa-icon>
-        <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.home.createLabel"> Créer un nouveau Detail Ressource </span>
-      </button>
-    </div>
-  </h2>
-
-  <jhi-alert-error></jhi-alert-error>
-
-  <jhi-alert></jhi-alert>
-
-  <div class="alert alert-warning" id="no-result" *ngIf="detailRessources?.length === 0">
-    <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.home.notFound">Aucun Detail Ressource trouvé</span>
-  </div>
-
-  <div class="table-responsive table-entities" id="entities" *ngIf="detailRessources && detailRessources.length > 0">
-    <table class="table table-striped" aria-describedby="page-heading">
-      <thead>
-        <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
-          <th scope="col" jhiSortBy="id">
-            <div class="d-flex">
-              <span jhiTranslate="global.field.id">ID</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="status">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.status">Status</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="label">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.label">Label</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="code">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.code">Code</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="required">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.required">Required</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="inputType">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.inputType">Input Type</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col" jhiSortBy="multipleChoiceOption">
-            <div class="d-flex">
-              <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.multipleChoiceOption">Multiple Choice Option</span>
-              <fa-icon class="p-1" icon="sort"></fa-icon>
-            </div>
-          </th>
-          <th scope="col"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let detailRessource of detailRessources; trackBy: trackId" data-cy="entityTable">
-          <td>
-            <a [routerLink]="['/detail-ressource', detailRessource.id, 'view']">{{ detailRessource.id }}</a>
-          </td>
-          <td>{{ detailRessource.status }}</td>
-          <td>{{ detailRessource.label }}</td>
-          <td>{{ detailRessource.code }}</td>
-          <td>{{ detailRessource.required }}</td>
-          <td>{{ detailRessource.inputType }}</td>
-          <td>{{ detailRessource.multipleChoiceOption }}</td>
-          <td class="text-end">
-            <div class="btn-group">
-              <button
-                type="submit"
-                [routerLink]="['/detail-ressource', detailRessource.id, 'view']"
-                class="btn btn-info btn-sm"
-                data-cy="entityDetailsButton"
-              >
-                <fa-icon icon="eye"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
-              </button>
-
-              <button
-                type="submit"
-                [routerLink]="['/detail-ressource', detailRessource.id, 'edit']"
-                class="btn btn-primary btn-sm"
-                data-cy="entityEditButton"
-              >
-                <fa-icon icon="pencil-alt"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
-              </button>
-
-              <button type="submit" (click)="delete(detailRessource)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                <fa-icon icon="times"></fa-icon>
-                <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div *ngIf="detailRessources && detailRessources.length > 0">
-    <div class="d-flex justify-content-center">
-      <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+        <button
+          id="jh-create-entity"
+          data-cy="entityCreateButton"
+          class="btn-dr-create create-detail-ressource"
+          [routerLink]="['/detail-ressource/new']"
+        >
+          <fa-icon icon="plus"></fa-icon>
+          <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.home.createLabel"> Créer un nouveau Detail Ressource </span>
+        </button>
+      </div>
     </div>
 
-    <div class="d-flex justify-content-center">
-      <ngb-pagination
-        [collectionSize]="totalItems"
-        [page]="page"
-        [pageSize]="itemsPerPage"
-        [maxSize]="5"
-        [rotate]="true"
-        [boundaryLinks]="true"
-        (pageChange)="navigateToPage($event)"
-      ></ngb-pagination>
+    <jhi-alert-error></jhi-alert-error>
+    <jhi-alert></jhi-alert>
+
+    <!-- Empty state -->
+    <div class="dr-empty" id="no-result" *ngIf="detailRessources?.length === 0">
+      <fa-icon icon="folder" class="dr-empty-icon"></fa-icon>
+      <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.home.notFound">Aucun Detail Ressource trouvé</span>
+    </div>
+
+    <!-- Table card -->
+    <div class="dr-card" id="entities" *ngIf="detailRessources && detailRessources.length > 0">
+      <div class="table-responsive">
+        <table class="dr-table" aria-describedby="page-heading">
+          <thead>
+            <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
+              <th scope="col" jhiSortBy="status">
+                <div class="d-flex align-items-center">
+                  <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.status">Status</span>
+                  <fa-icon class="dr-sort-icon" icon="sort"></fa-icon>
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="label">
+                <div class="d-flex align-items-center">
+                  <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.label">Label</span>
+                  <fa-icon class="dr-sort-icon" icon="sort"></fa-icon>
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="code">
+                <div class="d-flex align-items-center">
+                  <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.code">Code</span>
+                  <fa-icon class="dr-sort-icon" icon="sort"></fa-icon>
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="required">
+                <div class="d-flex align-items-center">
+                  <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.required">Required</span>
+                  <fa-icon class="dr-sort-icon" icon="sort"></fa-icon>
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="inputType">
+                <div class="d-flex align-items-center">
+                  <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.inputType">Input Type</span>
+                  <fa-icon class="dr-sort-icon" icon="sort"></fa-icon>
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="multipleChoiceOption">
+                <div class="d-flex align-items-center">
+                  <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.multipleChoiceOption">Multiple Choice Option</span>
+                  <fa-icon class="dr-sort-icon" icon="sort"></fa-icon>
+                </div>
+              </th>
+              <th scope="col" class="dr-th-actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let detailRessource of detailRessources; trackBy: trackId"
+              data-cy="entityTable"
+              class="dr-row-clickable"
+              (dblclick)="onRowDoubleClick(detailRessource)"
+            >
+              <td>
+                <span class="dr-badge-status" [class.dr-badge-status-off]="!detailRessource.status">
+                  {{ detailRessource.status ? 'Actif' : 'Inactif' }}
+                </span>
+              </td>
+              <td>{{ detailRessource.label }}</td>
+              <td>{{ detailRessource.code }}</td>
+              <td>
+                <fa-icon *ngIf="detailRessource.required" icon="check" class="dr-icon-yes"></fa-icon>
+                <fa-icon *ngIf="!detailRessource.required" icon="times" class="dr-icon-no"></fa-icon>
+              </td>
+              <td>
+                <span class="dr-badge-type">{{ detailRessource.inputType }}</span>
+              </td>
+              <td>{{ detailRessource.multipleChoiceOption }}</td>
+              <td class="text-end">
+                <div class="dr-actions">
+                  <button
+                    type="button"
+                    (click)="delete(detailRessource); $event.stopPropagation()"
+                    class="btn-dr-icon btn-dr-delete"
+                    data-cy="entityDeleteButton"
+                    title="Supprimer"
+                  >
+                    <fa-icon icon="trash-alt"></fa-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Footer : count + pagination centrés -->
+    <div class="dr-footer" *ngIf="detailRessources && detailRessources.length > 0">
+      <div class="dr-footer-count">
+        <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+      </div>
+
+      <div class="dr-footer-pagination">
+        <ngb-pagination
+          [collectionSize]="totalItems"
+          [page]="page"
+          [pageSize]="itemsPerPage"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        ></ngb-pagination>
+      </div>
     </div>
   </div>
 </div>
