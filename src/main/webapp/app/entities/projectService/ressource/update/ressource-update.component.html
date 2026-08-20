@@ -64,16 +64,18 @@
                   class="form-label fw-bold"
                   jhiTranslate="gpmGatewayApp.projectServiceRessource.typeRessourceId"
                   for="field_typeRessourceId"
-                  >Type Ressource Id</label
+                  >Type Ressource</label
                 >
-                <input
-                  type="number"
-                  class="form-control"
+                <select
+                  class="form-select form-control"
                   name="typeRessourceId"
                   id="field_typeRessourceId"
                   data-cy="typeRessourceId"
                   formControlName="typeRessourceId"
-                />
+                >
+                  <option [ngValue]="null">-- Choisir --</option>
+                  <option *ngFor="let type of typeRessources" [ngValue]="type.id">{{ type.type }}</option>
+                </select>
               </div>
 
               <div class="col-md-4 mb-3">

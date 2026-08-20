@@ -7,6 +7,8 @@ import { finalize } from 'rxjs/operators';
 import { RessourceFormService, RessourceFormGroup } from './ressource-form.service';
 import { IRessource } from '../ressource.model';
 import { RessourceService } from '../service/ressource.service';
+import { ITypeRessource } from 'app/entities/projectService/type-ressource/type-ressource.model';
+import { TypeRessourceService } from 'app/entities/projectService/type-ressource/service/type-ressource.service';
 
 type AccordionSection = 'general' | 'maintenance';
 
@@ -24,10 +26,14 @@ export class RessourceUpdateComponent implements OnInit {
   // === Gestion de l'accordéon ===
   openSections: Set<AccordionSection> = new Set(['general', 'maintenance']);
 
+  // === Liste des types ressource (pour le select) ===
+  typeRessources: ITypeRessource[] = [];
+
   constructor(
     protected ressourceService: RessourceService,
     protected ressourceFormService: RessourceFormService,
-    protected activatedRoute: ActivatedRoute
+    protected activatedRoute: ActivatedRoute,
+    protected typeRessourceService: TypeRessourceService
   ) {}
 
   ngOnInit(): void {
@@ -36,6 +42,12 @@ export class RessourceUpdateComponent implements OnInit {
       if (ressource) {
         this.updateForm(ressource);
       }
+    });
+
+    this.typeRessourceService.queryList().subscribe({
+      next: (res: HttpResponse<ITypeRessource[]>) => {
+        this.typeRessources = res.body ?? [];
+      },
     });
   }
 
