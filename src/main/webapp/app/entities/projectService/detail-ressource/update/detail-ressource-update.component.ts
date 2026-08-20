@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
 import { DetailRessourceFormService, DetailRessourceFormGroup } from './detail-ressource-form.service';
-import { IDetailRessource } from '../detail-ressource.model';
+import { IDetailRessource, IDetailRessourceOption } from '../detail-ressource.model';
 import { DetailRessourceService } from '../service/detail-ressource.service';
 
 type AccordionSection = 'general' | 'config';
@@ -82,16 +82,12 @@ export class DetailRessourceUpdateComponent implements OnInit {
   }
 
   protected syncOptionsToForm(): void {
-    this.editForm.patchValue({ multipleChoiceOption: this.options.join(',') });
+    const payload: IDetailRessourceOption[] = this.options.map(opt => ({ value: opt }));
+    this.editForm.patchValue({ multipleChoiceOption: payload });
   }
 
-  protected parseOptionsFromForm(value: string | null | undefined): void {
-    this.options = value
-      ? value
-          .split(',')
-          .map(v => v.trim())
-          .filter(v => v.length > 0)
-      : [];
+  protected parseOptionsFromForm(value: IDetailRessourceOption[] | null | undefined): void {
+    this.options = value ? value.map(opt => opt.value ?? '').filter(v => v.length > 0) : [];
   }
 
   ngOnInit(): void {

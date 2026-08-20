@@ -3,12 +3,8 @@
     <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
       <jhi-alert-error></jhi-alert-error>
 
-      <!-- Toolbar : ID (gauche) + Enregistrer (droite) -->
-      <div class="cu-toolbar">
-        <div class="cu-toolbar-left">
-          <span *ngIf="editForm.get('id')?.value" class="cu-badge-id"> ID&nbsp;{{ editForm.get('id')?.value }} </span>
-        </div>
-
+      <!-- Toolbar : Enregistrer (droite) -->
+      <div class="cu-toolbar cu-toolbar-end">
         <button
           type="submit"
           id="save-entity-top"
@@ -72,6 +68,7 @@
                   id="field_typeRessourceId"
                   data-cy="typeRessourceId"
                   formControlName="typeRessourceId"
+                  (change)="onTypeRessourceChange()"
                 >
                   <option [ngValue]="null">-- Choisir --</option>
                   <option *ngFor="let type of typeRessources" [ngValue]="type.id">{{ type.type }}</option>
@@ -98,6 +95,128 @@
                   formControlName="description"
                 />
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Détails de la ressource (dynamique selon Type Ressource) -->
+        <div
+          class="cu-accordion-item"
+          [class.open]="isSectionOpen('detail')"
+          *ngIf="detailRessourceFields.length > 0 || loadingDetailRessourceFields"
+        >
+          <button type="button" class="cu-accordion-header" (click)="toggleSection('detail')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="list" class="cu-accordion-icon"></fa-icon>
+              <span>Détails de la ressource</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isSectionOpen('detail')">
+            <div class="cu-detail-loading" *ngIf="loadingDetailRessourceFields">
+              <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+              Chargement des détails...
+            </div>
+
+            <div class="row" *ngIf="!loadingDetailRessourceFields">
+              <div class="col-md-6 mb-3" *ngFor="let field of detailRessourceFields">
+                <label class="form-label fw-bold">
+                  {{ field.label }}
+                  <span *ngIf="field.required" class="text-danger">*</span>
+                </label>
+
+                <!-- texte / email -->
+                <input
+                  *ngIf="field.inputType === 'text' || field.inputType === 'email'"
+                  [type]="field.inputType"
+                  class="form-control"
+                  [class.is-invalid]="validationDetailRessourceErrors[field.code!]"
+                  [(ngModel)]="detailRessourceValues[field.code!]"
+                  [ngModelOptions]="{ standalone: true }"
+                  [name]="'detailval_' + field.code"
+                />
+
+                <!-- textarea -->
+                <textarea
+                  *ngIf="field.inputType === 'textarea'"
+                  class="form-control"
+                  rows="3"
+                  [class.is-invalid]="validationDetailRessourceErrors[field.code!]"
+                  [(ngModel)]="detailRessourceValues[field.code!]"
+                  [ngModelOptions]="{ standalone: true }"
+                  [name]="'detailval_' + field.code"
+                ></textarea>
+
+                <!-- nombre -->
+                <input
+                  *ngIf="field.inputType === 'number'"
+                  type="number"
+                  class="form-control"
+                  [class.is-invalid]="validationDetailRessourceErrors[field.code!]"
+                  [(ngModel)]="detailRessourceValues[field.code!]"
+                  [ngModelOptions]="{ standalone: true }"
+                  [name]="'detailval_' + field.code"
+                />
+
+                <!-- date -->
+                <input
+                  *ngIf="field.inputType === 'date'"
+                  type="date"
+                  class="form-control"
+                  [class.is-invalid]="validationDetailRessourceErrors[field.code!]"
+                  [(ngModel)]="detailRessourceValues[field.code!]"
+                  [ngModelOptions]="{ standalone: true }"
+                  [name]="'detailval_' + field.code"
+                />
+
+                <!-- switch / checkbox -->
+                <div *ngIf="field.inputType === 'checkbox'" class="cu-detail-checkbox">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    [(ngModel)]="detailRessourceValues[field.code!]"
+                    [ngModelOptions]="{ standalone: true }"
+                    [name]="'detailval_' + field.code"
+                  />
+                </div>
+
+                <!-- select -->
+                <select
+                  *ngIf="field.inputType === 'select'"
+                  class="form-select"
+                  [class.is-invalid]="validationDetailRessourceErrors[field.code!]"
+                  [(ngModel)]="detailRessourceValues[field.code!]"
+                  [ngModelOptions]="{ standalone: true }"
+                  [name]="'detailval_' + field.code"
+                >
+                  <option value="">-- Choisir --</option>
+                  <option *ngFor="let opt of getMultipleChoiceOptions(field)" [value]="opt">{{ opt }}</option>
+                </select>
+
+                <!-- radio -->
+                <div *ngIf="field.inputType === 'radio'" class="cu-detail-radio-group">
+                  <div class="cu-detail-radio-item" *ngFor="let opt of getMultipleChoiceOptions(field)">
+                    <input
+                      type="radio"
+                      [value]="opt"
+                      [(ngModel)]="detailRessourceValues[field.code!]"
+                      [ngModelOptions]="{ standalone: true }"
+                      [name]="'detailval_' + field.code"
+                      [id]="'detailval_' + field.code + '_' + opt"
+                    />
+                    <label [for]="'detailval_' + field.code + '_' + opt">{{ opt }}</label>
+                  </div>
+                </div>
+
+                <div class="invalid-feedback" *ngIf="validationDetailRessourceErrors[field.code!]">
+                  {{ validationDetailRessourceErrors[field.code!] }}
+                </div>
+              </div>
+            </div>
+
+            <div class="cu-detail-empty" *ngIf="!loadingDetailRessourceFields && detailRessourceFields.length === 0">
+              Aucun détail supplémentaire pour ce type de ressource.
             </div>
           </div>
         </div>

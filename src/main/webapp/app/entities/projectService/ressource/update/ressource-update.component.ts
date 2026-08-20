@@ -9,8 +9,9 @@ import { IRessource } from '../ressource.model';
 import { RessourceService } from '../service/ressource.service';
 import { ITypeRessource } from 'app/entities/projectService/type-ressource/type-ressource.model';
 import { TypeRessourceService } from 'app/entities/projectService/type-ressource/service/type-ressource.service';
+import { IDetailRessource } from 'app/entities/projectService/detail-ressource/detail-ressource.model';
 
-type AccordionSection = 'general' | 'maintenance';
+type AccordionSection = 'general' | 'detail' | 'maintenance';
 
 @Component({
   selector: 'jhi-ressource-update',
@@ -28,6 +29,12 @@ export class RessourceUpdateComponent implements OnInit {
 
   // === Liste des types ressource (pour le select) ===
   typeRessources: ITypeRessource[] = [];
+
+  // === Détails dynamiques (dépendent du Type Ressource sélectionné) ===
+  detailRessourceFields: IDetailRessource[] = [];
+  detailRessourceValues: { [code: string]: any } = {};
+  loadingDetailRessourceFields = false;
+  validationDetailRessourceErrors: { [code: string]: string } = {};
 
   constructor(
     protected ressourceService: RessourceService,
@@ -47,6 +54,12 @@ export class RessourceUpdateComponent implements OnInit {
     this.typeRessourceService.queryList().subscribe({
       next: (res: HttpResponse<ITypeRessource[]>) => {
         this.typeRessources = res.body ?? [];
+
+        // Si une ressource existante a déjà un typeRessourceId, on charge ses détails
+        const currentTypeId = this.editForm.get('typeRessourceId')?.value;
+        if (currentTypeId) {
+          this.loadDetailRessourceFields(currentTypeId);
+        }
       },
     });
   }
@@ -64,13 +77,153 @@ export class RessourceUpdateComponent implements OnInit {
     return this.openSections.has(section);
   }
 
+  // === Détails dynamiques selon le Type Ressource sélectionné ===
+  onTypeRessourceChange(): void {
+    const typeId = this.editForm.get('typeRessourceId')?.value;
+    if (!typeId) {
+      this.detailRessourceFields = [];
+      this.detailRessourceValues = {};
+      this.validationDetailRessourceErrors = {};
+      return;
+    }
+    this.loadDetailRessourceFields(typeId);
+  }
+
+  private loadDetailRessourceFields(typeRessourceId: number): void {
+    this.detailRessourceFields = [];
+    this.detailRessourceValues = {};
+    this.validationDetailRessourceErrors = {};
+    this.loadingDetailRessourceFields = true;
+
+    this.typeRessourceService.findDetails(typeRessourceId).subscribe({
+      next: (res: HttpResponse<IDetailRessource[]>) => {
+        this.detailRessourceFields = (res.body || [])
+          .filter(f => f.status !== false)
+          .map(f => ({ ...f, inputType: this.normalizeInputType(f.inputType) }));
+
+        const existingValues = this.ressource?.additionalInfo || [];
+
+        this.detailRessourceFields.forEach(f => {
+          if (!f.code) return;
+          const existing = existingValues.find(v => v.code === f.code);
+          if (existing) {
+            this.detailRessourceValues[f.code] = f.inputType === 'checkbox' ? existing.value === 'true' : existing.value ?? '';
+          } else {
+            this.detailRessourceValues[f.code] = f.inputType === 'checkbox' ? false : '';
+          }
+        });
+
+        if (this.detailRessourceFields.length > 0 && !this.openSections.has('detail')) {
+          this.openSections.add('detail');
+        }
+
+        this.loadingDetailRessourceFields = false;
+      },
+      error: () => {
+        this.detailRessourceFields = [];
+        this.loadingDetailRessourceFields = false;
+      },
+    });
+  }
+
+  /**
+   * Normalise les inputType renvoyés par le backend (INPUT, DIGITAL_INPUT, TEXTAREA,
+   * RADIO_BUTTON, SWITCH, CHECKBOX, EMAIL, SELECT, DATE) vers les types HTML du template.
+   */
+  private normalizeInputType(rawType: string | null | undefined): string {
+    const t = (rawType || '').toLowerCase();
+
+    switch (t) {
+      case 'digital_input':
+        return 'number';
+      case 'date':
+        return 'date';
+      case 'switch':
+      case 'checkbox':
+        return 'checkbox';
+      case 'select':
+        return 'select';
+      case 'radio_button':
+        return 'radio';
+      case 'textarea':
+        return 'textarea';
+      case 'email':
+        return 'email';
+      case 'input':
+      case '':
+        return 'text';
+      default:
+        return 'text';
+    }
+  }
+
+  getMultipleChoiceOptions(field: IDetailRessource): string[] {
+    const raw: any = field.multipleChoiceOption;
+    if (!raw) return [];
+    if (typeof raw === 'string') {
+      return raw
+        .split(',')
+        .map((v: string) => v.trim())
+        .filter((v: string) => v.length > 0);
+    }
+    if (Array.isArray(raw)) {
+      return raw.map((opt: any) => (typeof opt === 'string' ? opt : opt.value ?? opt.label ?? Object.values(opt)[0]));
+    }
+    return [];
+  }
+
+  validateDetailRessourceForm(): boolean {
+    this.validationDetailRessourceErrors = {};
+    let isValid = true;
+
+    for (const field of this.detailRessourceFields) {
+      if (!field.code || !field.required) continue;
+      const val = this.detailRessourceValues[field.code];
+      const isEmpty = val === null || val === undefined || val === '';
+      if (isEmpty) {
+        this.validationDetailRessourceErrors[field.code] = `${field.label || field.code} est obligatoire`;
+        isValid = false;
+      }
+    }
+
+    return isValid;
+  }
+
+  private buildAdditionalInfoPayload(): Array<Record<string, string>> | null {
+    if (this.detailRessourceFields.length === 0) {
+      return null;
+    }
+
+    return this.detailRessourceFields
+      .filter(f => !!f.code)
+      .map(f => ({
+        code: f.code as string,
+        label: f.label ?? '',
+        inputType: f.inputType ?? 'text',
+        value: this.formatDetailRessourceValue(this.detailRessourceValues[f.code as string]),
+      }));
+  }
+
+  private formatDetailRessourceValue(value: any): string {
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'boolean') return value ? 'true' : 'false';
+    if (Array.isArray(value)) return value.join(', ');
+    return String(value);
+  }
+
   previousState(): void {
     window.history.back();
   }
 
   save(): void {
+    if (!this.validateDetailRessourceForm()) {
+      return;
+    }
+
     this.isSaving = true;
     const ressource = this.ressourceFormService.getRessource(this.editForm);
+    ressource.additionalInfo = this.buildAdditionalInfoPayload();
+
     if (ressource.id !== null) {
       this.subscribeToSaveResponse(this.ressourceService.update(ressource));
     } else {

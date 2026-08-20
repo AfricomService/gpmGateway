@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpHeaders } from '@angular/common/http';
+import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Data, ParamMap, Router } from '@angular/router';
 import { combineLatest, filter, Observable, switchMap, tap } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -10,10 +10,13 @@ import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/co
 import { ASC, DESC, SORT, ITEM_DELETED_EVENT, DEFAULT_SORT_DATA } from 'app/config/navigation.constants';
 import { EntityArrayResponseType, RessourceService } from '../service/ressource.service';
 import { RessourceDeleteDialogComponent } from '../delete/ressource-delete-dialog.component';
+import { ITypeRessource } from 'app/entities/projectService/type-ressource/type-ressource.model';
+import { TypeRessourceService } from 'app/entities/projectService/type-ressource/service/type-ressource.service';
 
 @Component({
   selector: 'jhi-ressource',
   templateUrl: './ressource.component.html',
+  styleUrls: ['./ressource.component.scss'],
 })
 export class RessourceComponent implements OnInit {
   ressources?: IRessource[];
@@ -26,17 +29,37 @@ export class RessourceComponent implements OnInit {
   totalItems = 0;
   page = 1;
 
+  // === Map id -> libellé du Type Ressource ===
+  typeRessourceMap: Map<number, string> = new Map();
+
   constructor(
     protected ressourceService: RessourceService,
     protected activatedRoute: ActivatedRoute,
     public router: Router,
-    protected modalService: NgbModal
+    protected modalService: NgbModal,
+    protected typeRessourceService: TypeRessourceService
   ) {}
 
   trackId = (_index: number, item: IRessource): number => this.ressourceService.getRessourceIdentifier(item);
 
   ngOnInit(): void {
     this.load();
+
+    this.typeRessourceService.queryList().subscribe({
+      next: (res: HttpResponse<ITypeRessource[]>) => {
+        const list = res.body ?? [];
+        this.typeRessourceMap = new Map(list.map(t => [t.id, t.type ?? '']));
+      },
+    });
+  }
+
+  getTypeRessourceLabel(typeRessourceId: number | null | undefined): string | null {
+    if (!typeRessourceId) return null;
+    return this.typeRessourceMap.get(typeRessourceId) ?? null;
+  }
+
+  onRowDoubleClick(ressource: IRessource): void {
+    this.router.navigate(['/ressource', ressource.id, 'edit']);
   }
 
   delete(ressource: IRessource): void {

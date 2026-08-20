@@ -23,7 +23,7 @@ export class RessourcesShellComponent {
 
   navItems: RessourceNavItem[] = [
     { label: 'Vehicules', route: 'vehicules', icon: ['fas', 'truck'] },
-    { label: 'Ressources', route: 'ressources', icon: ['fas', 'wrench'] },
+    { label: 'Autres ressources', route: 'ressources', icon: ['fas', 'wrench'] },
     {
       label: 'Paramètre ressources',
       icon: ['fas', 'cog'],
