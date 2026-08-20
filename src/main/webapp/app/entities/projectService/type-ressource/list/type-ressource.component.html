@@ -1,0 +1,108 @@
+<div class="type-ressource-list-page">
+  <div class="rl-container">
+    <!-- Header -->
+    <div class="rl-header">
+      <div class="rl-header-left">
+        <h2 id="page-heading" data-cy="TypeRessourceHeading" class="rl-title">
+          <span jhiTranslate="gpmGatewayApp.projectServiceTypeRessource.home.title">TypeRessources</span>
+        </h2>
+        <span class="rl-count" *ngIf="typeRessources">{{ totalItems }} élément(s)</span>
+      </div>
+
+      <div class="rl-header-actions">
+        <button type="button" class="btn-rl-refresh" (click)="load()" [disabled]="isLoading" title="Actualiser">
+          <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        </button>
+
+        <button
+          id="jh-create-entity"
+          data-cy="entityCreateButton"
+          class="btn-rl-create create-type-ressource"
+          [routerLink]="['/type-ressource/new']"
+        >
+          <fa-icon icon="plus"></fa-icon>
+          <span jhiTranslate="gpmGatewayApp.projectServiceTypeRessource.home.createLabel">Créer un nouveau Type Ressource</span>
+        </button>
+      </div>
+    </div>
+
+    <jhi-alert-error></jhi-alert-error>
+    <jhi-alert></jhi-alert>
+
+    <!-- Empty state -->
+    <div class="rl-empty" id="no-result" *ngIf="typeRessources?.length === 0">
+      <fa-icon icon="folder" class="rl-empty-icon"></fa-icon>
+      <span jhiTranslate="gpmGatewayApp.projectServiceTypeRessource.home.notFound">Aucun Type Ressource trouvé</span>
+    </div>
+
+    <!-- Table card -->
+    <div class="rl-card" id="entities" *ngIf="typeRessources && typeRessources.length > 0">
+      <div class="table-responsive">
+        <table class="rl-table" aria-describedby="page-heading">
+          <thead>
+            <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
+              <th scope="col" jhiSortBy="type">
+                <div class="d-flex align-items-center">
+                  <span jhiTranslate="gpmGatewayApp.projectServiceTypeRessource.type">Type</span>
+                  <fa-icon class="rl-sort-icon" icon="sort"></fa-icon>
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="code">
+                <div class="d-flex align-items-center">
+                  <span jhiTranslate="gpmGatewayApp.projectServiceTypeRessource.code">Code</span>
+                  <fa-icon class="rl-sort-icon" icon="sort"></fa-icon>
+                </div>
+              </th>
+              <th scope="col" class="rl-th-actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let typeRessource of typeRessources; trackBy: trackId"
+              data-cy="entityTable"
+              class="rl-row-clickable"
+              (dblclick)="onRowDoubleClick(typeRessource)"
+            >
+              <td>
+                <span class="rl-badge-type">{{ typeRessource.type }}</span>
+              </td>
+              <td>{{ typeRessource.code }}</td>
+              <td class="text-end">
+                <div class="rl-actions">
+                  <button
+                    type="button"
+                    (click)="delete(typeRessource); $event.stopPropagation()"
+                    class="btn-rl-icon btn-rl-delete"
+                    data-cy="entityDeleteButton"
+                    title="Supprimer"
+                  >
+                    <fa-icon icon="trash-alt"></fa-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Footer : count + pagination centrés -->
+    <div class="rl-footer" *ngIf="typeRessources && typeRessources.length > 0">
+      <div class="rl-footer-count">
+        <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+      </div>
+
+      <div class="rl-footer-pagination">
+        <ngb-pagination
+          [collectionSize]="totalItems"
+          [page]="page"
+          [pageSize]="itemsPerPage"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        ></ngb-pagination>
+      </div>
+    </div>
+  </div>
+</div>

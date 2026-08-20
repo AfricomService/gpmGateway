@@ -11,9 +11,12 @@ import { IAgence } from 'app/entities/projectService/agence/agence.model';
 import { AgenceService } from 'app/entities/projectService/agence/service/agence.service';
 import { StatutVehicule } from 'app/entities/enumerations/statut-vehicule.model';
 
+type AccordionSection = 'general' | 'technique' | 'affectation';
+
 @Component({
   selector: 'jhi-vehicule-update',
   templateUrl: './vehicule-update.component.html',
+  styleUrls: ['./vehicule-update.component.scss'],
 })
 export class VehiculeUpdateComponent implements OnInit {
   isSaving = false;
@@ -23,6 +26,9 @@ export class VehiculeUpdateComponent implements OnInit {
   agencesSharedCollection: IAgence[] = [];
 
   editForm: VehiculeFormGroup = this.vehiculeFormService.createVehiculeFormGroup();
+
+  // === Gestion de l'accordéon ===
+  openSections: Set<AccordionSection> = new Set(['general', 'technique', 'affectation']);
 
   constructor(
     protected vehiculeService: VehiculeService,
@@ -42,6 +48,19 @@ export class VehiculeUpdateComponent implements OnInit {
 
       this.loadRelationshipsOptions();
     });
+  }
+
+  // === Accordéon ===
+  toggleSection(section: AccordionSection): void {
+    if (this.openSections.has(section)) {
+      this.openSections.delete(section);
+    } else {
+      this.openSections.add(section);
+    }
+  }
+
+  isSectionOpen(section: AccordionSection): boolean {
+    return this.openSections.has(section);
   }
 
   previousState(): void {
