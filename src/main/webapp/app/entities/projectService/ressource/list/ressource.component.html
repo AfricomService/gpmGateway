@@ -60,24 +60,6 @@
                   <fa-icon class="rs-sort-icon" icon="sort"></fa-icon>
                 </div>
               </th>
-              <th scope="col" jhiSortBy="dateMiseEnService">
-                <div class="d-flex align-items-center">
-                  <span jhiTranslate="gpmGatewayApp.projectServiceRessource.dateMiseEnService">Date Mise En Service</span>
-                  <fa-icon class="rs-sort-icon" icon="sort"></fa-icon>
-                </div>
-              </th>
-              <th scope="col" jhiSortBy="dateDerniereMaintenance">
-                <div class="d-flex align-items-center">
-                  <span jhiTranslate="gpmGatewayApp.projectServiceRessource.dateDerniereMaintenance">Date Derniere Maintenance</span>
-                  <fa-icon class="rs-sort-icon" icon="sort"></fa-icon>
-                </div>
-              </th>
-              <th scope="col" jhiSortBy="dateProchaineMaintenance">
-                <div class="d-flex align-items-center">
-                  <span jhiTranslate="gpmGatewayApp.projectServiceRessource.dateProchaineMaintenance">Date Prochaine Maintenance</span>
-                  <fa-icon class="rs-sort-icon" icon="sort"></fa-icon>
-                </div>
-              </th>
               <th scope="col" jhiSortBy="typeRessourceId">
                 <div class="d-flex align-items-center">
                   <span jhiTranslate="gpmGatewayApp.projectServiceRessource.typeRessourceId">Type ressource</span>
@@ -107,9 +89,6 @@
                 <span class="rs-empty-value" *ngIf="!ressource.categorie">—</span>
               </td>
               <td class="rs-cell-truncate">{{ ressource.description || '—' }}</td>
-              <td>{{ (ressource.dateMiseEnService | formatMediumDatetime) || '—' }}</td>
-              <td>{{ (ressource.dateDerniereMaintenance | formatMediumDatetime) || '—' }}</td>
-              <td>{{ (ressource.dateProchaineMaintenance | formatMediumDatetime) || '—' }}</td>
               <td>
                 <span class="rs-badge-type" *ngIf="getTypeRessourceLabel(ressource.typeRessourceId) as typeLabel">{{ typeLabel }}</span>
                 <span class="rs-empty-value" *ngIf="!getTypeRessourceLabel(ressource.typeRessourceId)">—</span>
