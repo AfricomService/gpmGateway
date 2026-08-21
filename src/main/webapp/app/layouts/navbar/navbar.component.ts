@@ -1,5 +1,6 @@
-import { Component, OnInit, Compiler, Injector, NgModuleFactory, Type } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, Compiler, Injector, Type } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { SessionStorageService } from 'ngx-webstorage';
 
@@ -53,6 +54,13 @@ export class NavbarComponent implements OnInit {
     this.accountService.getAuthenticationState().subscribe(account => {
       this.account = account;
     });
+
+    // Filet de sécurité : ferme systématiquement le menu mobile à chaque
+    // changement de route, y compris via un lien sans (click)="collapseNavbar()"
+    // ou via le bouton précédent/suivant du navigateur.
+    this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => {
+      this.collapseNavbar();
+    });
   }
 
   changeLanguage(languageKey: string): void {
@@ -74,28 +82,8 @@ export class NavbarComponent implements OnInit {
     this.router.navigate(['']);
   }
 
-  navbarToggleLock = false; // public : lu par [class.toggler-locked] dans le template
-
-  toggleNavbar(event?: Event): void {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-      // stopImmediatePropagation coupe aussi les autres listeners attachés
-      // au MÊME élément (ex: un listener natif ou un autre binding),
-      // ce que stopPropagation seul ne fait pas.
-      (event as any).stopImmediatePropagation?.();
-    }
-
-    if (this.navbarToggleLock) {
-      return;
-    }
-
-    this.navbarToggleLock = true;
+  toggleNavbar(): void {
     this.isNavbarCollapsed = !this.isNavbarCollapsed;
-
-    // pointer-events:none (via toggler-locked) bloque déjà le second tap physiquement ;
-    // le setTimeout ne sert plus qu'à réactiver le bouton après l'animation de collapse.
-    setTimeout(() => (this.navbarToggleLock = false), 350);
   }
 
   openNewEntityModal(content: any): void {

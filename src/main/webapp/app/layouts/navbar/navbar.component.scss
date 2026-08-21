@@ -32,10 +32,15 @@ Design tokens — thème clair "GPM style"
   }
 
   .navbar-layout {
-    display: flex;
     align-items: center;
     width: 100%;
     min-height: 72px;
+  }
+
+  @media (min-width: 992px) {
+    .navbar-layout {
+      display: flex;
+    }
   }
 
   /* ===========================
@@ -343,12 +348,8 @@ Design tokens — thème clair "GPM style"
     color: var(--nav-text);
     padding: 0.4rem 0.6rem;
     margin-left: auto;
-    touch-action: manipulation; // supprime le délai 300ms + le ghost click sur mobile
+    touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
-
-    &.toggler-locked {
-      pointer-events: none; // bloque physiquement tout second tap/click pendant le lock
-    }
 
     fa-icon {
       color: var(--nav-text);
@@ -387,10 +388,6 @@ Responsive
 @media (max-width: 991.98px) {
   .navbar {
     padding: 0.5rem 1rem;
-  }
-
-  .navbar .navbar-layout {
-    display: block;
   }
 
   .navbar .navbar-center {
