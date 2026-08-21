@@ -94,7 +94,9 @@
                 <span class="rs-empty-value" *ngIf="!getTypeRessourceLabel(ressource.typeRessourceId)">—</span>
               </td>
               <td>
-                <span class="rs-badge-statut" *ngIf="ressource.statut">{{ ressource.statut }}</span>
+                <span class="rs-badge-statut" *ngIf="ressource.statut" [ngClass]="'rs-badge-statut-' + ressource.statut.toLowerCase()">
+                  {{ ressource.statut }}
+                </span>
                 <span class="rs-empty-value" *ngIf="!ressource.statut">—</span>
               </td>
               <td class="text-end">

@@ -234,11 +234,37 @@
   display: inline-block;
   padding: 0.3rem 0.65rem;
   border-radius: 8px;
-  background: var(--cp-success-soft);
-  color: var(--cp-success);
+  background: var(--cp-surface-hover);
+  color: var(--cp-text-muted);
   font-weight: 600;
   font-size: 0.8rem;
   text-transform: capitalize;
+
+  /* === Couleurs par statut (alignées avec l'interface d'édition) === */
+  &.rs-badge-statut-disponible {
+    background: rgba(46, 160, 90, 0.12);
+    color: #2ea05a;
+  }
+
+  &.rs-badge-statut-enmission {
+    background: rgba(41, 121, 255, 0.12);
+    color: #2979ff;
+  }
+
+  &.rs-badge-statut-enmaintenance {
+    background: rgba(245, 158, 11, 0.14);
+    color: #b5750a;
+  }
+
+  &.rs-badge-statut-horsservice {
+    background: var(--cp-danger-soft);
+    color: var(--cp-danger);
+  }
+
+  &.rs-badge-statut-actif {
+    background: var(--cp-info-soft);
+    color: var(--cp-info);
+  }
 }
 
 /* ============ ROW ACTIONS ============ */
