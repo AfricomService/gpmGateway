@@ -16,7 +16,7 @@ import { AffaireSelectorModalComponent } from '../affaire-selector-modal/affaire
 import { IClient } from 'app/entities/projectService/client/client.model';
 import { ClientService } from 'app/entities/projectService/client/service/client.service';
 
-type AccordionPanel = 'global' | 'client';
+type AccordionPanel = 'global' | 'client' | 'detailsCommande' | 'otAssocies' | 'articlesMissions' | 'piecesJointes';
 
 const AFFAIRE_STATUT = 'ExecutionDesTravaux';
 const AFFAIRE_PAGE_SIZE = 15;

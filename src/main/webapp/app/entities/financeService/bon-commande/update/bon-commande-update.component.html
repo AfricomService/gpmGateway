@@ -415,6 +415,71 @@
       </div>
 
       <!-- ====================================================== -->
+      <!-- ACCORDÉONS SUPPLÉMENTAIRES (vides pour le moment) -->
+      <!-- ====================================================== -->
+      <div class="cu-accordion">
+        <!-- Détails Commande -->
+        <div class="cu-accordion-item" [class.open]="isPanelOpen('detailsCommande')">
+          <button type="button" class="cu-accordion-header" (click)="togglePanel('detailsCommande')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="file-alt" class="cu-accordion-icon"></fa-icon>
+              <span>Détails Commande</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isPanelOpen('detailsCommande')">
+            <div class="cu-empty-panel">Aucune donnée pour le moment.</div>
+          </div>
+        </div>
+
+        <!-- Ordre de Travail Associées -->
+        <div class="cu-accordion-item" [class.open]="isPanelOpen('otAssocies')">
+          <button type="button" class="cu-accordion-header" (click)="togglePanel('otAssocies')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="tasks" class="cu-accordion-icon"></fa-icon>
+              <span>Ordre de Travail Associées</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isPanelOpen('otAssocies')">
+            <div class="cu-empty-panel">Aucune donnée pour le moment.</div>
+          </div>
+        </div>
+
+        <!-- Articles Totale des Missions -->
+        <div class="cu-accordion-item" [class.open]="isPanelOpen('articlesMissions')">
+          <button type="button" class="cu-accordion-header" (click)="togglePanel('articlesMissions')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="list-alt" class="cu-accordion-icon"></fa-icon>
+              <span>Articles Totale des Missions</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isPanelOpen('articlesMissions')">
+            <div class="cu-empty-panel">Aucune donnée pour le moment.</div>
+          </div>
+        </div>
+
+        <!-- Pièces Jointes & Décisions -->
+        <div class="cu-accordion-item" [class.open]="isPanelOpen('piecesJointes')">
+          <button type="button" class="cu-accordion-header" (click)="togglePanel('piecesJointes')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="paperclip" class="cu-accordion-icon"></fa-icon>
+              <span>Pièces Jointes &amp; Décisions</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isPanelOpen('piecesJointes')">
+            <div class="cu-empty-panel">Aucune donnée pour le moment.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================== -->
       <!-- FOOTER -->
       <!-- ====================================================== -->
       <div class="cu-toolbar cu-toolbar-bottom">

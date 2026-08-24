@@ -48,7 +48,6 @@ type VehiculeFormGroupContent = {
   createdByUserLogin: FormControl<VehiculeFormRawValue['createdByUserLogin']>;
   updatedBy: FormControl<VehiculeFormRawValue['updatedBy']>;
   updatedByUserLogin: FormControl<VehiculeFormRawValue['updatedByUserLogin']>;
-  agence: FormControl<VehiculeFormRawValue['agence']>;
 };
 
 export type VehiculeFormGroup = FormGroup<VehiculeFormGroupContent>;
@@ -96,9 +95,6 @@ export class VehiculeFormService {
       createdByUserLogin: new FormControl(vehiculeRawValue.createdByUserLogin),
       updatedBy: new FormControl(vehiculeRawValue.updatedBy),
       updatedByUserLogin: new FormControl(vehiculeRawValue.updatedByUserLogin),
-      agence: new FormControl(vehiculeRawValue.agence, {
-        validators: [Validators.required],
-      }),
     });
   }
 
