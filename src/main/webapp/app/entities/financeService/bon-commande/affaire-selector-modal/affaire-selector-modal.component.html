@@ -22,7 +22,7 @@
         class="form-control"
         [(ngModel)]="search"
         (ngModelChange)="onSearchChange()"
-        placeholder="Numéro ou désignation de l'affaire..."
+        placeholder="Identifiant, client ou désignation de l'affaire..."
         autocomplete="off"
       />
     </div>
@@ -39,22 +39,22 @@
       <table class="table table-hover align-middle affaire-modal-table">
         <thead>
           <tr>
-            <th style="width: 110px">N°</th>
+            <th style="width: 140px">Identifiant</th>
+            <th>Client</th>
             <th>Désignation</th>
-            <th class="text-end" style="width: 120px"></th>
           </tr>
         </thead>
 
         <tbody>
           <tr *ngFor="let affaire of affaires" (click)="choose(affaire)">
             <td class="affaire-modal-num-cell">
-              {{ affaire.numAffaire }}
+              {{ affaire.identifiantUnique }}
+            </td>
+            <td>
+              {{ affaire.client?.raisonSociale ?? '—' }}
             </td>
             <td>
               {{ affaire.designationAffaire }}
-            </td>
-            <td class="text-end">
-              <button type="button" class="btn btn-primary btn-sm" (click)="choose(affaire); $event.stopPropagation()">Choisir</button>
             </td>
           </tr>
 
