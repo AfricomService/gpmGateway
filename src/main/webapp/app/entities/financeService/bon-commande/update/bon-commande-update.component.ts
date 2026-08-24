@@ -4,6 +4,8 @@ import { ActivatedRoute } from '@angular/router';
 import { Observable, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import dayjs from 'dayjs/esm';
+import { DATE_TIME_FORMAT } from 'app/config/input.constants';
 
 import { BonCommandeFormService, BonCommandeFormGroup } from './bon-commande-form.service';
 import { IBonCommande } from '../bon-commande.model';
@@ -33,7 +35,7 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   // ================================
   // Accordéon
   // ================================
-  openPanels: Set<AccordionPanel> = new Set(['global', 'client']);
+  openPanels: Set<AccordionPanel> = new Set(['global']);
 
   // ================================
   // Liste déroulante Affaire
@@ -42,6 +44,9 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   affaireResults: IAffaire[] = [];
   selectedAffaireLabel = '';
   affaireInputValue = '';
+  selectedAffaireCode: string | null = null; // Code projet (identifiantUnique) — affichage seul
+
+  autreResponsable: string | null = null; // Champ libre, non persisté pour le moment
 
   // Infos client — affichage uniquement, seul clientId est persisté (formControlName)
   selectedClientInfo: IClient | null = null;
@@ -70,6 +75,13 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
       if (bonCommande) {
         this.updateForm(bonCommande);
+      }
+
+      // Nouveau bon de commande : date du jour par défaut
+      if (!bonCommande || bonCommande.id === null || bonCommande.id === undefined) {
+        this.editForm.patchValue({
+          dateBonCommande: dayjs().format(DATE_TIME_FORMAT),
+        });
       }
     });
 
@@ -136,6 +148,19 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
     if (this.affaireResults.length === 0 && !this.loadingAffaires) {
       this.loadAffaires('');
+    }
+  }
+
+  toggleAffaireDropdown(event: MouseEvent): void {
+    // Empêche le clic de remonter jusqu'au (focus) de l'input,
+    // qui rouvrirait immédiatement la liste qu'on vient de fermer.
+    event.stopPropagation();
+    event.preventDefault();
+
+    if (this.affaireDropdownOpen) {
+      this.affaireDropdownOpen = false;
+    } else {
+      this.openAffaireDropdown();
     }
   }
 
@@ -222,16 +247,23 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     // Valeur affichée dans l'input
     this.affaireInputValue = this.selectedAffaireLabel;
 
+    // Code projet affiché à côté (lecture seule)
+    this.selectedAffaireCode = affaire.identifiantUnique ?? null;
+
     this.affaireDropdownOpen = false;
 
-    this.loadClientInfo(clientId);
+    this.loadClientInfo(clientId, true);
   }
 
   /**
    * Récupère les infos complètes du client via un appel API dédié (GET /api/clients/{id}).
    * Affichage uniquement — seul clientId est persisté avec le BonCommande.
+   *
+   * @param syncReferenceClient Si true, pré-remplit referenceClient avec le matricule fiscale
+   *                            du client (utilisé uniquement lors de la sélection d'un projet,
+   *                            pas au chargement d'un bon de commande existant).
    */
-  private loadClientInfo(clientId: number | null): void {
+  private loadClientInfo(clientId: number | null, syncReferenceClient = false): void {
     this.selectedClientInfo = null;
 
     if (clientId === null || clientId === undefined) {
@@ -244,6 +276,12 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       next: res => {
         this.selectedClientInfo = res.body ?? null;
         this.loadingClientInfo = false;
+
+        if (syncReferenceClient) {
+          this.editForm.patchValue({
+            referenceClient: this.selectedClientInfo?.identifiantUnique ?? null,
+          });
+        }
       },
       error: () => {
         this.selectedClientInfo = null;
@@ -262,6 +300,7 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       size: 'xl',
       centered: true,
       backdrop: 'static',
+      windowClass: 'affaire-selector-modal-window',
     });
 
     modalRef.result
@@ -335,6 +374,8 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
             this.selectedAffaireLabel = `${affaire.designationAffaire} (N° ${affaire.numAffaire})`;
 
             this.affaireInputValue = this.selectedAffaireLabel;
+
+            this.selectedAffaireCode = affaire.identifiantUnique ?? null;
           }
         },
       });

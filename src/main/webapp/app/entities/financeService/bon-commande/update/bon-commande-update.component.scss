@@ -177,6 +177,12 @@
       border-color: var(--cp-accent);
       box-shadow: 0 0 0 3px var(--cp-accent-soft);
     }
+
+    &[readonly] {
+      background: var(--cp-surface-hover);
+      color: var(--cp-text-muted);
+      cursor: default;
+    }
   }
 }
 
@@ -291,7 +297,8 @@
     transform: translateY(-50%);
     color: var(--cp-text-muted);
     transition: transform 0.2s ease;
-    pointer-events: none;
+    cursor: pointer;
+    z-index: 1;
   }
 
   &.open .cu-select-chevron {

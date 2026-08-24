@@ -4,8 +4,8 @@
       "home": {
         "title": "Bon Commandes",
         "refreshListLabel": "Refresh list",
-        "createLabel": "Create a new Bon Commande",
-        "createOrEditLabel": "Create or edit a Bon Commande",
+        "createLabel": "Global Information",
+        "createOrEditLabel": "Global Information",
         "notFound": "No Bon Commandes found"
       },
       "delete": {
