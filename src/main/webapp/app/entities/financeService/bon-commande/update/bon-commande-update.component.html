@@ -1,0 +1,300 @@
+<div class="bon-commande-update-page">
+  <div class="cu-container">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <jhi-alert-error></jhi-alert-error>
+
+      <!-- Toolbar : Badge ID (gauche) + Enregistrer (droite) -->
+      <div class="cu-toolbar cu-toolbar-end">
+        <span class="cu-badge-id" *ngIf="editForm.controls.id.value !== null"> BC N° {{ editForm.controls.id.value }} </span>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          title="Enregistrer"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn-cu-save"
+        >
+          <fa-icon icon="save"></fa-icon>
+        </button>
+      </div>
+
+      <!-- Accordéons côte à côte -->
+      <div class="cu-accordion cu-accordion-row">
+        <!-- Information Globale (70%) -->
+        <div class="cu-accordion-item cu-col-global" [class.open]="isPanelOpen('global')">
+          <button type="button" class="cu-accordion-header" (click)="togglePanel('global')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="file-invoice" class="cu-accordion-icon"></fa-icon>
+              <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.home.createOrEditLabel">Information Globale</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isPanelOpen('global')">
+            <div class="row">
+              <div class="col-md-4 mb-3 cu-searchable-field">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.financeServiceBonCommande.affaireId" for="field_affaireId"
+                  >Affaire</label
+                >
+
+                <input type="hidden" formControlName="affaireId" />
+
+                <div class="cu-select-search" [class.open]="affaireDropdownOpen">
+                  <div class="cu-select-search-input-wrap">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="field_affaireId"
+                      data-cy="affaireId"
+                      [value]="selectedAffaireLabel"
+                      placeholder="Rechercher une affaire..."
+                      autocomplete="off"
+                      (input)="onAffaireSearchInput($event)"
+                      (focus)="openAffaireDropdown()"
+                    />
+                    <fa-icon icon="chevron-down" class="cu-select-chevron"></fa-icon>
+                  </div>
+
+                  <div class="cu-select-dropdown" *ngIf="affaireDropdownOpen">
+                    <div class="cu-select-list" (scroll)="onAffaireListScroll($event)">
+                      <div
+                        class="cu-select-item"
+                        *ngFor="let affaire of affaireResults"
+                        (click)="selectAffaire(affaire)"
+                        [class.active]="affaire.id === editForm.controls.affaireId.value"
+                      >
+                        <span class="cu-select-item-title">{{ affaire.designationAffaire }}</span>
+                        <span class="cu-select-item-sub">N° {{ affaire.numAffaire }}</span>
+                      </div>
+
+                      <div class="cu-select-loading" *ngIf="loadingAffaires">
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>Chargement...
+                      </div>
+
+                      <div class="cu-select-empty" *ngIf="!loadingAffaires && affaireResults.length === 0">Aucune affaire trouvée</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.financeServiceBonCommande.lieu" for="field_lieu">Lieu</label>
+                <input type="text" class="form-control" name="lieu" id="field_lieu" data-cy="lieu" formControlName="lieu" />
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label
+                  class="form-label fw-bold"
+                  jhiTranslate="gpmGatewayApp.financeServiceBonCommande.responsableId"
+                  for="field_responsableId"
+                  >Responsable Id</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  name="responsableId"
+                  id="field_responsableId"
+                  data-cy="responsableId"
+                  formControlName="responsableId"
+                />
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label
+                  class="form-label fw-bold"
+                  jhiTranslate="gpmGatewayApp.financeServiceBonCommande.referenceClient"
+                  for="field_referenceClient"
+                  >Reference Client</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  name="referenceClient"
+                  id="field_referenceClient"
+                  data-cy="referenceClient"
+                  formControlName="referenceClient"
+                />
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label
+                  class="form-label fw-bold"
+                  jhiTranslate="gpmGatewayApp.financeServiceBonCommande.dateBonCommande"
+                  for="field_dateBonCommande"
+                  >Date Bon Commande</label
+                >
+                <input
+                  id="field_dateBonCommande"
+                  data-cy="dateBonCommande"
+                  type="datetime-local"
+                  class="form-control"
+                  name="dateBonCommande"
+                  formControlName="dateBonCommande"
+                  placeholder="YYYY-MM-DD HH:mm"
+                />
+              </div>
+
+              <div class="col-12">
+                <div class="cu-section-divider">Montants</div>
+              </div>
+
+              <div class="col-md-3 mb-3">
+                <label
+                  class="form-label fw-bold"
+                  jhiTranslate="gpmGatewayApp.financeServiceBonCommande.montantTotal"
+                  for="field_montantTotal"
+                  >Montant Total</label
+                >
+                <input
+                  type="number"
+                  class="form-control"
+                  name="montantTotal"
+                  id="field_montantTotal"
+                  data-cy="montantTotal"
+                  formControlName="montantTotal"
+                />
+              </div>
+
+              <div class="col-md-3 mb-3">
+                <label
+                  class="form-label fw-bold"
+                  jhiTranslate="gpmGatewayApp.financeServiceBonCommande.montantCommande"
+                  for="field_montantCommande"
+                  >Montant Commande</label
+                >
+                <input
+                  type="number"
+                  class="form-control"
+                  name="montantCommande"
+                  id="field_montantCommande"
+                  data-cy="montantCommande"
+                  formControlName="montantCommande"
+                />
+              </div>
+
+              <div class="col-md-3 mb-3">
+                <label
+                  class="form-label fw-bold"
+                  jhiTranslate="gpmGatewayApp.financeServiceBonCommande.montantConsomme"
+                  for="field_montantConsomme"
+                  >Montant Consomme</label
+                >
+                <input
+                  type="number"
+                  class="form-control"
+                  name="montantConsomme"
+                  id="field_montantConsomme"
+                  data-cy="montantConsomme"
+                  formControlName="montantConsomme"
+                />
+              </div>
+
+              <div class="col-md-3 mb-3">
+                <label
+                  class="form-label fw-bold"
+                  jhiTranslate="gpmGatewayApp.financeServiceBonCommande.montantMissionEffectue"
+                  for="field_montantMissionEffectue"
+                  >Montant Mission Effectue</label
+                >
+                <input
+                  type="number"
+                  class="form-control"
+                  name="montantMissionEffectue"
+                  id="field_montantMissionEffectue"
+                  data-cy="montantMissionEffectue"
+                  formControlName="montantMissionEffectue"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Fin Information Globale -->
+
+        <!-- Information Client (30%) -->
+        <div class="cu-accordion-item cu-col-client" [class.open]="isPanelOpen('client')">
+          <button type="button" class="cu-accordion-header" (click)="togglePanel('client')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="building" class="cu-accordion-icon"></fa-icon>
+              <span>Information Client</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isPanelOpen('client')">
+            <div class="cu-client-field">
+              <label class="form-label fw-bold" for="field_clientId">Client</label>
+              <input type="number" class="form-control" name="clientId" id="field_clientId" data-cy="clientId" formControlName="clientId" />
+            </div>
+
+            <div class="cu-client-field">
+              <label class="form-label" for="field_direction">Direction</label>
+              <input type="text" class="form-control" name="direction" id="field_direction" />
+            </div>
+
+            <div class="cu-client-field">
+              <label class="form-label" for="field_demandeur">Demandeur</label>
+              <input type="text" class="form-control" name="demandeur" id="field_demandeur" />
+            </div>
+
+            <div class="cu-client-field-group">
+              <div class="cu-client-field">
+                <label class="form-label" for="field_responsableSite">Responsable Site</label>
+                <input type="text" class="form-control" name="responsableSite" id="field_responsableSite" />
+              </div>
+              <div class="cu-client-field cu-client-field-sub">
+                <label class="form-label" for="field_telResponsable">Tél</label>
+                <input type="text" class="form-control" name="telResponsable" id="field_telResponsable" />
+              </div>
+            </div>
+
+            <div class="cu-client-field-group">
+              <div class="cu-client-field">
+                <label class="form-label" for="field_support">Support</label>
+                <input type="text" class="form-control" name="support" id="field_support" />
+              </div>
+              <div class="cu-client-field cu-client-field-sub">
+                <label class="form-label" for="field_telSupport">Tél</label>
+                <input type="text" class="form-control" name="telSupport" id="field_telSupport" />
+              </div>
+            </div>
+
+            <div class="cu-client-field">
+              <label class="form-label" for="field_matriculeFiscale">Matricule Fiscale</label>
+              <input type="text" class="form-control" name="matriculeFiscale" id="field_matriculeFiscale" />
+            </div>
+
+            <div class="cu-client-field">
+              <label class="form-label" for="field_adresse">Adresse</label>
+              <input type="text" class="form-control" name="adresse" id="field_adresse" />
+            </div>
+
+            <div class="cu-client-field">
+              <label class="form-label" for="field_fax">Fax</label>
+              <input type="text" class="form-control" name="fax" id="field_fax" />
+            </div>
+
+            <div class="cu-client-field">
+              <label class="form-label" for="field_telephonne">Téléphonne</label>
+              <input type="text" class="form-control" name="telephonne" id="field_telephonne" />
+            </div>
+
+            <div class="cu-client-field">
+              <label class="form-label" for="field_email">Email</label>
+              <input type="email" class="form-control" name="email" id="field_email" />
+            </div>
+          </div>
+        </div>
+        <!-- Fin Information Client -->
+      </div>
+
+      <div class="cu-toolbar cu-toolbar-bottom">
+        <div class="cu-toolbar-left"></div>
+
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

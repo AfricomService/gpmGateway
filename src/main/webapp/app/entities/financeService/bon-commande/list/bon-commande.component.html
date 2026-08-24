@@ -1,0 +1,179 @@
+<div class="bc-list-page">
+  <div class="bc-container">
+    <!-- Header -->
+    <div class="bc-header">
+      <div class="bc-header-left">
+        <h2 id="page-heading" data-cy="BonCommandeHeading" class="bc-title">
+          <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.home.title">Bons de Commande</span>
+        </h2>
+        <span class="bc-count" *ngIf="bonCommandes">{{ totalItems }} élément(s)</span>
+      </div>
+
+      <div class="bc-header-actions">
+        <button type="button" class="btn-bc-refresh" (click)="load()" [disabled]="isLoading" title="Actualiser">
+          <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        </button>
+
+        <button
+          id="jh-create-entity"
+          data-cy="entityCreateButton"
+          class="btn-bc-create create-bon-commande"
+          [routerLink]="['/bon-commande/new']"
+        >
+          <fa-icon icon="plus"></fa-icon>
+          <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.home.createLabel"> Créer un nouveau Bon Commande </span>
+        </button>
+      </div>
+    </div>
+
+    <jhi-alert-error></jhi-alert-error>
+    <jhi-alert></jhi-alert>
+
+    <!-- Empty state -->
+    <div class="bc-empty" id="no-result" *ngIf="bonCommandes?.length === 0">
+      <fa-icon icon="file-signature" class="bc-empty-icon"></fa-icon>
+      <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.home.notFound">Aucun Bon Commande trouvé</span>
+    </div>
+
+    <!-- Table card -->
+    <div class="bc-card" id="entities" *ngIf="bonCommandes && bonCommandes.length > 0">
+      <div class="table-responsive">
+        <table class="bc-table" aria-describedby="page-heading">
+          <thead>
+            <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
+              <th scope="col" jhiSortBy="id">
+                <div class="d-flex align-items-center">
+                  <span jhiTranslate="global.field.id">ID</span>
+                  <fa-icon class="bc-sort-icon" icon="sort"></fa-icon>
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="clientId">
+                <div class="d-flex align-items-center">
+                  <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.clientId">Client</span>
+                  <fa-icon class="bc-sort-icon" icon="sort"></fa-icon>
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="affaireId">
+                <div class="d-flex align-items-center">
+                  <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.affaireId">Affaire</span>
+                  <fa-icon class="bc-sort-icon" icon="sort"></fa-icon>
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="lieu">
+                <div class="d-flex align-items-center">
+                  <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.lieu">Lieu</span>
+                  <fa-icon class="bc-sort-icon" icon="sort"></fa-icon>
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="referenceClient">
+                <div class="d-flex align-items-center">
+                  <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.referenceClient">Réf. Client</span>
+                  <fa-icon class="bc-sort-icon" icon="sort"></fa-icon>
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="dateBonCommande">
+                <div class="d-flex align-items-center">
+                  <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.dateBonCommande">Date</span>
+                  <fa-icon class="bc-sort-icon" icon="sort"></fa-icon>
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="montantTotal">
+                <div class="d-flex align-items-center">
+                  <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.montantTotal">Montant Total</span>
+                  <fa-icon class="bc-sort-icon" icon="sort"></fa-icon>
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="montantConsomme">
+                <div class="d-flex align-items-center">
+                  <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.montantConsomme">Consommé</span>
+                  <fa-icon class="bc-sort-icon" icon="sort"></fa-icon>
+                </div>
+              </th>
+              <th scope="col" class="bc-th-actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let bonCommande of bonCommandes; trackBy: trackId"
+              data-cy="entityTable"
+              class="bc-row-clickable"
+              (dblclick)="onRowDoubleClick(bonCommande)"
+            >
+              <td class="bc-cell-strong" data-label="ID">
+                <a [routerLink]="['/bon-commande', bonCommande.id, 'view']" (click)="$event.stopPropagation()">{{ bonCommande.id }}</a>
+              </td>
+              <td data-label="Client">{{ bonCommande.clientId || '—' }}</td>
+              <td data-label="Affaire">{{ bonCommande.affaireId || '—' }}</td>
+              <td data-label="Lieu">
+                <span class="bc-badge-lieu" *ngIf="bonCommande.lieu">{{ bonCommande.lieu }}</span>
+                <span class="bc-empty-value" *ngIf="!bonCommande.lieu">—</span>
+              </td>
+              <td class="bc-cell-truncate" data-label="Réf. Client">{{ bonCommande.referenceClient || '—' }}</td>
+              <td data-label="Date">{{ (bonCommande.dateBonCommande | formatMediumDatetime) || '—' }}</td>
+              <td data-label="Montant Total">
+                <span class="bc-amount">{{ bonCommande.montantTotal }}</span>
+              </td>
+              <td data-label="Consommé">
+                <span class="bc-amount bc-amount-muted">{{ bonCommande.montantConsomme }}</span>
+              </td>
+              <td class="text-end" data-label="Actions">
+                <div class="bc-actions">
+                  <button
+                    type="button"
+                    [routerLink]="['/bon-commande', bonCommande.id, 'view']"
+                    (click)="$event.stopPropagation()"
+                    class="btn-bc-icon btn-bc-view"
+                    data-cy="entityDetailsButton"
+                    title="Voir"
+                  >
+                    <fa-icon icon="eye"></fa-icon>
+                  </button>
+
+                  <button
+                    type="button"
+                    [routerLink]="['/bon-commande', bonCommande.id, 'edit']"
+                    (click)="$event.stopPropagation()"
+                    class="btn-bc-icon btn-bc-edit"
+                    data-cy="entityEditButton"
+                    title="Éditer"
+                  >
+                    <fa-icon icon="pencil-alt"></fa-icon>
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="delete(bonCommande); $event.stopPropagation()"
+                    class="btn-bc-icon btn-bc-delete"
+                    data-cy="entityDeleteButton"
+                    title="Supprimer"
+                  >
+                    <fa-icon icon="trash-alt"></fa-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Footer : count + pagination centrés -->
+    <div class="bc-footer" *ngIf="bonCommandes && bonCommandes.length > 0">
+      <div class="bc-footer-count">
+        <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+      </div>
+
+      <div class="bc-footer-pagination">
+        <ngb-pagination
+          [collectionSize]="totalItems"
+          [page]="page"
+          [pageSize]="itemsPerPage"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        ></ngb-pagination>
+      </div>
+    </div>
+  </div>
+</div>

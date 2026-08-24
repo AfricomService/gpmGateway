@@ -41,8 +41,8 @@
         </li>
 
         <!-- Bon de Commande -->
-        <li class="nav-item">
-          <a class="nav-link" href="javascript:void(0);" (click)="collapseNavbar()">
+        <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <a class="nav-link" routerLink="bon-commande" (click)="collapseNavbar()">
             <fa-icon icon="file-signature"></fa-icon>
             <span class="nav-label">Bon de Commande</span>
           </a>
@@ -272,6 +272,10 @@
         <button type="button" class="entity-tile" routerLink="facture/new" (click)="modal.close()">
           <span class="entity-tile-icon"><fa-icon icon="file-invoice-dollar"></fa-icon></span>
           <span class="entity-tile-label">Facture</span>
+        </button>
+        <button type="button" class="entity-tile" routerLink="bon-commande/new" (click)="modal.close()">
+          <span class="entity-tile-icon"><fa-icon icon="file-signature"></fa-icon></span>
+          <span class="entity-tile-label">Bon de Commande</span>
         </button>
         <button type="button" class="entity-tile" routerLink="devis/new" (click)="modal.close()">
           <span class="entity-tile-icon"><fa-icon icon="file-invoice"></fa-icon></span>
