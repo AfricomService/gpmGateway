@@ -1,0 +1,73 @@
+.affaire-modal {
+  .modal-header {
+    border-bottom: 1px solid #e7e9ee;
+  }
+
+  .modal-title {
+    font-weight: 700;
+    color: #1a2233;
+  }
+
+  .modal-body {
+    padding: 1.25rem;
+  }
+
+  .form-label {
+    font-size: 0.85rem;
+    color: #5d6677;
+  }
+
+  .form-control {
+    border-radius: 10px;
+    border: 1px solid #e7e9ee;
+    padding: 0.6rem 0.85rem;
+
+    &:focus {
+      border-color: #f5822a;
+      box-shadow: 0 0 0 3px rgba(245, 130, 42, 0.12);
+    }
+  }
+
+  .table {
+    margin-bottom: 0;
+
+    thead {
+      th {
+        font-size: 0.8rem;
+        color: #8a93a3;
+        font-weight: 700;
+        border-bottom: 1px solid #e7e9ee;
+      }
+    }
+
+    tbody {
+      tr {
+        cursor: pointer;
+        transition: background 0.15s ease;
+
+        &:hover {
+          background: #f8f9fb;
+        }
+
+        td {
+          vertical-align: middle;
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+
+  .affaire-modal-num-cell {
+    font-weight: 600;
+    color: #f5822a;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .affaire-modal-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: #8a93a3;
+  }
+}

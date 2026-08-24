@@ -3,12 +3,16 @@ import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs/operators';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { BonCommandeFormService, BonCommandeFormGroup } from './bon-commande-form.service';
 import { IBonCommande } from '../bon-commande.model';
 import { BonCommandeService } from '../service/bon-commande.service';
 import { IAffaire } from 'app/entities/projectService/affaire/affaire.model';
 import { AffaireService } from 'app/entities/projectService/affaire/service/affaire.service';
+import { AffaireSelectorModalComponent } from '../affaire-selector-modal/affaire-selector-modal.component';
+import { IClient } from 'app/entities/projectService/client/client.model';
+import { ClientService } from 'app/entities/projectService/client/service/client.service';
 
 type AccordionPanel = 'global' | 'client';
 
@@ -26,17 +30,28 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
   editForm: BonCommandeFormGroup = this.bonCommandeFormService.createBonCommandeFormGroup();
 
-  // === Gestion de l'accordéon ===
+  // ================================
+  // Accordéon
+  // ================================
   openPanels: Set<AccordionPanel> = new Set(['global', 'client']);
 
-  // === Gestion de la liste déroulante "Affaire" ===
+  // ================================
+  // Liste déroulante Affaire
+  // ================================
   affaireDropdownOpen = false;
   affaireResults: IAffaire[] = [];
   selectedAffaireLabel = '';
+  affaireInputValue = '';
+
+  // Infos client — affichage uniquement, seul clientId est persisté (formControlName)
+  selectedClientInfo: IClient | null = null;
+  loadingClientInfo = false;
+
   loadingAffaires = false;
   affaireSearchTerm = '';
   affairePage = 0;
   affaireTotalItems = 0;
+
   private readonly affaireSearch$ = new Subject<string>();
 
   constructor(
@@ -44,18 +59,21 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     protected bonCommandeFormService: BonCommandeFormService,
     protected activatedRoute: ActivatedRoute,
     protected affaireService: AffaireService,
-    protected elementRef: ElementRef
+    protected clientService: ClientService,
+    protected elementRef: ElementRef,
+    protected modalService: NgbModal
   ) {}
 
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ bonCommande }) => {
       this.bonCommande = bonCommande;
+
       if (bonCommande) {
         this.updateForm(bonCommande);
       }
     });
 
-    // Rafraîchit la liste à chaque frappe (debounce 300ms), reset pagination à chaque nouvelle recherche
+    // Recherche avec debounce de 300 ms
     this.affaireSearch$
       .pipe(
         debounceTime(300),
@@ -64,6 +82,7 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
           this.affaireSearchTerm = search;
           this.affairePage = 0;
           this.loadingAffaires = true;
+
           return this.affaireService.findByStatut(AFFAIRE_STATUT, search, {
             page: this.affairePage,
             size: AFFAIRE_PAGE_SIZE,
@@ -71,14 +90,22 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
           });
         })
       )
-      .subscribe(res => this.onAffairePageLoaded(res, true));
+      .subscribe({
+        next: res => this.onAffairePageLoaded(res, true),
+        error: () => {
+          this.loadingAffaires = false;
+          this.affaireResults = [];
+        },
+      });
   }
 
   ngOnDestroy(): void {
     this.affaireSearch$.complete();
   }
 
-  // Ferme le dropdown si on clique en dehors du composant
+  // ================================
+  // Fermer dropdown au clic extérieur
+  // ================================
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     if (this.affaireDropdownOpen && !this.elementRef.nativeElement.contains(event.target)) {
@@ -86,7 +113,9 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     }
   }
 
-  // === Accordéon ===
+  // ================================
+  // Accordéon
+  // ================================
   togglePanel(panel: AccordionPanel): void {
     if (this.openPanels.has(panel)) {
       this.openPanels.delete(panel);
@@ -99,9 +128,12 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     return this.openPanels.has(panel);
   }
 
-  // === Liste déroulante "Affaire" ===
+  // ================================
+  // Liste déroulante Affaire
+  // ================================
   openAffaireDropdown(): void {
     this.affaireDropdownOpen = true;
+
     if (this.affaireResults.length === 0 && !this.loadingAffaires) {
       this.loadAffaires('');
     }
@@ -109,61 +141,155 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
   onAffaireSearchInput(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
+
+    this.affaireInputValue = value;
     this.affaireDropdownOpen = true;
+
     this.affaireSearch$.next(value);
   }
 
   private loadAffaires(search: string): void {
     this.affairePage = 0;
     this.loadingAffaires = true;
+
     this.affaireService
       .findByStatut(AFFAIRE_STATUT, search, {
         page: this.affairePage,
         size: AFFAIRE_PAGE_SIZE,
         sort: ['designationAffaire,asc'],
       })
-      .subscribe(res => this.onAffairePageLoaded(res, true));
+      .subscribe({
+        next: res => this.onAffairePageLoaded(res, true),
+        error: () => {
+          this.loadingAffaires = false;
+          this.affaireResults = [];
+        },
+      });
   }
 
-  // Pagination : charge la page suivante quand on scrolle en bas de la liste
+  // ================================
+  // Pagination dropdown
+  // ================================
   onAffaireListScroll(event: Event): void {
     const el = event.target as HTMLElement;
+
     const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 10;
+
     const hasMore = this.affaireResults.length < this.affaireTotalItems;
 
     if (atBottom && hasMore && !this.loadingAffaires) {
       this.affairePage += 1;
       this.loadingAffaires = true;
+
       this.affaireService
         .findByStatut(AFFAIRE_STATUT, this.affaireSearchTerm, {
           page: this.affairePage,
           size: AFFAIRE_PAGE_SIZE,
           sort: ['designationAffaire,asc'],
         })
-        .subscribe(res => this.onAffairePageLoaded(res, false));
+        .subscribe({
+          next: res => this.onAffairePageLoaded(res, false),
+          error: () => {
+            this.loadingAffaires = false;
+          },
+        });
     }
   }
 
   private onAffairePageLoaded(res: HttpResponse<IAffaire[]>, reset: boolean): void {
     const items = res.body ?? [];
+
     this.affaireTotalItems = Number(res.headers.get('X-Total-Count') ?? items.length);
+
     this.affaireResults = reset ? items : [...this.affaireResults, ...items];
+
     this.loadingAffaires = false;
   }
 
+  // ================================
+  // Sélection Affaire
+  // ================================
   selectAffaire(affaire: IAffaire): void {
-    this.editForm.patchValue({ affaireId: affaire.id });
+    const clientId = affaire.client?.id ?? null;
+
+    this.editForm.patchValue({
+      affaireId: affaire.id,
+      clientId,
+    });
+
     this.selectedAffaireLabel = `${affaire.designationAffaire} (N° ${affaire.numAffaire})`;
+
+    // Valeur affichée dans l'input
+    this.affaireInputValue = this.selectedAffaireLabel;
+
     this.affaireDropdownOpen = false;
+
+    this.loadClientInfo(clientId);
   }
 
+  /**
+   * Récupère les infos complètes du client via un appel API dédié (GET /api/clients/{id}).
+   * Affichage uniquement — seul clientId est persisté avec le BonCommande.
+   */
+  private loadClientInfo(clientId: number | null): void {
+    this.selectedClientInfo = null;
+
+    if (clientId === null || clientId === undefined) {
+      return;
+    }
+
+    this.loadingClientInfo = true;
+
+    this.clientService.find(clientId).subscribe({
+      next: res => {
+        this.selectedClientInfo = res.body ?? null;
+        this.loadingClientInfo = false;
+      },
+      error: () => {
+        this.selectedClientInfo = null;
+        this.loadingClientInfo = false;
+      },
+    });
+  }
+
+  // ================================
+  // Ouvrir modal de sélection
+  // ================================
+  openAffaireModal(): void {
+    this.affaireDropdownOpen = false;
+
+    const modalRef = this.modalService.open(AffaireSelectorModalComponent, {
+      size: 'xl',
+      centered: true,
+      backdrop: 'static',
+    });
+
+    modalRef.result
+      .then((affaire: IAffaire) => {
+        if (affaire) {
+          this.selectAffaire(affaire);
+        }
+      })
+      .catch(() => {
+        // Fermeture du modal sans sélection
+      });
+  }
+
+  // ================================
+  // Navigation
+  // ================================
   previousState(): void {
     window.history.back();
   }
 
+  // ================================
+  // Sauvegarde
+  // ================================
   save(): void {
     this.isSaving = true;
+
     const bonCommande = this.bonCommandeFormService.getBonCommande(this.editForm);
+
     if (bonCommande.id !== null) {
       this.subscribeToSaveResponse(this.bonCommandeService.update(bonCommande));
     } else {
@@ -183,25 +309,42 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   }
 
   protected onSaveError(): void {
-    // Api for inheritance.
+    // API for inheritance.
   }
 
   protected onSaveFinalize(): void {
     this.isSaving = false;
   }
 
+  // ================================
+  // Chargement formulaire
+  // ================================
   protected updateForm(bonCommande: IBonCommande): void {
     this.bonCommande = bonCommande;
+
     this.bonCommandeFormService.resetForm(this.editForm, bonCommande);
 
     const affaireId = bonCommande.affaireId;
+
     if (affaireId !== null && affaireId !== undefined) {
-      this.affaireService.find(affaireId).subscribe(res => {
-        const affaire = res.body;
-        if (affaire) {
-          this.selectedAffaireLabel = `${affaire.designationAffaire} (N° ${affaire.numAffaire})`;
-        }
+      this.affaireService.find(affaireId).subscribe({
+        next: res => {
+          const affaire = res.body;
+
+          if (affaire) {
+            this.selectedAffaireLabel = `${affaire.designationAffaire} (N° ${affaire.numAffaire})`;
+
+            this.affaireInputValue = this.selectedAffaireLabel;
+          }
+        },
       });
+    }
+
+    // Infos client pour affichage — appel API dédié, indépendant de l'objet affaire
+    const clientId = bonCommande.clientId as number | null | undefined;
+
+    if (clientId !== null && clientId !== undefined) {
+      this.loadClientInfo(clientId);
     }
   }
 }

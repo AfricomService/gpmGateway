@@ -1,0 +1,74 @@
+<div class="affaire-modal">
+  <!-- HEADER -->
+  <div class="modal-header">
+    <div>
+      <h5 class="modal-title mb-1">Sélectionner une affaire</h5>
+
+      <small class="text-muted"> Recherchez puis sélectionnez l'affaire à associer au bon de commande. </small>
+    </div>
+
+    <button type="button" class="btn-close" aria-label="Fermer" (click)="cancel()"></button>
+  </div>
+
+  <!-- BODY -->
+  <div class="modal-body">
+    <!-- Recherche -->
+    <div class="mb-3">
+      <label for="affaire-modal-search" class="form-label fw-bold"> Recherche </label>
+
+      <input
+        id="affaire-modal-search"
+        type="text"
+        class="form-control"
+        [(ngModel)]="search"
+        (ngModelChange)="onSearchChange()"
+        placeholder="Numéro ou désignation de l'affaire..."
+        autocomplete="off"
+      />
+    </div>
+
+    <!-- Chargement -->
+    <div *ngIf="loading" class="affaire-modal-loading">
+      <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+
+      Chargement des affaires...
+    </div>
+
+    <!-- Tableau -->
+    <div *ngIf="!loading" class="table-responsive">
+      <table class="table table-hover align-middle affaire-modal-table">
+        <thead>
+          <tr>
+            <th style="width: 110px">N°</th>
+            <th>Désignation</th>
+            <th class="text-end" style="width: 120px"></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let affaire of affaires" (click)="choose(affaire)">
+            <td class="affaire-modal-num-cell">
+              {{ affaire.numAffaire }}
+            </td>
+            <td>
+              {{ affaire.designationAffaire }}
+            </td>
+            <td class="text-end">
+              <button type="button" class="btn btn-primary btn-sm" (click)="choose(affaire); $event.stopPropagation()">Choisir</button>
+            </td>
+          </tr>
+
+          <!-- Aucun résultat -->
+          <tr *ngIf="affaires.length === 0">
+            <td colspan="3" class="text-center text-muted py-4">Aucune affaire trouvée.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="cancel()">Annuler</button>
+  </div>
+</div>
