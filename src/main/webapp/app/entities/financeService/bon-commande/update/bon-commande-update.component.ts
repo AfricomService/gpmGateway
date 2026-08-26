@@ -424,6 +424,9 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       windowClass: 'affaire-selector-modal-window',
     });
 
+    // Statut propre à cette interface — chaque appelant du modal fixe le sien.
+    modalRef.componentInstance.statut = AFFAIRE_STATUT;
+
     modalRef.result
       .then((affaire: IAffaire) => {
         if (affaire) {
