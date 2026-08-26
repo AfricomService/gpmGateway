@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, Subject } from 'rxjs';
@@ -40,22 +40,14 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   openPanels: Set<AccordionPanel> = new Set(['global']);
 
   // ================================
-  // Liste déroulante Affaire
+  // Liste déroulante Affaire (ng-select)
   // ================================
-  affaireDropdownOpen = false;
   affaireResults: IAffaire[] = [];
-  selectedAffaireLabel = '';
-  affaireInputValue = '';
+  selectedAffaire: IAffaire | null = null; // Sélection courante liée au ng-select
   selectedAffaireCode: string | null = null; // Code projet (identifiantUnique) — affichage seul
 
   autreResponsable: string | null = null; // Champ libre, non persisté pour le moment
-
-  // ================================
-  // Liste déroulante Autre Responsable (même source que Responsable, non persisté)
-  // ================================
-  autreResponsableDropdownOpen = false;
-  filteredAutreResponsables: IContactSociete[] = [];
-  autreResponsableInputValue = '';
+  selectedAutreResponsable: IContactSociete | null = null; // Sélection courante liée au ng-select (même source que Responsable)
 
   // Infos client — affichage uniquement, seul clientId est persisté (formControlName)
   selectedClientInfo: IClient | null = null;
@@ -66,16 +58,13 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   affairePage = 0;
   affaireTotalItems = 0;
 
-  private readonly affaireSearch$ = new Subject<string>();
+  protected readonly affaireSearch$ = new Subject<string>();
 
   // ================================
   // Liste déroulante Responsable (contacts ayant le rôle MANAGER)
   // ================================
-  responsableDropdownOpen = false;
   responsables: IContactSociete[] = [];
-  filteredResponsables: IContactSociete[] = [];
-  selectedResponsableLabel = '';
-  responsableInputValue = '';
+  selectedResponsable: IContactSociete | null = null; // Sélection courante liée au ng-select
   loadingResponsables = false;
 
   constructor(
@@ -84,12 +73,12 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     protected activatedRoute: ActivatedRoute,
     protected affaireService: AffaireService,
     protected clientService: ClientService,
-    protected elementRef: ElementRef,
     protected modalService: NgbModal
   ) {}
 
   ngOnInit(): void {
     this.loadResponsables();
+    this.loadAffaires(''); // Pré-charge la liste des projets dès l'ouverture du formulaire
 
     this.activatedRoute.data.subscribe(({ bonCommande }) => {
       this.bonCommande = bonCommande;
@@ -137,18 +126,6 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   }
 
   // ================================
-  // Fermer dropdown au clic extérieur
-  // ================================
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    if (!this.elementRef.nativeElement.contains(event.target)) {
-      this.affaireDropdownOpen = false;
-      this.responsableDropdownOpen = false;
-      this.autreResponsableDropdownOpen = false;
-    }
-  }
-
-  // ================================
   // Accordéon
   // ================================
   togglePanel(panel: AccordionPanel): void {
@@ -164,36 +141,15 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   }
 
   // ================================
-  // Liste déroulante Affaire
+  // Liste déroulante Affaire (ng-select)
   // ================================
-  openAffaireDropdown(): void {
-    this.affaireDropdownOpen = true;
 
-    if (this.affaireResults.length === 0 && !this.loadingAffaires) {
-      this.loadAffaires('');
-    }
-  }
-
-  toggleAffaireDropdown(event: MouseEvent): void {
-    // Empêche le clic de remonter jusqu'au (focus) de l'input,
-    // qui rouvrirait immédiatement la liste qu'on vient de fermer.
-    event.stopPropagation();
-    event.preventDefault();
-
-    if (this.affaireDropdownOpen) {
-      this.affaireDropdownOpen = false;
-    } else {
-      this.openAffaireDropdown();
-    }
-  }
-
-  onAffaireSearchInput(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-
-    this.affaireInputValue = value;
-    this.affaireDropdownOpen = true;
-
-    this.affaireSearch$.next(value);
+  /**
+   * Appelé par ng-select à chaque frappe dans le champ de recherche
+   * (relié via [typeahead]="affaireSearch$").
+   */
+  onAffaireSearchInput(search: string): void {
+    this.affaireSearch$.next(search);
   }
 
   private loadAffaires(search: string): void {
@@ -216,16 +172,12 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   }
 
   // ================================
-  // Pagination dropdown
+  // Pagination (scroll infini ng-select)
   // ================================
-  onAffaireListScroll(event: Event): void {
-    const el = event.target as HTMLElement;
-
-    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 10;
-
+  onAffaireScrollToEnd(): void {
     const hasMore = this.affaireResults.length < this.affaireTotalItems;
 
-    if (atBottom && hasMore && !this.loadingAffaires) {
+    if (hasMore && !this.loadingAffaires) {
       this.affairePage += 1;
       this.loadingAffaires = true;
 
@@ -243,6 +195,11 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
         });
     }
   }
+
+  /**
+   * Fonction de comparaison pour ng-select (objets IAffaire par id).
+   */
+  compareAffaire = (a: IAffaire | null, b: IAffaire | null): boolean => (a && b ? a.id === b.id : a === b);
 
   private onAffairePageLoaded(res: HttpResponse<IAffaire[]>, reset: boolean): void {
     const items = res.body ?? [];
@@ -265,17 +222,28 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       clientId,
     });
 
-    this.selectedAffaireLabel = `${affaire.designationAffaire} (N° ${affaire.numAffaire})`;
-
-    // Valeur affichée dans l'input
-    this.affaireInputValue = this.selectedAffaireLabel;
+    // Sélection affichée dans le ng-select
+    this.selectedAffaire = affaire;
 
     // Code projet affiché à côté (lecture seule)
     this.selectedAffaireCode = affaire.identifiantUnique ?? null;
 
-    this.affaireDropdownOpen = false;
-
     this.loadClientInfo(clientId, true);
+  }
+
+  /**
+   * Appelé directement par le (change) du ng-select Affaire.
+   * `null` signifie que l'utilisateur a vidé la sélection.
+   */
+  onAffaireSelectChange(affaire: IAffaire | null): void {
+    if (affaire) {
+      this.selectAffaire(affaire);
+    } else {
+      this.editForm.patchValue({ affaireId: null, clientId: null });
+      this.selectedAffaire = null;
+      this.selectedAffaireCode = null;
+      this.selectedClientInfo = null;
+    }
   }
 
   /**
@@ -322,91 +290,40 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     this.bonCommandeService.findResponsablesByRole(RESPONSABLE_ROLE_CODE).subscribe({
       next: res => {
         this.responsables = res.body ?? [];
-        this.filteredResponsables = this.responsables;
-        this.filteredAutreResponsables = this.responsables;
         this.loadingResponsables = false;
       },
       error: () => {
         this.responsables = [];
-        this.filteredResponsables = [];
-        this.filteredAutreResponsables = [];
         this.loadingResponsables = false;
       },
     });
   }
 
-  openResponsableDropdown(): void {
-    this.responsableDropdownOpen = true;
-  }
-
-  toggleResponsableDropdown(event: MouseEvent): void {
-    event.stopPropagation();
-    event.preventDefault();
-
-    this.responsableDropdownOpen = !this.responsableDropdownOpen;
-  }
-
-  onResponsableSearchInput(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-
-    this.responsableInputValue = value;
-    this.responsableDropdownOpen = true;
-
-    const term = value.trim().toLowerCase();
-    this.filteredResponsables = term ? this.responsables.filter(r => (r.nomPrenom ?? '').toLowerCase().includes(term)) : this.responsables;
-  }
-
-  selectResponsable(responsable: IContactSociete): void {
+  onResponsableSelectChange(responsable: IContactSociete | null): void {
     this.editForm.patchValue({
-      responsableId: responsable.id !== undefined ? String(responsable.id) : null,
+      responsableId: responsable?.id !== undefined && responsable?.id !== null ? String(responsable.id) : null,
     });
 
-    this.selectedResponsableLabel = responsable.nomPrenom ?? '';
-    this.responsableInputValue = this.selectedResponsableLabel;
-    this.responsableDropdownOpen = false;
+    this.selectedResponsable = responsable;
   }
 
   // ================================
-  // Liste déroulante Autre Responsable (champ libre, non persisté)
+  // Autre Responsable (champ libre, non persisté — même source que Responsable)
   // ================================
-  openAutreResponsableDropdown(): void {
-    this.autreResponsableDropdownOpen = true;
+  onAutreResponsableSelectChange(responsable: IContactSociete | null): void {
+    this.selectedAutreResponsable = responsable;
+    this.autreResponsable = responsable?.nomPrenom ?? null;
   }
 
-  toggleAutreResponsableDropdown(event: MouseEvent): void {
-    event.stopPropagation();
-    event.preventDefault();
-
-    this.autreResponsableDropdownOpen = !this.autreResponsableDropdownOpen;
-  }
-
-  onAutreResponsableSearchInput(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-
-    this.autreResponsableInputValue = value;
-    this.autreResponsable = value;
-    this.autreResponsableDropdownOpen = true;
-
-    const term = value.trim().toLowerCase();
-    this.filteredAutreResponsables = term
-      ? this.responsables.filter(r => (r.nomPrenom ?? '').toLowerCase().includes(term))
-      : this.responsables;
-  }
-
-  selectAutreResponsable(responsable: IContactSociete): void {
-    this.autreResponsable = responsable.nomPrenom ?? '';
-    this.autreResponsableInputValue = this.autreResponsable;
-    this.autreResponsableDropdownOpen = false;
-  }
+  /**
+   * Fonction de comparaison pour ng-select (objets IContactSociete par id).
+   */
+  compareResponsable = (a: IContactSociete | null, b: IContactSociete | null): boolean => (a && b ? a.id === b.id : a === b);
 
   private loadResponsableLabel(responsableId: number): void {
     this.bonCommandeService.findResponsableById(responsableId).subscribe({
       next: res => {
-        const contact = res.body;
-        if (contact) {
-          this.selectedResponsableLabel = contact.nomPrenom ?? '';
-          this.responsableInputValue = this.selectedResponsableLabel;
-        }
+        this.selectedResponsable = res.body ?? null;
       },
     });
   }
@@ -415,8 +332,6 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   // Ouvrir modal de sélection
   // ================================
   openAffaireModal(): void {
-    this.affaireDropdownOpen = false;
-
     const modalRef = this.modalService.open(AffaireSelectorModalComponent, {
       size: 'xl',
       centered: true,
@@ -495,11 +410,14 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
           const affaire = res.body;
 
           if (affaire) {
-            this.selectedAffaireLabel = `${affaire.designationAffaire} (N° ${affaire.numAffaire})`;
-
-            this.affaireInputValue = this.selectedAffaireLabel;
-
+            this.selectedAffaire = affaire;
             this.selectedAffaireCode = affaire.identifiantUnique ?? null;
+
+            // Nécessaire pour que le ng-select affiche bien l'option sélectionnée
+            // même si elle n'est pas (encore) dans affaireResults.
+            if (!this.affaireResults.some(a => a.id === affaire.id)) {
+              this.affaireResults = [affaire, ...this.affaireResults];
+            }
           }
         },
       });

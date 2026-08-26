@@ -210,11 +210,6 @@
   }
 }
 
-/* ============ LISTE DEROULANTE RECHERCHABLE (Affaire) ============ */
-.cu-searchable-field {
-  position: relative;
-}
-
 /* ============ SELECT AFFAIRE + BOUTON MODAL ============ */
 
 .cu-affaire-selector {
@@ -222,7 +217,7 @@
   align-items: stretch;
   gap: 0.5rem;
 
-  .cu-select-search {
+  ::ng-deep .custom-ng-select {
     flex: 1;
     min-width: 0;
   }
@@ -260,103 +255,6 @@
     border-color: var(--cp-accent);
     box-shadow: 0 0 0 3px var(--cp-accent-soft);
   }
-}
-
-.cu-select-search {
-  position: relative;
-
-  .cu-select-search-input-wrap {
-    position: relative;
-
-    .form-control {
-      padding-right: 2.25rem;
-      cursor: text;
-    }
-  }
-
-  .cu-select-chevron {
-    position: absolute;
-    right: 0.85rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--cp-text-muted);
-    transition: transform 0.2s ease;
-    cursor: pointer;
-    z-index: 1;
-  }
-
-  &.open .cu-select-chevron {
-    transform: translateY(-50%) rotate(180deg);
-    color: var(--cp-accent);
-  }
-
-  &.open .form-control {
-    border-color: var(--cp-accent);
-    box-shadow: 0 0 0 3px var(--cp-accent-soft);
-  }
-}
-
-.cu-select-dropdown {
-  position: absolute;
-  z-index: 20;
-  top: calc(100% + 6px);
-  left: 0;
-  right: 0;
-  background: var(--cp-surface);
-  border: 1px solid var(--cp-border);
-  border-radius: 10px;
-  box-shadow: 0 12px 28px -12px rgba(26, 34, 51, 0.25);
-  overflow: hidden;
-}
-
-.cu-select-list {
-  max-height: 260px;
-  overflow-y: auto;
-}
-
-.cu-select-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  padding: 0.6rem 0.9rem;
-  cursor: pointer;
-  transition: background 0.15s ease;
-  border-bottom: 1px solid var(--cp-border);
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  &:hover {
-    background: var(--cp-surface-hover);
-  }
-
-  &.active {
-    background: var(--cp-accent-soft);
-  }
-}
-
-.cu-select-item-title {
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--cp-text);
-}
-
-.cu-select-item-sub {
-  font-size: 0.75rem;
-  color: var(--cp-text-muted);
-}
-
-.cu-select-loading,
-.cu-select-empty {
-  text-align: center;
-  padding: 0.85rem;
-  color: var(--cp-text-muted);
-  font-size: 0.85rem;
-}
-
-.cu-select-empty {
-  font-style: italic;
 }
 
 /* ============ CONTENU VIDE (accordéons en attente de contenu) ============ */

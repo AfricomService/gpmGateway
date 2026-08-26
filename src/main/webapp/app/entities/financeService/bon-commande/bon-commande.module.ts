@@ -7,9 +7,10 @@ import { BonCommandeDeleteDialogComponent } from './delete/bon-commande-delete-d
 import { BonCommandeRoutingModule } from './route/bon-commande-routing.module';
 import { AffaireSelectorModalComponent } from './affaire-selector-modal/affaire-selector-modal.component';
 import { FormsModule } from '@angular/forms';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 @NgModule({
-  imports: [SharedModule, BonCommandeRoutingModule, FormsModule],
+  imports: [SharedModule, BonCommandeRoutingModule, FormsModule, NgSelectModule],
   declarations: [
     BonCommandeComponent,
     BonCommandeDetailComponent,
