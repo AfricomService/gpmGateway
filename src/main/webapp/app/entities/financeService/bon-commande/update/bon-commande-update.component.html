@@ -135,7 +135,7 @@
             <!-- LIGNE 3 : RESPONSABLE + AUTRE RESPONSABLE -->
             <!-- ================================================= -->
             <div class="row">
-              <div class="col-md-6 mb-3">
+              <div class="col-md-6 mb-3 cu-searchable-field">
                 <label
                   class="form-label fw-bold"
                   jhiTranslate="gpmGatewayApp.financeServiceBonCommande.responsableId"
@@ -143,28 +143,95 @@
                 >
                   Responsable
                 </label>
-                <input
-                  type="text"
-                  class="form-control"
-                  name="responsableId"
-                  id="field_responsableId"
-                  data-cy="responsableId"
-                  formControlName="responsableId"
-                />
+
+                <!-- ID réel du responsable (contact ayant le rôle MANAGER) -->
+                <input type="hidden" formControlName="responsableId" />
+
+                <div class="cu-select-search" [class.open]="responsableDropdownOpen">
+                  <div class="cu-select-search-input-wrap">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="field_responsableId"
+                      data-cy="responsableId"
+                      [value]="responsableInputValue"
+                      placeholder="Rechercher un responsable..."
+                      autocomplete="off"
+                      (input)="onResponsableSearchInput($event)"
+                      (focus)="openResponsableDropdown()"
+                    />
+                    <fa-icon icon="chevron-down" class="cu-select-chevron" (click)="toggleResponsableDropdown($event)"></fa-icon>
+                  </div>
+
+                  <div class="cu-select-dropdown" *ngIf="responsableDropdownOpen">
+                    <div class="cu-select-list">
+                      <div
+                        class="cu-select-item"
+                        *ngFor="let responsable of filteredResponsables"
+                        (click)="selectResponsable(responsable)"
+                        [class.active]="responsable.id?.toString() === editForm.controls.responsableId.value"
+                      >
+                        <span class="cu-select-item-title">{{ responsable.nomPrenom }}</span>
+                        <span class="cu-select-item-sub" *ngIf="responsable.email">{{ responsable.email }}</span>
+                      </div>
+
+                      <div class="cu-select-loading" *ngIf="loadingResponsables">
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        Chargement...
+                      </div>
+
+                      <div class="cu-select-empty" *ngIf="!loadingResponsables && filteredResponsables.length === 0">
+                        Aucun responsable trouvé
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <!-- Champ libre, non persisté pour le moment -->
-              <div class="col-md-6 mb-3">
+              <div class="col-md-6 mb-3 cu-searchable-field">
                 <label class="form-label fw-bold" for="field_autreResponsable"> Autre Responsable </label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="field_autreResponsable"
-                  data-cy="autreResponsable"
-                  name="autreResponsable"
-                  [(ngModel)]="autreResponsable"
-                  [ngModelOptions]="{ standalone: true }"
-                />
+
+                <div class="cu-select-search" [class.open]="autreResponsableDropdownOpen">
+                  <div class="cu-select-search-input-wrap">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="field_autreResponsable"
+                      data-cy="autreResponsable"
+                      name="autreResponsable"
+                      [value]="autreResponsableInputValue"
+                      placeholder="Rechercher un responsable..."
+                      autocomplete="off"
+                      (input)="onAutreResponsableSearchInput($event)"
+                      (focus)="openAutreResponsableDropdown()"
+                    />
+                    <fa-icon icon="chevron-down" class="cu-select-chevron" (click)="toggleAutreResponsableDropdown($event)"></fa-icon>
+                  </div>
+
+                  <div class="cu-select-dropdown" *ngIf="autreResponsableDropdownOpen">
+                    <div class="cu-select-list">
+                      <div
+                        class="cu-select-item"
+                        *ngFor="let responsable of filteredAutreResponsables"
+                        (click)="selectAutreResponsable(responsable)"
+                        [class.active]="responsable.nomPrenom === autreResponsable"
+                      >
+                        <span class="cu-select-item-title">{{ responsable.nomPrenom }}</span>
+                        <span class="cu-select-item-sub" *ngIf="responsable.email">{{ responsable.email }}</span>
+                      </div>
+
+                      <div class="cu-select-loading" *ngIf="loadingResponsables">
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        Chargement...
+                      </div>
+
+                      <div class="cu-select-empty" *ngIf="!loadingResponsables && filteredAutreResponsables.length === 0">
+                        Aucun responsable trouvé
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 

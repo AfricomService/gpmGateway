@@ -8,6 +8,7 @@ import { isPresent } from 'app/core/util/operators';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { IBonCommande, NewBonCommande } from '../bon-commande.model';
+import { IContactSociete } from 'app/entities/projectService/societe/contact-societe.model';
 
 export type PartialUpdateBonCommande = Partial<IBonCommande> & Pick<IBonCommande, 'id'>;
 
@@ -27,6 +28,8 @@ export type EntityArrayResponseType = HttpResponse<IBonCommande[]>;
 @Injectable({ providedIn: 'root' })
 export class BonCommandeService {
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/bon-commandes', 'financeservice');
+
+  protected contactSocieteResourceUrl = this.applicationConfigService.getEndpointFor('api/contact-societes', 'projectservice');
 
   constructor(protected http: HttpClient, protected applicationConfigService: ApplicationConfigService) {}
 
@@ -66,6 +69,20 @@ export class BonCommandeService {
 
   delete(id: number): Observable<HttpResponse<{}>> {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
+  }
+
+  /**
+   * Récupère un contact (responsable) par son id.
+   */
+  findResponsableById(id: number): Observable<HttpResponse<IContactSociete>> {
+    return this.http.get<IContactSociete>(`${this.contactSocieteResourceUrl}/${id}`, { observe: 'response' });
+  }
+
+  /**
+   * Récupère les contacts ayant un rôle donné (ex: MANAGER), pour peupler la liste des responsables.
+   */
+  findResponsablesByRole(roleCode: string): Observable<HttpResponse<IContactSociete[]>> {
+    return this.http.get<IContactSociete[]>(`${this.contactSocieteResourceUrl}/by-role/${roleCode}`, { observe: 'response' });
   }
 
   getBonCommandeIdentifier(bonCommande: Pick<IBonCommande, 'id'>): number {

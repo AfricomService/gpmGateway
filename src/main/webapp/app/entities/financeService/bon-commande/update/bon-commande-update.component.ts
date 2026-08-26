@@ -15,11 +15,13 @@ import { AffaireService } from 'app/entities/projectService/affaire/service/affa
 import { AffaireSelectorModalComponent } from '../affaire-selector-modal/affaire-selector-modal.component';
 import { IClient } from 'app/entities/projectService/client/client.model';
 import { ClientService } from 'app/entities/projectService/client/service/client.service';
+import { IContactSociete } from 'app/entities/projectService/societe/contact-societe.model';
 
 type AccordionPanel = 'global' | 'client' | 'detailsCommande' | 'otAssocies' | 'articlesMissions' | 'piecesJointes';
 
 const AFFAIRE_STATUT = 'ExecutionDesTravaux';
 const AFFAIRE_PAGE_SIZE = 15;
+const RESPONSABLE_ROLE_CODE = 'MANAGER';
 
 @Component({
   selector: 'jhi-bon-commande-update',
@@ -48,6 +50,13 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
   autreResponsable: string | null = null; // Champ libre, non persisté pour le moment
 
+  // ================================
+  // Liste déroulante Autre Responsable (même source que Responsable, non persisté)
+  // ================================
+  autreResponsableDropdownOpen = false;
+  filteredAutreResponsables: IContactSociete[] = [];
+  autreResponsableInputValue = '';
+
   // Infos client — affichage uniquement, seul clientId est persisté (formControlName)
   selectedClientInfo: IClient | null = null;
   loadingClientInfo = false;
@@ -58,6 +67,16 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   affaireTotalItems = 0;
 
   private readonly affaireSearch$ = new Subject<string>();
+
+  // ================================
+  // Liste déroulante Responsable (contacts ayant le rôle MANAGER)
+  // ================================
+  responsableDropdownOpen = false;
+  responsables: IContactSociete[] = [];
+  filteredResponsables: IContactSociete[] = [];
+  selectedResponsableLabel = '';
+  responsableInputValue = '';
+  loadingResponsables = false;
 
   constructor(
     protected bonCommandeService: BonCommandeService,
@@ -70,6 +89,8 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.loadResponsables();
+
     this.activatedRoute.data.subscribe(({ bonCommande }) => {
       this.bonCommande = bonCommande;
 
@@ -120,8 +141,10 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   // ================================
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    if (this.affaireDropdownOpen && !this.elementRef.nativeElement.contains(event.target)) {
+    if (!this.elementRef.nativeElement.contains(event.target)) {
       this.affaireDropdownOpen = false;
+      this.responsableDropdownOpen = false;
+      this.autreResponsableDropdownOpen = false;
     }
   }
 
@@ -291,6 +314,104 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   }
 
   // ================================
+  // Liste déroulante Responsable
+  // ================================
+  private loadResponsables(): void {
+    this.loadingResponsables = true;
+
+    this.bonCommandeService.findResponsablesByRole(RESPONSABLE_ROLE_CODE).subscribe({
+      next: res => {
+        this.responsables = res.body ?? [];
+        this.filteredResponsables = this.responsables;
+        this.filteredAutreResponsables = this.responsables;
+        this.loadingResponsables = false;
+      },
+      error: () => {
+        this.responsables = [];
+        this.filteredResponsables = [];
+        this.filteredAutreResponsables = [];
+        this.loadingResponsables = false;
+      },
+    });
+  }
+
+  openResponsableDropdown(): void {
+    this.responsableDropdownOpen = true;
+  }
+
+  toggleResponsableDropdown(event: MouseEvent): void {
+    event.stopPropagation();
+    event.preventDefault();
+
+    this.responsableDropdownOpen = !this.responsableDropdownOpen;
+  }
+
+  onResponsableSearchInput(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+
+    this.responsableInputValue = value;
+    this.responsableDropdownOpen = true;
+
+    const term = value.trim().toLowerCase();
+    this.filteredResponsables = term ? this.responsables.filter(r => (r.nomPrenom ?? '').toLowerCase().includes(term)) : this.responsables;
+  }
+
+  selectResponsable(responsable: IContactSociete): void {
+    this.editForm.patchValue({
+      responsableId: responsable.id !== undefined ? String(responsable.id) : null,
+    });
+
+    this.selectedResponsableLabel = responsable.nomPrenom ?? '';
+    this.responsableInputValue = this.selectedResponsableLabel;
+    this.responsableDropdownOpen = false;
+  }
+
+  // ================================
+  // Liste déroulante Autre Responsable (champ libre, non persisté)
+  // ================================
+  openAutreResponsableDropdown(): void {
+    this.autreResponsableDropdownOpen = true;
+  }
+
+  toggleAutreResponsableDropdown(event: MouseEvent): void {
+    event.stopPropagation();
+    event.preventDefault();
+
+    this.autreResponsableDropdownOpen = !this.autreResponsableDropdownOpen;
+  }
+
+  onAutreResponsableSearchInput(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+
+    this.autreResponsableInputValue = value;
+    this.autreResponsable = value;
+    this.autreResponsableDropdownOpen = true;
+
+    const term = value.trim().toLowerCase();
+    this.filteredAutreResponsables = term
+      ? this.responsables.filter(r => (r.nomPrenom ?? '').toLowerCase().includes(term))
+      : this.responsables;
+  }
+
+  selectAutreResponsable(responsable: IContactSociete): void {
+    this.autreResponsable = responsable.nomPrenom ?? '';
+    this.autreResponsableInputValue = this.autreResponsable;
+    this.autreResponsableDropdownOpen = false;
+  }
+
+  private loadResponsableLabel(responsableId: number): void {
+    this.bonCommandeService.findResponsableById(responsableId).subscribe({
+      next: res => {
+        const contact = res.body;
+        if (contact) {
+          this.selectedResponsableLabel = contact.nomPrenom ?? '';
+          this.responsableInputValue = this.selectedResponsableLabel;
+        }
+      },
+    });
+  }
+
+  // ================================
   // Ouvrir modal de sélection
   // ================================
   openAffaireModal(): void {
@@ -386,6 +507,13 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
     if (clientId !== null && clientId !== undefined) {
       this.loadClientInfo(clientId);
+    }
+
+    // Libellé du responsable pour affichage — le formulaire ne persiste que l'id
+    const responsableId = bonCommande.responsableId;
+
+    if (responsableId !== null && responsableId !== undefined && responsableId !== '') {
+      this.loadResponsableLabel(Number(responsableId));
     }
   }
 }
