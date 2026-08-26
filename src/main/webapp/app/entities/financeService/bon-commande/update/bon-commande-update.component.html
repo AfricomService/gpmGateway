@@ -135,29 +135,41 @@
                 <!-- ID réel du responsable (contact ayant le rôle MANAGER) -->
                 <input type="hidden" formControlName="responsableId" />
 
-                <ng-select
-                  id="field_responsableId"
-                  data-cy="responsableId"
-                  name="responsableId"
-                  class="custom-ng-select"
-                  [items]="responsables"
-                  bindLabel="nomPrenom"
-                  [compareWith]="compareResponsable"
-                  [searchable]="true"
-                  [clearable]="true"
-                  [loading]="loadingResponsables"
-                  placeholder="Rechercher un responsable..."
-                  notFoundText="Aucun responsable trouvé"
-                  loadingText="Chargement..."
-                  [ngModel]="selectedResponsable"
-                  [ngModelOptions]="{ standalone: true }"
-                  (change)="onResponsableSelectChange($event)"
-                >
-                  <ng-template ng-option-tmp let-item="item">
-                    <div>{{ item.nomPrenom }}</div>
-                    <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
-                  </ng-template>
-                </ng-select>
+                <div class="cu-affaire-selector">
+                  <ng-select
+                    id="field_responsableId"
+                    data-cy="responsableId"
+                    name="responsableId"
+                    class="custom-ng-select"
+                    [items]="responsables"
+                    bindLabel="nomPrenom"
+                    [compareWith]="compareResponsable"
+                    [searchable]="true"
+                    [clearable]="true"
+                    [loading]="loadingResponsables"
+                    placeholder="Rechercher un responsable..."
+                    notFoundText="Aucun responsable trouvé"
+                    loadingText="Chargement..."
+                    [ngModel]="selectedResponsable"
+                    [ngModelOptions]="{ standalone: true }"
+                    (change)="onResponsableSelectChange($event)"
+                  >
+                    <ng-template ng-option-tmp let-item="item">
+                      <div>{{ item.nomPrenom }}</div>
+                      <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
+                    </ng-template>
+                  </ng-select>
+
+                  <button
+                    type="button"
+                    class="btn-cu-affaire-modal"
+                    title="Rechercher un responsable"
+                    aria-label="Rechercher un responsable"
+                    (click)="openResponsableModal()"
+                  >
+                    <fa-icon icon="search"></fa-icon>
+                  </button>
+                </div>
               </div>
 
               <!-- Champ libre, non persisté pour le moment -->
@@ -165,29 +177,41 @@
               <div class="col-md-6 mb-3">
                 <label class="form-label fw-bold" for="field_autreResponsable"> Autre Responsable </label>
 
-                <ng-select
-                  id="field_autreResponsable"
-                  data-cy="autreResponsable"
-                  name="autreResponsable"
-                  class="custom-ng-select"
-                  [items]="responsables"
-                  bindLabel="nomPrenom"
-                  [compareWith]="compareResponsable"
-                  [searchable]="true"
-                  [clearable]="true"
-                  [loading]="loadingResponsables"
-                  placeholder="Rechercher un responsable..."
-                  notFoundText="Aucun responsable trouvé"
-                  loadingText="Chargement..."
-                  [ngModel]="selectedAutreResponsable"
-                  [ngModelOptions]="{ standalone: true }"
-                  (change)="onAutreResponsableSelectChange($event)"
-                >
-                  <ng-template ng-option-tmp let-item="item">
-                    <div>{{ item.nomPrenom }}</div>
-                    <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
-                  </ng-template>
-                </ng-select>
+                <div class="cu-affaire-selector">
+                  <ng-select
+                    id="field_autreResponsable"
+                    data-cy="autreResponsable"
+                    name="autreResponsable"
+                    class="custom-ng-select"
+                    [items]="responsables"
+                    bindLabel="nomPrenom"
+                    [compareWith]="compareResponsable"
+                    [searchable]="true"
+                    [clearable]="true"
+                    [loading]="loadingResponsables"
+                    placeholder="Rechercher un responsable..."
+                    notFoundText="Aucun responsable trouvé"
+                    loadingText="Chargement..."
+                    [ngModel]="selectedAutreResponsable"
+                    [ngModelOptions]="{ standalone: true }"
+                    (change)="onAutreResponsableSelectChange($event)"
+                  >
+                    <ng-template ng-option-tmp let-item="item">
+                      <div>{{ item.nomPrenom }}</div>
+                      <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
+                    </ng-template>
+                  </ng-select>
+
+                  <button
+                    type="button"
+                    class="btn-cu-affaire-modal"
+                    title="Rechercher un autre responsable"
+                    aria-label="Rechercher un autre responsable"
+                    (click)="openAutreResponsableModal()"
+                  >
+                    <fa-icon icon="search"></fa-icon>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -656,29 +680,41 @@
                 <!-- ID réel du responsable (contact ayant le rôle MANAGER) -->
                 <input type="hidden" formControlName="responsableId" />
 
-                <ng-select
-                  id="field_responsableId"
-                  data-cy="responsableId"
-                  name="responsableId"
-                  class="custom-ng-select"
-                  [items]="responsables"
-                  bindLabel="nomPrenom"
-                  [compareWith]="compareResponsable"
-                  [searchable]="true"
-                  [clearable]="true"
-                  [loading]="loadingResponsables"
-                  placeholder="Rechercher un responsable..."
-                  notFoundText="Aucun responsable trouvé"
-                  loadingText="Chargement..."
-                  [ngModel]="selectedResponsable"
-                  [ngModelOptions]="{ standalone: true }"
-                  (change)="onResponsableSelectChange($event)"
-                >
-                  <ng-template ng-option-tmp let-item="item">
-                    <div>{{ item.nomPrenom }}</div>
-                    <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
-                  </ng-template>
-                </ng-select>
+                <div class="cu-affaire-selector">
+                  <ng-select
+                    id="field_responsableId"
+                    data-cy="responsableId"
+                    name="responsableId"
+                    class="custom-ng-select"
+                    [items]="responsables"
+                    bindLabel="nomPrenom"
+                    [compareWith]="compareResponsable"
+                    [searchable]="true"
+                    [clearable]="true"
+                    [loading]="loadingResponsables"
+                    placeholder="Rechercher un responsable..."
+                    notFoundText="Aucun responsable trouvé"
+                    loadingText="Chargement..."
+                    [ngModel]="selectedResponsable"
+                    [ngModelOptions]="{ standalone: true }"
+                    (change)="onResponsableSelectChange($event)"
+                  >
+                    <ng-template ng-option-tmp let-item="item">
+                      <div>{{ item.nomPrenom }}</div>
+                      <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
+                    </ng-template>
+                  </ng-select>
+
+                  <button
+                    type="button"
+                    class="btn-cu-affaire-modal"
+                    title="Rechercher un responsable"
+                    aria-label="Rechercher un responsable"
+                    (click)="openResponsableModal()"
+                  >
+                    <fa-icon icon="search"></fa-icon>
+                  </button>
+                </div>
               </div>
 
               <!-- Champ libre, non persisté pour le moment -->
@@ -686,29 +722,41 @@
               <div class="col-md-6 mb-3">
                 <label class="form-label fw-bold" for="field_autreResponsable"> Autre Responsable </label>
 
-                <ng-select
-                  id="field_autreResponsable"
-                  data-cy="autreResponsable"
-                  name="autreResponsable"
-                  class="custom-ng-select"
-                  [items]="responsables"
-                  bindLabel="nomPrenom"
-                  [compareWith]="compareResponsable"
-                  [searchable]="true"
-                  [clearable]="true"
-                  [loading]="loadingResponsables"
-                  placeholder="Rechercher un responsable..."
-                  notFoundText="Aucun responsable trouvé"
-                  loadingText="Chargement..."
-                  [ngModel]="selectedAutreResponsable"
-                  [ngModelOptions]="{ standalone: true }"
-                  (change)="onAutreResponsableSelectChange($event)"
-                >
-                  <ng-template ng-option-tmp let-item="item">
-                    <div>{{ item.nomPrenom }}</div>
-                    <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
-                  </ng-template>
-                </ng-select>
+                <div class="cu-affaire-selector">
+                  <ng-select
+                    id="field_autreResponsable"
+                    data-cy="autreResponsable"
+                    name="autreResponsable"
+                    class="custom-ng-select"
+                    [items]="responsables"
+                    bindLabel="nomPrenom"
+                    [compareWith]="compareResponsable"
+                    [searchable]="true"
+                    [clearable]="true"
+                    [loading]="loadingResponsables"
+                    placeholder="Rechercher un responsable..."
+                    notFoundText="Aucun responsable trouvé"
+                    loadingText="Chargement..."
+                    [ngModel]="selectedAutreResponsable"
+                    [ngModelOptions]="{ standalone: true }"
+                    (change)="onAutreResponsableSelectChange($event)"
+                  >
+                    <ng-template ng-option-tmp let-item="item">
+                      <div>{{ item.nomPrenom }}</div>
+                      <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
+                    </ng-template>
+                  </ng-select>
+
+                  <button
+                    type="button"
+                    class="btn-cu-affaire-modal"
+                    title="Rechercher un autre responsable"
+                    aria-label="Rechercher un autre responsable"
+                    (click)="openAutreResponsableModal()"
+                  >
+                    <fa-icon icon="search"></fa-icon>
+                  </button>
+                </div>
               </div>
             </div>
 

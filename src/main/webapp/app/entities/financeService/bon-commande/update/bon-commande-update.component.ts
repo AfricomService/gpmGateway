@@ -13,6 +13,7 @@ import { BonCommandeService } from '../service/bon-commande.service';
 import { IAffaire } from 'app/entities/projectService/affaire/affaire.model';
 import { AffaireService } from 'app/entities/projectService/affaire/service/affaire.service';
 import { AffaireSelectorModalComponent } from '../affaire-selector-modal/affaire-selector-modal.component';
+import { ContactSelectorModalComponent } from '../contact-selector-modal/contact-selector-modal.component';
 import { IClient } from 'app/entities/projectService/client/client.model';
 import { ClientService } from 'app/entities/projectService/client/service/client.service';
 import { IContactSociete } from 'app/entities/projectService/societe/contact-societe.model';
@@ -346,6 +347,50 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       .then((affaire: IAffaire) => {
         if (affaire) {
           this.selectAffaire(affaire);
+        }
+      })
+      .catch(() => {
+        // Fermeture du modal sans sélection
+      });
+  }
+
+  openResponsableModal(): void {
+    const modalRef = this.modalService.open(ContactSelectorModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'contact-selector-modal-window',
+    });
+
+    modalRef.componentInstance.roleCode = RESPONSABLE_ROLE_CODE;
+    modalRef.componentInstance.modalTitle = 'Sélectionner un responsable';
+
+    modalRef.result
+      .then((contact: IContactSociete) => {
+        if (contact) {
+          this.onResponsableSelectChange(contact);
+        }
+      })
+      .catch(() => {
+        // Fermeture du modal sans sélection
+      });
+  }
+
+  openAutreResponsableModal(): void {
+    const modalRef = this.modalService.open(ContactSelectorModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'contact-selector-modal-window',
+    });
+
+    modalRef.componentInstance.roleCode = RESPONSABLE_ROLE_CODE;
+    modalRef.componentInstance.modalTitle = 'Sélectionner un autre responsable';
+
+    modalRef.result
+      .then((contact: IContactSociete) => {
+        if (contact) {
+          this.onAutreResponsableSelectChange(contact);
         }
       })
       .catch(() => {

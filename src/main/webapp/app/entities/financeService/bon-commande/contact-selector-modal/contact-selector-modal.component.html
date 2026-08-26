@@ -1,0 +1,41 @@
+<div class="modal-header cs-modal-header">
+  <h5 class="modal-title">{{ modalTitle }}</h5>
+  <button type="button" class="btn-close" aria-label="Fermer" (click)="cancel()"></button>
+</div>
+
+<div class="modal-body cs-modal-body">
+  <div class="cs-search-bar">
+    <fa-icon icon="search" class="cs-search-icon"></fa-icon>
+    <input
+      type="text"
+      class="form-control cs-search-input"
+      placeholder="Rechercher un nom, un email ou un matricule..."
+      [ngModel]="searchTerm"
+      (ngModelChange)="onSearchChange($event)"
+      [ngModelOptions]="{ standalone: true }"
+      autocomplete="off"
+    />
+  </div>
+
+  <div class="cs-loading" *ngIf="loading">Chargement...</div>
+
+  <div class="cs-list" *ngIf="!loading">
+    <button type="button" class="cs-list-item" *ngFor="let contact of filteredContacts" (click)="select(contact)">
+      <div class="cs-list-item-main">
+        <span class="cs-list-item-name">{{ contact.nomPrenom }}</span>
+        <small class="cs-list-item-email" *ngIf="contact.email">{{ contact.email }}</small>
+      </div>
+      <span class="cs-list-item-matricule" *ngIf="contact.matricule">{{ contact.matricule }}</span>
+    </button>
+
+    <div class="cs-empty" *ngIf="filteredContacts.length === 0">Aucun contact trouvé.</div>
+  </div>
+</div>
+
+<div class="modal-footer cs-modal-footer">
+  <button type="button" class="btn-cs-cancel" (click)="cancel()">
+    <fa-icon icon="ban"></fa-icon>
+    &nbsp;
+    <span>Annuler</span>
+  </button>
+</div>

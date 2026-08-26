@@ -6,6 +6,7 @@ import { BonCommandeUpdateComponent } from './update/bon-commande-update.compone
 import { BonCommandeDeleteDialogComponent } from './delete/bon-commande-delete-dialog.component';
 import { BonCommandeRoutingModule } from './route/bon-commande-routing.module';
 import { AffaireSelectorModalComponent } from './affaire-selector-modal/affaire-selector-modal.component';
+import { ContactSelectorModalComponent } from './contact-selector-modal/contact-selector-modal.component';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 
@@ -17,6 +18,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
     BonCommandeUpdateComponent,
     BonCommandeDeleteDialogComponent,
     AffaireSelectorModalComponent,
+    ContactSelectorModalComponent,
   ],
 })
 export class FinanceServiceBonCommandeModule {}
