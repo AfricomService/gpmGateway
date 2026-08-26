@@ -114,6 +114,13 @@ export class AffaireService {
       .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 
+  findByStatut(statut: string, search: string, req?: any): Observable<EntityArrayResponseType> {
+    const options = createRequestOption({ ...req, statut, search });
+    return this.http
+      .get<RestAffaire[]>(`${this.resourceUrl}/by-statut`, { params: options, observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
   searchByClientId(clientId: number, designation: string): Observable<EntityArrayResponseType> {
     const options = createRequestOption({ designation });
     return this.http

@@ -70,6 +70,12 @@ export class RessourceService {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }
 
+  changerStatut(id: number, statut: string): Observable<EntityResponseType> {
+    return this.http
+      .patch<RestRessource>(`${this.resourceUrl}/${id}/changer-statut`, {}, { observe: 'response', params: { statut } })
+      .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+
   getRessourceIdentifier(ressource: Pick<IRessource, 'id'>): number {
     return ressource.id;
   }

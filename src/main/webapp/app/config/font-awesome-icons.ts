@@ -22,6 +22,7 @@ import {
   faHeart,
   faHome,
   faList,
+  faListAlt,
   faLock,
   faMoon,
   faPencilAlt,
@@ -72,6 +73,7 @@ import {
   faDownload,
   faFileExcel,
   faKey,
+  faPaperclip,
   // jhipster-needle-add-icon-import
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -99,6 +101,7 @@ export const fontAwesomeIcons = [
   faHeart,
   faHome,
   faList,
+  faListAlt,
   faLock,
   faMoon,
   faPencilAlt,
@@ -149,5 +152,6 @@ export const fontAwesomeIcons = [
   faDownload,
   faFileExcel,
   faKey,
+  faPaperclip,
   // jhipster-needle-add-icon-import
 ];

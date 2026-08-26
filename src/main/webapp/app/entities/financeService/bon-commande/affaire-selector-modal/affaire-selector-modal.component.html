@@ -1,0 +1,98 @@
+<div class="affaire-modal">
+  <!-- ====================================================== -->
+  <!-- HEADER -->
+  <!-- ====================================================== -->
+  <div class="affaire-modal-header">
+    <div class="affaire-modal-header-icon">
+      <fa-icon icon="file-invoice"></fa-icon>
+    </div>
+
+    <div class="affaire-modal-header-text">
+      <h5 class="affaire-modal-title">Sélectionner un projet</h5>
+      <span class="affaire-modal-subtitle">Recherchez puis sélectionnez le projet à associer au bon de commande.</span>
+    </div>
+
+    <button type="button" class="affaire-modal-close" aria-label="Fermer" (click)="cancel()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+
+  <!-- ====================================================== -->
+  <!-- BODY -->
+  <!-- ====================================================== -->
+  <div class="affaire-modal-body">
+    <!-- Recherche -->
+    <div class="affaire-modal-search">
+      <fa-icon icon="search" class="affaire-modal-search-icon"></fa-icon>
+
+      <input
+        id="affaire-modal-search"
+        type="text"
+        class="form-control"
+        [(ngModel)]="search"
+        (ngModelChange)="onSearchChange()"
+        placeholder="Identifiant, client ou désignation du projet..."
+        autocomplete="off"
+      />
+    </div>
+
+    <!-- Chargement -->
+    <div *ngIf="loading" class="affaire-modal-loading">
+      <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+      Chargement des projets...
+    </div>
+
+    <!-- Tableau -->
+    <div *ngIf="!loading" class="affaire-modal-table-wrap">
+      <table class="affaire-modal-table">
+        <thead>
+          <tr>
+            <th style="width: 160px">Identifiant</th>
+            <th style="width: 32%">Client</th>
+            <th>Désignation</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let affaire of affaires" (click)="choose(affaire)" class="affaire-modal-row">
+            <td>
+              <span class="affaire-modal-badge">{{ affaire.identifiantUnique || '—' }}</span>
+            </td>
+
+            <td>
+              <div class="affaire-modal-client">
+                <span class="affaire-modal-client-avatar">
+                  {{ (affaire.client?.raisonSociale ?? '?').charAt(0) | uppercase }}
+                </span>
+                <span class="affaire-modal-client-name">{{ affaire.client?.raisonSociale ?? '—' }}</span>
+              </div>
+            </td>
+
+            <td class="affaire-modal-designation">{{ affaire.designationAffaire }}</td>
+          </tr>
+
+          <!-- Aucun résultat -->
+          <tr *ngIf="affaires.length === 0" class="affaire-modal-empty-row">
+            <td colspan="3">
+              <div class="affaire-modal-empty">
+                <fa-icon icon="search"></fa-icon>
+                <span>Aucun projet trouvé.</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ====================================================== -->
+  <!-- FOOTER -->
+  <!-- ====================================================== -->
+  <div class="affaire-modal-footer">
+    <span class="affaire-modal-count" *ngIf="!loading">
+      {{ affaires.length }} projet{{ affaires.length > 1 ? 's' : '' }} trouvé{{ affaires.length > 1 ? 's' : '' }}
+    </span>
+
+    <button type="button" class="btn-affaire-cancel" (click)="cancel()">Annuler</button>
+  </div>
+</div>

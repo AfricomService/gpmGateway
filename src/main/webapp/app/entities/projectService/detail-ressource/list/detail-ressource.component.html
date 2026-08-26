@@ -41,12 +41,6 @@
         <table class="dr-table" aria-describedby="page-heading">
           <thead>
             <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
-              <th scope="col" jhiSortBy="status">
-                <div class="d-flex align-items-center">
-                  <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.status">Status</span>
-                  <fa-icon class="dr-sort-icon" icon="sort"></fa-icon>
-                </div>
-              </th>
               <th scope="col" jhiSortBy="label">
                 <div class="d-flex align-items-center">
                   <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.label">Label</span>
@@ -59,21 +53,15 @@
                   <fa-icon class="dr-sort-icon" icon="sort"></fa-icon>
                 </div>
               </th>
+              <th scope="col" jhiSortBy="status">
+                <div class="d-flex align-items-center">
+                  <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.status">Status</span>
+                  <fa-icon class="dr-sort-icon" icon="sort"></fa-icon>
+                </div>
+              </th>
               <th scope="col" jhiSortBy="required">
                 <div class="d-flex align-items-center">
                   <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.required">Required</span>
-                  <fa-icon class="dr-sort-icon" icon="sort"></fa-icon>
-                </div>
-              </th>
-              <th scope="col" jhiSortBy="inputType">
-                <div class="d-flex align-items-center">
-                  <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.inputType">Input Type</span>
-                  <fa-icon class="dr-sort-icon" icon="sort"></fa-icon>
-                </div>
-              </th>
-              <th scope="col" jhiSortBy="multipleChoiceOption">
-                <div class="d-flex align-items-center">
-                  <span jhiTranslate="gpmGatewayApp.projectServiceDetailRessource.multipleChoiceOption">Multiple Choice Option</span>
                   <fa-icon class="dr-sort-icon" icon="sort"></fa-icon>
                 </div>
               </th>
@@ -87,21 +75,17 @@
               class="dr-row-clickable"
               (dblclick)="onRowDoubleClick(detailRessource)"
             >
+              <td>{{ detailRessource.label }}</td>
+              <td>{{ detailRessource.code }}</td>
               <td>
                 <span class="dr-badge-status" [class.dr-badge-status-off]="!detailRessource.status">
                   {{ detailRessource.status ? 'Actif' : 'Inactif' }}
                 </span>
               </td>
-              <td>{{ detailRessource.label }}</td>
-              <td>{{ detailRessource.code }}</td>
               <td>
                 <fa-icon *ngIf="detailRessource.required" icon="check" class="dr-icon-yes"></fa-icon>
                 <fa-icon *ngIf="!detailRessource.required" icon="times" class="dr-icon-no"></fa-icon>
               </td>
-              <td>
-                <span class="dr-badge-type">{{ detailRessource.inputType }}</span>
-              </td>
-              <td>{{ detailRessource.multipleChoiceOption }}</td>
               <td class="text-end">
                 <div class="dr-actions">
                   <button

@@ -1,0 +1,285 @@
+.affaire-modal {
+  --am-accent: #f5822a;
+  --am-accent-hover: #ff9a4d;
+  --am-accent-soft: rgba(245, 130, 42, 0.1);
+  --am-text: #1a2233;
+  --am-text-muted: #8a93a3;
+  --am-border: #e7e9ee;
+  --am-surface: #ffffff;
+  --am-surface-hover: #f8f9fb;
+
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  color: var(--am-text);
+
+  /* ============ HEADER ============ */
+  .affaire-modal-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--am-border);
+  }
+
+  .affaire-modal-header-icon {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: var(--am-accent-soft);
+    color: var(--am-accent);
+    font-size: 1rem;
+  }
+
+  .affaire-modal-header-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .affaire-modal-title {
+    margin: 0 0 0.2rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--am-text);
+  }
+
+  .affaire-modal-subtitle {
+    font-size: 0.85rem;
+    color: var(--am-text-muted);
+  }
+
+  .affaire-modal-close {
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--am-text-muted);
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+
+    &:hover {
+      background: var(--am-surface-hover);
+      color: var(--am-text);
+    }
+  }
+
+  /* ============ BODY ============ */
+  .affaire-modal-body {
+    padding: 1.25rem 1.5rem 0.5rem;
+  }
+
+  .affaire-modal-search {
+    position: relative;
+    margin-bottom: 1rem;
+
+    .affaire-modal-search-icon {
+      position: absolute;
+      left: 0.9rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--am-text-muted);
+      font-size: 0.85rem;
+      pointer-events: none;
+    }
+
+    .form-control {
+      border-radius: 10px;
+      border: 1px solid var(--am-border);
+      padding: 0.65rem 0.9rem 0.65rem 2.4rem;
+      font-size: 0.9rem;
+
+      &:focus {
+        border-color: var(--am-accent);
+        box-shadow: 0 0 0 3px var(--am-accent-soft);
+      }
+    }
+  }
+
+  .affaire-modal-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 0;
+    color: var(--am-text-muted);
+    font-size: 0.9rem;
+  }
+
+  /* ============ TABLE ============ */
+  .affaire-modal-table-wrap {
+    max-height: 420px;
+    overflow-y: auto;
+    border: 1px solid var(--am-border);
+    border-radius: 12px;
+  }
+
+  .affaire-modal-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: var(--am-surface-hover);
+      color: var(--am-text-muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--am-border);
+    }
+
+    tbody {
+      .affaire-modal-row {
+        cursor: pointer;
+        transition: background 0.15s ease;
+        border-left: 3px solid transparent;
+
+        &:not(:last-child) td {
+          border-bottom: 1px solid var(--am-border);
+        }
+
+        &:hover {
+          background: var(--am-accent-soft);
+          border-left-color: var(--am-accent);
+        }
+
+        td {
+          padding: 0.75rem 1rem;
+          font-size: 0.88rem;
+          vertical-align: middle;
+        }
+      }
+    }
+  }
+
+  .affaire-modal-badge {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    background: var(--am-accent-soft);
+    color: var(--am-accent);
+    font-weight: 700;
+    font-size: 0.78rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .affaire-modal-client {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-width: 0;
+  }
+
+  .affaire-modal-client-avatar {
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--am-text);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .affaire-modal-client-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .affaire-modal-designation {
+    color: var(--am-text);
+  }
+
+  .affaire-modal-empty-row td {
+    padding: 0 !important;
+    border-bottom: none !important;
+  }
+
+  .affaire-modal-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 2.5rem 0;
+    color: var(--am-text-muted);
+    font-size: 0.88rem;
+    cursor: default;
+
+    fa-icon {
+      font-size: 1.4rem;
+      opacity: 0.5;
+    }
+  }
+
+  /* ============ FOOTER ============ */
+  .affaire-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--am-border);
+  }
+
+  .affaire-modal-count {
+    font-size: 0.82rem;
+    color: var(--am-text-muted);
+  }
+
+  .btn-affaire-cancel {
+    padding: 0.5rem 1.1rem;
+    border-radius: 8px;
+    border: 1px solid var(--am-border);
+    background: var(--am-surface);
+    color: var(--am-text-muted);
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+    &:hover {
+      background: var(--am-surface-hover);
+      color: var(--am-text);
+      border-color: var(--am-accent);
+    }
+  }
+}
+
+/* ============ LARGEUR / STYLE DE LA FENÊTRE MODALE (ng-bootstrap) ============ */
+/* windowClass="affaire-selector-modal-window" passé lors de modalService.open() */
+::ng-deep .affaire-selector-modal-window {
+  .modal-dialog {
+    max-width: 920px;
+  }
+
+  .modal-content {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px -20px rgba(26, 34, 51, 0.35);
+  }
+}
+
+@media (max-width: 992px) {
+  ::ng-deep .affaire-selector-modal-window .modal-dialog {
+    max-width: 95vw;
+  }
+}
