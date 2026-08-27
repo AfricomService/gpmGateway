@@ -76,7 +76,8 @@
       "Ressource",
       "TypeRessource",
       "DetailRessource",
-      "PhaseOt"
+      "PhaseOt",
+      "ModelPhaseOT"
     ],
     "entitySuffix": "",
     "gradleEnterpriseHost": "",

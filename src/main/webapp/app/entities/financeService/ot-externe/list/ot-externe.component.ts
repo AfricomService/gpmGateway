@@ -71,7 +71,7 @@ export class OtExterneComponent implements OnInit {
       icon: ['fas', 'cog'],
       children: [
         { label: 'Phase OT', route: 'phase-ot' },
-        { label: 'Modele OT', route: 'model-ot' },
+        { label: 'Modele OT', route: 'model-phase-ot' },
       ],
     },
   ];

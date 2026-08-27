@@ -12,7 +12,7 @@
         id="jh-create-entity"
         data-cy="entityCreateButton"
         class="btn btn-primary jh-create-entity create-phase-ot"
-        [routerLink]="['/phase-ot/new']"
+        [routerLink]="['/ot-externe/phase-ot/new']"
       >
         <fa-icon icon="plus"></fa-icon>
         <span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.home.createLabel"> Créer un nouveau Phase Ot </span>
@@ -113,7 +113,7 @@
             <div class="btn-group">
               <button
                 type="submit"
-                [routerLink]="['/phase-ot', phaseOt.id, 'view']"
+                [routerLink]="['/ot-externe/phase-ot', phaseOt.id, 'view']"
                 class="btn btn-info btn-sm"
                 data-cy="entityDetailsButton"
               >
