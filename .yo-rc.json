@@ -75,7 +75,8 @@
       "Numsequentielle",
       "Ressource",
       "TypeRessource",
-      "DetailRessource"
+      "DetailRessource",
+      "PhaseOt"
     ],
     "entitySuffix": "",
     "gradleEnterpriseHost": "",

@@ -1,0 +1,52 @@
+{
+  "changelogDate": "20260826083236",
+  "clientRootFolder": "financeService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "nom",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "description",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "duree",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "bloquante",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "statut",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "dateDebut",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "dl",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "dlc",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "phaseParentId",
+      "fieldType": "Long"
+    }
+  ],
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "financeService",
+  "microservicePath": "D:\\work\\GPM_CODE\\financeService",
+  "name": "PhaseOt",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceClass"
+}
