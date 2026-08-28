@@ -171,6 +171,24 @@
               </div>
 
               <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold" for="field_clientCommande"> Client Commande </label>
+                <ng-select
+                  id="field_clientCommande"
+                  data-cy="clientCommande"
+                  name="clientCommande"
+                  formControlName="clientCommande"
+                  [items]="clientsSharedCollection"
+                  bindLabel="raisonSociale"
+                  bindValue="id"
+                  [searchable]="true"
+                  class="custom-ng-select"
+                  placeholder="Rechercher un client commande..."
+                  [readonly]="!isEditMode"
+                >
+                </ng-select>
+              </div>
+
+              <div class="col-md-6 mb-3">
                 <label class="form-label fw-bold" for="field_responsable">
                   Responsable Projet
                   <span class="text-danger">*</span>

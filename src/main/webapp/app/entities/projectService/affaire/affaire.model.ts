@@ -28,6 +28,7 @@ export interface IAffaire {
   client?: Pick<IClient, 'id' | 'raisonSociale'> | null;
   societeId?: number | null;
   identifiantUnique?: string | null;
+  clientCommande?: number | null;
 }
 
 export type NewAffaire = Omit<IAffaire, 'id'> & { id: null };
