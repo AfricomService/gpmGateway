@@ -18,10 +18,19 @@ export class ContactSelectorModalComponent implements OnInit {
   // Titre affiché dans l'en-tête — permet de réutiliser ce modal pour "Responsable" et "Autre Responsable".
   @Input() modalTitle = 'Sélectionner un contact';
 
+  // Active la sélection multiple (cases à cocher + bouton Valider) au lieu de la fermeture immédiate.
+  @Input() multiple = false;
+
+  // Pré-sélection lors de l'ouverture (utile pour "Autre Responsable" en édition).
+  @Input() initialSelection: IContactSociete[] = [];
+
   contacts: IContactSociete[] = [];
   filteredContacts: IContactSociete[] = [];
   loading = false;
   searchTerm = '';
+
+  // Sélection courante en mode multiple
+  selectedContacts: IContactSociete[] = [];
 
   // Boutons de filtre par rôle (alimentés depuis la table role_contact_societe)
   roles: IRoleContactSociete[] = [];
@@ -30,6 +39,7 @@ export class ContactSelectorModalComponent implements OnInit {
   constructor(protected activeModal: NgbActiveModal, protected bonCommandeService: BonCommandeService) {}
 
   ngOnInit(): void {
+    this.selectedContacts = [...this.initialSelection];
     this.loadRoles();
     this.loadContacts();
   }
@@ -54,7 +64,28 @@ export class ContactSelectorModalComponent implements OnInit {
   }
 
   select(contact: IContactSociete): void {
-    this.activeModal.close(contact);
+    if (!this.multiple) {
+      this.activeModal.close(contact);
+      return;
+    }
+
+    this.toggleSelection(contact);
+  }
+
+  toggleSelection(contact: IContactSociete): void {
+    if (this.isSelected(contact)) {
+      this.selectedContacts = this.selectedContacts.filter(c => c.id !== contact.id);
+    } else {
+      this.selectedContacts = [...this.selectedContacts, contact];
+    }
+  }
+
+  isSelected(contact: IContactSociete): boolean {
+    return this.selectedContacts.some(c => c.id === contact.id);
+  }
+
+  confirm(): void {
+    this.activeModal.close(this.selectedContacts);
   }
 
   cancel(): void {

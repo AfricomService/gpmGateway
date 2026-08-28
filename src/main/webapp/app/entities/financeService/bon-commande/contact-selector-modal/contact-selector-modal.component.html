@@ -11,7 +11,6 @@
   </div>
 
   <div class="cs-search-bar">
-    <fa-icon icon="search" class="cs-search-icon"></fa-icon>
     <input
       type="text"
       class="form-control cs-search-input"
@@ -26,7 +25,21 @@
   <div class="cs-loading" *ngIf="loading">Chargement...</div>
 
   <div class="cs-list" *ngIf="!loading">
-    <button type="button" class="cs-list-item" *ngFor="let contact of filteredContacts" (click)="select(contact)">
+    <button
+      type="button"
+      class="cs-list-item"
+      [class.cs-list-item-selected]="multiple && isSelected(contact)"
+      *ngFor="let contact of filteredContacts"
+      (click)="select(contact)"
+    >
+      <input
+        *ngIf="multiple"
+        type="checkbox"
+        class="cs-list-item-checkbox"
+        [checked]="isSelected(contact)"
+        (click)="$event.stopPropagation(); toggleSelection(contact)"
+      />
+
       <div class="cs-list-item-main">
         <span class="cs-list-item-name">{{ contact.nomPrenom }}</span>
         <small class="cs-list-item-email" *ngIf="contact.email">{{ contact.email }}</small>
@@ -39,9 +52,17 @@
 </div>
 
 <div class="modal-footer cs-modal-footer">
+  <span class="cs-selection-count" *ngIf="multiple">{{ selectedContacts.length }} sélectionné(s)</span>
+
   <button type="button" class="btn-cs-cancel" (click)="cancel()">
     <fa-icon icon="ban"></fa-icon>
     &nbsp;
     <span>Annuler</span>
+  </button>
+
+  <button type="button" class="btn-cs-confirm" *ngIf="multiple" (click)="confirm()">
+    <fa-icon icon="check"></fa-icon>
+    &nbsp;
+    <span>Valider</span>
   </button>
 </div>

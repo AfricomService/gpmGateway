@@ -66,18 +66,10 @@
   margin-bottom: 1rem;
 }
 
-.cs-search-icon {
-  position: absolute;
-  top: 50%;
-  left: 0.85rem;
-  transform: translateY(-50%);
-  color: var(--cs-text-muted);
-}
-
 .cs-search-input {
   border-radius: 10px;
   border: 1px solid var(--cs-border);
-  padding: 0.6rem 0.85rem 0.6rem 2.4rem;
+  padding: 0.6rem 0.85rem;
   font-size: 0.9rem;
 
   &:focus {
@@ -113,6 +105,19 @@
     border-color: var(--cs-accent);
     transform: translateY(-1px);
   }
+
+  &.cs-list-item-selected {
+    background: var(--cs-accent-soft);
+    border-color: var(--cs-accent);
+  }
+}
+
+.cs-list-item-checkbox {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--cs-accent);
+  cursor: pointer;
 }
 
 .cs-list-item-main {
@@ -158,6 +163,16 @@
 
 .cs-modal-footer {
   border-top: 1px solid var(--cs-border);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cs-selection-count {
+  margin-right: auto;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--cs-text-muted);
 }
 
 .btn-cs-cancel {
@@ -177,5 +192,24 @@
     background: var(--cs-surface-hover);
     color: var(--cs-text);
     border-color: var(--cs-accent);
+  }
+}
+
+.btn-cs-confirm {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--cs-accent);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.8rem;
+  transition: background 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    background: var(--cs-accent-hover);
+    transform: translateY(-1px);
   }
 }

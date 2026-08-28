@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit, ViewChild, TemplateRef } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, forkJoin } from 'rxjs';
 import { debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import dayjs from 'dayjs/esm';
@@ -17,6 +17,7 @@ import { ContactSelectorModalComponent } from '../contact-selector-modal/contact
 import { IClient } from 'app/entities/projectService/client/client.model';
 import { ClientService } from 'app/entities/projectService/client/service/client.service';
 import { IContactSociete } from 'app/entities/projectService/societe/contact-societe.model';
+import { BonCommandeAutreResponsableService } from '../service/bon-commande-autre-responsable.service';
 
 type AccordionPanel = 'global' | 'client' | 'detailsCommande' | 'otAssocies' | 'articlesMissions' | 'piecesJointes';
 
@@ -50,8 +51,7 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   selectedAffaire: IAffaire | null = null; // Sélection courante liée au ng-select
   selectedAffaireCode: string | null = null; // Code projet (identifiantUnique) — affichage seul
 
-  autreResponsable: string | null = null; // Champ libre, non persisté pour le moment
-  selectedAutreResponsable: IContactSociete | null = null; // Sélection courante liée au ng-select (même source que Responsable)
+  selectedAutresResponsables: IContactSociete[] = []; // Sélection multiple, persistée via BonCommandeAutreResponsable
 
   // Infos client — affichage uniquement, seul clientId est persisté (formControlName)
   selectedClientInfo: IClient | null = null;
@@ -81,7 +81,8 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     protected activatedRoute: ActivatedRoute,
     protected affaireService: AffaireService,
     protected clientService: ClientService,
-    protected modalService: NgbModal
+    protected modalService: NgbModal,
+    protected bonCommandeAutreResponsableService: BonCommandeAutreResponsableService
   ) {}
 
   ngOnInit(): void {
@@ -343,11 +344,10 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   }
 
   // ================================
-  // Autre Responsable (champ libre, non persisté — même source que Responsable)
+  // Autres Responsables (sélection multiple, persistée via BonCommandeAutreResponsable)
   // ================================
-  onAutreResponsableSelectChange(responsable: IContactSociete | null): void {
-    this.selectedAutreResponsable = responsable;
-    this.autreResponsable = responsable?.nomPrenom ?? null;
+  onAutreResponsableSelectChange(responsables: IContactSociete[] | null): void {
+    this.selectedAutresResponsables = responsables ?? [];
   }
 
   /**
@@ -420,12 +420,12 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
     modalRef.componentInstance.roleCode = RESPONSABLE_ROLE_CODE;
     modalRef.componentInstance.modalTitle = 'Sélectionner un autre responsable';
+    modalRef.componentInstance.multiple = true;
+    modalRef.componentInstance.initialSelection = this.selectedAutresResponsables;
 
     modalRef.result
-      .then((contact: IContactSociete) => {
-        if (contact) {
-          this.onAutreResponsableSelectChange(contact);
-        }
+      .then((contacts: IContactSociete[]) => {
+        this.selectedAutresResponsables = contacts ?? [];
       })
       .catch(() => {
         // Fermeture du modal sans sélection
@@ -467,13 +467,25 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IBonCommande>>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
-      next: () => this.onSaveSuccess(),
+      next: res => this.onSaveSuccess(res.body),
       error: () => this.onSaveError(),
     });
   }
 
-  protected onSaveSuccess(): void {
-    this.previousState();
+  protected onSaveSuccess(bonCommande?: IBonCommande | null): void {
+    const bonCommandeId = bonCommande?.id;
+
+    if (bonCommandeId === null || bonCommandeId === undefined) {
+      this.previousState();
+      return;
+    }
+
+    const contactSocieteIds = this.selectedAutresResponsables.map(c => c.id).filter((id): id is number => id !== null && id !== undefined);
+
+    this.bonCommandeAutreResponsableService.replaceForBonCommande(bonCommandeId, contactSocieteIds).subscribe({
+      next: () => this.previousState(),
+      error: () => this.previousState(),
+    });
   }
 
   protected onSaveError(): void {
@@ -528,5 +540,33 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     if (responsableId !== null && responsableId !== undefined && responsableId !== '') {
       this.loadResponsableLabel(Number(responsableId));
     }
+
+    // Autres responsables (sélection multiple) — chargés via la table de liaison
+    if (bonCommande.id !== null && bonCommande.id !== undefined) {
+      this.loadAutresResponsables(bonCommande.id);
+    }
+  }
+
+  private loadAutresResponsables(bonCommandeId: number): void {
+    this.bonCommandeAutreResponsableService.findByBonCommande(bonCommandeId).subscribe({
+      next: res => {
+        const links = res.body ?? [];
+        const contactIds = links.map(l => l.contactSocieteId).filter((id): id is number => id !== null && id !== undefined);
+
+        if (contactIds.length === 0) {
+          this.selectedAutresResponsables = [];
+          return;
+        }
+
+        forkJoin(contactIds.map(id => this.bonCommandeService.findResponsableById(id))).subscribe({
+          next: responses => {
+            this.selectedAutresResponsables = responses.map(r => r.body).filter((c): c is IContactSociete => c !== null);
+          },
+        });
+      },
+      error: () => {
+        this.selectedAutresResponsables = [];
+      },
+    });
   }
 }
