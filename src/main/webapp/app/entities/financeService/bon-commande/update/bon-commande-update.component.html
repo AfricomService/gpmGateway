@@ -362,111 +362,205 @@
           </button>
 
           <div class="cu-accordion-body" *ngIf="isPanelOpen('client')">
-            <!-- Client -->
-            <div class="cu-client-field">
-              <label class="form-label fw-bold" for="field_clientId"> Client </label>
+            <div class="cu-client-columns">
+              <!-- ================================================= -->
+              <!-- COLONNE GAUCHE : CLIENT FINAL (résumé) -->
+              <!-- ================================================= -->
+              <div class="cu-client-col">
+                <div class="cu-client-col-header">
+                  <div class="cu-client-col-title">Client Final</div>
+                  <button type="button" class="btn-cu-details" (click)="openClientDetailsModal()">
+                    <fa-icon icon="ellipsis-h"></fa-icon>&nbsp;Voir plus
+                  </button>
+                </div>
 
-              <!-- ID réel du client, persisté avec le BC -->
-              <input type="hidden" formControlName="clientId" />
+                <!-- Client -->
+                <div class="cu-client-field">
+                  <label class="form-label fw-bold" for="field_clientId"> Client </label>
 
-              <input
-                type="text"
-                class="form-control"
-                id="field_clientId"
-                data-cy="clientId"
-                [value]="loadingClientInfo ? 'Chargement...' : selectedClientInfo?.raisonSociale ?? ''"
-                placeholder="Sélectionnez d'abord une affaire"
-                readonly
-              />
-            </div>
+                  <!-- ID réel du client, persisté avec le BC -->
+                  <input type="hidden" formControlName="clientId" />
 
-            <!-- Direction -->
-            <div class="cu-client-field">
-              <label class="form-label" for="field_direction"> Direction </label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="field_clientId"
+                    data-cy="clientId"
+                    [value]="loadingClientInfo ? 'Chargement...' : selectedClientInfo?.raisonSociale ?? ''"
+                    placeholder="Sélectionnez d'abord une affaire"
+                    readonly
+                  />
+                </div>
 
-              <input type="text" class="form-control" name="direction" id="field_direction" />
-            </div>
+                <!-- Direction -->
+                <div class="cu-client-field">
+                  <label class="form-label" for="field_direction"> Direction </label>
 
-            <!-- Demandeur -->
-            <div class="cu-client-field">
-              <label class="form-label" for="field_demandeur"> Demandeur </label>
-
-              <input type="text" class="form-control" name="demandeur" id="field_demandeur" />
-            </div>
-
-            <!-- Responsable Site + Téléphone -->
-            <div class="cu-client-field-group">
-              <div class="cu-client-field">
-                <label class="form-label" for="field_responsableSite"> Responsable Site </label>
-
-                <input type="text" class="form-control" name="responsableSite" id="field_responsableSite" />
+                  <input type="text" class="form-control" name="direction" id="field_direction" />
+                </div>
               </div>
 
-              <div class="cu-client-field cu-client-field-sub">
-                <label class="form-label" for="field_telResponsable"> Tél </label>
+              <!-- ================================================= -->
+              <!-- COLONNE DROITE : CLIENT DEMANDEUR (résumé) -->
+              <!-- ================================================= -->
+              <div class="cu-client-col">
+                <div class="cu-client-col-header">
+                  <div class="cu-client-col-title">Client Demandeur</div>
+                  <button type="button" class="btn-cu-details" (click)="openClientCommandeDetailsModal()">
+                    <fa-icon icon="ellipsis-h"></fa-icon>&nbsp;Voir plus
+                  </button>
+                </div>
 
-                <input type="text" class="form-control" name="telResponsable" id="field_telResponsable" />
+                <!-- Client Demandeur -->
+                <div class="cu-client-field">
+                  <label class="form-label fw-bold" for="field_clientCommandeRaisonSociale"> Client Demandeur </label>
+
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="field_clientCommandeRaisonSociale"
+                    data-cy="clientCommandeRaisonSociale"
+                    [value]="loadingClientCommandeInfo ? 'Chargement...' : selectedClientCommandeInfo?.raisonSociale ?? ''"
+                    placeholder="Aucun client demandeur associé"
+                    readonly
+                  />
+                </div>
+
+                <!-- Direction -->
+                <div class="cu-client-field">
+                  <label class="form-label" for="field_clientCommandeDirection"> Direction </label>
+
+                  <input type="text" class="form-control" name="clientCommandeDirection" id="field_clientCommandeDirection" />
+                </div>
               </div>
-            </div>
-
-            <!-- Support + Téléphone -->
-            <div class="cu-client-field-group">
-              <div class="cu-client-field">
-                <label class="form-label" for="field_support"> Support </label>
-
-                <input type="text" class="form-control" name="support" id="field_support" />
-              </div>
-
-              <div class="cu-client-field cu-client-field-sub">
-                <label class="form-label" for="field_telSupport"> Tél </label>
-
-                <input type="text" class="form-control" name="telSupport" id="field_telSupport" />
-              </div>
-            </div>
-
-            <!-- Matricule Fiscale -->
-            <div class="cu-client-field">
-              <label class="form-label" for="field_matriculeFiscale"> Matricule Fiscale </label>
-
-              <input
-                type="text"
-                class="form-control"
-                id="field_matriculeFiscale"
-                [value]="selectedClientInfo?.identifiantUnique ?? ''"
-                readonly
-              />
-            </div>
-
-            <!-- Adresse -->
-            <div class="cu-client-field">
-              <label class="form-label" for="field_adresse"> Adresse </label>
-
-              <input type="text" class="form-control" id="field_adresse" [value]="selectedClientInfo?.adresse ?? ''" readonly />
-            </div>
-
-            <!-- Fax -->
-            <div class="cu-client-field">
-              <label class="form-label" for="field_fax"> Fax </label>
-
-              <input type="text" class="form-control" id="field_fax" [value]="selectedClientInfo?.fax ?? ''" readonly />
-            </div>
-
-            <!-- Téléphone -->
-            <div class="cu-client-field">
-              <label class="form-label" for="field_telephonne"> Téléphone </label>
-
-              <input type="text" class="form-control" id="field_telephonne" [value]="selectedClientInfo?.telephone ?? ''" readonly />
-            </div>
-
-            <!-- Email -->
-            <div class="cu-client-field">
-              <label class="form-label" for="field_email"> Email </label>
-
-              <input type="email" class="form-control" id="field_email" [value]="selectedClientInfo?.email ?? ''" readonly />
             </div>
           </div>
         </div>
       </div>
+
+      <!-- ====================================================== -->
+      <!-- MODAL : Détails Client Final -->
+      <!-- ====================================================== -->
+      <ng-template #clientDetailsModal let-modal>
+        <div class="modal-header">
+          <h5 class="modal-title">Détails — Client Final</h5>
+          <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Matricule Fiscale -->
+          <div class="cu-client-field">
+            <label class="form-label" for="modal_field_matriculeFiscale"> Matricule Fiscale </label>
+            <input
+              type="text"
+              class="form-control"
+              id="modal_field_matriculeFiscale"
+              [value]="selectedClientInfo?.identifiantUnique ?? ''"
+              readonly
+            />
+          </div>
+
+          <!-- Adresse -->
+          <div class="cu-client-field">
+            <label class="form-label" for="modal_field_adresse"> Adresse </label>
+            <input type="text" class="form-control" id="modal_field_adresse" [value]="selectedClientInfo?.adresse ?? ''" readonly />
+          </div>
+
+          <!-- Fax -->
+          <div class="cu-client-field">
+            <label class="form-label" for="modal_field_fax"> Fax </label>
+            <input type="text" class="form-control" id="modal_field_fax" [value]="selectedClientInfo?.fax ?? ''" readonly />
+          </div>
+
+          <!-- Téléphone -->
+          <div class="cu-client-field">
+            <label class="form-label" for="modal_field_telephonne"> Téléphone </label>
+            <input type="text" class="form-control" id="modal_field_telephonne" [value]="selectedClientInfo?.telephone ?? ''" readonly />
+          </div>
+
+          <!-- Email -->
+          <div class="cu-client-field">
+            <label class="form-label" for="modal_field_email"> Email </label>
+            <input type="email" class="form-control" id="modal_field_email" [value]="selectedClientInfo?.email ?? ''" readonly />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Fermer</button>
+        </div>
+      </ng-template>
+
+      <!-- ====================================================== -->
+      <!-- MODAL : Détails Client Demandeur -->
+      <!-- ====================================================== -->
+      <ng-template #clientCommandeDetailsModal let-modal>
+        <div class="modal-header">
+          <h5 class="modal-title">Détails — Client Demandeur</h5>
+          <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Matricule Fiscale -->
+          <div class="cu-client-field">
+            <label class="form-label" for="modal_field_clientCommandeMatriculeFiscale"> Matricule Fiscale </label>
+            <input
+              type="text"
+              class="form-control"
+              id="modal_field_clientCommandeMatriculeFiscale"
+              [value]="selectedClientCommandeInfo?.identifiantUnique ?? ''"
+              readonly
+            />
+          </div>
+
+          <!-- Adresse -->
+          <div class="cu-client-field">
+            <label class="form-label" for="modal_field_clientCommandeAdresse"> Adresse </label>
+            <input
+              type="text"
+              class="form-control"
+              id="modal_field_clientCommandeAdresse"
+              [value]="selectedClientCommandeInfo?.adresse ?? ''"
+              readonly
+            />
+          </div>
+
+          <!-- Fax -->
+          <div class="cu-client-field">
+            <label class="form-label" for="modal_field_clientCommandeFax"> Fax </label>
+            <input
+              type="text"
+              class="form-control"
+              id="modal_field_clientCommandeFax"
+              [value]="selectedClientCommandeInfo?.fax ?? ''"
+              readonly
+            />
+          </div>
+
+          <!-- Téléphone -->
+          <div class="cu-client-field">
+            <label class="form-label" for="modal_field_clientCommandeTelephone"> Téléphone </label>
+            <input
+              type="text"
+              class="form-control"
+              id="modal_field_clientCommandeTelephone"
+              [value]="selectedClientCommandeInfo?.telephone ?? ''"
+              readonly
+            />
+          </div>
+
+          <!-- Email -->
+          <div class="cu-client-field">
+            <label class="form-label" for="modal_field_clientCommandeEmail"> Email </label>
+            <input
+              type="email"
+              class="form-control"
+              id="modal_field_clientCommandeEmail"
+              [value]="selectedClientCommandeInfo?.email ?? ''"
+              readonly
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Fermer</button>
+        </div>
+      </ng-template>
 
       <!-- ====================================================== -->
       <!-- ACCORDÉONS SUPPLÉMENTAIRES (vides pour le moment) -->

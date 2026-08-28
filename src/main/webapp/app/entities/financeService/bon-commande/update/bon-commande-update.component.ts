@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, TemplateRef } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, Subject } from 'rxjs';
@@ -30,6 +30,9 @@ const RESPONSABLE_ROLE_CODE = 'MANAGER';
   styleUrls: ['./bon-commande-update.component.scss'],
 })
 export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
+  @ViewChild('clientDetailsModal') clientDetailsModal!: TemplateRef<any>;
+  @ViewChild('clientCommandeDetailsModal') clientCommandeDetailsModal!: TemplateRef<any>;
+
   isSaving = false;
   bonCommande: IBonCommande | null = null;
 
@@ -53,6 +56,10 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   // Infos client — affichage uniquement, seul clientId est persisté (formControlName)
   selectedClientInfo: IClient | null = null;
   loadingClientInfo = false;
+
+  // Infos client commande — affichage uniquement, alimenté par affaire.clientCommande (non persisté sur BonCommande)
+  selectedClientCommandeInfo: IClient | null = null;
+  loadingClientCommandeInfo = false;
 
   loadingAffaires = false;
   affaireSearchTerm = '';
@@ -230,6 +237,7 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     this.selectedAffaireCode = affaire.identifiantUnique ?? null;
 
     this.loadClientInfo(clientId, true);
+    this.loadClientCommandeInfo(affaire.clientCommande ?? null);
   }
 
   /**
@@ -244,6 +252,7 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       this.selectedAffaire = null;
       this.selectedAffaireCode = null;
       this.selectedClientInfo = null;
+      this.selectedClientCommandeInfo = null;
     }
   }
 
@@ -278,6 +287,31 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       error: () => {
         this.selectedClientInfo = null;
         this.loadingClientInfo = false;
+      },
+    });
+  }
+
+  /**
+   * Récupère les infos du client commande (affaire.clientCommande) via GET /api/clients/{id}.
+   * Affichage uniquement — ce champ n'est pas persisté avec le BonCommande.
+   */
+  private loadClientCommandeInfo(clientCommandeId: number | null): void {
+    this.selectedClientCommandeInfo = null;
+
+    if (clientCommandeId === null || clientCommandeId === undefined) {
+      return;
+    }
+
+    this.loadingClientCommandeInfo = true;
+
+    this.clientService.find(clientCommandeId).subscribe({
+      next: res => {
+        this.selectedClientCommandeInfo = res.body ?? null;
+        this.loadingClientCommandeInfo = false;
+      },
+      error: () => {
+        this.selectedClientCommandeInfo = null;
+        this.loadingClientCommandeInfo = false;
       },
     });
   }
@@ -399,6 +433,17 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   }
 
   // ================================
+  // Détails Client / Client Demandeur (modals)
+  // ================================
+  openClientDetailsModal(): void {
+    this.modalService.open(this.clientDetailsModal, { size: 'md', centered: true });
+  }
+
+  openClientCommandeDetailsModal(): void {
+    this.modalService.open(this.clientCommandeDetailsModal, { size: 'md', centered: true });
+  }
+
+  // ================================
   // Navigation
   // ================================
   previousState(): void {
@@ -463,6 +508,8 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
             if (!this.affaireResults.some(a => a.id === affaire.id)) {
               this.affaireResults = [affaire, ...this.affaireResults];
             }
+
+            this.loadClientCommandeInfo(affaire.clientCommande ?? null);
           }
         },
       });

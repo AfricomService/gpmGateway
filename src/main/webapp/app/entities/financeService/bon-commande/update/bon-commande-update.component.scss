@@ -270,6 +270,58 @@
 }
 
 /* ============ CHAMPS CLIENT (liste verticale compacte) ============ */
+.cu-client-columns {
+  display: flex;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+.cu-client-col {
+  flex: 1 1 50%;
+  min-width: 0;
+
+  &:not(:last-child) {
+    padding-right: 1.5rem;
+    border-right: 1px solid rgba(138, 147, 163, 0.3);
+  }
+}
+
+.cu-client-col-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.cu-client-col-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cp-accent);
+}
+
+.btn-cu-details {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface);
+  color: var(--cp-text-muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    background: var(--cp-accent-soft);
+    color: var(--cp-accent);
+    border-color: var(--cp-accent);
+  }
+}
+
 .cu-client-field {
   margin-bottom: 0.85rem;
 
@@ -338,5 +390,17 @@
 
   .cu-toolbar-left {
     justify-content: space-between;
+  }
+
+  .cu-client-columns {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .cu-client-col:not(:last-child) {
+    padding-right: 0;
+    padding-bottom: 1rem;
+    border-right: none;
+    border-bottom: 1px dashed var(--cp-border);
   }
 }
