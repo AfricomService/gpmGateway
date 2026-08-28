@@ -4,6 +4,12 @@
 </div>
 
 <div class="modal-body cs-modal-body">
+  <div class="cs-role-selector" *ngIf="!loadingRoles">
+    <button type="button" class="cs-role-btn" *ngFor="let role of roles" [class.active]="role.code === roleCode" (click)="selectRole(role)">
+      {{ role.label }}
+    </button>
+  </div>
+
   <div class="cs-search-bar">
     <fa-icon icon="search" class="cs-search-icon"></fa-icon>
     <input

@@ -31,6 +31,36 @@
   padding: 1.25rem;
 }
 
+.cs-role-selector {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.cs-role-btn {
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--cs-border);
+  background: var(--cs-surface);
+  color: var(--cs-text-muted);
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    background: var(--cs-surface-hover);
+    border-color: var(--cs-accent);
+  }
+
+  &.active {
+    background: var(--cs-accent);
+    border-color: var(--cs-accent);
+    color: #ffffff;
+  }
+}
+
 .cs-search-bar {
   position: relative;
   margin-bottom: 1rem;

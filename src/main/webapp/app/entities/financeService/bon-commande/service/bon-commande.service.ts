@@ -9,6 +9,7 @@ import { ApplicationConfigService } from 'app/core/config/application-config.ser
 import { createRequestOption } from 'app/core/request/request-util';
 import { IBonCommande, NewBonCommande } from '../bon-commande.model';
 import { IContactSociete } from 'app/entities/projectService/societe/contact-societe.model';
+import { IRoleContactSociete } from 'app/entities/projectService/societe/role-contact-societe.model';
 
 export type PartialUpdateBonCommande = Partial<IBonCommande> & Pick<IBonCommande, 'id'>;
 
@@ -30,6 +31,8 @@ export class BonCommandeService {
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/bon-commandes', 'financeservice');
 
   protected contactSocieteResourceUrl = this.applicationConfigService.getEndpointFor('api/contact-societes', 'projectservice');
+
+  protected roleContactSocieteResourceUrl = this.applicationConfigService.getEndpointFor('api/role-contact-societes', 'projectservice');
 
   constructor(protected http: HttpClient, protected applicationConfigService: ApplicationConfigService) {}
 
@@ -83,6 +86,14 @@ export class BonCommandeService {
    */
   findResponsablesByRole(roleCode: string): Observable<HttpResponse<IContactSociete[]>> {
     return this.http.get<IContactSociete[]>(`${this.contactSocieteResourceUrl}/by-role/${roleCode}`, { observe: 'response' });
+  }
+
+  /**
+   * Récupère la liste des rôles (table role_contact_societe) pour peupler les boutons de filtre
+   * dans la modale de sélection de contact (Responsable / Autre Responsable).
+   */
+  findAllRoles(): Observable<HttpResponse<IRoleContactSociete[]>> {
+    return this.http.get<IRoleContactSociete[]>(this.roleContactSocieteResourceUrl, { observe: 'response' });
   }
 
   getBonCommandeIdentifier(bonCommande: Pick<IBonCommande, 'id'>): number {

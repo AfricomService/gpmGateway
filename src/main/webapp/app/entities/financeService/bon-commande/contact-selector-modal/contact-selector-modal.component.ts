@@ -3,6 +3,7 @@ import { HttpResponse } from '@angular/common/http';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { IContactSociete } from 'app/entities/projectService/societe/contact-societe.model';
+import { IRoleContactSociete } from 'app/entities/projectService/societe/role-contact-societe.model';
 import { BonCommandeService } from '../service/bon-commande.service';
 
 @Component({
@@ -22,9 +23,28 @@ export class ContactSelectorModalComponent implements OnInit {
   loading = false;
   searchTerm = '';
 
+  // Boutons de filtre par rôle (alimentés depuis la table role_contact_societe)
+  roles: IRoleContactSociete[] = [];
+  loadingRoles = false;
+
   constructor(protected activeModal: NgbActiveModal, protected bonCommandeService: BonCommandeService) {}
 
   ngOnInit(): void {
+    this.loadRoles();
+    this.loadContacts();
+  }
+
+  /**
+   * Appelé au clic sur un bouton de rôle (CHAUFFEUR / TECHNIQUE / MANAGER, etc.).
+   * Recharge la liste des contacts filtrée par le rôle sélectionné.
+   */
+  selectRole(role: IRoleContactSociete): void {
+    if (!role.code || role.code === this.roleCode) {
+      return;
+    }
+
+    this.roleCode = role.code;
+    this.searchTerm = '';
     this.loadContacts();
   }
 
@@ -54,6 +74,21 @@ export class ContactSelectorModalComponent implements OnInit {
         this.contacts = [];
         this.filteredContacts = [];
         this.loading = false;
+      },
+    });
+  }
+
+  private loadRoles(): void {
+    this.loadingRoles = true;
+
+    this.bonCommandeService.findAllRoles().subscribe({
+      next: (res: HttpResponse<IRoleContactSociete[]>) => {
+        this.roles = res.body ?? [];
+        this.loadingRoles = false;
+      },
+      error: () => {
+        this.roles = [];
+        this.loadingRoles = false;
       },
     });
   }
