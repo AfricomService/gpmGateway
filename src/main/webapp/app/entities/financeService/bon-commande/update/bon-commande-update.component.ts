@@ -18,6 +18,8 @@ import { IClient } from 'app/entities/projectService/client/client.model';
 import { ClientService } from 'app/entities/projectService/client/service/client.service';
 import { IContactSociete } from 'app/entities/projectService/societe/contact-societe.model';
 import { BonCommandeAutreResponsableService } from '../service/bon-commande-autre-responsable.service';
+import { ISite } from 'app/entities/projectService/site/site.model';
+import { SiteService } from 'app/entities/projectService/site/service/site.service';
 
 type AccordionPanel = 'global' | 'client' | 'detailsCommande' | 'otAssocies' | 'articlesMissions' | 'piecesJointes';
 
@@ -57,6 +59,10 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   selectedClientInfo: IClient | null = null;
   loadingClientInfo = false;
 
+  // Sites associés au client final — alimente la liste déroulante "Lieu"
+  clientSites: ISite[] = [];
+  loadingClientSites = false;
+
   // Infos client commande — affichage uniquement, alimenté par affaire.clientCommande (non persisté sur BonCommande)
   selectedClientCommandeInfo: IClient | null = null;
   loadingClientCommandeInfo = false;
@@ -81,6 +87,7 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     protected activatedRoute: ActivatedRoute,
     protected affaireService: AffaireService,
     protected clientService: ClientService,
+    protected siteService: SiteService,
     protected modalService: NgbModal,
     protected bonCommandeAutreResponsableService: BonCommandeAutreResponsableService
   ) {}
@@ -249,11 +256,12 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     if (affaire) {
       this.selectAffaire(affaire);
     } else {
-      this.editForm.patchValue({ affaireId: null, clientId: null });
+      this.editForm.patchValue({ affaireId: null, clientId: null, lieu: null });
       this.selectedAffaire = null;
       this.selectedAffaireCode = null;
       this.selectedClientInfo = null;
       this.selectedClientCommandeInfo = null;
+      this.clientSites = [];
     }
   }
 
@@ -269,6 +277,7 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     this.selectedClientInfo = null;
 
     if (clientId === null || clientId === undefined) {
+      this.clientSites = [];
       return;
     }
 
@@ -288,6 +297,28 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       error: () => {
         this.selectedClientInfo = null;
         this.loadingClientInfo = false;
+      },
+    });
+
+    this.loadClientSites(clientId);
+  }
+
+  /**
+   * Récupère les sites associés au client final (GET /api/sites/client/{clientId}),
+   * pour alimenter la liste déroulante "Lieu".
+   */
+  private loadClientSites(clientId: number): void {
+    this.clientSites = [];
+    this.loadingClientSites = true;
+
+    this.siteService.findByClientId(clientId).subscribe({
+      next: res => {
+        this.clientSites = res.body ?? [];
+        this.loadingClientSites = false;
+      },
+      error: () => {
+        this.clientSites = [];
+        this.loadingClientSites = false;
       },
     });
   }

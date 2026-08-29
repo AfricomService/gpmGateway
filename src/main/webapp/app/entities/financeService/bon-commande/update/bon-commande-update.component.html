@@ -108,14 +108,35 @@
             </div>
 
             <!-- ================================================= -->
-            <!-- LIGNE 2 : LIEU -->
+            <!-- LIGNE 2 : LIEU (liste des sites du client final) -->
             <!-- ================================================= -->
             <div class="row">
               <div class="col-md-12 mb-3">
                 <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.financeServiceBonCommande.lieu" for="field_lieu">
                   Lieu
                 </label>
-                <input type="text" class="form-control" name="lieu" id="field_lieu" data-cy="lieu" formControlName="lieu" />
+
+                <ng-select
+                  id="field_lieu"
+                  data-cy="lieu"
+                  name="lieu"
+                  class="custom-ng-select"
+                  [items]="clientSites"
+                  bindLabel="designation"
+                  bindValue="designation"
+                  [searchable]="true"
+                  [clearable]="true"
+                  [loading]="loadingClientSites"
+                  formControlName="lieu"
+                  placeholder="Sélectionnez d'abord un projet"
+                  notFoundText="Aucun site trouvé pour ce client"
+                  loadingText="Chargement..."
+                >
+                  <ng-template ng-option-tmp let-item="item">
+                    <div>{{ item.designation }}</div>
+                    <small class="text-muted" *ngIf="item.code">Code : {{ item.code }}</small>
+                  </ng-template>
+                </ng-select>
               </div>
             </div>
 
