@@ -269,6 +269,154 @@
   font-style: italic;
 }
 
+/* ============ BADGE COMPTEUR DANS L'EN-TÊTE DE L'ACCORDÉON ============ */
+.cu-accordion-count {
+  background: var(--cp-accent-soft);
+  color: var(--cp-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+/* ============ LISTE DES ARTICLES DU PROJET (Détails Commande) ============ */
+.cu-item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.cu-item-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--cp-surface-hover);
+  border: 1px solid var(--cp-border);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.cu-item-card-selectable {
+  &:has(.cu-item-checkbox:checked) {
+    border-color: var(--cp-accent);
+    background: var(--cp-accent-soft);
+  }
+}
+
+.cu-item-checkbox {
+  flex-shrink: 0;
+  width: 1.15rem;
+  height: 1.15rem;
+  cursor: pointer;
+}
+
+.cu-item-qte {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+}
+
+.cu-item-qte-label {
+  font-size: 0.72rem;
+  color: var(--cp-text-muted);
+}
+
+.cu-item-qte-input {
+  width: 90px;
+  text-align: center;
+}
+
+.cu-item-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.cu-item-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--cp-text);
+}
+
+.cu-empty {
+  text-align: center;
+  padding: 1.5rem 0;
+  color: var(--cp-text-muted);
+  font-size: 0.88rem;
+}
+
+.articles-content-wrapper {
+  min-height: 120px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  position: relative;
+}
+
+.articles-spinner-overlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 2rem 0;
+}
+
+.text-orange {
+  color: #ff6b00 !important;
+}
+
+/* Pagination orange (reprise de l'interface Affaire) */
+::ng-deep .modern-orange-pagination {
+  .pagination {
+    margin-bottom: 0;
+    gap: 6px;
+  }
+
+  .page-item {
+    .page-link {
+      border: 1px solid #e9ecef;
+      border-radius: 8px !important;
+      color: #495057;
+      font-weight: 500;
+      font-size: 0.875rem;
+      padding: 6px 12px;
+      transition: all 0.2s ease-in-out;
+      background-color: #ffffff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+
+      &:hover {
+        color: #ff6b00;
+        background-color: #fff6f0;
+        border-color: #ffc299;
+        transform: translateY(-1px);
+      }
+
+      &:focus {
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 0, 0.2);
+      }
+    }
+
+    &.active .page-link {
+      background-color: #ff6b00 !important;
+      border-color: #ff6b00 !important;
+      color: #ffffff !important;
+      font-weight: 600;
+      box-shadow: 0 3px 8px rgba(255, 107, 0, 0.35);
+    }
+
+    &.disabled .page-link {
+      color: #ced4da;
+      background-color: #f8f9fa;
+      border-color: #f1f3f5;
+      box-shadow: none;
+    }
+  }
+}
+
 /* ============ CHAMPS CLIENT (liste verticale compacte) ============ */
 .cu-client-columns {
   display: flex;

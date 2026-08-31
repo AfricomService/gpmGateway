@@ -11,7 +11,8 @@ import { BonCommandeFormService, BonCommandeFormGroup } from './bon-commande-for
 import { IBonCommande } from '../bon-commande.model';
 import { BonCommandeService } from '../service/bon-commande.service';
 import { IAffaire } from 'app/entities/projectService/affaire/affaire.model';
-import { AffaireService } from 'app/entities/projectService/affaire/service/affaire.service';
+import { AffaireService, RestPage } from 'app/entities/projectService/affaire/service/affaire.service';
+import { IArticle } from 'app/entities/projectService/article/article.model';
 import { AffaireSelectorModalComponent } from '../affaire-selector-modal/affaire-selector-modal.component';
 import { ContactSelectorModalComponent } from '../contact-selector-modal/contact-selector-modal.component';
 import { IClient } from 'app/entities/projectService/client/client.model';
@@ -20,6 +21,8 @@ import { IContactSociete } from 'app/entities/projectService/societe/contact-soc
 import { BonCommandeAutreResponsableService } from '../service/bon-commande-autre-responsable.service';
 import { ISite } from 'app/entities/projectService/site/site.model';
 import { SiteService } from 'app/entities/projectService/site/service/site.service';
+import { IBonCommandeArticles } from '../bon-commande-articles.model';
+import { BonCommandeArticlesService } from '../service/bon-commande-articles.service';
 
 type AccordionPanel = 'global' | 'client' | 'detailsCommande' | 'otAssocies' | 'articlesMissions' | 'piecesJointes';
 
@@ -81,6 +84,24 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   selectedResponsable: IContactSociete | null = null; // Sélection courante liée au ng-select
   loadingResponsables = false;
 
+  // ================================
+  // Articles du projet sélectionné (accordéon "Détails Commande")
+  // ================================
+  projetArticles: IArticle[] = [];
+  projetArticlesTotalItems = 0;
+  projetArticlesPage = 1; // 1-indexé pour ngb-pagination
+  projetArticlesItemsPerPage = 5;
+  projetArticlesSearchTerm = '';
+  loadingProjetArticles = false;
+
+  protected readonly projetArticlesSearch$ = new Subject<string>();
+
+  // ================================
+  // Sélection des articles à affecter au Bon de Commande
+  // ================================
+  selectedProjetArticleIds: Set<number> = new Set<number>();
+  articleQuantities: Map<number, number> = new Map<number, number>();
+
   constructor(
     protected bonCommandeService: BonCommandeService,
     protected bonCommandeFormService: BonCommandeFormService,
@@ -89,9 +110,9 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     protected clientService: ClientService,
     protected siteService: SiteService,
     protected modalService: NgbModal,
-    protected bonCommandeAutreResponsableService: BonCommandeAutreResponsableService
+    protected bonCommandeAutreResponsableService: BonCommandeAutreResponsableService,
+    protected bonCommandeArticlesService: BonCommandeArticlesService
   ) {}
-
   ngOnInit(): void {
     this.loadResponsables();
     this.loadAffaires(''); // Pré-charge la liste des projets dès l'ouverture du formulaire
@@ -135,10 +156,18 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
           this.affaireResults = [];
         },
       });
+
+    // Recherche avec debounce de 300 ms pour les articles du projet sélectionné
+    this.projetArticlesSearch$.pipe(debounceTime(300), distinctUntilChanged()).subscribe(search => {
+      this.projetArticlesSearchTerm = search;
+      this.projetArticlesPage = 1;
+      this.loadProjetArticles();
+    });
   }
 
   ngOnDestroy(): void {
     this.affaireSearch$.complete();
+    this.projetArticlesSearch$.complete();
   }
 
   // ================================
@@ -246,6 +275,15 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
     this.loadClientInfo(clientId, true);
     this.loadClientCommandeInfo(affaire.clientCommande ?? null);
+
+    // Articles du projet nouvellement sélectionné (accordéon "Détails Commande")
+    this.projetArticlesSearchTerm = '';
+    this.projetArticlesPage = 1;
+    this.loadProjetArticles(affaire.id);
+
+    // Un nouveau projet a été choisi : la sélection précédente ne correspond plus à ces articles
+    this.selectedProjetArticleIds = new Set<number>();
+    this.articleQuantities = new Map<number, number>();
   }
 
   /**
@@ -262,6 +300,12 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       this.selectedClientInfo = null;
       this.selectedClientCommandeInfo = null;
       this.clientSites = [];
+      this.projetArticles = [];
+      this.projetArticlesTotalItems = 0;
+      this.projetArticlesSearchTerm = '';
+      this.projetArticlesPage = 1;
+      this.selectedProjetArticleIds = new Set<number>();
+      this.articleQuantities = new Map<number, number>();
     }
   }
 
@@ -513,7 +557,15 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
     const contactSocieteIds = this.selectedAutresResponsables.map(c => c.id).filter((id): id is number => id !== null && id !== undefined);
 
-    this.bonCommandeAutreResponsableService.replaceForBonCommande(bonCommandeId, contactSocieteIds).subscribe({
+    const articlesToSave: Partial<IBonCommandeArticles>[] = Array.from(this.selectedProjetArticleIds).map(articleId => ({
+      articleId,
+      qteCommande: this.getArticleQuantity(articleId),
+    }));
+
+    forkJoin([
+      this.bonCommandeAutreResponsableService.replaceForBonCommande(bonCommandeId, contactSocieteIds),
+      this.bonCommandeArticlesService.replaceForBonCommande(bonCommandeId, articlesToSave),
+    ]).subscribe({
       next: () => this.previousState(),
       error: () => this.previousState(),
     });
@@ -553,6 +605,9 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
             }
 
             this.loadClientCommandeInfo(affaire.clientCommande ?? null);
+
+            // Articles du projet (accordéon "Détails Commande")
+            this.loadProjetArticles(affaire.id);
           }
         },
       });
@@ -575,6 +630,7 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     // Autres responsables (sélection multiple) — chargés via la table de liaison
     if (bonCommande.id !== null && bonCommande.id !== undefined) {
       this.loadAutresResponsables(bonCommande.id);
+      this.loadBonCommandeArticles(bonCommande.id);
     }
   }
 
@@ -599,5 +655,110 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
         this.selectedAutresResponsables = [];
       },
     });
+  }
+
+  // ================================
+  // Articles du projet sélectionné (accordéon "Détails Commande")
+  // ================================
+  onProjetArticlesSearchChange(search: string): void {
+    this.projetArticlesSearch$.next(search);
+  }
+
+  onProjetArticlesPageChange(page: number): void {
+    this.projetArticlesPage = page;
+    this.loadProjetArticles();
+  }
+
+  /**
+   * Charge la page courante des articles liés au projet (affaire) sélectionné.
+   * @param affaireId Optionnel — par défaut utilise le projet actuellement sélectionné.
+   */
+  private loadProjetArticles(affaireId?: number): void {
+    const targetAffaireId = affaireId ?? this.selectedAffaire?.id;
+
+    if (targetAffaireId === null || targetAffaireId === undefined) {
+      this.projetArticles = [];
+      this.projetArticlesTotalItems = 0;
+      return;
+    }
+
+    this.loadingProjetArticles = true;
+
+    const requestParams = {
+      page: this.projetArticlesPage - 1, // Spring Data est 0-indexé
+      size: this.projetArticlesItemsPerPage,
+      searchTerm: this.projetArticlesSearchTerm,
+    };
+
+    this.affaireService
+      .getArticlesByAffaire(targetAffaireId, requestParams)
+      .pipe(finalize(() => (this.loadingProjetArticles = false)))
+      .subscribe({
+        next: (res: HttpResponse<RestPage<IArticle>>) => {
+          if (res.body) {
+            this.projetArticles = res.body.content;
+            this.projetArticlesTotalItems = res.body.totalElements;
+          }
+        },
+        error: () => {
+          this.projetArticles = [];
+          this.projetArticlesTotalItems = 0;
+        },
+      });
+  }
+
+  // ================================
+  // Sélection des articles à affecter au Bon de Commande
+  // ================================
+
+  /**
+   * Charge les affectations existantes (articles déjà liés à ce BC) pour pré-cocher
+   * les cases et pré-remplir les quantités.
+   */
+  private loadBonCommandeArticles(bonCommandeId: number): void {
+    this.bonCommandeArticlesService.findByBonCommande(bonCommandeId).subscribe({
+      next: res => {
+        const links = res.body ?? [];
+
+        this.selectedProjetArticleIds = new Set(links.map(l => l.articleId).filter((id): id is number => id !== null && id !== undefined));
+
+        this.articleQuantities = new Map(
+          links
+            .filter((l): l is IBonCommandeArticles & { articleId: number } => l.articleId !== null && l.articleId !== undefined)
+            .map(l => [l.articleId, l.qteCommande ?? 1])
+        );
+      },
+      error: () => {
+        this.selectedProjetArticleIds = new Set<number>();
+        this.articleQuantities = new Map<number, number>();
+      },
+    });
+  }
+
+  isArticleSelected(article: IArticle): boolean {
+    return article.id !== null && article.id !== undefined && this.selectedProjetArticleIds.has(article.id);
+  }
+
+  toggleArticleSelection(article: IArticle): void {
+    if (article.id === null || article.id === undefined) {
+      return;
+    }
+
+    if (this.selectedProjetArticleIds.has(article.id)) {
+      this.selectedProjetArticleIds.delete(article.id);
+      this.articleQuantities.delete(article.id);
+    } else {
+      this.selectedProjetArticleIds.add(article.id);
+      this.articleQuantities.set(article.id, 1);
+    }
+  }
+
+  getArticleQuantity(articleId: number): number {
+    return this.articleQuantities.get(articleId) ?? 1;
+  }
+
+  onArticleQuantityChange(articleId: number, qte: number | string): void {
+    const parsed = Number(qte);
+    this.articleQuantities.set(articleId, Number.isFinite(parsed) && parsed > 0 ? parsed : 1);
   }
 }
