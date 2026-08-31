@@ -15,6 +15,7 @@ import { AffaireService, RestPage } from 'app/entities/projectService/affaire/se
 import { IArticle } from 'app/entities/projectService/article/article.model';
 import { AffaireSelectorModalComponent } from '../affaire-selector-modal/affaire-selector-modal.component';
 import { ContactSelectorModalComponent } from '../contact-selector-modal/contact-selector-modal.component';
+import { SiteSelectorModalComponent } from '../site-selector-modal/site-selector-modal.component';
 import { IClient } from 'app/entities/projectService/client/client.model';
 import { ClientService } from 'app/entities/projectService/client/service/client.service';
 import { IContactSociete } from 'app/entities/projectService/societe/contact-societe.model';
@@ -478,6 +479,27 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       .then((contact: IContactSociete) => {
         if (contact) {
           this.onResponsableSelectChange(contact);
+        }
+      })
+      .catch(() => {
+        // Fermeture du modal sans sélection
+      });
+  }
+
+  openLieuModal(): void {
+    const modalRef = this.modalService.open(SiteSelectorModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'site-selector-modal-window',
+    });
+
+    modalRef.componentInstance.clientId = this.editForm.get('clientId')?.value ?? null;
+
+    modalRef.result
+      .then((site: ISite) => {
+        if (site) {
+          this.editForm.patchValue({ lieu: site.designation });
         }
       })
       .catch(() => {

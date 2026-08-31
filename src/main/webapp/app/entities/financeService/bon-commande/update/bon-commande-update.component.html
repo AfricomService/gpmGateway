@@ -116,27 +116,39 @@
                   Lieu
                 </label>
 
-                <ng-select
-                  id="field_lieu"
-                  data-cy="lieu"
-                  name="lieu"
-                  class="custom-ng-select"
-                  [items]="clientSites"
-                  bindLabel="designation"
-                  bindValue="designation"
-                  [searchable]="true"
-                  [clearable]="true"
-                  [loading]="loadingClientSites"
-                  formControlName="lieu"
-                  placeholder="Sélectionnez d'abord un projet"
-                  notFoundText="Aucun site trouvé pour ce client"
-                  loadingText="Chargement..."
-                >
-                  <ng-template ng-option-tmp let-item="item">
-                    <div>{{ item.designation }}</div>
-                    <small class="text-muted" *ngIf="item.code">Code : {{ item.code }}</small>
-                  </ng-template>
-                </ng-select>
+                <div class="cu-affaire-selector">
+                  <ng-select
+                    id="field_lieu"
+                    data-cy="lieu"
+                    name="lieu"
+                    class="custom-ng-select"
+                    [items]="clientSites"
+                    bindLabel="designation"
+                    bindValue="designation"
+                    [searchable]="true"
+                    [clearable]="true"
+                    [loading]="loadingClientSites"
+                    formControlName="lieu"
+                    placeholder="Sélectionnez d'abord un projet"
+                    notFoundText="Aucun site trouvé pour ce client"
+                    loadingText="Chargement..."
+                  >
+                    <ng-template ng-option-tmp let-item="item">
+                      <div>{{ item.designation }}</div>
+                      <small class="text-muted" *ngIf="item.code">Code : {{ item.code }}</small>
+                    </ng-template>
+                  </ng-select>
+
+                  <button
+                    type="button"
+                    class="btn-cu-affaire-modal"
+                    title="Rechercher un lieu"
+                    aria-label="Rechercher un lieu"
+                    (click)="openLieuModal()"
+                  >
+                    <fa-icon icon="search"></fa-icon>
+                  </button>
+                </div>
               </div>
             </div>
 

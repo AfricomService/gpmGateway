@@ -1,15 +1,4 @@
 <div class="affaire-update-page">
-  <button
-    type="button"
-    id="back-to-affaire-list"
-    data-cy="entityBackButton"
-    title="Retour à la liste"
-    class="btn-cu-back-floating"
-    [routerLink]="['/affaire']"
-  >
-    <fa-icon icon="arrow-left"></fa-icon>
-  </button>
-
   <div class="cu-container">
     <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
       <jhi-alert-error></jhi-alert-error>
@@ -141,8 +130,27 @@
               </div>
 
               <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold" for="field_clientCommande"> Client Demandeur </label>
+                <ng-select
+                  id="field_clientCommande"
+                  data-cy="clientCommande"
+                  name="clientCommande"
+                  formControlName="clientCommande"
+                  [items]="clientsSharedCollection"
+                  bindLabel="raisonSociale"
+                  bindValue="id"
+                  [searchable]="true"
+                  class="custom-ng-select"
+                  placeholder="Rechercher un client commande..."
+                  [readonly]="!isEditMode"
+                  (change)="onClientCommandeChange($event)"
+                >
+                </ng-select>
+              </div>
+
+              <div class="col-md-6 mb-3">
                 <label class="form-label fw-bold" for="field_client">
-                  <span jhiTranslate="gpmGatewayApp.projectServiceAffaire.client">Client</span>
+                  <span>Client Finale</span>
                   <span class="text-danger">*</span>
                 </label>
                 <ng-select
@@ -168,24 +176,6 @@
                     Ce champ est obligatoire.
                   </small>
                 </div>
-              </div>
-
-              <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold" for="field_clientCommande"> Client Commande </label>
-                <ng-select
-                  id="field_clientCommande"
-                  data-cy="clientCommande"
-                  name="clientCommande"
-                  formControlName="clientCommande"
-                  [items]="clientsSharedCollection"
-                  bindLabel="raisonSociale"
-                  bindValue="id"
-                  [searchable]="true"
-                  class="custom-ng-select"
-                  placeholder="Rechercher un client commande..."
-                  [readonly]="!isEditMode"
-                >
-                </ng-select>
               </div>
 
               <div class="col-md-6 mb-3">
