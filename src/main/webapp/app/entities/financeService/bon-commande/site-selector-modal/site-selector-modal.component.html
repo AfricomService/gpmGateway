@@ -53,8 +53,13 @@
         <table class="site-modal-table">
           <thead>
             <tr>
-              <th style="width: 160px">Code</th>
-              <th>Désignation</th>
+              <th style="width: 110px">Code</th>
+              <th>Nom du site</th>
+              <th>Ville</th>
+              <th style="width: 90px">Coord. X</th>
+              <th style="width: 90px">Coord. Y</th>
+              <th>Zone</th>
+              <th style="width: 90px">Nodale</th>
             </tr>
           </thead>
 
@@ -65,11 +70,21 @@
               </td>
 
               <td class="site-modal-designation">{{ site.designation }}</td>
+
+              <td>{{ site.ville?.nom || '—' }}</td>
+
+              <td>{{ site.gpsX ?? '—' }}</td>
+
+              <td>{{ site.gpsY ?? '—' }}</td>
+
+              <td>{{ site.zoneNom || '—' }}</td>
+
+              <td>{{ site.nodaleGpm || '—' }}</td>
             </tr>
 
             <!-- Aucun résultat -->
             <tr *ngIf="sites.length === 0" class="site-modal-empty-row">
-              <td colspan="2">
+              <td colspan="7">
                 <div class="site-modal-empty">
                   <fa-icon icon="search"></fa-icon>
                   <span>Aucun site trouvé pour ce client.</span>
