@@ -1,0 +1,109 @@
+<div class="article-modal">
+  <!-- ====================================================== -->
+  <!-- HEADER -->
+  <!-- ====================================================== -->
+  <div class="article-modal-header">
+    <div class="article-modal-header-icon">
+      <fa-icon icon="box"></fa-icon>
+    </div>
+
+    <div class="article-modal-header-text">
+      <h5 class="article-modal-title">Sélectionner des articles</h5>
+      <span class="article-modal-subtitle">Cochez les articles du projet et indiquez la quantité commandée.</span>
+    </div>
+
+    <button type="button" class="article-modal-close" aria-label="Fermer" (click)="cancel()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+
+  <!-- ====================================================== -->
+  <!-- BODY -->
+  <!-- ====================================================== -->
+  <div class="article-modal-body">
+    <!-- Recherche -->
+    <div class="article-modal-search">
+      <input
+        id="article-modal-search"
+        type="text"
+        class="form-control"
+        [ngModel]="searchTerm"
+        [ngModelOptions]="{ standalone: true }"
+        (ngModelChange)="onSearchChange($event)"
+        placeholder="Rechercher par désignation, code, code client..."
+        autocomplete="off"
+      />
+    </div>
+
+    <!-- Chargement -->
+    <div *ngIf="loading" class="article-modal-loading">
+      <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+      Chargement des articles...
+    </div>
+
+    <!-- Liste -->
+    <div *ngIf="!loading" class="article-modal-list-wrap">
+      <div *ngIf="articles.length > 0; else noArticles" class="article-modal-list">
+        <div class="article-modal-item" *ngFor="let article of articles" [class.selected]="isSelected(article)">
+          <input type="checkbox" class="article-modal-checkbox" [checked]="isSelected(article)" (change)="toggleSelection(article)" />
+
+          <div class="article-modal-info">
+            <div class="article-modal-item-title">
+              <strong>{{ article.code }} - ({{ article.codeClient }})</strong> — {{ article.designation }}
+              <span class="text-muted ms-2">(Prix HT: {{ article.prixUnitHT }} DT - Prix Achat: {{ article.prixAchat }} DT)</span>
+            </div>
+          </div>
+
+          <div class="article-modal-qte" *ngIf="isSelected(article) && article.id">
+            <label class="article-modal-qte-label">Qté</label>
+            <input
+              type="number"
+              min="1"
+              class="form-control form-control-sm article-modal-qte-input"
+              [ngModel]="getQuantity(article.id)"
+              [ngModelOptions]="{ standalone: true }"
+              (ngModelChange)="onQuantityChange(article.id, $event)"
+            />
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noArticles>
+        <div class="article-modal-empty">
+          <fa-icon icon="search"></fa-icon>
+          <span>Aucun article trouvé pour ce projet.</span>
+        </div>
+      </ng-template>
+
+      <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top" *ngIf="totalItems > itemsPerPage">
+        <span class="small text-muted fw-medium">
+          Total: <strong class="text-dark">{{ totalItems }}</strong> article(s)
+        </span>
+        <ngb-pagination
+          class="modern-orange-pagination"
+          [collectionSize]="totalItems"
+          [(page)]="page"
+          [pageSize]="itemsPerPage"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="onPageChange($event)"
+        ></ngb-pagination>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================== -->
+  <!-- FOOTER -->
+  <!-- ====================================================== -->
+  <div class="article-modal-footer">
+    <span class="article-modal-count"
+      >{{ selectedCount }} article{{ selectedCount > 1 ? 's' : '' }} sélectionné{{ selectedCount > 1 ? 's' : '' }}</span
+    >
+
+    <div class="article-modal-footer-actions">
+      <button type="button" class="btn-article-cancel" (click)="cancel()">Annuler</button>
+      <button type="button" class="btn-article-confirm" (click)="confirm()">Valider la sélection</button>
+    </div>
+  </div>
+</div>

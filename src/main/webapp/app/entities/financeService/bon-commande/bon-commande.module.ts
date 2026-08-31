@@ -10,6 +10,7 @@ import { ContactSelectorModalComponent } from './contact-selector-modal/contact-
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { SiteSelectorModalComponent } from './site-selector-modal/site-selector-modal.component';
+import { ArticleSelectorModalComponent } from './article-selector-modal/article-selector-modal.component';
 
 @NgModule({
   imports: [SharedModule, BonCommandeRoutingModule, FormsModule, NgSelectModule],
@@ -21,6 +22,7 @@ import { SiteSelectorModalComponent } from './site-selector-modal/site-selector-
     AffaireSelectorModalComponent,
     ContactSelectorModalComponent,
     SiteSelectorModalComponent,
+    ArticleSelectorModalComponent,
   ],
 })
 export class FinanceServiceBonCommandeModule {}

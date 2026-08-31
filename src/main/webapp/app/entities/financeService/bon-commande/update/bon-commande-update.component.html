@@ -601,102 +601,62 @@
       <!-- ACCORDÉONS SUPPLÉMENTAIRES (vides pour le moment) -->
       <!-- ====================================================== -->
       <div class="cu-accordion">
-        <!-- Détails Commande : Articles du projet sélectionné -->
+        <!-- Détails Commande : Articles sélectionnés pour le BC -->
         <div class="cu-accordion-item" [class.open]="isPanelOpen('detailsCommande')">
           <button type="button" class="cu-accordion-header" (click)="togglePanel('detailsCommande')">
             <span class="cu-accordion-header-left">
               <fa-icon icon="file-alt" class="cu-accordion-icon"></fa-icon>
               <span>Détails Commande</span>
-              <span class="cu-accordion-count" *ngIf="selectedProjetArticleIds.size"
-                >{{ selectedProjetArticleIds.size }} sélectionné(s)</span
-              >
+              <span class="cu-accordion-count" *ngIf="chosenArticles.length">{{ chosenArticles.length }} sélectionné(s)</span>
             </span>
+
             <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
           </button>
 
           <div class="cu-accordion-body" *ngIf="isPanelOpen('detailsCommande')">
+            <div class="cu-detail-toolbar" *ngIf="selectedAffaire">
+              <button type="button" class="btn-cu-add" (click)="openArticleModal()">
+                <fa-icon icon="box-open"></fa-icon>&nbsp;Sélectionner des articles
+              </button>
+            </div>
+
             <ng-container *ngIf="selectedAffaire; else noProjetSelected">
-              <!-- Recherche -->
-              <div class="mb-3">
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="Rechercher par désignation, code, code client..."
-                  [ngModel]="projetArticlesSearchTerm"
-                  [ngModelOptions]="{ standalone: true }"
-                  (ngModelChange)="onProjetArticlesSearchChange($event)"
-                />
-              </div>
-
-              <!-- Liste des articles (hauteur réservée pour éviter le "saut" de page) -->
-              <div class="articles-content-wrapper">
-                <div *ngIf="loadingProjetArticles" class="articles-spinner-overlay">
-                  <div class="spinner-border text-orange" role="status">
-                    <span class="visually-hidden">Chargement...</span>
-                  </div>
-                </div>
-
-                <div *ngIf="!loadingProjetArticles" class="w-100">
-                  <div *ngIf="projetArticles.length > 0; else noProjetArticles" class="cu-item-list">
-                    <div class="cu-item-card cu-item-card-selectable" *ngFor="let article of projetArticles">
-                      <input
-                        type="checkbox"
-                        class="form-check-input cu-item-checkbox"
-                        [checked]="isArticleSelected(article)"
-                        (change)="toggleArticleSelection(article)"
-                      />
-
-                      <div class="cu-item-info">
-                        <div class="cu-item-title">
-                          <strong>{{ article.code }} - ({{ article.codeClient }})</strong> — {{ article.designation }}
-                          <span class="text-muted ms-2"
-                            >(Prix HT: {{ article.prixUnitHT }} DT - Prix Achat: {{ article.prixAchat }} DT)</span
-                          >
-                        </div>
-                      </div>
-
-                      <div class="cu-item-qte" *ngIf="isArticleSelected(article) && article.id">
-                        <label class="cu-item-qte-label">Qté commandée</label>
-                        <input
-                          type="number"
-                          min="1"
-                          class="form-control form-control-sm cu-item-qte-input"
-                          [ngModel]="getArticleQuantity(article.id)"
-                          [ngModelOptions]="{ standalone: true }"
-                          (ngModelChange)="onArticleQuantityChange(article.id, $event)"
-                        />
-                      </div>
-                    </div>
-
-                    <div
-                      class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top"
-                      *ngIf="projetArticlesTotalItems > projetArticlesItemsPerPage"
-                    >
-                      <span class="small text-muted fw-medium">
-                        Total: <strong class="text-dark">{{ projetArticlesTotalItems }}</strong> article(s)
-                      </span>
-                      <ngb-pagination
-                        class="modern-orange-pagination"
-                        [collectionSize]="projetArticlesTotalItems"
-                        [(page)]="projetArticlesPage"
-                        [pageSize]="projetArticlesItemsPerPage"
-                        [maxSize]="5"
-                        [rotate]="true"
-                        [boundaryLinks]="true"
-                        (pageChange)="onProjetArticlesPageChange($event)"
-                      ></ngb-pagination>
+              <div *ngIf="chosenArticles.length > 0; else noArticlesChosen" class="cu-item-list">
+                <div class="cu-item-card" *ngFor="let sel of chosenArticles">
+                  <div class="cu-item-info">
+                    <div class="cu-item-title">
+                      <strong>{{ sel.article.code }} - ({{ sel.article.codeClient }})</strong> — {{ sel.article.designation }}
+                      <span class="text-muted ms-2"
+                        >(Prix HT: {{ sel.article.prixUnitHT }} DT - Prix Achat: {{ sel.article.prixAchat }} DT)</span
+                      >
                     </div>
                   </div>
 
-                  <ng-template #noProjetArticles>
-                    <div class="cu-empty">Aucun article trouvé pour ce projet</div>
-                  </ng-template>
+                  <div class="cu-item-qte" *ngIf="sel.article.id">
+                    <label class="cu-item-qte-label">Qté commandée</label>
+                    <input
+                      type="number"
+                      min="1"
+                      class="form-control form-control-sm cu-item-qte-input"
+                      [ngModel]="sel.qte"
+                      [ngModelOptions]="{ standalone: true }"
+                      (ngModelChange)="onChosenArticleQuantityChange(sel.article.id, $event)"
+                    />
+                  </div>
+
+                  <button *ngIf="sel.article.id" type="button" class="cu-item-remove" (click)="removeChosenArticle(sel.article.id)">
+                    <fa-icon icon="times"></fa-icon>
+                  </button>
                 </div>
               </div>
+
+              <ng-template #noArticlesChosen>
+                <div class="cu-empty-panel">Aucun article sélectionné. Cliquez sur « Sélectionner des articles » pour en ajouter.</div>
+              </ng-template>
             </ng-container>
 
             <ng-template #noProjetSelected>
-              <div class="cu-empty-panel">Sélectionnez d'abord un projet pour afficher ses articles.</div>
+              <div class="cu-empty-panel">Sélectionnez d'abord un projet pour choisir ses articles.</div>
             </ng-template>
           </div>
         </div>

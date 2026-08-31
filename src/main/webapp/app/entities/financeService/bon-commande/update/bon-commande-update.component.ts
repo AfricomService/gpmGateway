@@ -16,6 +16,7 @@ import { IArticle } from 'app/entities/projectService/article/article.model';
 import { AffaireSelectorModalComponent } from '../affaire-selector-modal/affaire-selector-modal.component';
 import { ContactSelectorModalComponent } from '../contact-selector-modal/contact-selector-modal.component';
 import { SiteSelectorModalComponent } from '../site-selector-modal/site-selector-modal.component';
+import { ArticleSelectorModalComponent, ArticleSelection } from '../article-selector-modal/article-selector-modal.component';
 import { IClient } from 'app/entities/projectService/client/client.model';
 import { ClientService } from 'app/entities/projectService/client/service/client.service';
 import { IContactSociete } from 'app/entities/projectService/societe/contact-societe.model';
@@ -24,6 +25,7 @@ import { ISite } from 'app/entities/projectService/site/site.model';
 import { SiteService } from 'app/entities/projectService/site/service/site.service';
 import { IBonCommandeArticles } from '../bon-commande-articles.model';
 import { BonCommandeArticlesService } from '../service/bon-commande-articles.service';
+import { ArticleService } from 'app/entities/projectService/article/service/article.service';
 
 type AccordionPanel = 'global' | 'client' | 'detailsCommande' | 'otAssocies' | 'articlesMissions' | 'piecesJointes';
 
@@ -86,22 +88,9 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   loadingResponsables = false;
 
   // ================================
-  // Articles du projet sélectionné (accordéon "Détails Commande")
+  // Articles sélectionnés pour le Bon de Commande (accordéon "Détails Commande")
   // ================================
-  projetArticles: IArticle[] = [];
-  projetArticlesTotalItems = 0;
-  projetArticlesPage = 1; // 1-indexé pour ngb-pagination
-  projetArticlesItemsPerPage = 5;
-  projetArticlesSearchTerm = '';
-  loadingProjetArticles = false;
-
-  protected readonly projetArticlesSearch$ = new Subject<string>();
-
-  // ================================
-  // Sélection des articles à affecter au Bon de Commande
-  // ================================
-  selectedProjetArticleIds: Set<number> = new Set<number>();
-  articleQuantities: Map<number, number> = new Map<number, number>();
+  chosenArticles: ArticleSelection[] = [];
 
   constructor(
     protected bonCommandeService: BonCommandeService,
@@ -112,7 +101,8 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     protected siteService: SiteService,
     protected modalService: NgbModal,
     protected bonCommandeAutreResponsableService: BonCommandeAutreResponsableService,
-    protected bonCommandeArticlesService: BonCommandeArticlesService
+    protected bonCommandeArticlesService: BonCommandeArticlesService,
+    protected articleService: ArticleService
   ) {}
   ngOnInit(): void {
     this.loadResponsables();
@@ -157,18 +147,10 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
           this.affaireResults = [];
         },
       });
-
-    // Recherche avec debounce de 300 ms pour les articles du projet sélectionné
-    this.projetArticlesSearch$.pipe(debounceTime(300), distinctUntilChanged()).subscribe(search => {
-      this.projetArticlesSearchTerm = search;
-      this.projetArticlesPage = 1;
-      this.loadProjetArticles();
-    });
   }
 
   ngOnDestroy(): void {
     this.affaireSearch$.complete();
-    this.projetArticlesSearch$.complete();
   }
 
   // ================================
@@ -277,14 +259,8 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     this.loadClientInfo(clientId, true);
     this.loadClientCommandeInfo(affaire.clientCommande ?? null);
 
-    // Articles du projet nouvellement sélectionné (accordéon "Détails Commande")
-    this.projetArticlesSearchTerm = '';
-    this.projetArticlesPage = 1;
-    this.loadProjetArticles(affaire.id);
-
-    // Un nouveau projet a été choisi : la sélection précédente ne correspond plus à ces articles
-    this.selectedProjetArticleIds = new Set<number>();
-    this.articleQuantities = new Map<number, number>();
+    // Un nouveau projet a été choisi : la sélection précédente ne correspond plus à ce projet
+    this.chosenArticles = [];
   }
 
   /**
@@ -301,12 +277,7 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       this.selectedClientInfo = null;
       this.selectedClientCommandeInfo = null;
       this.clientSites = [];
-      this.projetArticles = [];
-      this.projetArticlesTotalItems = 0;
-      this.projetArticlesSearchTerm = '';
-      this.projetArticlesPage = 1;
-      this.selectedProjetArticleIds = new Set<number>();
-      this.articleQuantities = new Map<number, number>();
+      this.chosenArticles = [];
     }
   }
 
@@ -507,6 +478,38 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       });
   }
 
+  openArticleModal(): void {
+    const modalRef = this.modalService.open(ArticleSelectorModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'article-selector-modal-window',
+    });
+
+    modalRef.componentInstance.affaireId = this.selectedAffaire?.id ?? null;
+    modalRef.componentInstance.initialSelection = this.chosenArticles;
+
+    modalRef.result
+      .then((selection: ArticleSelection[]) => {
+        this.chosenArticles = selection ?? [];
+      })
+      .catch(() => {
+        // Fermeture du modal sans validation
+      });
+  }
+
+  removeChosenArticle(articleId: number): void {
+    this.chosenArticles = this.chosenArticles.filter(sel => sel.article.id !== articleId);
+  }
+
+  onChosenArticleQuantityChange(articleId: number, qte: number | string): void {
+    const parsed = Number(qte);
+    const target = this.chosenArticles.find(sel => sel.article.id === articleId);
+    if (target) {
+      target.qte = Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+    }
+  }
+
   openAutreResponsableModal(): void {
     const modalRef = this.modalService.open(ContactSelectorModalComponent, {
       size: 'lg',
@@ -579,10 +582,12 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
     const contactSocieteIds = this.selectedAutresResponsables.map(c => c.id).filter((id): id is number => id !== null && id !== undefined);
 
-    const articlesToSave: Partial<IBonCommandeArticles>[] = Array.from(this.selectedProjetArticleIds).map(articleId => ({
-      articleId,
-      qteCommande: this.getArticleQuantity(articleId),
-    }));
+    const articlesToSave: Partial<IBonCommandeArticles>[] = this.chosenArticles
+      .filter(sel => sel.article.id !== null && sel.article.id !== undefined)
+      .map(sel => ({
+        articleId: sel.article.id as number,
+        qteCommande: sel.qte,
+      }));
 
     forkJoin([
       this.bonCommandeAutreResponsableService.replaceForBonCommande(bonCommandeId, contactSocieteIds),
@@ -627,9 +632,6 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
             }
 
             this.loadClientCommandeInfo(affaire.clientCommande ?? null);
-
-            // Articles du projet (accordéon "Détails Commande")
-            this.loadProjetArticles(affaire.id);
           }
         },
       });
@@ -679,108 +681,39 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ================================
-  // Articles du projet sélectionné (accordéon "Détails Commande")
-  // ================================
-  onProjetArticlesSearchChange(search: string): void {
-    this.projetArticlesSearch$.next(search);
-  }
-
-  onProjetArticlesPageChange(page: number): void {
-    this.projetArticlesPage = page;
-    this.loadProjetArticles();
-  }
-
   /**
-   * Charge la page courante des articles liés au projet (affaire) sélectionné.
-   * @param affaireId Optionnel — par défaut utilise le projet actuellement sélectionné.
-   */
-  private loadProjetArticles(affaireId?: number): void {
-    const targetAffaireId = affaireId ?? this.selectedAffaire?.id;
-
-    if (targetAffaireId === null || targetAffaireId === undefined) {
-      this.projetArticles = [];
-      this.projetArticlesTotalItems = 0;
-      return;
-    }
-
-    this.loadingProjetArticles = true;
-
-    const requestParams = {
-      page: this.projetArticlesPage - 1, // Spring Data est 0-indexé
-      size: this.projetArticlesItemsPerPage,
-      searchTerm: this.projetArticlesSearchTerm,
-    };
-
-    this.affaireService
-      .getArticlesByAffaire(targetAffaireId, requestParams)
-      .pipe(finalize(() => (this.loadingProjetArticles = false)))
-      .subscribe({
-        next: (res: HttpResponse<RestPage<IArticle>>) => {
-          if (res.body) {
-            this.projetArticles = res.body.content;
-            this.projetArticlesTotalItems = res.body.totalElements;
-          }
-        },
-        error: () => {
-          this.projetArticles = [];
-          this.projetArticlesTotalItems = 0;
-        },
-      });
-  }
-
-  // ================================
-  // Sélection des articles à affecter au Bon de Commande
-  // ================================
-
-  /**
-   * Charge les affectations existantes (articles déjà liés à ce BC) pour pré-cocher
-   * les cases et pré-remplir les quantités.
+   * Charge les affectations existantes (articles déjà liés à ce BC) pour pré-remplir
+   * l'accordéon "Détails Commande" en mode édition. Récupère le détail complet de
+   * chaque article (désignation, prix...) via ArticleService, car la table de liaison
+   * ne stocke que l'id et la quantité.
    */
   private loadBonCommandeArticles(bonCommandeId: number): void {
     this.bonCommandeArticlesService.findByBonCommande(bonCommandeId).subscribe({
       next: res => {
         const links = res.body ?? [];
-
-        this.selectedProjetArticleIds = new Set(links.map(l => l.articleId).filter((id): id is number => id !== null && id !== undefined));
-
-        this.articleQuantities = new Map(
-          links
-            .filter((l): l is IBonCommandeArticles & { articleId: number } => l.articleId !== null && l.articleId !== undefined)
-            .map(l => [l.articleId, l.qteCommande ?? 1])
+        const validLinks = links.filter(
+          (l): l is IBonCommandeArticles & { articleId: number } => l.articleId !== null && l.articleId !== undefined
         );
+
+        if (validLinks.length === 0) {
+          this.chosenArticles = [];
+          return;
+        }
+
+        forkJoin(validLinks.map(l => this.articleService.find(l.articleId))).subscribe({
+          next: responses => {
+            this.chosenArticles = responses
+              .map((res2, index) => ({ article: res2.body, qte: validLinks[index].qteCommande ?? 1 }))
+              .filter((sel): sel is ArticleSelection => sel.article !== null);
+          },
+          error: () => {
+            this.chosenArticles = [];
+          },
+        });
       },
       error: () => {
-        this.selectedProjetArticleIds = new Set<number>();
-        this.articleQuantities = new Map<number, number>();
+        this.chosenArticles = [];
       },
     });
-  }
-
-  isArticleSelected(article: IArticle): boolean {
-    return article.id !== null && article.id !== undefined && this.selectedProjetArticleIds.has(article.id);
-  }
-
-  toggleArticleSelection(article: IArticle): void {
-    if (article.id === null || article.id === undefined) {
-      return;
-    }
-
-    if (this.selectedProjetArticleIds.has(article.id)) {
-      this.selectedProjetArticleIds.delete(article.id);
-      this.articleQuantities.delete(article.id);
-    } else {
-      this.selectedProjetArticleIds.add(article.id);
-      this.articleQuantities.set(article.id, 1);
-    }
-  }
-
-  getArticleQuantity(articleId: number): number {
-    return this.articleQuantities.get(articleId) ?? 1;
-  }
-
-  onArticleQuantityChange(articleId: number, qte: number | string): void {
-    const parsed = Number(qte);
-    this.articleQuantities.set(articleId, Number.isFinite(parsed) && parsed > 0 ? parsed : 1);
   }
 }
