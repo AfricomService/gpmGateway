@@ -98,6 +98,12 @@ export class PhaseOtService {
     return phaseOtCollection;
   }
 
+  updateStatut(phaseOtId: number, statut: string): Observable<EntityResponseType> {
+    return this.http
+      .patch<RestPhaseOt>(`${this.resourceUrl}/${phaseOtId}/statut`, null, { params: { statut }, observe: 'response' })
+      .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+
   protected convertDateFromClient<T extends IPhaseOt | NewPhaseOt | PartialUpdatePhaseOt>(phaseOt: T): RestOf<T> {
     return {
       ...phaseOt,

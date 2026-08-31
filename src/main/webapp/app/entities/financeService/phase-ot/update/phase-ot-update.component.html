@@ -1,129 +1,223 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
-    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-      <h2
-        id="jhi-phase-ot-heading"
-        data-cy="PhaseOtCreateUpdateHeading"
-        jhiTranslate="gpmGatewayApp.financeServicePhaseOt.home.createOrEditLabel"
-      >
-        Créer ou éditer un Phase Ot
-      </h2>
+<div class="phase-ot-update-page">
+  <button
+    type="button"
+    id="back-to-phaseot-list"
+    data-cy="entityBackButton"
+    title="Retour à la liste"
+    class="btn-pu-back-floating"
+    [routerLink]="['/ot-externe/phase-ot']"
+  >
+    <fa-icon icon="arrow-left"></fa-icon>
+  </button>
 
-      <div>
-        <jhi-alert-error></jhi-alert-error>
+  <div class="pu-container">
+    <form name="editForm" role="form" novalidate [formGroup]="editForm">
+      <jhi-alert-error></jhi-alert-error>
 
-        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
-          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
-          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+      <!-- Success message -->
+      <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+        <fa-icon icon="check-circle" class="me-2"></fa-icon>
+        {{ successMessage }}
+        <button type="button" class="btn-close" (click)="dismissSuccessMessage()"></button>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="pu-toolbar">
+        <div class="pu-toolbar-left">
+          <span class="pu-page-kicker" *ngIf="editForm.get('id')?.value === null">Création d'une Phase Ot</span>
+          <ng-container *ngIf="editForm.get('id')?.value !== null">
+            <!--            <span class="pu-badge-statut" [ngClass]="statutBadgeClass(phaseOt?.statut)" *ngIf="phaseOt?.statut">-->
+            <!--              {{ phaseOt?.statut }}-->
+            <!--            </span>-->
+            <span class="pu-page-title">{{ phaseOt?.nom }}</span>
+          </ng-container>
         </div>
 
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServicePhaseOt.nom" for="field_nom">Nom</label>
-          <input type="text" class="form-control" name="nom" id="field_nom" data-cy="nom" formControlName="nom" />
-        </div>
+        <button
+          type="button"
+          id="save-entity-top"
+          data-cy="entityCreateSaveButton"
+          title="Enregistrer"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn-pu-save"
+          (click)="save()"
+        >
+          <fa-icon icon="save"></fa-icon>
+        </button>
+      </div>
 
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServicePhaseOt.description" for="field_description"
-            >Description</label
-          >
-          <input
-            type="text"
-            class="form-control"
-            name="description"
-            id="field_description"
-            data-cy="description"
-            formControlName="description"
-          />
-        </div>
+      <!-- Accordéon -->
+      <div class="pu-accordion">
+        <!-- Informations Générales -->
+        <div class="pu-accordion-item" [class.open]="isSectionOpen('general')">
+          <button type="button" class="pu-accordion-header" (click)="toggleSection('general')">
+            <span class="pu-accordion-header-left">
+              <fa-icon icon="id-card" class="pu-accordion-icon"></fa-icon>
+              <span>Informations Générales</span>
+            </span>
+            <fa-icon icon="chevron-down" class="pu-accordion-chevron"></fa-icon>
+          </button>
 
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServicePhaseOt.duree" for="field_duree">Duree</label>
-          <input type="number" class="form-control" name="duree" id="field_duree" data-cy="duree" formControlName="duree" />
-        </div>
+          <div class="pu-accordion-body" *ngIf="isSectionOpen('general')">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold" for="field_nom">
+                  <span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.nom">Nom</span>
+                </label>
+                <input type="text" class="form-control" name="nom" id="field_nom" data-cy="nom" formControlName="nom" />
+              </div>
 
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServicePhaseOt.bloquante" for="field_bloquante">Bloquante</label>
-          <input type="checkbox" class="form-check" name="bloquante" id="field_bloquante" data-cy="bloquante" formControlName="bloquante" />
-        </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.financeServicePhaseOt.duree" for="field_duree">Duree</label>
+                <input type="number" class="form-control" name="duree" id="field_duree" data-cy="duree" formControlName="duree" />
+              </div>
 
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServicePhaseOt.statut" for="field_statut">Statut</label>
-          <input type="text" class="form-control" name="statut" id="field_statut" data-cy="statut" formControlName="statut" />
-        </div>
+              <div class="col-md-12 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.financeServicePhaseOt.description" for="field_description">
+                  Description
+                </label>
 
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServicePhaseOt.dateDebut" for="field_dateDebut">Date Debut</label>
-          <div class="d-flex">
-            <input
-              id="field_dateDebut"
-              data-cy="dateDebut"
-              type="datetime-local"
-              class="form-control"
-              name="dateDebut"
-              formControlName="dateDebut"
-              placeholder="YYYY-MM-DD HH:mm"
-            />
+                <textarea
+                  class="form-control"
+                  name="description"
+                  id="field_description"
+                  data-cy="description"
+                  formControlName="description"
+                  rows="5"
+                ></textarea>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <div class="pu-toggle-row">
+                  <label class="pu-toggle-switch">
+                    <input type="checkbox" id="field_bloquante" data-cy="bloquante" formControlName="bloquante" />
+                    <span class="pu-toggle-slider"></span>
+                  </label>
+                  <span class="pu-toggle-label" jhiTranslate="gpmGatewayApp.financeServicePhaseOt.bloquante">Bloquante</span>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold" for="field_hasParent"> Phase Parente </label>
+
+                <div class="pu-parent-row">
+                  <div class="pu-toggle-row pu-toggle-row-inline">
+                    <label class="pu-toggle-switch">
+                      <input
+                        type="checkbox"
+                        id="field_hasParent"
+                        data-cy="hasParent"
+                        [checked]="hasParent"
+                        (change)="onToggleHasParent($any($event.target).checked)"
+                      />
+                      <span class="pu-toggle-slider"></span>
+                    </label>
+                    <span class="pu-toggle-label">{{ hasParent ? 'Avec parent' : 'Sans parent' }}</span>
+                  </div>
+
+                  <div class="pu-parent-select" *ngIf="hasParent">
+                    <select
+                      class="form-select form-control"
+                      name="phaseParentId"
+                      id="field_phaseParentId"
+                      data-cy="phaseParentId"
+                      formControlName="phaseParentId"
+                    >
+                      <option [ngValue]="null" disabled>Sélectionner un phase parent...</option>
+                      <option *ngFor="let p of availablePhaseOts" [ngValue]="p.id">
+                        {{ p.nom }}
+                      </option>
+                    </select>
+                    <small class="form-text" *ngIf="isLoadingPhaseOts">
+                      <span class="spinner-border spinner-border-sm me-1"></span>Chargement...
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServicePhaseOt.dl" for="field_dl">Dl</label>
-          <div class="d-flex">
-            <input
-              id="field_dl"
-              data-cy="dl"
-              type="datetime-local"
-              class="form-control"
-              name="dl"
-              formControlName="dl"
-              placeholder="YYYY-MM-DD HH:mm"
-            />
-          </div>
-        </div>
+        <!-- Planification -->
+        <div class="pu-accordion-item" [class.open]="isSectionOpen('planification')">
+          <button type="button" class="pu-accordion-header" (click)="toggleSection('planification')">
+            <span class="pu-accordion-header-left">
+              <fa-icon icon="calendar-alt" class="pu-accordion-icon"></fa-icon>
+              <span>Planification</span>
+            </span>
+            <fa-icon icon="chevron-down" class="pu-accordion-chevron"></fa-icon>
+          </button>
 
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServicePhaseOt.dlc" for="field_dlc">Dlc</label>
-          <div class="d-flex">
-            <input
-              id="field_dlc"
-              data-cy="dlc"
-              type="datetime-local"
-              class="form-control"
-              name="dlc"
-              formControlName="dlc"
-              placeholder="YYYY-MM-DD HH:mm"
-            />
-          </div>
-        </div>
+          <div class="pu-accordion-body" *ngIf="isSectionOpen('planification')">
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.financeServicePhaseOt.dateDebut" for="field_dateDebut"
+                  >Date Debut</label
+                >
+                <input
+                  id="field_dateDebut"
+                  data-cy="dateDebut"
+                  type="datetime-local"
+                  class="form-control"
+                  name="dateDebut"
+                  formControlName="dateDebut"
+                  placeholder="YYYY-MM-DD HH:mm"
+                />
+              </div>
 
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServicePhaseOt.phaseParentId" for="field_phaseParentId"
-            >Phase Parent Id</label
-          >
-          <input
-            type="number"
-            class="form-control"
-            name="phaseParentId"
-            id="field_phaseParentId"
-            data-cy="phaseParentId"
-            formControlName="phaseParentId"
-          />
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.financeServicePhaseOt.dl" for="field_dl">Dl</label>
+                <input
+                  id="field_dl"
+                  data-cy="dl"
+                  type="datetime-local"
+                  class="form-control"
+                  name="dl"
+                  formControlName="dl"
+                  placeholder="YYYY-MM-DD HH:mm"
+                />
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.financeServicePhaseOt.dlc" for="field_dlc">Dlc</label>
+                <input
+                  id="field_dlc"
+                  data-cy="dlc"
+                  type="datetime-local"
+                  class="form-control"
+                  name="dlc"
+                  formControlName="dlc"
+                  placeholder="YYYY-MM-DD HH:mm"
+                />
+              </div>
+
+              <div class="col-12" *ngIf="dateOrderError">
+                <div class="pu-date-error"><fa-icon icon="exclamation-triangle"></fa-icon>&nbsp;{{ dateOrderError }}</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div>
-        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
-          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
-        </button>
+      <div class="pu-toolbar pu-toolbar-bottom">
+        <!--        <button-->
+        <!--          type="button"-->
+        <!--          class="btn-pu-statut"-->
+        <!--          *ngIf="canAdvanceStatut()"-->
+        <!--          [disabled]="isUpdatingStatut"-->
+        <!--          (click)="advanceStatut()"-->
+        <!--        >-->
+        <!--          <span *ngIf="!isUpdatingStatut">-->
+        <!--            <fa-icon icon="arrow-right"></fa-icon>&nbsp;Passer à {{ nextStatutLabel() }}-->
+        <!--          </span>-->
+        <!--          <span *ngIf="isUpdatingStatut">-->
+        <!--            <span class="spinner-border spinner-border-sm me-2"></span>Mise à jour...-->
+        <!--          </span>-->
+        <!--        </button>-->
+        <!--        <span *ngIf="!canAdvanceStatut()"></span>-->
 
-        <button
-          type="submit"
-          id="save-entity"
-          data-cy="entityCreateSaveButton"
-          [disabled]="editForm.invalid || isSaving"
-          class="btn btn-primary"
-        >
-          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-pu-cancel" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
         </button>
       </div>
     </form>
