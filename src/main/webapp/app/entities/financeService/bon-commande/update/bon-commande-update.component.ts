@@ -26,6 +26,10 @@ import { SiteService } from 'app/entities/projectService/site/service/site.servi
 import { IBonCommandeArticles } from '../bon-commande-articles.model';
 import { BonCommandeArticlesService } from '../service/bon-commande-articles.service';
 import { ArticleService } from 'app/entities/projectService/article/service/article.service';
+import { IPieceJointe } from 'app/entities/projectService/piece-jointe/piece-jointe.model';
+import { PieceJointeService } from 'app/entities/projectService/piece-jointe/service/piece-jointe.service';
+import { PjCareService, PjCareDriverInfo, ScanDriver, ScannedPage } from 'app/entities/projectService/piece-jointe/service/pjcare.service';
+import { ScanSettingsService } from 'app/entities/projectService/piece-jointe/service/scan-settings.service';
 
 type AccordionPanel = 'global' | 'client' | 'detailsCommande' | 'otAssocies' | 'articlesMissions' | 'piecesJointes';
 
@@ -92,6 +96,40 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   // ================================
   chosenArticles: ArticleSelection[] = [];
 
+  // ================================
+  // Pièces Jointes (upload manuel + scan PjCare)
+  // ================================
+  pieceJointes: IPieceJointe[] = [];
+  loadingPieceJointes = false;
+  uploadingPieceJointe = false;
+
+  pjcareAvailable = false;
+  scanners: string[] = [];
+  selectedScanner = '';
+  scanFormat: 'jpg' | 'png' | 'pdf' | 'tiff' = 'pdf';
+  scanDpi = 150;
+  scanQuality = 75;
+  scanBitdepth: 'color' | 'gray' | 'bw' = 'color';
+  scanDuplex = false;
+  isScanning = false;
+  isMerging = false;
+  scanPreview: string | null = null;
+  scanError: string | null = null;
+  loadingScanners = false;
+  availableDrivers: PjCareDriverInfo[] = [];
+  selectedDriver: ScanDriver | '' = '';
+  loadingDrivers = false;
+  scanExcludeBlank = false;
+  scanBlankThreshold = 240;
+  scanCoverageThreshold = 5;
+  currentDocumentPages: ScannedPage[] = [];
+  private _pendingDriverFromCookie = '';
+
+  scanAccordionStates: { [key: string]: boolean } = {
+    scanSource: true,
+    scanParams: true,
+  };
+
   constructor(
     protected bonCommandeService: BonCommandeService,
     protected bonCommandeFormService: BonCommandeFormService,
@@ -102,7 +140,10 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     protected modalService: NgbModal,
     protected bonCommandeAutreResponsableService: BonCommandeAutreResponsableService,
     protected bonCommandeArticlesService: BonCommandeArticlesService,
-    protected articleService: ArticleService
+    protected articleService: ArticleService,
+    protected pieceJointeService: PieceJointeService,
+    protected pjCareService: PjCareService,
+    protected scanSettingsService: ScanSettingsService
   ) {}
   ngOnInit(): void {
     this.loadResponsables();
@@ -655,7 +696,315 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     if (bonCommande.id !== null && bonCommande.id !== undefined) {
       this.loadAutresResponsables(bonCommande.id);
       this.loadBonCommandeArticles(bonCommande.id);
+      this.loadPieceJointes(bonCommande.id);
     }
+  }
+
+  // ================================
+  // Pièces Jointes — chargement, upload, scan PjCare
+  // ================================
+  private loadPieceJointes(bonCommandeId: number): void {
+    this.loadingPieceJointes = true;
+    this.pieceJointeService.findByBonCommande(bonCommandeId).subscribe({
+      next: res => {
+        this.pieceJointes = res.body ?? [];
+        this.loadingPieceJointes = false;
+      },
+      error: () => {
+        this.pieceJointes = [];
+        this.loadingPieceJointes = false;
+      },
+    });
+  }
+
+  removePieceJointe(id: number): void {
+    this.pieceJointeService.delete(id).subscribe({
+      next: () => {
+        this.pieceJointes = this.pieceJointes.filter(pj => pj.id !== id);
+      },
+    });
+  }
+
+  getPieceJointeFileUrl(id: number): string {
+    return this.pieceJointeService.getFileUrl(id);
+  }
+
+  private generateRandomId(length = 8): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
+  onFileSelected(event: any): void {
+    const file: File = event.target.files[0];
+    if (!file) {
+      return;
+    }
+    this.uploadFile(file);
+    event.target.value = '';
+  }
+
+  private uploadFile(file: File): void {
+    const bonCommandeId = this.bonCommande?.id;
+    if (bonCommandeId === null || bonCommandeId === undefined) {
+      alert("Veuillez d'abord enregistrer le bon de commande avant d'ajouter une pièce jointe.");
+      return;
+    }
+
+    const uniqueName = this.generateRandomId(10);
+    this.uploadingPieceJointe = true;
+
+    this.pieceJointeService.uploadPieceJointe(file, bonCommandeId, uniqueName).subscribe({
+      next: pj => {
+        this.pieceJointes = [pj, ...this.pieceJointes];
+        this.uploadingPieceJointe = false;
+      },
+      error: () => {
+        this.uploadingPieceJointe = false;
+        alert('Échec du téléchargement du fichier');
+      },
+    });
+  }
+
+  // -------- PjCare : scan --------
+  openScanModal(content: any): void {
+    this.scanPreview = null;
+    this.scanError = null;
+    this.isMerging = false;
+    this.currentDocumentPages = [];
+
+    const hasSavedSettings = this.scanSettingsService.hasSettings();
+    this.scanAccordionStates['scanSource'] = !hasSavedSettings;
+    this.scanAccordionStates['scanParams'] = !hasSavedSettings;
+
+    this.loadScanSettings();
+    this.checkPjCare();
+    this.modalService.open(content, { size: 'lg' });
+  }
+
+  private loadScanSettings(): void {
+    const s = this.scanSettingsService.load();
+    this.scanFormat = s.scanFormat;
+    this.scanDpi = s.scanDpi;
+    this.scanQuality = s.scanQuality;
+    this.scanBitdepth = s.scanBitdepth;
+    this.scanDuplex = s.scanDuplex;
+    this.scanExcludeBlank = s.scanExcludeBlank;
+    this.scanBlankThreshold = s.scanBlankThreshold;
+    this.scanCoverageThreshold = s.scanCoverageThreshold;
+    this._pendingDriverFromCookie = s.selectedDriver;
+  }
+
+  saveScanSettings(): void {
+    this.scanSettingsService.save({
+      scanFormat: this.scanFormat,
+      scanDpi: this.scanDpi,
+      scanQuality: this.scanQuality,
+      scanBitdepth: this.scanBitdepth,
+      scanDuplex: this.scanDuplex,
+      scanExcludeBlank: this.scanExcludeBlank,
+      scanBlankThreshold: this.scanBlankThreshold,
+      scanCoverageThreshold: this.scanCoverageThreshold,
+      selectedDriver: this.selectedDriver as string,
+    });
+  }
+
+  resetScanSettings(): void {
+    this.scanSettingsService.reset();
+    this.scanFormat = 'pdf';
+    this.scanDpi = 150;
+    this.scanQuality = 75;
+    this.scanBitdepth = 'color';
+    this.scanDuplex = false;
+    this.scanExcludeBlank = false;
+    this.scanBlankThreshold = 240;
+    this.scanCoverageThreshold = 5;
+  }
+
+  checkPjCare(): void {
+    this.loadingScanners = true;
+    this.loadingDrivers = true;
+
+    this.pjCareService.getHealth().subscribe({
+      next: res => {
+        if (res && res.status === 200) {
+          this.pjcareAvailable = true;
+          this.pjCareService.getDrivers().subscribe({
+            next: driverRes => {
+              this.availableDrivers = driverRes.drivers || [];
+              const defaultKey = res.defaultDriver || (this.availableDrivers[0]?.key ?? '');
+
+              const cookieDriver = this._pendingDriverFromCookie;
+              const cookieDriverExists = cookieDriver ? this.availableDrivers.some(d => d.key === cookieDriver) : false;
+
+              this.selectedDriver = (cookieDriverExists ? cookieDriver : defaultKey) as ScanDriver;
+              this._pendingDriverFromCookie = '';
+              this.loadingDrivers = false;
+              this.loadScannersForDriver(this.selectedDriver as ScanDriver);
+            },
+            error: () => {
+              this.availableDrivers = [];
+              this.loadingDrivers = false;
+              this.loadScannersForDriver(undefined);
+            },
+          });
+        } else {
+          this.pjcareAvailable = false;
+          this.loadingScanners = false;
+          this.loadingDrivers = false;
+        }
+      },
+      error: () => {
+        this.pjcareAvailable = false;
+        this.loadingScanners = false;
+        this.loadingDrivers = false;
+      },
+    });
+  }
+
+  loadScannersForDriver(driver?: ScanDriver): void {
+    this.loadingScanners = true;
+    this.scanners = [];
+    this.selectedScanner = '';
+
+    this.pjCareService.getScanners(driver).subscribe({
+      next: scanRes => {
+        this.scanners = scanRes.scanners || [];
+        if (this.scanners.length > 0) {
+          this.selectedScanner = this.scanners[0];
+        }
+        this.loadingScanners = false;
+      },
+      error: () => {
+        this.scanners = [];
+        this.loadingScanners = false;
+      },
+    });
+  }
+
+  onDriverChange(): void {
+    this.scanPreview = null;
+    this.scanError = null;
+    this.loadScannersForDriver((this.selectedDriver as ScanDriver) || undefined);
+  }
+
+  launchScan(): void {
+    this.isScanning = true;
+    this.scanError = null;
+    this.scanPreview = null;
+
+    this.saveScanSettings();
+
+    this.pjCareService
+      .scan({
+        source: this.selectedScanner,
+        driver: (this.selectedDriver as ScanDriver) || undefined,
+        format: this.scanFormat as any,
+        dpi: this.scanDpi,
+        jpegquality: this.scanQuality,
+        bitdepth: this.scanBitdepth,
+        duplex: this.scanDuplex,
+        name: 'bon-commande',
+        excludeBlank: this.scanExcludeBlank,
+        blankThreshold: this.scanBlankThreshold,
+        coverageThreshold: this.scanCoverageThreshold,
+      })
+      .subscribe({
+        next: result => {
+          this.isScanning = false;
+          if (result.status === 200) {
+            const preview = this.scanFormat !== 'pdf' ? `data:image/${this.scanFormat};base64,${result.data}` : null;
+            this.scanPreview = preview ?? 'pdf';
+
+            const page: ScannedPage = {
+              data: result.data,
+              format: result.format || this.scanFormat,
+              preview,
+              pageNumber: this.currentDocumentPages.length + 1,
+            };
+            this.currentDocumentPages.push(page);
+          } else {
+            this.scanError = result.error || 'Erreur inconnue';
+          }
+        },
+        error: () => {
+          this.isScanning = false;
+          this.scanError = 'PjCare inaccessible. Vérifiez que le service tourne.';
+        },
+      });
+  }
+
+  removePage(index: number): void {
+    this.currentDocumentPages.splice(index, 1);
+    this.currentDocumentPages.forEach((p, i) => (p.pageNumber = i + 1));
+    if (this.currentDocumentPages.length === 0) {
+      this.scanPreview = null;
+    }
+  }
+
+  attachScanResult(modal: any): void {
+    if (this.currentDocumentPages.length === 0) {
+      return;
+    }
+
+    const bonCommandeId = this.bonCommande?.id;
+    if (bonCommandeId === null || bonCommandeId === undefined) {
+      this.scanError = "Veuillez d'abord enregistrer le bon de commande avant d'attacher un scan.";
+      return;
+    }
+
+    if (this.currentDocumentPages.length === 1) {
+      const p = this.currentDocumentPages[0];
+      this._attachRawResult(p.data, this.scanFormat, modal);
+      return;
+    }
+
+    this.isMerging = true;
+    this.scanError = null;
+
+    this.pjCareService
+      .mergePages({
+        pages: this.currentDocumentPages.map(p => ({ data: p.data, format: p.format })),
+        outputFormat: this.scanFormat as any,
+        jpegquality: this.scanQuality,
+        name: 'bon-commande',
+      })
+      .subscribe({
+        next: result => {
+          this.isMerging = false;
+          if (result.status === 200) {
+            this._attachRawResult(result.data, result.format, modal);
+          } else {
+            this.scanError = result.error || 'Erreur lors de la fusion des pages';
+          }
+        },
+        error: () => {
+          this.isMerging = false;
+          this.scanError = 'Erreur lors de la fusion des pages';
+        },
+      });
+  }
+
+  private _attachRawResult(base64: string, format: string, modal: any): void {
+    const mimeType = format === 'pdf' ? 'application/pdf' : `image/${format}`;
+    const byteString = atob(base64);
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    const blob = new Blob([ab], { type: mimeType });
+    const filename = `scan-${dayjs().format('YYYYMMDD-HHmmss')}.${format}`;
+    const file = new File([blob], filename, { type: mimeType });
+
+    this.uploadFile(file);
+
+    this.currentDocumentPages = [];
+    this.scanPreview = null;
+    modal.close();
   }
 
   private loadAutresResponsables(bonCommandeId: number): void {

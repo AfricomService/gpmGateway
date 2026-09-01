@@ -697,15 +697,239 @@
             <span class="cu-accordion-header-left">
               <fa-icon icon="paperclip" class="cu-accordion-icon"></fa-icon>
               <span>Pièces Jointes &amp; Décisions</span>
+              <span class="cu-accordion-count" *ngIf="pieceJointes.length">{{ pieceJointes.length }}</span>
             </span>
             <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
           </button>
 
           <div class="cu-accordion-body" *ngIf="isPanelOpen('piecesJointes')">
-            <div class="cu-empty-panel">Aucune donnée pour le moment.</div>
+            <div class="cu-detail-toolbar">
+              <button
+                type="button"
+                class="btn-cu-add"
+                (click)="fileInput.click()"
+                [disabled]="uploadingPieceJointe || !bonCommande?.id"
+                [title]="!bonCommande?.id ? 'Enregistrez le bon de commande avant d\'ajouter une pièce jointe' : ''"
+              >
+                <fa-icon icon="plus"></fa-icon>&nbsp;Ajouter
+              </button>
+              <button
+                type="button"
+                class="btn-cu-add"
+                (click)="openScanModal(ScanModal)"
+                [disabled]="!bonCommande?.id"
+                [title]="!bonCommande?.id ? 'Enregistrez le bon de commande avant de scanner' : ''"
+              >
+                📠&nbsp;Scanner
+              </button>
+              <input type="file" #fileInput (change)="onFileSelected($event)" hidden />
+            </div>
+
+            <div *ngIf="loadingPieceJointes" class="cu-empty-panel">Chargement...</div>
+
+            <div *ngIf="!loadingPieceJointes && pieceJointes.length === 0" class="cu-empty-panel">Aucune pièce jointe pour le moment.</div>
+
+            <div *ngIf="!loadingPieceJointes && pieceJointes.length > 0" class="cu-item-list">
+              <div class="cu-item-card" *ngFor="let pj of pieceJointes">
+                <div class="cu-item-info">
+                  <a [href]="getPieceJointeFileUrl(pj.id)" target="_blank" class="cu-item-title">
+                    <fa-icon icon="file"></fa-icon>&nbsp;{{ pj.nomFichier }}.{{ pj.type }}
+                  </a>
+                </div>
+                <button type="button" class="cu-item-remove" (click)="removePieceJointe(pj.id)">
+                  <fa-icon icon="times"></fa-icon>
+                </button>
+              </div>
+            </div>
+
+            <div *ngIf="uploadingPieceJointe" class="cu-empty-panel">Téléchargement en cours...</div>
           </div>
         </div>
       </div>
+
+      <!-- ====================================================== -->
+      <!-- MODAL SCAN PJCARE -->
+      <!-- ====================================================== -->
+      <ng-template #ScanModal let-modal>
+        <div class="modal-header">
+          <h5 class="modal-title">📠 Numérisation via PjCare</h5>
+          <span *ngIf="currentDocumentPages.length > 0" style="margin-left: auto; font-weight: 700">
+            {{ currentDocumentPages.length }} page{{ currentDocumentPages.length > 1 ? 's' : '' }}
+          </span>
+          <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+        </div>
+
+        <div class="modal-body">
+          <div *ngIf="!pjcareAvailable" class="alert alert-warning">
+            <p><strong>PjCare n'est pas démarré.</strong> Lancez l'application PjCare sur ce poste puis réessayez.</p>
+            <button class="btn btn-sm btn-warning" (click)="checkPjCare()">🔄 Réessayer</button>
+          </div>
+
+          <div *ngIf="pjcareAvailable">
+            <div *ngIf="loadingDrivers || loadingScanners" class="text-center py-4">
+              <div class="spinner-border spinner-border-sm me-2"></div>
+              {{ loadingDrivers ? 'Chargement des drivers...' : 'Recherche des scanners...' }}
+            </div>
+
+            <div *ngIf="!loadingDrivers">
+              <!-- Driver -->
+              <div *ngIf="availableDrivers.length > 1" class="mb-3">
+                <label class="form-label fw-semibold">Pilote (driver)</label>
+                <div class="d-flex flex-wrap gap-2">
+                  <button
+                    *ngFor="let d of availableDrivers"
+                    type="button"
+                    class="btn btn-sm"
+                    [class.btn-primary]="selectedDriver === d.key"
+                    [class.btn-outline-secondary]="selectedDriver !== d.key"
+                    (click)="selectedDriver = $any(d.key); onDriverChange()"
+                    [title]="d.description"
+                  >
+                    {{ d.key.toUpperCase() }}
+                  </button>
+                </div>
+              </div>
+
+              <div *ngIf="loadingScanners" class="text-muted small">
+                <span class="spinner-border spinner-border-sm me-2"></span>
+                Recherche des scanners...
+              </div>
+
+              <div *ngIf="!loadingScanners && scanners.length === 0" class="alert alert-warning small">
+                Aucun scanner détecté avec le driver <strong>{{ selectedDriver }}</strong
+                >.
+              </div>
+
+              <div *ngIf="!loadingScanners && scanners.length > 0" class="mb-3">
+                <label class="form-label fw-semibold">Scanner</label>
+                <select class="form-select" [(ngModel)]="selectedScanner" name="selectedScanner">
+                  <option *ngFor="let s of scanners" [value]="s">{{ s }}</option>
+                </select>
+              </div>
+
+              <!-- Paramètres -->
+              <div class="row g-3 mb-3">
+                <div class="col-6">
+                  <label class="form-label fw-semibold">Format</label>
+                  <div class="d-flex flex-wrap gap-1">
+                    <button
+                      *ngFor="let fmt of ['jpg', 'png', 'pdf', 'tiff']"
+                      type="button"
+                      class="btn btn-sm"
+                      [class.btn-dark]="scanFormat === fmt"
+                      [class.btn-outline-secondary]="scanFormat !== fmt"
+                      [disabled]="currentDocumentPages.length > 0"
+                      (click)="scanFormat = $any(fmt)"
+                    >
+                      {{ fmt.toUpperCase() }}
+                    </button>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <label class="form-label fw-semibold">Mode couleur</label>
+                  <div class="d-flex flex-wrap gap-1">
+                    <button
+                      *ngFor="let bd of ['color', 'gray', 'bw']"
+                      type="button"
+                      class="btn btn-sm"
+                      [class.btn-dark]="scanBitdepth === bd"
+                      [class.btn-outline-secondary]="scanBitdepth !== bd"
+                      (click)="scanBitdepth = $any(bd)"
+                    >
+                      {{ bd }}
+                    </button>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-semibold">Résolution — {{ scanDpi }} DPI</label>
+                  <div class="d-flex flex-wrap gap-1">
+                    <button
+                      *ngFor="let dpiVal of [75, 150, 200, 300, 600]"
+                      type="button"
+                      class="btn btn-sm"
+                      [class.btn-dark]="scanDpi === dpiVal"
+                      [class.btn-outline-secondary]="scanDpi !== dpiVal"
+                      (click)="scanDpi = dpiVal"
+                    >
+                      {{ dpiVal }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="scanError" class="alert alert-danger">{{ scanError }}</div>
+
+          <!-- Pages en cours -->
+          <div *ngIf="currentDocumentPages.length > 0" class="mt-3">
+            <div class="d-flex flex-wrap gap-2">
+              <div *ngFor="let page of currentDocumentPages; let i = index" style="position: relative; width: 70px">
+                <div
+                  style="
+                    width: 70px;
+                    height: 90px;
+                    background: #e2e8f0;
+                    border-radius: 6px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    overflow: hidden;
+                  "
+                >
+                  <img *ngIf="page.preview" [src]="page.preview" style="width: 100%; height: 100%; object-fit: cover" />
+                  <span *ngIf="!page.preview">📄</span>
+                </div>
+                <button
+                  type="button"
+                  (click)="removePage(i)"
+                  style="
+                    position: absolute;
+                    top: 2px;
+                    right: 2px;
+                    width: 18px;
+                    height: 18px;
+                    border-radius: 50%;
+                    border: none;
+                    background: #ef4444;
+                    color: #fff;
+                    font-size: 10px;
+                  "
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="isMerging" class="alert alert-success mt-3">
+            <span class="spinner-border spinner-border-sm me-2"></span>Fusion des pages en cours…
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-light" (click)="modal.dismiss()">Annuler</button>
+          <button class="btn btn-outline-secondary btn-sm me-auto" (click)="resetScanSettings()">↺ Défaut</button>
+          <button
+            *ngIf="pjcareAvailable && !loadingScanners && scanners.length > 0"
+            class="btn btn-primary"
+            (click)="launchScan()"
+            [disabled]="isScanning || isMerging || !selectedScanner"
+          >
+            <span *ngIf="isScanning" class="spinner-border spinner-border-sm me-2"></span>
+            {{ isScanning ? 'Numérisation...' : currentDocumentPages.length > 0 ? 'Numériser encore' : 'Numériser' }}
+          </button>
+          <button
+            *ngIf="currentDocumentPages.length > 0"
+            class="btn btn-success"
+            (click)="attachScanResult(modal)"
+            [disabled]="isMerging || isScanning"
+          >
+            <span *ngIf="isMerging" class="spinner-border spinner-border-sm me-2"></span>
+            ✅ Attacher ({{ currentDocumentPages.length }} page{{ currentDocumentPages.length > 1 ? 's' : '' }})
+          </button>
+        </div>
+      </ng-template>
 
       <!-- ====================================================== -->
       <!-- FOOTER -->
