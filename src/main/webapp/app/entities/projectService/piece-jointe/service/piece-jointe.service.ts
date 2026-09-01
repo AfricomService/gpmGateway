@@ -86,6 +86,10 @@ export class PieceJointeService {
     return `${this.resourceUrl}/getFile?id=${id}`;
   }
 
+  getFile(id: number): Observable<Blob> {
+    return this.http.get(`${this.resourceUrl}/getFile`, { params: { id }, responseType: 'blob' });
+  }
+
   getPieceJointeIdentifier(pieceJointe: Pick<IPieceJointe, 'id'>): number {
     return pieceJointe.id;
   }

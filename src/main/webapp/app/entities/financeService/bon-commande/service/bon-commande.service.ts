@@ -34,6 +34,8 @@ export class BonCommandeService {
 
   protected roleContactSocieteResourceUrl = this.applicationConfigService.getEndpointFor('api/role-contact-societes', 'projectservice');
 
+  protected numsequentielleResourceUrl = this.applicationConfigService.getEndpointFor('api/numsequentielles', 'projectservice');
+
   constructor(protected http: HttpClient, protected applicationConfigService: ApplicationConfigService) {}
 
   create(bonCommande: NewBonCommande): Observable<EntityResponseType> {
@@ -94,6 +96,17 @@ export class BonCommandeService {
    */
   findAllRoles(): Observable<HttpResponse<IRoleContactSociete[]>> {
     return this.http.get<IRoleContactSociete[]>(this.roleContactSocieteResourceUrl, { observe: 'response' });
+  }
+
+  /**
+   * Génère et incrémente l'identifiant unique du bon de commande (ex: BC-0001-26).
+   * L'endpoint renvoie du texte brut, d'où responseType: 'text'.
+   */
+  generateIdentifiantBonCommande(): Observable<HttpResponse<string>> {
+    return this.http.post(`${this.numsequentielleResourceUrl}/generate-identifiant-bon-commande`, null, {
+      observe: 'response',
+      responseType: 'text',
+    });
   }
 
   getBonCommandeIdentifier(bonCommande: Pick<IBonCommande, 'id'>): number {

@@ -609,7 +609,15 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     if (bonCommande.id !== null) {
       this.subscribeToSaveResponse(this.bonCommandeService.update(bonCommande));
     } else {
-      this.subscribeToSaveResponse(this.bonCommandeService.create(bonCommande));
+      this.bonCommandeService.generateIdentifiantBonCommande().subscribe({
+        next: res => {
+          bonCommande.identifiantUnique = res.body;
+          this.subscribeToSaveResponse(this.bonCommandeService.create(bonCommande));
+        },
+        error: () => {
+          this.onSaveFinalize();
+        },
+      });
     }
   }
 
@@ -621,6 +629,8 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   }
 
   protected onSaveSuccess(bonCommande?: IBonCommande | null): void {
+    this.bonCommande = bonCommande ?? this.bonCommande;
+
     const bonCommandeId = bonCommande?.id;
 
     if (bonCommandeId === null || bonCommandeId === undefined) {
@@ -662,6 +672,39 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
     this.bonCommandeFormService.resetForm(this.editForm, bonCommande);
 
+    // ================================
+    // Infos client — on essaie toutes les sources disponibles, dans l'ordre
+    // de fiabilité, et on charge dès qu'on a un id valide, sans attendre
+    // le retour (asynchrone, potentiellement incomplet) de l'appel affaire.
+    // ================================
+    const resolveInitialClientId = (): number | null => {
+      const fromBonCommande = bonCommande.clientId;
+      if (fromBonCommande !== null && fromBonCommande !== undefined && fromBonCommande !== ('' as any)) {
+        const n = Number(fromBonCommande);
+        if (!Number.isNaN(n)) {
+          return n;
+        }
+      }
+
+      const fromForm = this.editForm.get('clientId')?.value;
+      if (fromForm !== null && fromForm !== undefined) {
+        const n = Number(fromForm);
+        if (!Number.isNaN(n)) {
+          return n;
+        }
+      }
+
+      return null;
+    };
+
+    const initialClientId = resolveInitialClientId();
+
+    if (initialClientId !== null) {
+      this.loadClientInfo(initialClientId);
+    } else {
+      console.warn('[BonCommande][edit] Aucun clientId trouvé ni sur bonCommande, ni sur le form après resetForm.', bonCommande);
+    }
+
     const affaireId = bonCommande.affaireId;
 
     if (affaireId !== null && affaireId !== undefined) {
@@ -680,16 +723,21 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
             }
 
             this.loadClientCommandeInfo(affaire.clientCommande ?? null);
+
+            // Filet de sécurité : si aucune des sources précédentes n'a donné de
+            // clientId, on retente via le client rattaché à l'affaire.
+            if (initialClientId === null) {
+              const clientIdFromAffaire = affaire.client?.id ?? null;
+              if (clientIdFromAffaire !== null) {
+                this.loadClientInfo(clientIdFromAffaire);
+              } else {
+                console.warn('[BonCommande][edit] affaire.client est également absent/null.', affaire);
+              }
+            }
           }
         },
+        error: err => console.error('[BonCommande][edit] Erreur lors du chargement de l’affaire', err),
       });
-    }
-
-    // Infos client pour affichage — appel API dédié, indépendant de l'objet affaire
-    const clientId = bonCommande.clientId as number | null | undefined;
-
-    if (clientId !== null && clientId !== undefined) {
-      this.loadClientInfo(clientId);
     }
 
     // Libellé du responsable pour affichage — le formulaire ne persiste que l'id

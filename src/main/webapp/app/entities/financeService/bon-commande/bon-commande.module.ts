@@ -11,9 +11,10 @@ import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { SiteSelectorModalComponent } from './site-selector-modal/site-selector-modal.component';
 import { ArticleSelectorModalComponent } from './article-selector-modal/article-selector-modal.component';
+import { ProjectServicePieceJointeModule } from 'app/entities/projectService/piece-jointe/piece-jointe.module';
 
 @NgModule({
-  imports: [SharedModule, BonCommandeRoutingModule, FormsModule, NgSelectModule],
+  imports: [SharedModule, BonCommandeRoutingModule, FormsModule, NgSelectModule, ProjectServicePieceJointeModule],
   declarations: [
     BonCommandeComponent,
     BonCommandeDetailComponent,

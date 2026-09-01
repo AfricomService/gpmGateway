@@ -7,7 +7,7 @@
       <!-- TOOLBAR -->
       <!-- ====================================================== -->
       <div class="cu-toolbar cu-toolbar-end">
-        <span class="cu-badge-id" *ngIf="editForm.controls.id.value !== null"> BC N° {{ editForm.controls.id.value }} </span>
+        <span class="cu-badge-id" *ngIf="bonCommande?.identifiantUnique"> {{ bonCommande?.identifiantUnique }} </span>
 
         <button
           type="submit"
@@ -846,23 +846,11 @@
                 </div>
               </div>
 
-              <div style="max-height: 650px; overflow: auto; background: #fafafa">
-                <img
-                  *ngIf="isImagePj(selectedPjForPreview)"
-                  [src]="getPieceJointeFileUrl(selectedPjForPreview.id)"
-                  style="display: block; width: 100%; height: auto"
-                />
-
-                <iframe
-                  *ngIf="isPdfPj(selectedPjForPreview)"
-                  [src]="getSafePjUrl(selectedPjForPreview.id)"
-                  style="width: 100%; height: 650px; border: none"
-                >
-                </iframe>
-
-                <div *ngIf="!isImagePj(selectedPjForPreview) && !isPdfPj(selectedPjForPreview)" class="cu-empty-panel">
-                  Aperçu non disponible pour ce type de fichier ({{ selectedPjForPreview.type }}). Utilisez le téléchargement.
-                </div>
+              <div style="max-height: 700px; overflow: auto; background: #fafafa">
+                <jhi-file-preview
+                  [pjId]="selectedPjForPreview.id"
+                  [fileName]="selectedPjForPreview.nomFichier + '.' + selectedPjForPreview.type"
+                ></jhi-file-preview>
               </div>
             </div>
           </div>
