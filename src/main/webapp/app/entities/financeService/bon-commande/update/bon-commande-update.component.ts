@@ -30,6 +30,7 @@ import { IPieceJointe } from 'app/entities/projectService/piece-jointe/piece-joi
 import { PieceJointeService } from 'app/entities/projectService/piece-jointe/service/piece-jointe.service';
 import { PjCareService, PjCareDriverInfo, ScanDriver, ScannedPage } from 'app/entities/projectService/piece-jointe/service/pjcare.service';
 import { ScanSettingsService } from 'app/entities/projectService/piece-jointe/service/scan-settings.service';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 type AccordionPanel = 'global' | 'client' | 'detailsCommande' | 'otAssocies' | 'articlesMissions' | 'piecesJointes';
 
@@ -130,6 +131,11 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     scanParams: true,
   };
 
+  // ================================
+  // Aperçu inline pièce jointe (image / PDF)
+  // ================================
+  selectedPjForPreview: IPieceJointe | null = null;
+
   constructor(
     protected bonCommandeService: BonCommandeService,
     protected bonCommandeFormService: BonCommandeFormService,
@@ -143,7 +149,8 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     protected articleService: ArticleService,
     protected pieceJointeService: PieceJointeService,
     protected pjCareService: PjCareService,
-    protected scanSettingsService: ScanSettingsService
+    protected scanSettingsService: ScanSettingsService,
+    protected sanitizer: DomSanitizer
   ) {}
   ngOnInit(): void {
     this.loadResponsables();
@@ -727,6 +734,34 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
   getPieceJointeFileUrl(id: number): string {
     return this.pieceJointeService.getFileUrl(id);
+  }
+
+  // ================================
+  // Aperçu inline pièce jointe
+  // ================================
+  togglePjPreview(pj: IPieceJointe): void {
+    if (this.selectedPjForPreview && this.selectedPjForPreview.id === pj.id) {
+      this.selectedPjForPreview = null;
+    } else {
+      this.selectedPjForPreview = pj;
+    }
+  }
+
+  closePjPreview(): void {
+    this.selectedPjForPreview = null;
+  }
+
+  isImagePj(pj: IPieceJointe): boolean {
+    const t = (pj.type || '').toLowerCase();
+    return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(t);
+  }
+
+  isPdfPj(pj: IPieceJointe): boolean {
+    return (pj.type || '').toLowerCase() === 'pdf';
+  }
+
+  getSafePjUrl(id: number): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(this.getPieceJointeFileUrl(id));
   }
 
   private generateRandomId(length = 8): string {
