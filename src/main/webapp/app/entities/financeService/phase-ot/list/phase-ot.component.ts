@@ -52,6 +52,12 @@ export class PhaseOtComponent implements OnInit {
   searchTerm = '';
   viewMode: 'grid' | 'list' = 'grid';
 
+  // ── Derived / lazily-loaded lookups (keyed by id) ─────────────────────────
+  // Whether a given phase is a parent of other phases (undefined = not yet resolved)
+  isParentResults = new Map<number, boolean>();
+  // Display name of a phase, resolved from its id (used to show the parent's name)
+  parentNames = new Map<number, string>();
+
   constructor(
     protected phaseOtService: PhaseOtService,
     protected activatedRoute: ActivatedRoute,
@@ -149,6 +155,8 @@ export class PhaseOtComponent implements OnInit {
     this.fillComponentAttributesFromResponseHeader(response.headers);
     this.phaseOts = this.fillComponentAttributesFromResponseBody(response.body);
     this.applyFilters();
+    this.loadIsParentFlags(this.phaseOts);
+    this.loadParentNames(this.phaseOts);
   }
 
   protected fillComponentAttributesFromResponseBody(data: IPhaseOt[] | null): IPhaseOt[] {
@@ -204,5 +212,36 @@ export class PhaseOtComponent implements OnInit {
     }
 
     this.filteredPhaseOts = result;
+  }
+
+  // Resolves, for each phase in the list, whether it is the parent of other phases.
+  // Results are cached in isParentResults keyed by id so repeated loads don't re-fetch.
+  private loadIsParentFlags(phaseOts: IPhaseOt[]): void {
+    phaseOts.forEach(phaseOt => {
+      const id = phaseOt.id;
+      if (id != null && !this.isParentResults.has(id)) {
+        this.phaseOtService.isParent(id).subscribe({
+          next: (res: boolean) => this.isParentResults.set(id, res),
+        });
+      }
+    });
+  }
+
+  // Resolves the display name of each phase's parent (via phaseParentId) so the grid
+  // can show the parent's name instead of its raw id. Cached in parentNames keyed by id.
+  private loadParentNames(phaseOts: IPhaseOt[]): void {
+    phaseOts.forEach(phaseOt => {
+      const parentId = phaseOt.phaseParentId;
+      if (parentId != null && !this.parentNames.has(parentId)) {
+        this.phaseOtService.find(parentId).subscribe({
+          next: res => {
+            const nom = res.body?.nom;
+            if (nom) {
+              this.parentNames.set(parentId, nom);
+            }
+          },
+        });
+      }
+    });
   }
 }

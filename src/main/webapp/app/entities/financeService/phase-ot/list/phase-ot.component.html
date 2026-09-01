@@ -63,7 +63,14 @@
         (dblclick)="goToEdit(phaseOt)"
       >
         <div class="phaseot-card-header">
-          <span class="statut-badge" *ngIf="phaseOt.statut">{{ phaseOt.statut }}</span>
+          <span
+            class="parent-badge"
+            *ngIf="phaseOt.id != null"
+            [class.is-parent]="isParentResults.get(phaseOt.id) === true"
+            [class.is-not-parent]="isParentResults.get(phaseOt.id) === false"
+          >
+            {{ isParentResults.get(phaseOt.id) === true ? 'Parent' : isParentResults.get(phaseOt.id) === false ? 'Sous Phase' : '…' }}
+          </span>
           <span class="bloquante-badge" [class.is-bloquante]="phaseOt.bloquante" [class.is-not-bloquante]="!phaseOt.bloquante">
             <fa-icon [icon]="phaseOt.bloquante ? 'lock' : 'lock-open'"></fa-icon>
             {{ phaseOt.bloquante ? 'Bloquante' : 'Non bloquante' }}
@@ -73,18 +80,20 @@
         <h3 class="phaseot-title">{{ phaseOt.nom }}</h3>
         <p class="phaseot-description" *ngIf="phaseOt.description">{{ phaseOt.description }}</p>
 
-        <div class="phaseot-meta">
-          <span *ngIf="phaseOt.dateDebut">
-            <fa-icon icon="calendar"></fa-icon> Début : {{ phaseOt.dateDebut | formatMediumDatetime }}
-          </span>
-          <span *ngIf="phaseOt.dl"> <fa-icon icon="hourglass-half"></fa-icon> DL : {{ phaseOt.dl | formatMediumDatetime }} </span>
-          <span *ngIf="phaseOt.dlc"> <fa-icon icon="hourglass-end"></fa-icon> DLC : {{ phaseOt.dlc | formatMediumDatetime }} </span>
-        </div>
+        <!--        <div class="phaseot-meta">-->
+        <!--          <span *ngIf="phaseOt.dateDebut">-->
+        <!--            <fa-icon icon="calendar"></fa-icon> Début : {{ phaseOt.dateDebut | formatMediumDatetime }}-->
+        <!--          </span>-->
+        <!--          <span *ngIf="phaseOt.dl"> <fa-icon icon="hourglass-half"></fa-icon> DL : {{ phaseOt.dl | formatMediumDatetime }} </span>-->
+        <!--          <span *ngIf="phaseOt.dlc"> <fa-icon icon="hourglass-end"></fa-icon> DLC : {{ phaseOt.dlc | formatMediumDatetime }} </span>-->
+        <!--        </div>-->
 
         <div class="phaseot-card-footer">
           <span class="phaseot-duree">
-            Durée : {{ phaseOt.duree ?? '—' }}
-            <ng-container *ngIf="phaseOt.phaseParentId"> · Parent : {{ phaseOt.phaseParentId }}</ng-container>
+            <!--            Durée : <strong>{{ phaseOt.duree ?? '—' }}</strong>-->
+            <ng-container *ngIf="phaseOt.phaseParentId">
+              · Parent : <strong>{{ parentNames.get(phaseOt.phaseParentId) ?? phaseOt.phaseParentId }}</strong>
+            </ng-container>
           </span>
 
           <div class="card-actions" (click)="$event.stopPropagation()">

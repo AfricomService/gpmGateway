@@ -104,6 +104,10 @@ export class PhaseOtService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
+  isParent(phaseOtId: number): Observable<boolean> {
+    return this.http.get<boolean>(`${this.resourceUrl}/${phaseOtId}/is-parent`);
+  }
+
   protected convertDateFromClient<T extends IPhaseOt | NewPhaseOt | PartialUpdatePhaseOt>(phaseOt: T): RestOf<T> {
     return {
       ...phaseOt,
