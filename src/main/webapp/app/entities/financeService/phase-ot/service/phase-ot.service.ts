@@ -108,6 +108,26 @@ export class PhaseOtService {
     return this.http.get<boolean>(`${this.resourceUrl}/${phaseOtId}/is-parent`);
   }
 
+  findByParent(parent: boolean): Observable<EntityArrayResponseType> {
+    return this.http
+      .get<RestPhaseOt[]>(this.resourceUrl, {
+        params: { parent: parent.toString() },
+        observe: 'response',
+      })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
+  findChildren(phaseOtId: number, req?: any): Observable<EntityArrayResponseType> {
+    const options = createRequestOption(req);
+
+    return this.http
+      .get<RestPhaseOt[]>(`${this.resourceUrl}/${phaseOtId}/children`, {
+        params: options,
+        observe: 'response',
+      })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
   protected convertDateFromClient<T extends IPhaseOt | NewPhaseOt | PartialUpdatePhaseOt>(phaseOt: T): RestOf<T> {
     return {
       ...phaseOt,

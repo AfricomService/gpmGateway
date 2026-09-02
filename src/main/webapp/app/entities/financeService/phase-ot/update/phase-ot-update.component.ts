@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
-import { AbstractControl, ValidationErrors } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
@@ -11,7 +10,8 @@ import {
   faArrowRight,
   faSave,
   faIdCard,
-  faCalendarAlt,
+  faSitemap,
+  faLevelUpAlt,
   faChevronDown,
   faBan,
   faCheckCircle,
@@ -21,7 +21,7 @@ import { PhaseOtFormService, PhaseOtFormGroup } from './phase-ot-form.service';
 import { IPhaseOt } from '../phase-ot.model';
 import { PhaseOtService } from '../service/phase-ot.service';
 
-type AccordionSection = 'general' | 'planification';
+type AccordionSection = 'general' | 'relations';
 
 const STATUT_WORKFLOW = ['CREATION', 'EN_COURS', 'FIN'];
 
@@ -34,12 +34,18 @@ export class PhaseOtUpdateComponent implements OnInit {
   isSaving = false;
   phaseOt: IPhaseOt | null = null;
 
-  openSections: Set<AccordionSection> = new Set(['general', 'planification']);
+  openSections: Set<AccordionSection> = new Set(['general', 'relations']);
 
-  // ── Liste des Phase Ots pouvant servir de parent ────────────────────────
+  // ── Liste des Phase Ots pouvant servir de parent (champ d'édition) ──────
   availablePhaseOts: IPhaseOt[] = [];
   isLoadingPhaseOts = false;
   hasParent = false;
+
+  // ── Relations affichées (sous phases / phase parente) ───────────────────
+  isParentPhase = false;
+  isLoadingRelations = false;
+  childrenPhaseOts: IPhaseOt[] = [];
+  parentPhaseOt: IPhaseOt | null = null;
 
   // ── Workflow de statut ───────────────────────────────────────────────────
   isUpdatingStatut = false;
@@ -57,7 +63,7 @@ export class PhaseOtUpdateComponent implements OnInit {
     protected location: Location,
     private iconLibrary: FaIconLibrary
   ) {
-    this.iconLibrary.addIcons(faArrowLeft, faArrowRight, faSave, faIdCard, faCalendarAlt, faChevronDown, faBan, faCheckCircle);
+    this.iconLibrary.addIcons(faArrowLeft, faArrowRight, faSave, faIdCard, faSitemap, faLevelUpAlt, faChevronDown, faBan, faCheckCircle);
   }
 
   ngOnInit(): void {
@@ -66,39 +72,10 @@ export class PhaseOtUpdateComponent implements OnInit {
       if (phaseOt) {
         this.updateForm(phaseOt);
       }
+      this.loadRelatedPhases();
     });
 
     this.loadAvailablePhaseOts();
-
-    // ── Règle front : dateDebut < dl < dlc ────────────────────────────────
-    this.editForm.addValidators(PhaseOtUpdateComponent.dateOrderValidator);
-    this.editForm.updateValueAndValidity();
-  }
-
-  // ── Validation croisée des dates ─────────────────────────────────────────
-  private static dateOrderValidator(group: AbstractControl): ValidationErrors | null {
-    const dateDebutRaw = group.get('dateDebut')?.value;
-    const dlRaw = group.get('dl')?.value;
-    const dlcRaw = group.get('dlc')?.value;
-
-    const dateDebut = dateDebutRaw ? new Date(dateDebutRaw).getTime() : null;
-    const dl = dlRaw ? new Date(dlRaw).getTime() : null;
-    const dlc = dlcRaw ? new Date(dlcRaw).getTime() : null;
-
-    if (dateDebut !== null && dl !== null && dateDebut >= dl) {
-      return { dateOrderInvalid: 'La Date Début doit être antérieure à la date Dl.' };
-    }
-    if (dl !== null && dlc !== null && dl >= dlc) {
-      return { dateOrderInvalid: 'La date Dl doit être antérieure à la date Dlc.' };
-    }
-    if (dateDebut !== null && dlc !== null && dateDebut >= dlc) {
-      return { dateOrderInvalid: 'La Date Début doit être antérieure à la date Dlc.' };
-    }
-    return null;
-  }
-
-  get dateOrderError(): string | null {
-    return this.editForm.errors?.['dateOrderInvalid'] ?? null;
   }
 
   // ── Chargement de la liste des Phase Ots (pour le champ "parent") ───────
@@ -123,6 +100,58 @@ export class PhaseOtUpdateComponent implements OnInit {
     if (!checked) {
       this.editForm.get('phaseParentId')?.setValue(null);
     }
+  }
+
+  // ── Chargement des relations (sous phases / phase parente) ──────────────
+  loadRelatedPhases(): void {
+    this.childrenPhaseOts = [];
+    this.parentPhaseOt = null;
+    this.isParentPhase = false;
+
+    const id = this.phaseOt?.id;
+    if (id === null || id === undefined) {
+      return;
+    }
+
+    this.isLoadingRelations = true;
+    this.phaseOtService
+      .isParent(id)
+      .pipe(finalize(() => (this.isLoadingRelations = false)))
+      .subscribe({
+        next: isParent => {
+          this.isParentPhase = isParent;
+          if (isParent) {
+            this.loadChildren(id);
+          } else if (this.phaseOt?.phaseParentId !== null && this.phaseOt?.phaseParentId !== undefined) {
+            this.loadParent(this.phaseOt.phaseParentId);
+          }
+        },
+        error: () => {
+          this.isParentPhase = false;
+        },
+      });
+  }
+
+  private loadChildren(phaseOtId: number): void {
+    this.phaseOtService.findChildren(phaseOtId).subscribe({
+      next: res => {
+        this.childrenPhaseOts = res.body ?? [];
+      },
+      error: () => {
+        this.childrenPhaseOts = [];
+      },
+    });
+  }
+
+  private loadParent(parentId: number): void {
+    this.phaseOtService.find(parentId).subscribe({
+      next: res => {
+        this.parentPhaseOt = res.body ?? null;
+      },
+      error: () => {
+        this.parentPhaseOt = null;
+      },
+    });
   }
 
   // === Accordéon ===
@@ -176,6 +205,7 @@ export class PhaseOtUpdateComponent implements OnInit {
         next: (res: HttpResponse<IPhaseOt>) => {
           if (res.body) {
             this.updateForm(res.body);
+            this.loadRelatedPhases();
           }
           this.showSuccessMessage(`Statut mis à jour : ${next}.`);
         },
@@ -232,6 +262,7 @@ export class PhaseOtUpdateComponent implements OnInit {
 
     this.updateForm(phaseOt);
     this.loadAvailablePhaseOts();
+    this.loadRelatedPhases();
 
     if (isCreation && phaseOt.id !== null) {
       const editUrl = this.router.createUrlTree(['/ot-externe/phase-ot', phaseOt.id, 'edit']).toString();

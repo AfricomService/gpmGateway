@@ -29,7 +29,7 @@
             <!--            <span class="pu-badge-statut" [ngClass]="statutBadgeClass(phaseOt?.statut)" *ngIf="phaseOt?.statut">-->
             <!--              {{ phaseOt?.statut }}-->
             <!--            </span>-->
-            <span class="pu-page-title">{{ phaseOt?.nom }}</span>
+            <span style="font-weight: 700; text-transform: uppercase; font-style: italic" class="pu-page-title">{{ phaseOt?.nom }}</span>
           </ng-container>
         </div>
 
@@ -60,16 +60,11 @@
 
           <div class="pu-accordion-body" *ngIf="isSectionOpen('general')">
             <div class="row">
-              <div class="col-md-6 mb-3">
+              <div class="col-md-12 mb-3">
                 <label class="form-label fw-bold" for="field_nom">
                   <span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.nom">Nom</span>
                 </label>
                 <input type="text" class="form-control" name="nom" id="field_nom" data-cy="nom" formControlName="nom" />
-              </div>
-
-              <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.financeServicePhaseOt.duree" for="field_duree">Duree</label>
-                <input type="number" class="form-control" name="duree" id="field_duree" data-cy="duree" formControlName="duree" />
               </div>
 
               <div class="col-md-12 mb-3">
@@ -87,17 +82,7 @@
                 ></textarea>
               </div>
 
-              <div class="col-md-6 mb-3">
-                <div class="pu-toggle-row">
-                  <label class="pu-toggle-switch">
-                    <input type="checkbox" id="field_bloquante" data-cy="bloquante" formControlName="bloquante" />
-                    <span class="pu-toggle-slider"></span>
-                  </label>
-                  <span class="pu-toggle-label" jhiTranslate="gpmGatewayApp.financeServicePhaseOt.bloquante">Bloquante</span>
-                </div>
-              </div>
-
-              <div class="col-md-6 mb-3">
+              <div class="col-md-12 mb-3" *ngIf="hasParent || phaseOt == null">
                 <label class="form-label fw-bold" for="field_hasParent"> Phase Parente </label>
 
                 <div class="pu-parent-row">
@@ -123,7 +108,7 @@
                       data-cy="phaseParentId"
                       formControlName="phaseParentId"
                     >
-                      <option [ngValue]="null" disabled>Sélectionner un phase parent...</option>
+                      <option [ngValue]="null" disabled>Sélectionner une phase parent...</option>
                       <option *ngFor="let p of availablePhaseOts" [ngValue]="p.id">
                         {{ p.nom }}
                       </option>
@@ -138,63 +123,54 @@
           </div>
         </div>
 
-        <!-- Planification -->
-        <div class="pu-accordion-item" [class.open]="isSectionOpen('planification')">
-          <button type="button" class="pu-accordion-header" (click)="toggleSection('planification')">
+        <!-- Sous phases / Phase parente -->
+        <div class="pu-accordion-item" [class.open]="isSectionOpen('relations')" *ngIf="phaseOt?.id">
+          <button type="button" class="pu-accordion-header" (click)="toggleSection('relations')">
             <span class="pu-accordion-header-left">
-              <fa-icon icon="calendar-alt" class="pu-accordion-icon"></fa-icon>
-              <span>Planification</span>
+              <fa-icon [icon]="isParentPhase ? 'sitemap' : 'level-up-alt'" class="pu-accordion-icon"></fa-icon>
+              <span>{{ isParentPhase ? 'Les sous phases' : 'La Phase Parente' }}</span>
             </span>
             <fa-icon icon="chevron-down" class="pu-accordion-chevron"></fa-icon>
           </button>
 
-          <div class="pu-accordion-body" *ngIf="isSectionOpen('planification')">
-            <div class="row">
-              <div class="col-md-4 mb-3">
-                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.financeServicePhaseOt.dateDebut" for="field_dateDebut"
-                  >Date Debut</label
-                >
-                <input
-                  id="field_dateDebut"
-                  data-cy="dateDebut"
-                  type="datetime-local"
-                  class="form-control"
-                  name="dateDebut"
-                  formControlName="dateDebut"
-                  placeholder="YYYY-MM-DD HH:mm"
-                />
-              </div>
-
-              <div class="col-md-4 mb-3">
-                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.financeServicePhaseOt.dl" for="field_dl">Dl</label>
-                <input
-                  id="field_dl"
-                  data-cy="dl"
-                  type="datetime-local"
-                  class="form-control"
-                  name="dl"
-                  formControlName="dl"
-                  placeholder="YYYY-MM-DD HH:mm"
-                />
-              </div>
-
-              <div class="col-md-4 mb-3">
-                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.financeServicePhaseOt.dlc" for="field_dlc">Dlc</label>
-                <input
-                  id="field_dlc"
-                  data-cy="dlc"
-                  type="datetime-local"
-                  class="form-control"
-                  name="dlc"
-                  formControlName="dlc"
-                  placeholder="YYYY-MM-DD HH:mm"
-                />
-              </div>
-
-              <div class="col-12" *ngIf="dateOrderError">
-                <div class="pu-date-error"><fa-icon icon="exclamation-triangle"></fa-icon>&nbsp;{{ dateOrderError }}</div>
-              </div>
+          <div class="pu-accordion-body" *ngIf="isSectionOpen('relations')">
+            <div class="pu-relation-loading" *ngIf="isLoadingRelations">
+              <span class="spinner-border spinner-border-sm me-2"></span>Chargement...
             </div>
+
+            <ng-container *ngIf="!isLoadingRelations">
+              <!-- Sous phases -->
+              <ng-container *ngIf="isParentPhase">
+                <div class="pu-relation-list" *ngIf="childrenPhaseOts.length > 0; else noChildren">
+                  <a
+                    class="pu-relation-item"
+                    *ngFor="let child of childrenPhaseOts"
+                    [routerLink]="['/ot-externe/phase-ot', child.id, 'edit']"
+                  >
+                    <fa-icon icon="sitemap" class="pu-relation-item-icon"></fa-icon>
+                    <span class="pu-relation-item-name">{{ child.nom }}</span>
+                    <fa-icon icon="arrow-right" class="pu-relation-item-arrow"></fa-icon>
+                  </a>
+                </div>
+                <ng-template #noChildren>
+                  <div class="pu-relation-empty">Aucune sous phase pour le moment.</div>
+                </ng-template>
+              </ng-container>
+
+              <!-- Phase parente -->
+              <ng-container *ngIf="!isParentPhase">
+                <div class="pu-relation-list" *ngIf="parentPhaseOt; else noParent">
+                  <a class="pu-relation-item" [routerLink]="['/ot-externe/phase-ot', parentPhaseOt.id, 'edit']">
+                    <fa-icon icon="level-up-alt" class="pu-relation-item-icon"></fa-icon>
+                    <span class="pu-relation-item-name">{{ parentPhaseOt.nom }}</span>
+                    <fa-icon icon="arrow-right" class="pu-relation-item-arrow"></fa-icon>
+                  </a>
+                </div>
+                <ng-template #noParent>
+                  <div class="pu-relation-empty">Cette Phase Ot n'a pas de phase parente.</div>
+                </ng-template>
+              </ng-container>
+            </ng-container>
           </div>
         </div>
       </div>
