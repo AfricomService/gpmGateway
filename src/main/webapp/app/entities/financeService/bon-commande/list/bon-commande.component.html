@@ -10,6 +10,29 @@
       </div>
 
       <div class="bc-header-actions">
+        <div class="bc-search">
+          <fa-icon icon="search" class="bc-search-icon"></fa-icon>
+          <input
+            type="text"
+            class="bc-search-input"
+            placeholder="Rechercher (réf. client, lieu, n° BC)..."
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="onSearchChange()"
+          />
+          <button type="button" class="bc-search-clear" *ngIf="searchTerm" (click)="clearSearch()" title="Effacer">
+            <fa-icon icon="times"></fa-icon>
+          </button>
+        </div>
+
+        <div class="bc-view-toggle">
+          <button type="button" [class.active]="viewMode === 'list'" (click)="setViewMode('list')" title="Vue tableau">
+            <fa-icon icon="list"></fa-icon>
+          </button>
+          <button type="button" [class.active]="viewMode === 'grid'" (click)="setViewMode('grid')" title="Vue grille">
+            <fa-icon icon="th-large"></fa-icon>
+          </button>
+        </div>
+
         <button type="button" class="btn-bc-refresh" (click)="load()" [disabled]="isLoading" title="Actualiser">
           <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
         </button>
@@ -35,8 +58,10 @@
       <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.home.notFound">Aucun Bon Commande trouvé</span>
     </div>
 
-    <!-- Table card -->
-    <div class="bc-card" id="entities" *ngIf="bonCommandes && bonCommandes.length > 0">
+    <!-- ==================================================== -->
+    <!-- VUE TABLEAU (liste) -->
+    <!-- ==================================================== -->
+    <div class="bc-card" id="entities" *ngIf="bonCommandes && bonCommandes.length > 0 && viewMode === 'list'">
       <div class="table-responsive">
         <table class="bc-table" aria-describedby="page-heading">
           <thead>
@@ -127,6 +152,52 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- VUE GRILLE (cartes) -->
+    <!-- ==================================================== -->
+    <div class="bc-grid" id="entities-grid" *ngIf="bonCommandes && bonCommandes.length > 0 && viewMode === 'grid'">
+      <div class="bc-card-item" *ngFor="let bonCommande of bonCommandes; trackBy: trackId" (click)="onRowDoubleClick(bonCommande)">
+        <div class="bc-card-item-header">
+          <span class="bc-card-ref">{{ bonCommande.identifiantUnique || '#' + bonCommande.id }}</span>
+          <button
+            type="button"
+            (click)="delete(bonCommande); $event.stopPropagation()"
+            class="btn-bc-icon btn-bc-delete"
+            data-cy="entityDeleteButton"
+            title="Supprimer"
+          >
+            <fa-icon icon="trash-alt"></fa-icon>
+          </button>
+        </div>
+
+        <h3 class="bc-card-title">
+          {{ bonCommande.clientId ? clientNames.get(bonCommande.clientId) || 'Client #' + bonCommande.clientId : '—' }}
+        </h3>
+
+        <div class="bc-card-meta">
+          <span>{{ bonCommande.affaireId ? affaireNames.get(bonCommande.affaireId) || 'Affaire #' + bonCommande.affaireId : '—' }}</span>
+          <span class="bc-card-meta-sep" *ngIf="bonCommande.lieu">·</span>
+          <span *ngIf="bonCommande.lieu">{{ bonCommande.lieu }}</span>
+        </div>
+
+        <div class="bc-card-item-footer">
+          <span class="bc-card-date">{{ (bonCommande.dateBonCommande | formatMediumDatetime) || '—' }}</span>
+          <span class="bc-card-ref-client" *ngIf="bonCommande.referenceClient">Réf. {{ bonCommande.referenceClient }}</span>
+        </div>
+
+        <div class="bc-card-amounts">
+          <div class="bc-card-amount-block">
+            <span class="bc-card-amount-label">Total</span>
+            <span class="bc-amount">{{ bonCommande.montantTotal || '—' }}</span>
+          </div>
+          <div class="bc-card-amount-block">
+            <span class="bc-card-amount-label">Consommé</span>
+            <span class="bc-amount bc-amount-muted">{{ bonCommande.montantConsomme || '—' }}</span>
+          </div>
+        </div>
       </div>
     </div>
 
