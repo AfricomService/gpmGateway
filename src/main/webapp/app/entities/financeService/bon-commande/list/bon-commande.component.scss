@@ -60,6 +60,30 @@
   flex-wrap: wrap;
 }
 
+/* ============ BARRE DE RECHERCHE (compteur + recherche + toggle vue) ============ */
+.bc-searchbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--cp-border);
+  border-radius: 12px;
+  background: var(--cp-surface);
+}
+
+.bc-searchbar .bc-search {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  padding: 0;
+}
+
+.bc-searchbar .bc-count {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 /* ============ RECHERCHE ============ */
 .bc-search {
   position: relative;
@@ -569,6 +593,10 @@
   .bc-search {
     min-width: 0;
     width: 100%;
+  }
+
+  .bc-searchbar {
+    flex-wrap: wrap;
   }
 
   .btn-bc-create {

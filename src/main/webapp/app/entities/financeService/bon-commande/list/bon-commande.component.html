@@ -6,33 +6,9 @@
         <h2 id="page-heading" data-cy="BonCommandeHeading" class="bc-title">
           <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.home.title">Bons de Commande</span>
         </h2>
-        <span class="bc-count" *ngIf="bonCommandes">{{ totalItems }} élément(s)</span>
       </div>
 
       <div class="bc-header-actions">
-        <div class="bc-search">
-          <fa-icon icon="search" class="bc-search-icon"></fa-icon>
-          <input
-            type="text"
-            class="bc-search-input"
-            placeholder="Rechercher (réf. client, lieu, n° BC)..."
-            [(ngModel)]="searchTerm"
-            (ngModelChange)="onSearchChange()"
-          />
-          <button type="button" class="bc-search-clear" *ngIf="searchTerm" (click)="clearSearch()" title="Effacer">
-            <fa-icon icon="times"></fa-icon>
-          </button>
-        </div>
-
-        <div class="bc-view-toggle">
-          <button type="button" [class.active]="viewMode === 'list'" (click)="setViewMode('list')" title="Vue tableau">
-            <fa-icon icon="list"></fa-icon>
-          </button>
-          <button type="button" [class.active]="viewMode === 'grid'" (click)="setViewMode('grid')" title="Vue grille">
-            <fa-icon icon="th-large"></fa-icon>
-          </button>
-        </div>
-
         <button type="button" class="btn-bc-refresh" (click)="load()" [disabled]="isLoading" title="Actualiser">
           <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
         </button>
@@ -44,7 +20,35 @@
           [routerLink]="['/bon-commande/new']"
         >
           <fa-icon icon="plus"></fa-icon>
-          <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.home.createLabel"> Créer un nouveau Bon Commande </span>
+          <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.home.createLabel"> Nouveau bon de commande </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Barre de recherche : input + compteur + toggle de vue -->
+    <div class="bc-searchbar">
+      <div class="bc-search">
+        <fa-icon icon="search" class="bc-search-icon"></fa-icon>
+        <input
+          type="text"
+          class="bc-search-input"
+          placeholder="Rechercher (réf. client, lieu, n° BC)..."
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearchChange()"
+        />
+        <button type="button" class="bc-search-clear" *ngIf="searchTerm" (click)="clearSearch()" title="Effacer">
+          <fa-icon icon="times"></fa-icon>
+        </button>
+      </div>
+
+      <span class="bc-count" *ngIf="bonCommandes">{{ totalItems }} résultat(s)</span>
+
+      <div class="bc-view-toggle">
+        <button type="button" [class.active]="viewMode === 'grid'" (click)="setViewMode('grid')" title="Vue grille">
+          <fa-icon icon="th-large"></fa-icon>
+        </button>
+        <button type="button" [class.active]="viewMode === 'list'" (click)="setViewMode('list')" title="Vue tableau">
+          <fa-icon icon="list"></fa-icon>
         </button>
       </div>
     </div>
