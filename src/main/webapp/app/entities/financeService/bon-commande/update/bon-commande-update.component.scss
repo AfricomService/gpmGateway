@@ -605,3 +605,95 @@
     border-bottom: 1px dashed var(--cp-border);
   }
 }
+// ============================================================
+// MODAL RENOMMER PJ
+// ============================================================
+.rename-pj-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1065;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.rename-pj-dialog {
+  background: #fff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.rename-pj-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--cp-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--cp-surface-hover);
+  border-radius: 12px 12px 0 0;
+
+  h5 {
+    margin: 0;
+    font-weight: 700;
+    color: var(--cp-text);
+    font-size: 15px;
+    text-transform: uppercase;
+  }
+}
+
+.rename-pj-close-btn {
+  background: none;
+  border: 1px solid var(--cp-border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--cp-text-muted);
+
+  &:hover:not(:disabled) {
+    background: #f1f5f9;
+  }
+}
+
+.rename-pj-body {
+  padding: 20px;
+}
+
+.rename-pj-current-name {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--cp-text-muted);
+}
+
+.rename-pj-input-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  .form-control {
+    flex: 1;
+  }
+}
+
+.rename-pj-extension {
+  color: var(--cp-text-muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.rename-pj-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--cp-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  background: var(--cp-surface-hover);
+  border-radius: 0 0 12px 12px;
+}

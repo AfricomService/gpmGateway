@@ -2,6 +2,7 @@ import { Component, Input, OnChanges, SimpleChanges, ViewChild, ElementRef } fro
 import { DomSanitizer, SafeUrl, SafeResourceUrl } from '@angular/platform-browser';
 import * as docx from 'docx-preview';
 import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 import { PieceJointeService } from '../service/piece-jointe.service';
 
 type FileType = 'image' | 'pdf' | 'docx' | 'excel' | 'unsupported';
@@ -19,6 +20,7 @@ export class FilePreviewComponent implements OnChanges {
 
   isLoading = false;
   errorMsg: string | null = null;
+  currentBlob: Blob | null = null;
 
   fileType: FileType = 'unsupported';
 
@@ -41,6 +43,7 @@ export class FilePreviewComponent implements OnChanges {
 
     this.pieceJointeService.getFile(this.pjId).subscribe({
       next: (blob: Blob) => {
+        this.currentBlob = blob;
         this.determineFileTypeByName(this.fileName);
         this.renderFile(blob);
         this.isLoading = false;
@@ -97,7 +100,11 @@ export class FilePreviewComponent implements OnChanges {
       }
 
       case 'pdf': {
-        const pdfUrl = URL.createObjectURL(blob);
+        // Forcer le type MIME 'application/pdf' au cas où le backend
+        // ne le renvoie pas correctement dans le header Content-Type —
+        // sinon le navigateur affiche le contenu brut comme texte.
+        const pdfBlob = blob.type === 'application/pdf' ? blob : new Blob([blob], { type: 'application/pdf' });
+        const pdfUrl = URL.createObjectURL(pdfBlob);
         this.pdfSrc = this.sanitizer.bypassSecurityTrustResourceUrl(pdfUrl);
         break;
       }
@@ -106,7 +113,10 @@ export class FilePreviewComponent implements OnChanges {
         setTimeout(() => {
           if (this.docxContainer && this.docxContainer.nativeElement) {
             docx
-              .renderAsync(blob, this.docxContainer.nativeElement)
+              .renderAsync(blob, this.docxContainer.nativeElement, undefined, {
+                ignoreWidth: true,
+                ignoreHeight: true,
+              })
               .catch(() => (this.errorMsg = 'Impossible de rendre le document Word.'));
           }
         }, 0);
@@ -128,6 +138,12 @@ export class FilePreviewComponent implements OnChanges {
       this.excelHtml = XLSX.utils.sheet_to_html(sheet, { id: 'excel-table' });
     };
     reader.readAsBinaryString(blob);
+  }
+
+  downloadFile(): void {
+    if (this.currentBlob) {
+      saveAs(this.currentBlob, this.fileName);
+    }
   }
 
   private resetView(): void {

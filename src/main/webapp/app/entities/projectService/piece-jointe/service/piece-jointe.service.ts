@@ -90,6 +90,12 @@ export class PieceJointeService {
     return this.http.get(`${this.resourceUrl}/getFile`, { params: { id }, responseType: 'blob' });
   }
 
+  renamePieceJointe(id: number, nomFichier: string): Observable<EntityResponseType> {
+    return this.http
+      .patch<RestPieceJointe>(`${this.resourceUrl}/${id}/rename`, { nomFichier }, { observe: 'response' })
+      .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+
   getPieceJointeIdentifier(pieceJointe: Pick<IPieceJointe, 'id'>): number {
     return pieceJointe.id;
   }

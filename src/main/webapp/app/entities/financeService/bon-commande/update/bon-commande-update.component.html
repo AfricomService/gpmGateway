@@ -763,28 +763,51 @@
                   "
                   title="{{ pj.nomFichier }}.{{ pj.type }}"
                 >
-                  <i class="fa fa-paperclip"></i>
+                  <fa-icon icon="paperclip"></fa-icon>
                   <strong style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ pj.nomFichier }}.{{ pj.type }}</strong>
                 </div>
 
-                <a
-                  [href]="getPieceJointeFileUrl(pj.id)"
-                  target="_blank"
-                  title="Télécharger"
+                <button
+                  type="button"
+                  (click)="openRenamePjModal(pj)"
+                  title="Renommer"
                   style="
                     width: 28px;
                     height: 28px;
                     border-radius: 50%;
+                    border: none;
+                    background: transparent;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     flex-shrink: 0;
                     color: #495057;
-                    text-decoration: none;
+                    cursor: pointer;
                   "
                 >
-                  <i class="fa fa-download"></i>
-                </a>
+                  <fa-icon icon="pencil-alt"></fa-icon>
+                </button>
+
+                <button
+                  type="button"
+                  (click)="downloadPieceJointe(pj)"
+                  title="Télécharger"
+                  style="
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 50%;
+                    border: none;
+                    background: transparent;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                    color: #495057;
+                    cursor: pointer;
+                  "
+                >
+                  <fa-icon icon="download"></fa-icon>
+                </button>
 
                 <button
                   type="button"
@@ -832,9 +855,14 @@
                   {{ selectedPjForPreview.nomFichier }}.{{ selectedPjForPreview.type }}
                 </strong>
                 <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0">
-                  <a [href]="getPieceJointeFileUrl(selectedPjForPreview.id)" target="_blank" title="Télécharger" style="color: #495057">
-                    <i class="fa fa-download"></i>
-                  </a>
+                  <button
+                    type="button"
+                    (click)="downloadPieceJointe(selectedPjForPreview)"
+                    title="Télécharger"
+                    style="border: none; background: none; cursor: pointer; color: #495057; padding: 0"
+                  >
+                    <fa-icon icon="download"></fa-icon>
+                  </button>
                   <button
                     type="button"
                     (click)="closePjPreview()"
@@ -1554,6 +1582,51 @@
           </button>
         </div>
       </ng-template>
+
+      <!-- ====================================================== -->
+      <!-- MODAL RENOMMER PIÈCE JOINTE -->
+      <!-- ====================================================== -->
+      <div *ngIf="showRenamePjModal" class="rename-pj-overlay" (click)="closeRenamePjModal()">
+        <div class="rename-pj-dialog" (click)="$event.stopPropagation()">
+          <div class="rename-pj-header">
+            <h5>✎ Renommer la pièce jointe</h5>
+            <button type="button" [disabled]="isRenamingPj" (click)="closeRenamePjModal()" class="rename-pj-close-btn">✕</button>
+          </div>
+
+          <div class="rename-pj-body">
+            <p class="rename-pj-current-name">
+              Nom actuel : <strong>{{ pjToRename?.nomFichier }}.{{ pjToRename?.type }}</strong>
+            </p>
+
+            <label class="form-label fw-semibold" style="margin-top: 10px">Nouveau nom</label>
+            <div class="rename-pj-input-row">
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="renamePjNewName"
+                name="renamePjNewName"
+                [ngModelOptions]="{ standalone: true }"
+                [class.is-invalid]="renamePjError"
+                (keyup.enter)="confirmRenamePj()"
+                [disabled]="isRenamingPj"
+                autofocus
+              />
+              <span class="rename-pj-extension">.{{ pjToRename?.type }}</span>
+            </div>
+            <div *ngIf="renamePjError" class="invalid-feedback" style="display: block">
+              {{ renamePjError }}
+            </div>
+          </div>
+
+          <div class="rename-pj-footer">
+            <button type="button" class="btn btn-light" [disabled]="isRenamingPj" (click)="closeRenamePjModal()">Annuler</button>
+            <button type="button" class="btn btn-primary" [disabled]="isRenamingPj" (click)="confirmRenamePj()">
+              <span *ngIf="isRenamingPj" class="spinner-border spinner-border-sm me-2" role="status"></span>
+              Enregistrer
+            </button>
+          </div>
+        </div>
+      </div>
 
       <!-- ====================================================== -->
       <!-- FOOTER -->

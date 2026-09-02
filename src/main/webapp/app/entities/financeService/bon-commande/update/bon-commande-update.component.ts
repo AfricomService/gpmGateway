@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild, TemplateRef } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, TemplateRef } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, Subject, forkJoin } from 'rxjs';
@@ -31,6 +31,7 @@ import { PieceJointeService } from 'app/entities/projectService/piece-jointe/ser
 import { PjCareService, PjCareDriverInfo, ScanDriver, ScannedPage } from 'app/entities/projectService/piece-jointe/service/pjcare.service';
 import { ScanSettingsService } from 'app/entities/projectService/piece-jointe/service/scan-settings.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { saveAs } from 'file-saver';
 
 type AccordionPanel = 'global' | 'client' | 'detailsCommande' | 'otAssocies' | 'articlesMissions' | 'piecesJointes';
 
@@ -132,9 +133,18 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   };
 
   // ================================
-  // Aperçu inline pièce jointe (image / PDF)
+  // Aperçu inline pièce jointe
   // ================================
   selectedPjForPreview: IPieceJointe | null = null;
+
+  // ================================
+  // Renommer pièce jointe
+  // ================================
+  showRenamePjModal = false;
+  pjToRename: IPieceJointe | null = null;
+  renamePjNewName = '';
+  renamePjError = '';
+  isRenamingPj = false;
 
   constructor(
     protected bonCommandeService: BonCommandeService,
@@ -150,7 +160,8 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     protected pieceJointeService: PieceJointeService,
     protected pjCareService: PjCareService,
     protected scanSettingsService: ScanSettingsService,
-    protected sanitizer: DomSanitizer
+    protected sanitizer: DomSanitizer,
+    protected cdr: ChangeDetectorRef
   ) {}
   ngOnInit(): void {
     this.loadResponsables();
@@ -357,10 +368,16 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
             referenceClient: this.selectedClientInfo?.identifiantUnique ?? null,
           });
         }
+
+        // Force la mise à jour de la vue même si l'accordéon "Information Client"
+        // est fermé au moment où la réponse arrive (sinon le champ "Client" reste
+        // vide tant qu'un autre événement ne déclenche pas de détection de changement).
+        this.cdr.detectChanges();
       },
       error: () => {
         this.selectedClientInfo = null;
         this.loadingClientInfo = false;
+        this.cdr.detectChanges();
       },
     });
 
@@ -404,10 +421,12 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       next: res => {
         this.selectedClientCommandeInfo = res.body ?? null;
         this.loadingClientCommandeInfo = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.selectedClientCommandeInfo = null;
         this.loadingClientCommandeInfo = false;
+        this.cdr.detectChanges();
       },
     });
   }
@@ -634,7 +653,6 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     const bonCommandeId = bonCommande?.id;
 
     if (bonCommandeId === null || bonCommandeId === undefined) {
-      this.previousState();
       return;
     }
 
@@ -651,8 +669,29 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       this.bonCommandeAutreResponsableService.replaceForBonCommande(bonCommandeId, contactSocieteIds),
       this.bonCommandeArticlesService.replaceForBonCommande(bonCommandeId, articlesToSave),
     ]).subscribe({
-      next: () => this.previousState(),
-      error: () => this.previousState(),
+      // On reste sur l'interface d'édition : on recharge simplement les données
+      // à jour (pièces jointes, articles, autres responsables...) au lieu de
+      // rediriger vers la liste des bons de commande.
+      next: () => this.refreshAfterSave(bonCommandeId),
+      error: () => this.refreshAfterSave(bonCommandeId),
+    });
+  }
+
+  /**
+   * Recharge les données du bon de commande après un enregistrement réussi,
+   * sans quitter l'interface d'édition. Utile notamment lors de la création
+   * (premier enregistrement) : bonCommande.id devient alors disponible et
+   * les accordéons dépendants (pièces jointes, articles, etc.) peuvent
+   * être activés/rafraîchis normalement.
+   */
+  private refreshAfterSave(bonCommandeId: number): void {
+    this.bonCommandeService.find(bonCommandeId).subscribe({
+      next: res => {
+        if (res.body) {
+          this.updateForm(res.body);
+        }
+        this.cdr.detectChanges();
+      },
     });
   }
 
@@ -782,6 +821,69 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
   getPieceJointeFileUrl(id: number): string {
     return this.pieceJointeService.getFileUrl(id);
+  }
+
+  downloadPieceJointe(pj: IPieceJointe): void {
+    this.pieceJointeService.getFile(pj.id).subscribe({
+      next: (blob: Blob) => {
+        saveAs(blob, pj.nomFichier + '.' + pj.type);
+      },
+      error: err => {
+        console.error('Download failed', err);
+        alert('Échec du téléchargement du fichier');
+      },
+    });
+  }
+
+  openRenamePjModal(pj: IPieceJointe): void {
+    this.pjToRename = pj;
+    this.renamePjNewName = pj.nomFichier || '';
+    this.renamePjError = '';
+    this.showRenamePjModal = true;
+  }
+
+  closeRenamePjModal(): void {
+    if (this.isRenamingPj) {
+      return;
+    }
+    this.showRenamePjModal = false;
+    this.pjToRename = null;
+    this.renamePjNewName = '';
+    this.renamePjError = '';
+  }
+
+  confirmRenamePj(): void {
+    if (!this.pjToRename) {
+      return;
+    }
+
+    const trimmed = (this.renamePjNewName || '').trim();
+    if (!trimmed) {
+      this.renamePjError = 'Le nom ne peut pas être vide';
+      return;
+    }
+
+    this.isRenamingPj = true;
+    this.renamePjError = '';
+
+    this.pieceJointeService.renamePieceJointe(this.pjToRename.id, trimmed).subscribe({
+      next: () => {
+        this.isRenamingPj = false;
+        const idx = this.pieceJointes.findIndex(p => p.id === this.pjToRename!.id);
+        if (idx >= 0) {
+          this.pieceJointes[idx] = { ...this.pieceJointes[idx], nomFichier: trimmed };
+        }
+        if (this.selectedPjForPreview?.id === this.pjToRename!.id) {
+          this.selectedPjForPreview = { ...this.selectedPjForPreview, nomFichier: trimmed };
+        }
+        this.closeRenamePjModal();
+      },
+      error: err => {
+        this.isRenamingPj = false;
+        console.error('Erreur renommage PJ', err);
+        this.renamePjError = 'Erreur lors du renommage';
+      },
+    });
   }
 
   // ================================
