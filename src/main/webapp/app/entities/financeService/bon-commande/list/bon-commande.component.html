@@ -41,12 +41,6 @@
         <table class="bc-table" aria-describedby="page-heading">
           <thead>
             <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
-              <th scope="col" jhiSortBy="id">
-                <div class="d-flex align-items-center">
-                  <span jhiTranslate="global.field.id">ID</span>
-                  <fa-icon class="bc-sort-icon" icon="sort"></fa-icon>
-                </div>
-              </th>
               <th scope="col" jhiSortBy="clientId">
                 <div class="d-flex align-items-center">
                   <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.clientId">Client</span>
@@ -99,11 +93,12 @@
               class="bc-row-clickable"
               (dblclick)="onRowDoubleClick(bonCommande)"
             >
-              <td class="bc-cell-strong" data-label="ID">
-                <a [routerLink]="['/bon-commande', bonCommande.id, 'view']" (click)="$event.stopPropagation()">{{ bonCommande.id }}</a>
+              <td data-label="Client">
+                {{ bonCommande.clientId ? clientNames.get(bonCommande.clientId) || bonCommande.clientId : '—' }}
               </td>
-              <td data-label="Client">{{ bonCommande.clientId || '—' }}</td>
-              <td data-label="Affaire">{{ bonCommande.affaireId || '—' }}</td>
+              <td data-label="Affaire">
+                {{ bonCommande.affaireId ? affaireNames.get(bonCommande.affaireId) || bonCommande.affaireId : '—' }}
+              </td>
               <td data-label="Lieu">
                 <span class="bc-badge-lieu" *ngIf="bonCommande.lieu">{{ bonCommande.lieu }}</span>
                 <span class="bc-empty-value" *ngIf="!bonCommande.lieu">—</span>
@@ -118,28 +113,6 @@
               </td>
               <td class="text-end" data-label="Actions">
                 <div class="bc-actions">
-                  <button
-                    type="button"
-                    [routerLink]="['/bon-commande', bonCommande.id, 'view']"
-                    (click)="$event.stopPropagation()"
-                    class="btn-bc-icon btn-bc-view"
-                    data-cy="entityDetailsButton"
-                    title="Voir"
-                  >
-                    <fa-icon icon="eye"></fa-icon>
-                  </button>
-
-                  <button
-                    type="button"
-                    [routerLink]="['/bon-commande', bonCommande.id, 'edit']"
-                    (click)="$event.stopPropagation()"
-                    class="btn-bc-icon btn-bc-edit"
-                    data-cy="entityEditButton"
-                    title="Éditer"
-                  >
-                    <fa-icon icon="pencil-alt"></fa-icon>
-                  </button>
-
                   <button
                     type="button"
                     (click)="delete(bonCommande); $event.stopPropagation()"

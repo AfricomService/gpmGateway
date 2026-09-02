@@ -696,7 +696,7 @@
           <button type="button" class="cu-accordion-header" (click)="togglePanel('piecesJointes')">
             <span class="cu-accordion-header-left">
               <fa-icon icon="paperclip" class="cu-accordion-icon"></fa-icon>
-              <span>Pièces Jointes &amp; Décisions</span>
+              <span>Pièces Jointes</span>
               <span class="cu-accordion-count" *ngIf="pieceJointes.length">{{ pieceJointes.length }}</span>
             </span>
             <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
@@ -704,30 +704,88 @@
 
           <div class="cu-accordion-body" *ngIf="isPanelOpen('piecesJointes')">
             <div class="cu-detail-toolbar">
-              <button
-                type="button"
-                class="btn-cu-add"
-                (click)="fileInput.click()"
-                [disabled]="uploadingPieceJointe || !bonCommande?.id"
-                [title]="!bonCommande?.id ? 'Enregistrez le bon de commande avant d\'ajouter une pièce jointe' : ''"
-              >
+              <button type="button" class="btn-cu-add" (click)="fileInput.click()" [disabled]="uploadingPieceJointe">
                 <fa-icon icon="plus"></fa-icon>&nbsp;Ajouter
               </button>
-              <button
-                type="button"
-                class="btn-cu-add"
-                (click)="openScanModal(ScanModal)"
-                [disabled]="!bonCommande?.id"
-                [title]="!bonCommande?.id ? 'Enregistrez le bon de commande avant de scanner' : ''"
-              >
-                📠&nbsp;Scanner
-              </button>
+              <button type="button" class="btn-cu-add" (click)="openScanModal(ScanModal)">📠&nbsp;Scanner</button>
               <input type="file" #fileInput (change)="onFileSelected($event)" hidden />
+            </div>
+
+            <div *ngIf="!bonCommande?.id && pendingPieceJointes.length > 0" class="cu-empty-panel" style="text-align: left">
+              ℹ️ Ces pièces jointes seront envoyées automatiquement lors de l'enregistrement du bon de commande.
+            </div>
+
+            <div
+              *ngIf="pendingPieceJointes.length > 0"
+              style="
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+                gap: 12px;
+                align-items: stretch;
+                margin-bottom: 12px;
+              "
+            >
+              <div
+                *ngFor="let pending of pendingPieceJointes"
+                style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                  gap: 12px;
+                  padding: 8px 14px;
+                  border: 1px dashed #f5822a;
+                  border-radius: 40px;
+                  background: #fff7ed;
+                "
+                title="{{ pending.displayName }}.{{ pending.extension }}"
+              >
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    flex: 1;
+                  "
+                >
+                  <span>⏳</span>
+                  <strong style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap"
+                    >{{ pending.displayName }}.{{ pending.extension }}</strong
+                  >
+                </div>
+
+                <button
+                  type="button"
+                  (click)="removePendingPieceJointe(pending.tempId)"
+                  title="Retirer"
+                  style="
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 50%;
+                    border: none;
+                    background: #fde8e8;
+                    color: #dc3545;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                    cursor: pointer;
+                    font-size: 14px;
+                    font-weight: 700;
+                  "
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             <div *ngIf="loadingPieceJointes" class="cu-empty-panel">Chargement...</div>
 
-            <div *ngIf="!loadingPieceJointes && pieceJointes.length === 0" class="cu-empty-panel">Aucune pièce jointe pour le moment.</div>
+            <div *ngIf="!loadingPieceJointes && pieceJointes.length === 0 && pendingPieceJointes.length === 0" class="cu-empty-panel">
+              Aucune pièce jointe pour le moment.
+            </div>
 
             <div
               *ngIf="!loadingPieceJointes && pieceJointes.length > 0"

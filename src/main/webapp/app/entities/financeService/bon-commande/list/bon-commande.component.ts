@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpHeaders } from '@angular/common/http';
 import { ActivatedRoute, Data, ParamMap, Router } from '@angular/router';
-import { combineLatest, filter, Observable, switchMap, tap } from 'rxjs';
+import { combineLatest, filter, forkJoin, Observable, of, switchMap, tap } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { IBonCommande } from '../bon-commande.model';
@@ -10,6 +11,8 @@ import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/co
 import { ASC, DESC, SORT, ITEM_DELETED_EVENT, DEFAULT_SORT_DATA } from 'app/config/navigation.constants';
 import { EntityArrayResponseType, BonCommandeService } from '../service/bon-commande.service';
 import { BonCommandeDeleteDialogComponent } from '../delete/bon-commande-delete-dialog.component';
+import { AffaireService } from 'app/entities/projectService/affaire/service/affaire.service';
+import { ClientService } from 'app/entities/projectService/client/service/client.service';
 
 @Component({
   selector: 'jhi-bon-commande',
@@ -27,11 +30,17 @@ export class BonCommandeComponent implements OnInit {
   totalItems = 0;
   page = 1;
 
+  // Libellés résolus par id, pour affichage dans le tableau (raisonSociale / designationAffaire)
+  clientNames = new Map<number, string>();
+  affaireNames = new Map<number, string>();
+
   constructor(
     protected bonCommandeService: BonCommandeService,
     protected activatedRoute: ActivatedRoute,
     public router: Router,
-    protected modalService: NgbModal
+    protected modalService: NgbModal,
+    protected affaireService: AffaireService,
+    protected clientService: ClientService
   ) {}
 
   trackId = (_index: number, item: IBonCommande): number => this.bonCommandeService.getBonCommandeIdentifier(item);
@@ -95,6 +104,43 @@ export class BonCommandeComponent implements OnInit {
     this.fillComponentAttributesFromResponseHeader(response.headers);
     const dataFromBody = this.fillComponentAttributesFromResponseBody(response.body);
     this.bonCommandes = dataFromBody;
+    this.loadRelatedNames(dataFromBody);
+  }
+
+  /**
+   * Résout les libellés (raisonSociale du client, designationAffaire du projet)
+   * pour les clientId/affaireId présents sur la page courante, et les met en cache
+   * dans clientNames/affaireNames pour affichage dans le tableau.
+   */
+  private loadRelatedNames(bonCommandes: IBonCommande[]): void {
+    const clientIds = Array.from(
+      new Set(bonCommandes.map(bc => bc.clientId).filter((id): id is number => id !== null && id !== undefined))
+    );
+    const affaireIds = Array.from(
+      new Set(bonCommandes.map(bc => bc.affaireId).filter((id): id is number => id !== null && id !== undefined))
+    );
+
+    if (clientIds.length > 0) {
+      forkJoin(clientIds.map(id => this.clientService.find(id).pipe(catchError(() => of(null))))).subscribe(results => {
+        results.forEach(res => {
+          const client = res?.body;
+          if (client?.id !== undefined && client?.id !== null) {
+            this.clientNames.set(client.id, client.raisonSociale ?? '—');
+          }
+        });
+      });
+    }
+
+    if (affaireIds.length > 0) {
+      forkJoin(affaireIds.map(id => this.affaireService.find(id).pipe(catchError(() => of(null))))).subscribe(results => {
+        results.forEach(res => {
+          const affaire = res?.body;
+          if (affaire?.id !== undefined && affaire?.id !== null) {
+            this.affaireNames.set(affaire.id, affaire.designationAffaire ?? '—');
+          }
+        });
+      });
+    }
   }
 
   protected fillComponentAttributesFromResponseBody(data: IBonCommande[] | null): IBonCommande[] {

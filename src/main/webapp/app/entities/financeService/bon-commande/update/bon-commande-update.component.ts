@@ -35,6 +35,13 @@ import { saveAs } from 'file-saver';
 
 type AccordionPanel = 'global' | 'client' | 'detailsCommande' | 'otAssocies' | 'articlesMissions' | 'piecesJointes';
 
+interface PendingPieceJointe {
+  tempId: string;
+  file: File;
+  displayName: string;
+  extension: string;
+}
+
 const AFFAIRE_STATUT = 'ExecutionDesTravaux';
 const AFFAIRE_PAGE_SIZE = 15;
 const RESPONSABLE_ROLE_CODE = 'MANAGER';
@@ -104,6 +111,10 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   pieceJointes: IPieceJointe[] = [];
   loadingPieceJointes = false;
   uploadingPieceJointe = false;
+
+  // Pièces jointes sélectionnées avant l'enregistrement du bon de commande
+  // (mode création : pas encore de bonCommande.id, donc pas d'upload possible tout de suite)
+  pendingPieceJointes: PendingPieceJointe[] = [];
 
   pjcareAvailable = false;
   scanners: string[] = [];
@@ -669,11 +680,12 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       this.bonCommandeAutreResponsableService.replaceForBonCommande(bonCommandeId, contactSocieteIds),
       this.bonCommandeArticlesService.replaceForBonCommande(bonCommandeId, articlesToSave),
     ]).subscribe({
-      // On reste sur l'interface d'édition : on recharge simplement les données
-      // à jour (pièces jointes, articles, autres responsables...) au lieu de
-      // rediriger vers la liste des bons de commande.
-      next: () => this.refreshAfterSave(bonCommandeId),
-      error: () => this.refreshAfterSave(bonCommandeId),
+      // On reste sur l'interface d'édition : on envoie d'abord les éventuelles
+      // pièces jointes mises en attente (mode création), puis on recharge les
+      // données à jour (pièces jointes, articles, autres responsables...) au
+      // lieu de rediriger vers la liste des bons de commande.
+      next: () => this.uploadPendingPieceJointesThenRefresh(bonCommandeId),
+      error: () => this.uploadPendingPieceJointesThenRefresh(bonCommandeId),
     });
   }
 
@@ -934,8 +946,11 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
   private uploadFile(file: File): void {
     const bonCommandeId = this.bonCommande?.id;
+
+    // Bon de commande pas encore enregistré : on met le fichier de côté,
+    // il sera réellement envoyé juste après le premier enregistrement (cf. onSaveSuccess).
     if (bonCommandeId === null || bonCommandeId === undefined) {
-      alert("Veuillez d'abord enregistrer le bon de commande avant d'ajouter une pièce jointe.");
+      this.stagePendingPieceJointe(file);
       return;
     }
 
@@ -950,6 +965,47 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       error: () => {
         this.uploadingPieceJointe = false;
         alert('Échec du téléchargement du fichier');
+      },
+    });
+  }
+
+  // ================================
+  // Pièces Jointes en attente (mode création, avant le premier enregistrement)
+  // ================================
+  private stagePendingPieceJointe(file: File): void {
+    const lastDot = file.name.lastIndexOf('.');
+    const displayName = lastDot > 0 ? file.name.substring(0, lastDot) : file.name;
+    const extension = lastDot > 0 ? file.name.substring(lastDot + 1) : '';
+
+    this.pendingPieceJointes = [{ tempId: this.generateRandomId(10), file, displayName, extension }, ...this.pendingPieceJointes];
+  }
+
+  removePendingPieceJointe(tempId: string): void {
+    this.pendingPieceJointes = this.pendingPieceJointes.filter(p => p.tempId !== tempId);
+  }
+
+  /**
+   * Envoie les pièces jointes mises en attente juste après le premier enregistrement
+   * du bon de commande (qui vient de recevoir son id), puis rafraîchit l'interface.
+   */
+  private uploadPendingPieceJointesThenRefresh(bonCommandeId: number): void {
+    if (this.pendingPieceJointes.length === 0) {
+      this.refreshAfterSave(bonCommandeId);
+      return;
+    }
+
+    const uploads = this.pendingPieceJointes.map(p =>
+      this.pieceJointeService.uploadPieceJointe(p.file, bonCommandeId, this.generateRandomId(10))
+    );
+
+    forkJoin(uploads).subscribe({
+      next: () => {
+        this.pendingPieceJointes = [];
+        this.refreshAfterSave(bonCommandeId);
+      },
+      error: () => {
+        alert("Certaines pièces jointes n'ont pas pu être envoyées. Vous pouvez réessayer depuis l'accordéon Pièces Jointes.");
+        this.refreshAfterSave(bonCommandeId);
       },
     });
   }
@@ -1135,11 +1191,8 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const bonCommandeId = this.bonCommande?.id;
-    if (bonCommandeId === null || bonCommandeId === undefined) {
-      this.scanError = "Veuillez d'abord enregistrer le bon de commande avant d'attacher un scan.";
-      return;
-    }
+    // Remarque : si le bon de commande n'est pas encore enregistré, _attachRawResult()
+    // → uploadFile() met le scan en attente au lieu de l'envoyer immédiatement.
 
     if (this.currentDocumentPages.length === 1) {
       const p = this.currentDocumentPages[0];
