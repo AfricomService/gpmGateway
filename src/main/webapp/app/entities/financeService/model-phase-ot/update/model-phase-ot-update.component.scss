@@ -9,6 +9,10 @@
   --mpu-surface-hover: #f2f4f8;
   --mpu-danger: #e0524d;
   --mpu-danger-soft: rgba(224, 82, 77, 0.12);
+  --mpu-warning: #d97706;
+  --mpu-warning-soft: rgba(217, 119, 6, 0.12);
+  --mpu-info: #7c5cff;
+  --mpu-info-soft: rgba(124, 92, 255, 0.12);
 
   position: relative;
   display: flex;
@@ -56,7 +60,7 @@
 .mpu-container {
   position: relative;
   width: 100%;
-  max-width: 800px;
+  max-width: 900px;
 }
 
 /* ============ TOOLBAR ============ */
@@ -191,6 +195,16 @@
   flex-shrink: 0;
 }
 
+.mpu-accordion-count {
+  background: var(--mpu-accent-soft);
+  color: var(--mpu-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
 .mpu-accordion-chevron {
   color: var(--mpu-text-muted);
   transition: transform 0.25s ease;
@@ -211,7 +225,8 @@
     margin-bottom: 0.35rem;
   }
 
-  .form-control {
+  .form-control,
+  .form-select {
     border-radius: 10px;
     border: 1px solid var(--mpu-border);
     padding: 0.55rem 0.85rem;
@@ -227,6 +242,188 @@
       color: var(--mpu-text-muted);
     }
   }
+}
+
+/* ============ PHASES ASSOCIEES ============ */
+.mpu-phase-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--mpu-warning-soft);
+  color: var(--mpu-warning);
+  border-radius: 10px;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.mpu-phase-add-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.1rem;
+
+  select {
+    flex: 1;
+  }
+}
+
+.btn-mpu-phase-add {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--mpu-accent);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
+  transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--mpu-accent-hover);
+    box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.7);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: default;
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+.mpu-phase-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.mpu-phase-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--mpu-surface-hover);
+  border: 1px solid var(--mpu-border);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+}
+
+.mpu-phase-order-badge {
+  flex-shrink: 0;
+  min-width: 46px;
+  height: 34px;
+  padding: 0 0.5rem;
+  border-radius: 8px;
+  background: var(--mpu-accent-soft);
+  color: var(--mpu-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.mpu-phase-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.mpu-phase-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--mpu-text);
+}
+
+.mpu-phase-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.9rem;
+  font-size: 0.8rem;
+  color: var(--mpu-text-muted);
+  margin-top: 0.2rem;
+}
+
+.mpu-phase-blocking-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--mpu-danger);
+  background: var(--mpu-danger-soft);
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.72rem;
+}
+
+.mpu-phase-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.btn-mpu-phase-move {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 8px;
+  background: var(--mpu-info-soft);
+  color: var(--mpu-info);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.18s ease, color 0.18s ease, opacity 0.18s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--mpu-info);
+    color: #ffffff;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+}
+
+.btn-mpu-phase-remove {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 8px;
+  background: var(--mpu-danger-soft);
+  color: var(--mpu-danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.18s ease, color 0.18s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--mpu-danger);
+    color: #ffffff;
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: default;
+  }
+}
+
+.mpu-phase-empty {
+  text-align: center;
+  padding: 1.5rem 0;
+  color: var(--mpu-text-muted);
+  font-size: 0.88rem;
 }
 
 /* ============ FOOTER ============ */
@@ -268,5 +465,10 @@
 
   .mpu-toolbar-left {
     justify-content: space-between;
+  }
+
+  .mpu-phase-add-row {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
