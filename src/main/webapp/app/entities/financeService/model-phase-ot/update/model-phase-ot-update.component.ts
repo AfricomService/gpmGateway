@@ -8,13 +8,19 @@ import { ModelPhaseOTFormService, ModelPhaseOTFormGroup } from './model-phase-ot
 import { IModelPhaseOT } from '../model-phase-ot.model';
 import { ModelPhaseOTService } from '../service/model-phase-ot.service';
 
+type AccordionSection = 'general';
+
 @Component({
   selector: 'jhi-model-phase-ot-update',
   templateUrl: './model-phase-ot-update.component.html',
+  styleUrls: ['./model-phase-ot-update.component.scss'],
 })
 export class ModelPhaseOTUpdateComponent implements OnInit {
   isSaving = false;
   modelPhaseOT: IModelPhaseOT | null = null;
+
+  // === Gestion de l'accordéon ===
+  openSections: Set<AccordionSection> = new Set(['general']);
 
   editForm: ModelPhaseOTFormGroup = this.modelPhaseOTFormService.createModelPhaseOTFormGroup();
 
@@ -31,6 +37,19 @@ export class ModelPhaseOTUpdateComponent implements OnInit {
         this.updateForm(modelPhaseOT);
       }
     });
+  }
+
+  // === Accordéon ===
+  toggleSection(section: AccordionSection): void {
+    if (this.openSections.has(section)) {
+      this.openSections.delete(section);
+    } else {
+      this.openSections.add(section);
+    }
+  }
+
+  isSectionOpen(section: AccordionSection): boolean {
+    return this.openSections.has(section);
   }
 
   previousState(): void {

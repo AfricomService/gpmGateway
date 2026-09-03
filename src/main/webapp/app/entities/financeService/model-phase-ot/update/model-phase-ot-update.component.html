@@ -1,55 +1,97 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
+<div class="model-phase-ot-update-page">
+  <button
+    type="button"
+    id="back-to-model-phase-ot-list"
+    data-cy="entityBackButton"
+    title="Retour à la liste"
+    class="btn-mpu-back-floating"
+    [routerLink]="['/ot-externe/model-phase-ot']"
+  >
+    <fa-icon icon="arrow-left"></fa-icon>
+  </button>
+
+  <div class="mpu-container">
     <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-      <h2
-        id="jhi-model-phase-ot-heading"
-        data-cy="ModelPhaseOTCreateUpdateHeading"
-        jhiTranslate="gpmGatewayApp.financeServiceModelPhaseOt.home.createOrEditLabel"
-      >
-        Créer ou éditer un Model Phase OT
-      </h2>
+      <jhi-alert-error></jhi-alert-error>
 
-      <div>
-        <jhi-alert-error></jhi-alert-error>
-
-        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
-          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
-          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceModelPhaseOt.nom" for="field_nom">Nom</label>
-          <input type="text" class="form-control" name="nom" id="field_nom" data-cy="nom" formControlName="nom" />
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceModelPhaseOt.description" for="field_description"
-            >Description</label
+      <!-- Toolbar : Nom / Identifiant (gauche) + Enregistrer (droite) -->
+      <div class="mpu-toolbar">
+        <div class="mpu-toolbar-left">
+          <span
+            class="mpu-page-kicker"
+            *ngIf="editForm.get('id')?.value === null"
+            jhiTranslate="gpmGatewayApp.financeServiceModelPhaseOt.home.createOrEditLabel"
           >
-          <input
-            type="text"
-            class="form-control"
-            name="description"
-            id="field_description"
-            data-cy="description"
-            formControlName="description"
-          />
+            Créer ou éditer un Model Phase OT
+          </span>
+          <ng-container *ngIf="editForm.get('id')?.value !== null">
+            <!--            <span class="mpu-badge-id">ID: {{ editForm.get('id')?.value }}</span>-->
+            <span style="font-style: italic; font-weight: 700; text-transform: uppercase" class="mpu-page-title">{{
+              modelPhaseOT?.nom
+            }}</span>
+          </ng-container>
         </div>
-      </div>
-
-      <div>
-        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
-          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
-        </button>
 
         <button
           type="submit"
-          id="save-entity"
+          id="save-entity-top"
           data-cy="entityCreateSaveButton"
+          title="Enregistrer"
           [disabled]="editForm.invalid || isSaving"
-          class="btn btn-primary"
+          class="btn-mpu-save"
         >
-          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+          <fa-icon icon="save"></fa-icon>
+        </button>
+      </div>
+
+      <!-- Accordéon -->
+      <div class="mpu-accordion">
+        <div class="mpu-accordion-item" [class.open]="isSectionOpen('general')">
+          <button type="button" class="mpu-accordion-header" (click)="toggleSection('general')">
+            <span class="mpu-accordion-header-left">
+              <fa-icon icon="id-card" class="mpu-accordion-icon"></fa-icon>
+              <span>Informations Générales</span>
+            </span>
+            <fa-icon icon="chevron-down" class="mpu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="mpu-accordion-body" *ngIf="isSectionOpen('general')">
+            <!--            <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">-->
+            <!--              <label class="form-label fw-bold" jhiTranslate="global.field.id" for="field_id">ID</label>-->
+            <!--              <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />-->
+            <!--            </div>-->
+
+            <div class="row">
+              <div class="col-md-12 mb-3">
+                <label class="form-label fw-bold" for="field_nom">
+                  <span jhiTranslate="gpmGatewayApp.financeServiceModelPhaseOt.nom">Nom</span>
+                </label>
+                <input type="text" class="form-control" name="nom" id="field_nom" data-cy="nom" formControlName="nom" />
+              </div>
+
+              <div class="col-md-12 mb-3">
+                <label class="form-label fw-bold" for="field_description">
+                  <span jhiTranslate="gpmGatewayApp.financeServiceModelPhaseOt.description">Description</span>
+                </label>
+
+                <textarea
+                  class="form-control"
+                  name="description"
+                  id="field_description"
+                  data-cy="description"
+                  formControlName="description"
+                  rows="5"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mpu-toolbar mpu-toolbar-bottom">
+        <span></span>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-mpu-cancel" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
         </button>
       </div>
     </form>

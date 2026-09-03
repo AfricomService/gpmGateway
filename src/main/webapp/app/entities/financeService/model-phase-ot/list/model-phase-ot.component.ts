@@ -14,17 +14,29 @@ import { ModelPhaseOTDeleteDialogComponent } from '../delete/model-phase-ot-dele
 @Component({
   selector: 'jhi-model-phase-ot',
   templateUrl: './model-phase-ot.component.html',
+  styleUrls: ['./model-phase-ot.component.scss'],
 })
 export class ModelPhaseOTComponent implements OnInit {
+  // ── Raw data from backend ─────────────────────────────────────────────────
   modelPhaseOTS?: IModelPhaseOT[];
-  isLoading = false;
 
+  // ── Filtered / displayed data ─────────────────────────────────────────────
+  filteredModelPhaseOTS?: IModelPhaseOT[];
+
+  // ── Pagination & sort ─────────────────────────────────────────────────────
+  isLoading = false;
   predicate = 'id';
   ascending = true;
-
   itemsPerPage = ITEMS_PER_PAGE;
   totalItems = 0;
   page = 1;
+
+  // ── UI state ──────────────────────────────────────────────────────────────
+  /** Live search term */
+  searchTerm = '';
+
+  /** Card grid or table list */
+  viewMode: 'grid' | 'list' = 'grid';
 
   constructor(
     protected modelPhaseOTService: ModelPhaseOTService,
@@ -35,32 +47,41 @@ export class ModelPhaseOTComponent implements OnInit {
 
   trackId = (_index: number, item: IModelPhaseOT): number => this.modelPhaseOTService.getModelPhaseOTIdentifier(item);
 
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
+
   ngOnInit(): void {
+    this.load();
+  }
+
+  // ── Public actions ────────────────────────────────────────────────────────
+
+  load(): void {
+    this.loadFromBackendWithRouteInformations().subscribe({
+      next: (res: EntityArrayResponseType) => this.onResponseSuccess(res),
+    });
+  }
+
+  /** Called by the "Actualiser" button. */
+  refresh(): void {
     this.load();
   }
 
   delete(modelPhaseOT: IModelPhaseOT): void {
     const modalRef = this.modalService.open(ModelPhaseOTDeleteDialogComponent, { size: 'lg', backdrop: 'static' });
     modalRef.componentInstance.modelPhaseOT = modelPhaseOT;
-    // unsubscribe not needed because closed completes on modal close
     modalRef.closed
       .pipe(
         filter(reason => reason === ITEM_DELETED_EVENT),
         switchMap(() => this.loadFromBackendWithRouteInformations())
       )
       .subscribe({
-        next: (res: EntityArrayResponseType) => {
-          this.onResponseSuccess(res);
-        },
+        next: (res: EntityArrayResponseType) => this.onResponseSuccess(res),
       });
   }
 
-  load(): void {
-    this.loadFromBackendWithRouteInformations().subscribe({
-      next: (res: EntityArrayResponseType) => {
-        this.onResponseSuccess(res);
-      },
-    });
+  /** Called on double-click on a card or a row: navigate straight to the edit screen. */
+  goToEdit(modelPhaseOT: IModelPhaseOT): void {
+    this.router.navigate(['/ot-externe/model-phase-ot', modelPhaseOT.id, 'edit']);
   }
 
   navigateToWithComponentValues(): void {
@@ -69,6 +90,32 @@ export class ModelPhaseOTComponent implements OnInit {
 
   navigateToPage(page = this.page): void {
     this.handleNavigation(page, this.predicate, this.ascending);
+  }
+
+  // ── Filter helpers (called from template) ─────────────────────────────────
+
+  /** Called on every keystroke in the search input via (ngModelChange). */
+  filterModelPhaseOTS(): void {
+    this.applyFilters();
+  }
+
+  // ── Private helpers ───────────────────────────────────────────────────────
+
+  /** Applies the search term to this.modelPhaseOTS. */
+  private applyFilters(): void {
+    let result = this.modelPhaseOTS ?? [];
+
+    const term = this.searchTerm.trim().toLowerCase();
+    if (term) {
+      result = result.filter(
+        m =>
+          (m.nom ?? '').toLowerCase().includes(term) ||
+          (m.description ?? '').toLowerCase().includes(term) ||
+          String(m.id ?? '').includes(term)
+      );
+    }
+
+    this.filteredModelPhaseOTS = result;
   }
 
   protected loadFromBackendWithRouteInformations(): Observable<EntityArrayResponseType> {
@@ -88,8 +135,9 @@ export class ModelPhaseOTComponent implements OnInit {
 
   protected onResponseSuccess(response: EntityArrayResponseType): void {
     this.fillComponentAttributesFromResponseHeader(response.headers);
-    const dataFromBody = this.fillComponentAttributesFromResponseBody(response.body);
-    this.modelPhaseOTS = dataFromBody;
+    this.modelPhaseOTS = this.fillComponentAttributesFromResponseBody(response.body);
+    // Re-apply any active filters whenever new data arrives from backend.
+    this.applyFilters();
   }
 
   protected fillComponentAttributesFromResponseBody(data: IModelPhaseOT[] | null): IModelPhaseOT[] {
@@ -102,7 +150,7 @@ export class ModelPhaseOTComponent implements OnInit {
 
   protected queryBackend(page?: number, predicate?: string, ascending?: boolean): Observable<EntityArrayResponseType> {
     this.isLoading = true;
-    const pageToLoad: number = page ?? 1;
+    const pageToLoad = page ?? 1;
     const queryObject = {
       page: pageToLoad - 1,
       size: this.itemsPerPage,
@@ -112,24 +160,20 @@ export class ModelPhaseOTComponent implements OnInit {
   }
 
   protected handleNavigation(page = this.page, predicate?: string, ascending?: boolean): void {
-    const queryParamsObj = {
-      page,
-      size: this.itemsPerPage,
-      sort: this.getSortQueryParam(predicate, ascending),
-    };
-
     this.router.navigate(['./'], {
       relativeTo: this.activatedRoute,
-      queryParams: queryParamsObj,
+      queryParams: {
+        page,
+        size: this.itemsPerPage,
+        sort: this.getSortQueryParam(predicate, ascending),
+      },
     });
   }
 
   protected getSortQueryParam(predicate = this.predicate, ascending = this.ascending): string[] {
-    const ascendingQueryParam = ascending ? ASC : DESC;
     if (predicate === '') {
       return [];
-    } else {
-      return [predicate + ',' + ascendingQueryParam];
     }
+    return [`${predicate},${ascending ? ASC : DESC}`];
   }
 }
