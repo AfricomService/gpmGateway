@@ -396,7 +396,7 @@
             <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
           </button>
 
-          <div class="cu-accordion-body" *ngIf="isPanelOpen('client')">
+          <div class="cu-accordion-body" [hidden]="!isPanelOpen('client')">
             <div class="cu-client-columns">
               <!-- ================================================= -->
               <!-- COLONNE GAUCHE : CLIENT FINAL (résumé) -->
