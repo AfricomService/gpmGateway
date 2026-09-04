@@ -104,6 +104,7 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   // Articles sélectionnés pour le Bon de Commande (accordéon "Détails Commande")
   // ================================
   chosenArticles: ArticleSelection[] = [];
+  savingChosenArticles = false;
 
   // ================================
   // Pièces Jointes (upload manuel + scan PjCare)
@@ -560,10 +561,48 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     modalRef.result
       .then((selection: ArticleSelection[]) => {
         this.chosenArticles = selection ?? [];
+        this.saveChosenArticles();
       })
       .catch(() => {
         // Fermeture du modal sans validation
       });
+  }
+
+  /**
+   * Persiste immédiatement en base la sélection d'articles validée dans la modal,
+   * au lieu d'attendre l'enregistrement global du bon de commande.
+   * Nécessite que le bon de commande soit déjà enregistré (bonCommande.id présent) —
+   * c'est déjà le cas puisque le bouton "Sélectionner des articles" n'est visible
+   * que lorsque bonCommande.id existe (cf. template).
+   */
+  private saveChosenArticles(): void {
+    const bonCommandeId = this.bonCommande?.id;
+
+    if (bonCommandeId === null || bonCommandeId === undefined) {
+      return;
+    }
+
+    const articlesToSave: Partial<IBonCommandeArticles>[] = this.chosenArticles
+      .filter(sel => sel.article.id !== null && sel.article.id !== undefined)
+      .map(sel => ({
+        articleId: sel.article.id as number,
+        qteCommande: sel.qte,
+        qteEffectuee: sel.qteEffectuee ?? 0,
+        // On fige le Prix Achat de l'article au moment de la sélection.
+        prixArticle: sel.article.prixAchat ?? null,
+      }));
+
+    this.savingChosenArticles = true;
+
+    this.bonCommandeArticlesService.replaceForBonCommande(bonCommandeId, articlesToSave).subscribe({
+      next: () => {
+        this.savingChosenArticles = false;
+      },
+      error: () => {
+        this.savingChosenArticles = false;
+        alert("Erreur lors de l'enregistrement des articles sélectionnés.");
+      },
+    });
   }
 
   removeChosenArticle(articleId: number): void {
@@ -575,6 +614,14 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     const target = this.chosenArticles.find(sel => sel.article.id === articleId);
     if (target) {
       target.qte = Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+    }
+  }
+
+  onChosenArticleQteEffectueeChange(articleId: number, qteEffectuee: number | string): void {
+    const parsed = Number(qteEffectuee);
+    const target = this.chosenArticles.find(sel => sel.article.id === articleId);
+    if (target) {
+      target.qteEffectuee = Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
     }
   }
 
@@ -664,6 +711,9 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       .map(sel => ({
         articleId: sel.article.id as number,
         qteCommande: sel.qte,
+        qteEffectuee: sel.qteEffectuee ?? 0,
+        // On fige le Prix Achat de l'article au moment de l'enregistrement du BC.
+        prixArticle: sel.article.prixAchat ?? null,
       }));
 
     forkJoin([
@@ -762,6 +812,14 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
             if (!this.affaireResults.some(a => a.id === affaire.id)) {
               this.affaireResults = [affaire, ...this.affaireResults];
             }
+
+            // Force la mise à jour de la vue dès que `selectedAffaire` est connu :
+            // l'accordéon "Détails Commande" n'affiche `chosenArticles` que si
+            // `selectedAffaire` est renseigné. Si loadBonCommandeArticles() a déjà
+            // déclenché son propre detectChanges() avant que cette réponse-ci
+            // n'arrive, la vue restait figée tant qu'aucun autre événement (ex :
+            // ouverture de la modal articles) ne déclenchait un nouveau cycle CD.
+            this.cdr.detectChanges();
 
             this.loadClientCommandeInfo(affaire.clientCommande ?? null);
 
@@ -1274,22 +1332,53 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
         if (validLinks.length === 0) {
           this.chosenArticles = [];
+          this.cdr.detectChanges();
           return;
         }
 
         forkJoin(validLinks.map(l => this.articleService.find(l.articleId))).subscribe({
           next: responses => {
-            this.chosenArticles = responses
-              .map((res2, index) => ({ article: res2.body, qte: validLinks[index].qteCommande ?? 1 }))
-              .filter((sel): sel is ArticleSelection => sel.article !== null);
+            const mapped: (ArticleSelection | null)[] = responses.map((res2, index) => {
+              const article = res2.body;
+
+              if (!article) {
+                return null;
+              }
+
+              const persistedPrix = validLinks[index].prixArticle;
+
+              // Le Prix Achat affiché doit rester celui figé lors de l'enregistrement
+              // du bon de commande, et non le prix courant de l'article (qui peut
+              // avoir changé depuis).
+              if (persistedPrix !== null && persistedPrix !== undefined) {
+                article.prixAchat = persistedPrix;
+              }
+
+              const sel: ArticleSelection = {
+                article,
+                qte: validLinks[index].qteCommande ?? 1,
+                qteEffectuee: validLinks[index].qteEffectuee ?? null,
+              };
+              return sel;
+            });
+
+            this.chosenArticles = mapped.filter((sel): sel is ArticleSelection => sel !== null);
+
+            // Force la mise à jour de la vue même si l'accordéon "Détails Commande"
+            // est fermé au moment où la réponse arrive (même problème que pour
+            // loadClientInfo / loadClientCommandeInfo — sinon la liste reste vide
+            // à l'affichage tant qu'un autre événement ne déclenche pas de CD).
+            this.cdr.detectChanges();
           },
           error: () => {
             this.chosenArticles = [];
+            this.cdr.detectChanges();
           },
         });
       },
       error: () => {
         this.chosenArticles = [];
+        this.cdr.detectChanges();
       },
     });
   }

@@ -614,49 +614,70 @@
           </button>
 
           <div class="cu-accordion-body" *ngIf="isPanelOpen('detailsCommande')">
-            <div class="cu-detail-toolbar" *ngIf="selectedAffaire">
-              <button type="button" class="btn-cu-add" (click)="openArticleModal()">
-                <fa-icon icon="box-open"></fa-icon>&nbsp;Sélectionner des articles
-              </button>
-            </div>
-
-            <ng-container *ngIf="selectedAffaire; else noProjetSelected">
-              <div *ngIf="chosenArticles.length > 0; else noArticlesChosen" class="cu-item-list">
-                <div class="cu-item-card" *ngFor="let sel of chosenArticles">
-                  <div class="cu-item-info">
-                    <div class="cu-item-title">
-                      <strong>{{ sel.article.code }} - ({{ sel.article.codeClient }})</strong> — {{ sel.article.designation }}
-                      <span class="text-muted ms-2"
-                        >(Prix HT: {{ sel.article.prixUnitHT }} DT - Prix Achat: {{ sel.article.prixAchat }} DT)</span
-                      >
-                    </div>
-                  </div>
-
-                  <div class="cu-item-qte" *ngIf="sel.article.id">
-                    <label class="cu-item-qte-label">Qté commandée</label>
-                    <input
-                      type="number"
-                      min="1"
-                      class="form-control form-control-sm cu-item-qte-input"
-                      [ngModel]="sel.qte"
-                      [ngModelOptions]="{ standalone: true }"
-                      (ngModelChange)="onChosenArticleQuantityChange(sel.article.id, $event)"
-                    />
-                  </div>
-
-                  <button *ngIf="sel.article.id" type="button" class="cu-item-remove" (click)="removeChosenArticle(sel.article.id)">
-                    <fa-icon icon="times"></fa-icon>
-                  </button>
-                </div>
+            <ng-container *ngIf="bonCommande?.id; else bcNotSavedDetailsCommande">
+              <div class="cu-detail-toolbar" *ngIf="selectedAffaire">
+                <button type="button" class="btn-cu-add" (click)="openArticleModal()" [disabled]="savingChosenArticles">
+                  <span *ngIf="savingChosenArticles" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                  <fa-icon *ngIf="!savingChosenArticles" icon="box-open"></fa-icon>&nbsp;{{
+                    savingChosenArticles ? 'Enregistrement...' : 'Sélectionner des articles'
+                  }}
+                </button>
               </div>
 
-              <ng-template #noArticlesChosen>
-                <div class="cu-empty-panel">Aucun article sélectionné. Cliquez sur « Sélectionner des articles » pour en ajouter.</div>
+              <ng-container *ngIf="selectedAffaire; else noProjetSelected">
+                <div *ngIf="chosenArticles.length > 0; else noArticlesChosen" class="cu-item-list">
+                  <div class="cu-item-card" *ngFor="let sel of chosenArticles">
+                    <div class="cu-item-info">
+                      <div class="cu-item-title">
+                        <strong>{{ sel.article.code }} - ({{ sel.article.codeClient }})</strong> — {{ sel.article.designation }}
+                        <span class="text-muted ms-2"
+                          >(Prix HT: {{ sel.article.prixUnitHT }} DT - Prix Achat: {{ sel.article.prixAchat }} DT)</span
+                        >
+                      </div>
+                    </div>
+
+                    <div class="cu-item-qte" *ngIf="sel.article.id">
+                      <label class="cu-item-qte-label">Qté commandée</label>
+                      <input
+                        type="number"
+                        min="1"
+                        class="form-control form-control-sm cu-item-qte-input"
+                        [ngModel]="sel.qte"
+                        [ngModelOptions]="{ standalone: true }"
+                        (ngModelChange)="onChosenArticleQuantityChange(sel.article.id, $event)"
+                      />
+                    </div>
+
+                    <div class="cu-item-qte" *ngIf="sel.article.id">
+                      <label class="cu-item-qte-label">Qté effectuée</label>
+                      <input
+                        type="number"
+                        min="0"
+                        class="form-control form-control-sm cu-item-qte-input"
+                        [ngModel]="sel.qteEffectuee"
+                        [ngModelOptions]="{ standalone: true }"
+                        (ngModelChange)="onChosenArticleQteEffectueeChange(sel.article.id, $event)"
+                      />
+                    </div>
+
+                    <button *ngIf="sel.article.id" type="button" class="cu-item-remove" (click)="removeChosenArticle(sel.article.id)">
+                      <fa-icon icon="times"></fa-icon>
+                    </button>
+                  </div>
+                </div>
+
+                <ng-template #noArticlesChosen>
+                  <div class="cu-empty-panel">Aucun article sélectionné. Cliquez sur « Sélectionner des articles » pour en ajouter.</div>
+                </ng-template>
+              </ng-container>
+
+              <ng-template #noProjetSelected>
+                <div class="cu-empty-panel">Sélectionnez d'abord un projet pour choisir ses articles.</div>
               </ng-template>
             </ng-container>
 
-            <ng-template #noProjetSelected>
-              <div class="cu-empty-panel">Sélectionnez d'abord un projet pour choisir ses articles.</div>
+            <ng-template #bcNotSavedDetailsCommande>
+              <div class="cu-empty-panel">Vous devez d'abord enregistrer le bon de commande pour pouvoir ajouter des articles.</div>
             </ng-template>
           </div>
         </div>
@@ -672,7 +693,12 @@
           </button>
 
           <div class="cu-accordion-body" *ngIf="isPanelOpen('otAssocies')">
-            <div class="cu-empty-panel">Aucune donnée pour le moment.</div>
+            <div class="cu-empty-panel" *ngIf="!bonCommande?.id; else otAssociesContent">
+              Vous devez d'abord enregistrer le bon de commande pour pouvoir ajouter des ordres de travail.
+            </div>
+            <ng-template #otAssociesContent>
+              <div class="cu-empty-panel">Aucune donnée pour le moment.</div>
+            </ng-template>
           </div>
         </div>
 
@@ -687,7 +713,12 @@
           </button>
 
           <div class="cu-accordion-body" *ngIf="isPanelOpen('articlesMissions')">
-            <div class="cu-empty-panel">Aucune donnée pour le moment.</div>
+            <div class="cu-empty-panel" *ngIf="!bonCommande?.id; else articlesMissionsContent">
+              Vous devez d'abord enregistrer le bon de commande pour pouvoir ajouter des articles de mission.
+            </div>
+            <ng-template #articlesMissionsContent>
+              <div class="cu-empty-panel">Aucune donnée pour le moment.</div>
+            </ng-template>
           </div>
         </div>
 
@@ -703,242 +734,250 @@
           </button>
 
           <div class="cu-accordion-body" *ngIf="isPanelOpen('piecesJointes')">
-            <div class="cu-detail-toolbar">
-              <button type="button" class="btn-cu-add" (click)="fileInput.click()" [disabled]="uploadingPieceJointe">
-                <fa-icon icon="plus"></fa-icon>&nbsp;Ajouter
-              </button>
-              <button type="button" class="btn-cu-add" (click)="openScanModal(ScanModal)">📠&nbsp;Scanner</button>
-              <input type="file" #fileInput (change)="onFileSelected($event)" hidden />
-            </div>
+            <ng-container *ngIf="bonCommande?.id; else bcNotSavedPiecesJointes">
+              <div class="cu-detail-toolbar">
+                <button type="button" class="btn-cu-add" (click)="fileInput.click()" [disabled]="uploadingPieceJointe">
+                  <fa-icon icon="plus"></fa-icon>&nbsp;Ajouter
+                </button>
+                <button type="button" class="btn-cu-add" (click)="openScanModal(ScanModal)">📠&nbsp;Scanner</button>
+                <input type="file" #fileInput (change)="onFileSelected($event)" hidden />
+              </div>
 
-            <div *ngIf="!bonCommande?.id && pendingPieceJointes.length > 0" class="cu-empty-panel" style="text-align: left">
-              ℹ️ Ces pièces jointes seront envoyées automatiquement lors de l'enregistrement du bon de commande.
-            </div>
+              <div *ngIf="!bonCommande?.id && pendingPieceJointes.length > 0" class="cu-empty-panel" style="text-align: left">
+                ℹ️ Ces pièces jointes seront envoyées automatiquement lors de l'enregistrement du bon de commande.
+              </div>
 
-            <div
-              *ngIf="pendingPieceJointes.length > 0"
-              style="
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-                gap: 12px;
-                align-items: stretch;
-                margin-bottom: 12px;
-              "
-            >
               <div
-                *ngFor="let pending of pendingPieceJointes"
+                *ngIf="pendingPieceJointes.length > 0"
                 style="
-                  display: flex;
-                  align-items: center;
-                  justify-content: space-between;
+                  display: grid;
+                  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
                   gap: 12px;
-                  padding: 8px 14px;
-                  border: 1px dashed #f5822a;
-                  border-radius: 40px;
-                  background: #fff7ed;
+                  align-items: stretch;
+                  margin-bottom: 12px;
                 "
-                title="{{ pending.displayName }}.{{ pending.extension }}"
               >
                 <div
+                  *ngFor="let pending of pendingPieceJointes"
                   style="
                     display: flex;
                     align-items: center;
-                    gap: 8px;
-                    overflow: hidden;
-                    white-space: nowrap;
-                    text-overflow: ellipsis;
-                    flex: 1;
+                    justify-content: space-between;
+                    gap: 12px;
+                    padding: 8px 14px;
+                    border: 1px dashed #f5822a;
+                    border-radius: 40px;
+                    background: #fff7ed;
                   "
+                  title="{{ pending.displayName }}.{{ pending.extension }}"
                 >
-                  <span>⏳</span>
-                  <strong style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap"
-                    >{{ pending.displayName }}.{{ pending.extension }}</strong
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 8px;
+                      overflow: hidden;
+                      white-space: nowrap;
+                      text-overflow: ellipsis;
+                      flex: 1;
+                    "
                   >
-                </div>
+                    <span>⏳</span>
+                    <strong style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap"
+                      >{{ pending.displayName }}.{{ pending.extension }}</strong
+                    >
+                  </div>
 
-                <button
-                  type="button"
-                  (click)="removePendingPieceJointe(pending.tempId)"
-                  title="Retirer"
-                  style="
-                    width: 28px;
-                    height: 28px;
-                    border-radius: 50%;
-                    border: none;
-                    background: #fde8e8;
-                    color: #dc3545;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    flex-shrink: 0;
-                    cursor: pointer;
-                    font-size: 14px;
-                    font-weight: 700;
-                  "
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-
-            <div *ngIf="loadingPieceJointes" class="cu-empty-panel">Chargement...</div>
-
-            <div *ngIf="!loadingPieceJointes && pieceJointes.length === 0 && pendingPieceJointes.length === 0" class="cu-empty-panel">
-              Aucune pièce jointe pour le moment.
-            </div>
-
-            <div
-              *ngIf="!loadingPieceJointes && pieceJointes.length > 0"
-              style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; align-items: stretch"
-            >
-              <div
-                *ngFor="let pj of pieceJointes"
-                style="
-                  display: flex;
-                  align-items: center;
-                  justify-content: space-between;
-                  gap: 12px;
-                  padding: 8px 14px;
-                  border: 1px solid #ddd;
-                  border-radius: 40px;
-                  background: #fafafa;
-                "
-                [style.border-color]="selectedPjForPreview?.id === pj.id ? '#f5822a' : '#ddd'"
-              >
-                <div
-                  (click)="togglePjPreview(pj)"
-                  style="
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    overflow: hidden;
-                    white-space: nowrap;
-                    text-overflow: ellipsis;
-                    flex: 1;
-                    color: #212529;
-                    text-decoration: none;
-                    cursor: pointer;
-                  "
-                  title="{{ pj.nomFichier }}.{{ pj.type }}"
-                >
-                  <fa-icon icon="paperclip"></fa-icon>
-                  <strong style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ pj.nomFichier }}.{{ pj.type }}</strong>
-                </div>
-
-                <button
-                  type="button"
-                  (click)="openRenamePjModal(pj)"
-                  title="Renommer"
-                  style="
-                    width: 28px;
-                    height: 28px;
-                    border-radius: 50%;
-                    border: none;
-                    background: transparent;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    flex-shrink: 0;
-                    color: #495057;
-                    cursor: pointer;
-                  "
-                >
-                  <fa-icon icon="pencil-alt"></fa-icon>
-                </button>
-
-                <button
-                  type="button"
-                  (click)="downloadPieceJointe(pj)"
-                  title="Télécharger"
-                  style="
-                    width: 28px;
-                    height: 28px;
-                    border-radius: 50%;
-                    border: none;
-                    background: transparent;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    flex-shrink: 0;
-                    color: #495057;
-                    cursor: pointer;
-                  "
-                >
-                  <fa-icon icon="download"></fa-icon>
-                </button>
-
-                <button
-                  type="button"
-                  (click)="removePieceJointe(pj.id)"
-                  style="
-                    width: 28px;
-                    height: 28px;
-                    border-radius: 50%;
-                    border: none;
-                    background: #fde8e8;
-                    color: #dc3545;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    flex-shrink: 0;
-                    cursor: pointer;
-                    font-size: 14px;
-                    font-weight: 700;
-                  "
-                  title="Supprimer"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-
-            <div *ngIf="uploadingPieceJointe" class="cu-empty-panel">Téléchargement en cours...</div>
-
-            <!-- ── Aperçu inline de la pièce jointe sélectionnée ── -->
-            <div
-              *ngIf="selectedPjForPreview"
-              style="margin-top: 14px; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #fff"
-            >
-              <div
-                style="
-                  display: flex;
-                  align-items: center;
-                  justify-content: space-between;
-                  padding: 10px 16px;
-                  background: #f1f5f9;
-                  border-bottom: 1px solid #e2e8f0;
-                "
-              >
-                <strong style="font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">
-                  {{ selectedPjForPreview.nomFichier }}.{{ selectedPjForPreview.type }}
-                </strong>
-                <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0">
                   <button
                     type="button"
-                    (click)="downloadPieceJointe(selectedPjForPreview)"
-                    title="Télécharger"
-                    style="border: none; background: none; cursor: pointer; color: #495057; padding: 0"
-                  >
-                    <fa-icon icon="download"></fa-icon>
-                  </button>
-                  <button
-                    type="button"
-                    (click)="closePjPreview()"
-                    style="border: none; background: none; cursor: pointer; font-size: 16px; color: #6c757d"
-                    title="Fermer l'aperçu"
+                    (click)="removePendingPieceJointe(pending.tempId)"
+                    title="Retirer"
+                    style="
+                      width: 28px;
+                      height: 28px;
+                      border-radius: 50%;
+                      border: none;
+                      background: #fde8e8;
+                      color: #dc3545;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      flex-shrink: 0;
+                      cursor: pointer;
+                      font-size: 14px;
+                      font-weight: 700;
+                    "
                   >
                     ✕
                   </button>
                 </div>
               </div>
 
-              <div style="max-height: 700px; overflow: auto; background: #fafafa">
-                <jhi-file-preview
-                  [pjId]="selectedPjForPreview.id"
-                  [fileName]="selectedPjForPreview.nomFichier + '.' + selectedPjForPreview.type"
-                ></jhi-file-preview>
+              <div *ngIf="loadingPieceJointes" class="cu-empty-panel">Chargement...</div>
+
+              <div *ngIf="!loadingPieceJointes && pieceJointes.length === 0 && pendingPieceJointes.length === 0" class="cu-empty-panel">
+                Aucune pièce jointe pour le moment.
               </div>
-            </div>
+
+              <div
+                *ngIf="!loadingPieceJointes && pieceJointes.length > 0"
+                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; align-items: stretch"
+              >
+                <div
+                  *ngFor="let pj of pieceJointes"
+                  style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 12px;
+                    padding: 8px 14px;
+                    border: 1px solid #ddd;
+                    border-radius: 40px;
+                    background: #fafafa;
+                  "
+                  [style.border-color]="selectedPjForPreview?.id === pj.id ? '#f5822a' : '#ddd'"
+                >
+                  <div
+                    (click)="togglePjPreview(pj)"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 8px;
+                      overflow: hidden;
+                      white-space: nowrap;
+                      text-overflow: ellipsis;
+                      flex: 1;
+                      color: #212529;
+                      text-decoration: none;
+                      cursor: pointer;
+                    "
+                    title="{{ pj.nomFichier }}.{{ pj.type }}"
+                  >
+                    <fa-icon icon="paperclip"></fa-icon>
+                    <strong style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap"
+                      >{{ pj.nomFichier }}.{{ pj.type }}</strong
+                    >
+                  </div>
+
+                  <button
+                    type="button"
+                    (click)="openRenamePjModal(pj)"
+                    title="Renommer"
+                    style="
+                      width: 28px;
+                      height: 28px;
+                      border-radius: 50%;
+                      border: none;
+                      background: transparent;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      flex-shrink: 0;
+                      color: #495057;
+                      cursor: pointer;
+                    "
+                  >
+                    <fa-icon icon="pencil-alt"></fa-icon>
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="downloadPieceJointe(pj)"
+                    title="Télécharger"
+                    style="
+                      width: 28px;
+                      height: 28px;
+                      border-radius: 50%;
+                      border: none;
+                      background: transparent;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      flex-shrink: 0;
+                      color: #495057;
+                      cursor: pointer;
+                    "
+                  >
+                    <fa-icon icon="download"></fa-icon>
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="removePieceJointe(pj.id)"
+                    style="
+                      width: 28px;
+                      height: 28px;
+                      border-radius: 50%;
+                      border: none;
+                      background: #fde8e8;
+                      color: #dc3545;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      flex-shrink: 0;
+                      cursor: pointer;
+                      font-size: 14px;
+                      font-weight: 700;
+                    "
+                    title="Supprimer"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              <div *ngIf="uploadingPieceJointe" class="cu-empty-panel">Téléchargement en cours...</div>
+
+              <!-- ── Aperçu inline de la pièce jointe sélectionnée ── -->
+              <div
+                *ngIf="selectedPjForPreview"
+                style="margin-top: 14px; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #fff"
+              >
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 10px 16px;
+                    background: #f1f5f9;
+                    border-bottom: 1px solid #e2e8f0;
+                  "
+                >
+                  <strong style="font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">
+                    {{ selectedPjForPreview.nomFichier }}.{{ selectedPjForPreview.type }}
+                  </strong>
+                  <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0">
+                    <button
+                      type="button"
+                      (click)="downloadPieceJointe(selectedPjForPreview)"
+                      title="Télécharger"
+                      style="border: none; background: none; cursor: pointer; color: #495057; padding: 0"
+                    >
+                      <fa-icon icon="download"></fa-icon>
+                    </button>
+                    <button
+                      type="button"
+                      (click)="closePjPreview()"
+                      style="border: none; background: none; cursor: pointer; font-size: 16px; color: #6c757d"
+                      title="Fermer l'aperçu"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+
+                <div style="max-height: 700px; overflow: auto; background: #fafafa">
+                  <jhi-file-preview
+                    [pjId]="selectedPjForPreview.id"
+                    [fileName]="selectedPjForPreview.nomFichier + '.' + selectedPjForPreview.type"
+                  ></jhi-file-preview>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-template #bcNotSavedPiecesJointes>
+              <div class="cu-empty-panel">Vous devez d'abord enregistrer le bon de commande pour pouvoir ajouter des pièces jointes.</div>
+            </ng-template>
           </div>
         </div>
       </div>

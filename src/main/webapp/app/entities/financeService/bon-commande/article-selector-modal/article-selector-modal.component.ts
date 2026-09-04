@@ -10,6 +10,7 @@ import { AffaireService, RestPage } from 'app/entities/projectService/affaire/se
 export interface ArticleSelection {
   article: IArticle;
   qte: number;
+  qteEffectuee?: number | null;
 }
 
 const PAGE_SIZE = 5;
@@ -46,7 +47,7 @@ export class ArticleSelectorModalComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.initialSelection.forEach(sel => {
       if (sel.article.id !== null && sel.article.id !== undefined) {
-        this.selectedMap.set(sel.article.id, { article: sel.article, qte: sel.qte });
+        this.selectedMap.set(sel.article.id, { article: sel.article, qte: sel.qte, qteEffectuee: sel.qteEffectuee ?? 0 });
       }
     });
 
@@ -116,7 +117,7 @@ export class ArticleSelectorModalComponent implements OnInit, OnDestroy {
     if (this.selectedMap.has(article.id)) {
       this.selectedMap.delete(article.id);
     } else {
-      this.selectedMap.set(article.id, { article, qte: 1 });
+      this.selectedMap.set(article.id, { article, qte: 1, qteEffectuee: 0 });
     }
   }
 

@@ -7,6 +7,7 @@ export interface IBonCommandeArticles {
   dateRealisation?: dayjs.Dayjs | null;
   qteCommande?: number | null;
   qteEffectuee?: number | null;
+  prixArticle?: number | null;
 }
 
 export type NewBonCommandeArticles = Omit<IBonCommandeArticles, 'id'> & { id: null };
