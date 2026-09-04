@@ -326,7 +326,7 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     // Code projet affiché à côté (lecture seule)
     this.selectedAffaireCode = affaire.identifiantUnique ?? null;
 
-    this.loadClientInfo(clientId, true);
+    this.loadClientInfo(clientId);
     this.loadClientCommandeInfo(affaire.clientCommande ?? null);
 
     // Un nouveau projet a été choisi : la sélection précédente ne correspond plus à ce projet
@@ -354,12 +354,8 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   /**
    * Récupère les infos complètes du client via un appel API dédié (GET /api/clients/{id}).
    * Affichage uniquement — seul clientId est persisté avec le BonCommande.
-   *
-   * @param syncReferenceClient Si true, pré-remplit referenceClient avec le matricule fiscale
-   *                            du client (utilisé uniquement lors de la sélection d'un projet,
-   *                            pas au chargement d'un bon de commande existant).
    */
-  private loadClientInfo(clientId: number | null, syncReferenceClient = false): void {
+  private loadClientInfo(clientId: number | null): void {
     this.selectedClientInfo = null;
 
     if (clientId === null || clientId === undefined) {
@@ -373,12 +369,6 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       next: res => {
         this.selectedClientInfo = res.body ?? null;
         this.loadingClientInfo = false;
-
-        if (syncReferenceClient) {
-          this.editForm.patchValue({
-            referenceClient: this.selectedClientInfo?.identifiantUnique ?? null,
-          });
-        }
 
         // Force la mise à jour de la vue même si l'accordéon "Information Client"
         // est fermé au moment où la réponse arrive (sinon le champ "Client" reste
@@ -1023,7 +1013,7 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
     this.loadScanSettings();
     this.checkPjCare();
-    this.modalService.open(content, { size: 'lg' });
+    this.modalService.open(content, { size: 'lg', windowClass: 'scan-modal-window' });
   }
 
   private loadScanSettings(): void {

@@ -697,3 +697,16 @@
   background: var(--cp-surface-hover);
   border-radius: 0 0 12px 12px;
 }
+/* ============ LARGEUR DE LA FENÊTRE MODALE SCAN PJCARE (ng-bootstrap) ============ */
+/* windowClass="scan-modal-window" passé lors de modalService.open() dans openScanModal() */
+::ng-deep .scan-modal-window {
+  .modal-dialog {
+    max-width: 700px;
+  }
+}
+
+@media (max-width: 992px) {
+  ::ng-deep .scan-modal-window .modal-dialog {
+    max-width: 95vw;
+  }
+}

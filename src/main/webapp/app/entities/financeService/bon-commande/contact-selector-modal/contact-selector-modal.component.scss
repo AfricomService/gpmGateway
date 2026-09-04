@@ -161,6 +161,13 @@
   padding: 2rem 1rem;
 }
 
+.cs-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 420px;
+}
+
 .cs-modal-footer {
   border-top: 1px solid var(--cs-border);
   display: flex;
