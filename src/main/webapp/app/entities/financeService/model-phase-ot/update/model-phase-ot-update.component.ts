@@ -6,7 +6,22 @@ import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
-import { faArrowUp, faArrowDown } from '@fortawesome/free-solid-svg-icons';
+import {
+  faArrowLeft,
+  faArrowUp,
+  faArrowDown,
+  faCheckCircle,
+  faSave,
+  faIdCard,
+  faChevronDown,
+  faList,
+  faPlus,
+  faSitemap,
+  faLevelUpAlt,
+  faTimes,
+  faInfoCircle,
+  faBan,
+} from '@fortawesome/free-solid-svg-icons';
 
 import { ModelPhaseOTFormService, ModelPhaseOTFormGroup } from './model-phase-ot-form.service';
 import { IModelPhaseOT } from '../model-phase-ot.model';
@@ -32,8 +47,20 @@ export class ModelPhaseOTUpdateComponent implements OnInit {
   openSections: Set<AccordionSection> = new Set(['general', 'phases']);
 
   // Icons
+  faArrowLeft: IconDefinition = faArrowLeft;
   faArrowUp: IconDefinition = faArrowUp;
   faArrowDown: IconDefinition = faArrowDown;
+  faCheckCircle: IconDefinition = faCheckCircle;
+  faSave: IconDefinition = faSave;
+  faIdCard: IconDefinition = faIdCard;
+  faChevronDown: IconDefinition = faChevronDown;
+  faList: IconDefinition = faList;
+  faPlus: IconDefinition = faPlus;
+  faSitemap: IconDefinition = faSitemap;
+  faLevelUpAlt: IconDefinition = faLevelUpAlt;
+  faTimes: IconDefinition = faTimes;
+  faInfoCircle: IconDefinition = faInfoCircle;
+  faBan: IconDefinition = faBan;
 
   editForm: ModelPhaseOTFormGroup = this.modelPhaseOTFormService.createModelPhaseOTFormGroup();
 
@@ -139,10 +166,26 @@ export class ModelPhaseOTUpdateComponent implements OnInit {
     return this.allPhaseOts.find(p => p.id === phaseId);
   }
 
-  /** PhaseOts not yet linked to this model — feeds the "add a phase" dropdown. */
+  /**
+   * PhaseOts assignable to a model — root-level ("parent") phases only, not yet linked.
+   * Sub-phases (children) are never assigned directly: they ride along with their
+   * parent and are shown for context in the linked-phase list instead.
+   */
   get availablePhaseOtsToAdd(): IPhaseOt[] {
     const linkedIds = new Set(this.phasesAssociees.map(l => l.phaseId));
-    return this.allPhaseOts.filter(p => !linkedIds.has(p.id));
+    return this.allPhaseOts.filter(p => !linkedIds.has(p.id) && !p.phaseParentId);
+  }
+
+  /** Sub-phases of a given (parent) PhaseOt, shown for context under its card. */
+  getChildrenOf(phaseId: number | null | undefined): IPhaseOt[] {
+    if (!phaseId) {
+      return [];
+    }
+    return this.allPhaseOts.filter(p => p.phaseParentId === phaseId);
+  }
+
+  hasChildren(phaseId: number | null | undefined): boolean {
+    return this.getChildrenOf(phaseId).length > 0;
   }
 
   /** Small, non-blocking UI hint: a model should be made of at least two phases. */

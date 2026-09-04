@@ -364,6 +364,63 @@
   font-size: 0.72rem;
 }
 
+.mpu-phase-children {
+  margin-top: 0.6rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--mpu-border);
+}
+
+.mpu-phase-children-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--mpu-text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.mpu-phase-child-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0 0.3rem 0.4rem;
+  font-size: 0.8rem;
+  color: var(--mpu-text);
+
+  & + .mpu-phase-child-row {
+    border-top: 1px dotted var(--mpu-border);
+  }
+}
+
+.mpu-phase-child-icon {
+  color: var(--mpu-text-muted);
+  font-size: 0.7rem;
+  flex-shrink: 0;
+  transform: rotate(90deg);
+}
+
+.mpu-phase-child-title {
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mpu-phase-child-meta {
+  color: var(--mpu-text-muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.mpu-phase-child-badge {
+  color: var(--mpu-danger);
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
 .mpu-phase-actions {
   display: flex;
   align-items: center;
