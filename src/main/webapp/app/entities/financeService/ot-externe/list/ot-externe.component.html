@@ -1,13 +1,21 @@
 <div class="ot-externe-layout" [class.sidebar-collapsed]="isSidebarCollapsed">
   <!-- ===== Sidebar filtre par statut ===== -->
   <aside class="ot-sidebar">
+    <!-- ===== Header ===== -->
     <div class="sidebar-header">
-      <span class="sidebar-title" *ngIf="!isSidebarCollapsed">OT EXTERNES</span>
-      <button class="sidebar-toggle" (click)="toggleSidebar()" type="button">
+      <span class="sidebar-title" *ngIf="!isSidebarCollapsed"> OT EXTERNES </span>
+
+      <button
+        class="sidebar-toggle"
+        (click)="toggleSidebar()"
+        type="button"
+        [attr.aria-label]="isSidebarCollapsed ? 'Agrandir la barre laterale' : 'Reduire la barre laterale'"
+      >
         <fa-icon [icon]="isSidebarCollapsed ? 'chevron-right' : 'chevron-left'"></fa-icon>
       </button>
     </div>
 
+    <!-- ===== Statut filters ===== -->
     <nav class="sidebar-nav">
       <button
         *ngFor="let option of statutFilterOptions"
@@ -17,10 +25,67 @@
         (click)="selectStatutFilter(option.value)"
       >
         <fa-icon [icon]="option.icon"></fa-icon>
-        <span *ngIf="!isSidebarCollapsed" class="sidebar-item-label">{{ option.label }}</span>
-        <span *ngIf="!isSidebarCollapsed" class="sidebar-item-count">{{ countByStatut(option.value) }}</span>
+
+        <span *ngIf="!isSidebarCollapsed" class="sidebar-item-label">
+          {{ option.label }}
+        </span>
+
+        <span *ngIf="!isSidebarCollapsed" class="sidebar-item-count">
+          {{ countByStatut(option.value) }}
+        </span>
       </button>
     </nav>
+
+    <!-- ===== Navigation ===== -->
+    <div class="sidebar-navigation">
+      <ng-container *ngFor="let item of navItems">
+        <!-- Item simple -->
+        <a
+          *ngIf="!item.children"
+          class="sidebar-item sidebar-nav-link"
+          [routerLink]="[item.route]"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          <fa-icon [icon]="item.icon"></fa-icon>
+
+          <span *ngIf="!isSidebarCollapsed" class="sidebar-item-label">
+            {{ item.label }}
+          </span>
+        </a>
+
+        <!-- Groupe avec sous-menu -->
+        <ng-container *ngIf="item.children">
+          <button type="button" class="sidebar-item sidebar-nav-group" (click)="toggleGroup(item)">
+            <fa-icon [icon]="item.icon"></fa-icon>
+
+            <span *ngIf="!isSidebarCollapsed" class="sidebar-item-label">
+              {{ item.label }}
+            </span>
+
+            <fa-icon
+              *ngIf="!isSidebarCollapsed"
+              icon="chevron-down"
+              class="sidebar-chevron"
+              [class.rotated]="expandedGroup === item.label"
+            ></fa-icon>
+          </button>
+
+          <!-- Sous-menu -->
+          <div class="sidebar-sublist" *ngIf="expandedGroup === item.label && !isSidebarCollapsed">
+            <a
+              *ngFor="let child of item.children"
+              class="sidebar-subitem"
+              [routerLink]="[child.route]"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: false }"
+            >
+              <span>{{ child.label }}</span>
+            </a>
+          </div>
+        </ng-container>
+      </ng-container>
+    </div>
   </aside>
 
   <!-- ===== Contenu principal ===== -->

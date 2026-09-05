@@ -1,0 +1,257 @@
+<div class="phase-ots-page">
+  <div class="phase-ots-content">
+    <div class="phase-ots-header">
+      <h2 data-cy="PhaseOtHeading" id="page-heading">
+        <span class="text-uppercase" jhiTranslate="gpmGatewayApp.financeServicePhaseOt.home.title">PhaseOts</span>
+      </h2>
+
+      <div class="phase-ots-header-actions">
+        <button (click)="refresh()" [disabled]="isLoading" class="btn-phaseot-refresh" title="Actualiser" type="button">
+          <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        </button>
+        <button [routerLink]="['/ot-externe/phase-ot/new']" class="btn-phaseot-new" data-cy="entityCreateButton" id="jh-create-entity">
+          <fa-icon icon="plus"></fa-icon>
+          <span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.home.createLabel">Créer un nouveau Phase Ot</span>
+        </button>
+      </div>
+    </div>
+
+    <jhi-alert-error></jhi-alert-error>
+    <jhi-alert></jhi-alert>
+
+    <!-- Toolbar -->
+    <div class="phase-ots-toolbar-wrapper">
+      <div class="phase-ots-toolbar-row">
+        <div class="phase-ots-search">
+          <fa-icon icon="search" class="phase-ots-search-icon"></fa-icon>
+          <input
+            (ngModelChange)="filterPhaseOts()"
+            [(ngModel)]="searchTerm"
+            class="form-control phase-ots-search-input"
+            placeholder="Rechercher..."
+            type="text"
+          />
+        </div>
+
+        <div class="phase-ots-toolbar-right">
+          <span class="phase-ots-count">{{ filteredPhaseOts?.length ?? 0 }} résultat(s)</span>
+
+          <div class="phase-ots-view-toggle">
+            <button type="button" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Vue grille">
+              <fa-icon icon="th-large"></fa-icon>
+            </button>
+            <button type="button" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'" title="Vue liste">
+              <fa-icon icon="list"></fa-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- No result -->
+    <div *ngIf="filteredPhaseOts?.length === 0" class="alert alert-warning" id="no-result">
+      <span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.home.notFound">Aucun Phase Ot trouvé</span>
+    </div>
+
+    <!-- Card Grid -->
+    <div *ngIf="filteredPhaseOts && filteredPhaseOts.length > 0 && viewMode === 'grid'" class="phase-ots-grid" id="entities">
+      <div
+        *ngFor="let phaseOt of filteredPhaseOts; trackBy: trackId"
+        class="phaseot-card"
+        data-cy="entityTable"
+        title="Double-cliquer pour éditer"
+        (dblclick)="goToEdit(phaseOt)"
+      >
+        <div class="phaseot-card-header">
+          <span
+            class="parent-badge"
+            *ngIf="phaseOt.id != null"
+            [class.is-parent]="isParentResults.get(phaseOt.id) === true"
+            [class.is-not-parent]="isParentResults.get(phaseOt.id) === false"
+          >
+            {{ isParentResults.get(phaseOt.id) === true ? 'Parent' : isParentResults.get(phaseOt.id) === false ? 'Sous Phase' : '…' }}
+          </span>
+          <span class="bloquante-badge" [class.is-bloquante]="phaseOt.bloquante" [class.is-not-bloquante]="!phaseOt.bloquante">
+            <fa-icon [icon]="phaseOt.bloquante ? 'lock' : 'lock-open'"></fa-icon>
+            {{ phaseOt.bloquante ? 'Bloquante' : 'Non bloquante' }}
+          </span>
+        </div>
+
+        <h3 class="phaseot-title">{{ phaseOt.nom }}</h3>
+        <p class="phaseot-description" *ngIf="phaseOt.description">{{ phaseOt.description }}</p>
+
+        <!--        <div class="phaseot-meta">-->
+        <!--          <span *ngIf="phaseOt.dateDebut">-->
+        <!--            <fa-icon icon="calendar"></fa-icon> Début : {{ phaseOt.dateDebut | formatMediumDatetime }}-->
+        <!--          </span>-->
+        <!--          <span *ngIf="phaseOt.dl"> <fa-icon icon="hourglass-half"></fa-icon> DL : {{ phaseOt.dl | formatMediumDatetime }} </span>-->
+        <!--          <span *ngIf="phaseOt.dlc"> <fa-icon icon="hourglass-end"></fa-icon> DLC : {{ phaseOt.dlc | formatMediumDatetime }} </span>-->
+        <!--        </div>-->
+
+        <div class="phaseot-card-footer">
+          <span class="phaseot-duree">
+            <!--            Durée : <strong>{{ phaseOt.duree ?? '—' }}</strong>-->
+            <ng-container *ngIf="phaseOt.phaseParentId">
+              · Parent : <strong>{{ parentNames.get(phaseOt.phaseParentId) ?? phaseOt.phaseParentId }}</strong>
+            </ng-container>
+          </span>
+
+          <div class="card-actions" (click)="$event.stopPropagation()">
+            <button
+              [routerLink]="['/ot-externe/phase-ot', phaseOt.id, 'view']"
+              class="action-btn btn-view"
+              data-cy="entityDetailsButton"
+              title="Voir"
+              type="button"
+            >
+              <fa-icon icon="eye"></fa-icon>
+            </button>
+            <button
+              [routerLink]="['/ot-externe/phase-ot', phaseOt.id, 'edit']"
+              class="action-btn btn-edit"
+              data-cy="entityEditButton"
+              title="Editer"
+              type="button"
+            >
+              <fa-icon icon="pencil-alt"></fa-icon>
+            </button>
+            <button (click)="delete(phaseOt)" class="action-btn btn-delete" data-cy="entityDeleteButton" title="Supprimer" type="button">
+              <fa-icon icon="trash-alt"></fa-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- List View -->
+    <div *ngIf="filteredPhaseOts && filteredPhaseOts.length > 0 && viewMode === 'list'" class="phase-ots-table-wrapper" id="entities-list">
+      <table class="phase-ots-table" aria-describedby="page-heading">
+        <thead>
+          <tr (sortChange)="navigateToWithComponentValues()" [(ascending)]="ascending" [(predicate)]="predicate" jhiSort>
+            <th jhiSortBy="id" scope="col">
+              <div class="d-flex"><span jhiTranslate="global.field.id">ID</span><fa-icon class="p-1" icon="sort"></fa-icon></div>
+            </th>
+            <th jhiSortBy="nom" scope="col">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.nom">Nom</span><fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th jhiSortBy="description" scope="col">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.description">Description</span
+                ><fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th jhiSortBy="duree" scope="col">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.duree">Duree</span><fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th jhiSortBy="bloquante" scope="col">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.bloquante">Bloquante</span
+                ><fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th jhiSortBy="statut" scope="col">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.statut">Statut</span><fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th jhiSortBy="dateDebut" scope="col">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.dateDebut">Date Debut</span
+                ><fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th jhiSortBy="dl" scope="col">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.dl">Dl</span><fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th jhiSortBy="dlc" scope="col">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.dlc">Dlc</span><fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th jhiSortBy="phaseParentId" scope="col">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.phaseParentId">Phase Parent Id</span
+                ><fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let phaseOt of filteredPhaseOts; trackBy: trackId"
+            data-cy="entityTable"
+            title="Double-cliquer pour éditer"
+            (dblclick)="goToEdit(phaseOt)"
+          >
+            <td>{{ phaseOt.id }}</td>
+            <td>{{ phaseOt.nom }}</td>
+            <td>{{ phaseOt.description }}</td>
+            <td>{{ phaseOt.duree }}</td>
+            <td>{{ phaseOt.bloquante ? 'Oui' : 'Non' }}</td>
+            <td>{{ phaseOt.statut }}</td>
+            <td>{{ phaseOt.dateDebut | formatMediumDatetime }}</td>
+            <td>{{ phaseOt.dl | formatMediumDatetime }}</td>
+            <td>{{ phaseOt.dlc | formatMediumDatetime }}</td>
+            <td>{{ phaseOt.phaseParentId }}</td>
+            <td class="text-end" (click)="$event.stopPropagation()">
+              <div class="card-actions list-actions">
+                <button
+                  [routerLink]="['/ot-externe/phase-ot', phaseOt.id, 'view']"
+                  class="action-btn btn-view"
+                  data-cy="entityDetailsButton"
+                  title="Voir"
+                  type="button"
+                >
+                  <fa-icon icon="eye"></fa-icon>
+                </button>
+                <button
+                  [routerLink]="['/ot-externe/phase-ot', phaseOt.id, 'edit']"
+                  class="action-btn btn-edit"
+                  data-cy="entityEditButton"
+                  title="Editer"
+                  type="button"
+                >
+                  <fa-icon icon="pencil-alt"></fa-icon>
+                </button>
+                <button
+                  (click)="delete(phaseOt)"
+                  class="action-btn btn-delete"
+                  data-cy="entityDeleteButton"
+                  title="Supprimer"
+                  type="button"
+                >
+                  <fa-icon icon="trash-alt"></fa-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="filteredPhaseOts && filteredPhaseOts.length > 0">
+      <div class="d-flex justify-content-center">
+        <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+      </div>
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          (pageChange)="navigateToPage($event)"
+          [boundaryLinks]="true"
+          [collectionSize]="totalItems"
+          [maxSize]="5"
+          [pageSize]="itemsPerPage"
+          [page]="page"
+          [rotate]="true"
+        ></ngb-pagination>
+      </div>
+    </div>
+  </div>
+</div>

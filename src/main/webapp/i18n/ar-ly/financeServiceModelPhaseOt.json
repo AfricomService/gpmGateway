@@ -1,0 +1,29 @@
+{
+  "gpmGatewayApp": {
+    "financeServiceModelPhaseOt": {
+      "home": {
+        "title": "Model Phase OTS",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Model Phase OT",
+        "createOrEditLabel": "Create or edit a Model Phase OT",
+        "notFound": "No Model Phase OTS found"
+      },
+      "delete": {
+        "question": "Are you sure you want to delete Model Phase OT {{ id }}?"
+      },
+      "detail": {
+        "title": "Model Phase OT"
+      },
+      "id": "ID",
+      "nom": "Nom",
+      "description": "Description"
+    }
+  },
+  "financeServiceApp": {
+    "financeServiceModelPhaseOt": {
+      "created": "A new Model Phase OT is created with identifier {{ param }}",
+      "updated": "A Model Phase OT is updated with identifier {{ param }}",
+      "deleted": "A Model Phase OT is deleted with identifier {{ param }}"
+    }
+  }
+}

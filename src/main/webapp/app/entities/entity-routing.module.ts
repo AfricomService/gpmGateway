@@ -258,6 +258,21 @@ import { RouterModule } from '@angular/router';
         data: { pageTitle: 'gpmGatewayApp.projectServiceTypeRessource.home.title' },
         loadChildren: () => import('./projectService/type-ressource/type-ressource.module').then(m => m.ProjectServiceTypeRessourceModule),
       },
+      {
+        path: 'ot-externe/phase-ot',
+        data: { pageTitle: 'gpmGatewayApp.financeServicePhaseOt.home.title' },
+        loadChildren: () => import('./financeService/phase-ot/phase-ot.module').then(m => m.FinanceServicePhaseOtModule),
+      },
+      {
+        path: 'ot-externe/model-phase-ot',
+        data: { pageTitle: 'gpmGatewayApp.financeServiceModelPhaseOt.home.title' },
+        loadChildren: () => import('./financeService/model-phase-ot/model-phase-ot.module').then(m => m.FinanceServiceModelPhaseOTModule),
+      },
+      {
+        path: 'phase-ot',
+        data: { pageTitle: 'gpmGatewayApp.financeServicePhaseOt.home.title' },
+        loadChildren: () => import('./financeService/phase-ot/phase-ot.module').then(m => m.FinanceServicePhaseOtModule),
+      },
       /* jhipster-needle-add-entity-route - JHipster will add entity modules routes here */
     ]),
   ],

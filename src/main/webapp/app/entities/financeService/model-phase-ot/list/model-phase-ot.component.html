@@ -1,0 +1,203 @@
+<div class="model-phase-ots-page">
+  <div class="mpo-content">
+    <div class="mpo-header">
+      <h2 data-cy="ModelPhaseOTHeading" id="page-heading">
+        <span class="text-uppercase" jhiTranslate="gpmGatewayApp.financeServiceModelPhaseOt.home.title">ModelPhaseOTS</span>
+      </h2>
+
+      <div class="mpo-header-actions">
+        <button (click)="refresh()" [disabled]="isLoading" class="btn-mpo-refresh" title="Actualiser" type="button">
+          <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        </button>
+        <button [routerLink]="['/ot-externe/model-phase-ot/new']" class="btn-mpo-new" data-cy="entityCreateButton" id="jh-create-entity">
+          <fa-icon icon="plus"></fa-icon>
+          <span jhiTranslate="gpmGatewayApp.financeServiceModelPhaseOt.home.createLabel">Créer un nouveau Model Phase OT</span>
+        </button>
+      </div>
+    </div>
+
+    <jhi-alert-error></jhi-alert-error>
+    <jhi-alert></jhi-alert>
+
+    <!-- Toolbar -->
+    <div class="mpo-toolbar-wrapper">
+      <div class="mpo-toolbar-row">
+        <div class="mpo-search">
+          <fa-icon icon="search" class="mpo-search-icon"></fa-icon>
+          <input
+            (ngModelChange)="filterModelPhaseOTS()"
+            [(ngModel)]="searchTerm"
+            class="form-control mpo-search-input"
+            placeholder="Rechercher..."
+            type="text"
+          />
+        </div>
+
+        <div class="mpo-toolbar-right">
+          <span class="mpo-count">{{ filteredModelPhaseOTS?.length ?? 0 }} résultat(s)</span>
+
+          <div class="mpo-view-toggle">
+            <button type="button" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Vue grille">
+              <fa-icon icon="th-large"></fa-icon>
+            </button>
+            <button type="button" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'" title="Vue liste">
+              <fa-icon icon="list"></fa-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- No result -->
+    <div *ngIf="filteredModelPhaseOTS?.length === 0" class="alert alert-warning" id="no-result">
+      <span jhiTranslate="gpmGatewayApp.financeServiceModelPhaseOt.home.notFound">Aucun Model Phase OT trouvé</span>
+    </div>
+
+    <!-- Card Grid -->
+    <div *ngIf="filteredModelPhaseOTS && filteredModelPhaseOTS.length > 0 && viewMode === 'grid'" class="mpo-grid" id="entities">
+      <div
+        *ngFor="let modelPhaseOT of filteredModelPhaseOTS; trackBy: trackId"
+        class="mpo-card"
+        data-cy="entityTable"
+        title="Double-cliquer pour éditer"
+        (dblclick)="goToEdit(modelPhaseOT)"
+      >
+        <div class="mpo-card-header">
+          <span class="mpo-id-badge">ID: {{ modelPhaseOT.id }}</span>
+        </div>
+
+        <h3 class="mpo-title">{{ modelPhaseOT.nom }}</h3>
+
+        <p class="mpo-description">{{ modelPhaseOT.description || 'Aucune description' }}</p>
+
+        <div class="mpo-card-footer">
+          <span></span>
+
+          <div class="card-actions" (click)="$event.stopPropagation()">
+            <button
+              [routerLink]="['/ot-externe/model-phase-ot', modelPhaseOT.id, 'view']"
+              class="action-btn btn-view"
+              data-cy="entityDetailsButton"
+              title="Voir"
+              type="button"
+            >
+              <fa-icon icon="eye"></fa-icon>
+            </button>
+            <button
+              [routerLink]="['/ot-externe/model-phase-ot', modelPhaseOT.id, 'edit']"
+              class="action-btn btn-edit"
+              data-cy="entityEditButton"
+              title="Editer"
+              type="button"
+            >
+              <fa-icon icon="pencil-alt"></fa-icon>
+            </button>
+            <button
+              (click)="delete(modelPhaseOT)"
+              class="action-btn btn-delete"
+              data-cy="entityDeleteButton"
+              title="Supprimer"
+              type="button"
+            >
+              <fa-icon icon="trash-alt"></fa-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- List View -->
+    <div
+      *ngIf="filteredModelPhaseOTS && filteredModelPhaseOTS.length > 0 && viewMode === 'list'"
+      class="mpo-table-wrapper"
+      id="entities-list"
+    >
+      <table class="mpo-table" aria-describedby="page-heading">
+        <thead>
+          <tr (sortChange)="navigateToWithComponentValues()" [(ascending)]="ascending" [(predicate)]="predicate" jhiSort>
+            <th jhiSortBy="id" scope="col">
+              <div class="d-flex"><span jhiTranslate="global.field.id">ID</span><fa-icon class="p-1" icon="sort"></fa-icon></div>
+            </th>
+            <th jhiSortBy="nom" scope="col">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServiceModelPhaseOt.nom">Nom</span><fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th jhiSortBy="description" scope="col">
+              <div class="d-flex">
+                <span jhiTranslate="gpmGatewayApp.financeServiceModelPhaseOt.description">Description</span
+                ><fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let modelPhaseOT of filteredModelPhaseOTS; trackBy: trackId"
+            data-cy="entityTable"
+            title="Double-cliquer pour éditer"
+            (dblclick)="goToEdit(modelPhaseOT)"
+          >
+            <td>
+              <a [routerLink]="['/ot-externe/model-phase-ot', modelPhaseOT.id, 'view']" (click)="$event.stopPropagation()">{{
+                modelPhaseOT.id
+              }}</a>
+            </td>
+            <td>{{ modelPhaseOT.nom }}</td>
+            <td>{{ modelPhaseOT.description }}</td>
+            <td class="text-end" (click)="$event.stopPropagation()">
+              <div class="card-actions list-actions">
+                <button
+                  [routerLink]="['/ot-externe/model-phase-ot', modelPhaseOT.id, 'view']"
+                  class="action-btn btn-view"
+                  data-cy="entityDetailsButton"
+                  title="Voir"
+                  type="button"
+                >
+                  <fa-icon icon="eye"></fa-icon>
+                </button>
+                <button
+                  [routerLink]="['/ot-externe/model-phase-ot', modelPhaseOT.id, 'edit']"
+                  class="action-btn btn-edit"
+                  data-cy="entityEditButton"
+                  title="Editer"
+                  type="button"
+                >
+                  <fa-icon icon="pencil-alt"></fa-icon>
+                </button>
+                <button
+                  (click)="delete(modelPhaseOT)"
+                  class="action-btn btn-delete"
+                  data-cy="entityDeleteButton"
+                  title="Supprimer"
+                  type="button"
+                >
+                  <fa-icon icon="trash-alt"></fa-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="filteredModelPhaseOTS && filteredModelPhaseOTS.length > 0">
+      <div class="d-flex justify-content-center">
+        <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+      </div>
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          (pageChange)="navigateToPage($event)"
+          [boundaryLinks]="true"
+          [collectionSize]="totalItems"
+          [maxSize]="5"
+          [pageSize]="itemsPerPage"
+          [page]="page"
+          [rotate]="true"
+        ></ngb-pagination>
+      </div>
+    </div>
+  </div>
+</div>
