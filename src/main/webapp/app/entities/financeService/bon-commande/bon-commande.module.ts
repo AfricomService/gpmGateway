@@ -6,16 +6,24 @@ import { BonCommandeUpdateComponent } from './update/bon-commande-update.compone
 import { BonCommandeDeleteDialogComponent } from './delete/bon-commande-delete-dialog.component';
 import { BonCommandeRoutingModule } from './route/bon-commande-routing.module';
 import { AffaireSelectorModalComponent } from './affaire-selector-modal/affaire-selector-modal.component';
+import { ContactSelectorModalComponent } from './contact-selector-modal/contact-selector-modal.component';
 import { FormsModule } from '@angular/forms';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { SiteSelectorModalComponent } from './site-selector-modal/site-selector-modal.component';
+import { ArticleSelectorModalComponent } from './article-selector-modal/article-selector-modal.component';
+import { ProjectServicePieceJointeModule } from 'app/entities/projectService/piece-jointe/piece-jointe.module';
 
 @NgModule({
-  imports: [SharedModule, BonCommandeRoutingModule, FormsModule],
+  imports: [SharedModule, BonCommandeRoutingModule, FormsModule, NgSelectModule, ProjectServicePieceJointeModule],
   declarations: [
     BonCommandeComponent,
     BonCommandeDetailComponent,
     BonCommandeUpdateComponent,
     BonCommandeDeleteDialogComponent,
     AffaireSelectorModalComponent,
+    ContactSelectorModalComponent,
+    SiteSelectorModalComponent,
+    ArticleSelectorModalComponent,
   ],
 })
 export class FinanceServiceBonCommandeModule {}

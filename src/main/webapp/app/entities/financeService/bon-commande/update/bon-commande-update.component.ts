@@ -1,7 +1,7 @@
-import { Component, ElementRef, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, TemplateRef } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, forkJoin } from 'rxjs';
 import { debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import dayjs from 'dayjs/esm';
@@ -11,13 +11,36 @@ import { BonCommandeFormService, BonCommandeFormGroup } from './bon-commande-for
 import { IBonCommande } from '../bon-commande.model';
 import { BonCommandeService } from '../service/bon-commande.service';
 import { IAffaire } from 'app/entities/projectService/affaire/affaire.model';
-import { AffaireService } from 'app/entities/projectService/affaire/service/affaire.service';
+import { AffaireService, RestPage } from 'app/entities/projectService/affaire/service/affaire.service';
+import { IArticle } from 'app/entities/projectService/article/article.model';
 import { AffaireSelectorModalComponent } from '../affaire-selector-modal/affaire-selector-modal.component';
+import { ContactSelectorModalComponent } from '../contact-selector-modal/contact-selector-modal.component';
+import { SiteSelectorModalComponent } from '../site-selector-modal/site-selector-modal.component';
+import { ArticleSelectorModalComponent, ArticleSelection } from '../article-selector-modal/article-selector-modal.component';
 import { IClient } from 'app/entities/projectService/client/client.model';
 import { ClientService } from 'app/entities/projectService/client/service/client.service';
 import { IContactSociete } from 'app/entities/projectService/societe/contact-societe.model';
+import { BonCommandeAutreResponsableService } from '../service/bon-commande-autre-responsable.service';
+import { ISite } from 'app/entities/projectService/site/site.model';
+import { SiteService } from 'app/entities/projectService/site/service/site.service';
+import { IBonCommandeArticles } from '../bon-commande-articles.model';
+import { BonCommandeArticlesService } from '../service/bon-commande-articles.service';
+import { ArticleService } from 'app/entities/projectService/article/service/article.service';
+import { IPieceJointe } from 'app/entities/projectService/piece-jointe/piece-jointe.model';
+import { PieceJointeService } from 'app/entities/projectService/piece-jointe/service/piece-jointe.service';
+import { PjCareService, PjCareDriverInfo, ScanDriver, ScannedPage } from 'app/entities/projectService/piece-jointe/service/pjcare.service';
+import { ScanSettingsService } from 'app/entities/projectService/piece-jointe/service/scan-settings.service';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { saveAs } from 'file-saver';
 
 type AccordionPanel = 'global' | 'client' | 'detailsCommande' | 'otAssocies' | 'articlesMissions' | 'piecesJointes';
+
+interface PendingPieceJointe {
+  tempId: string;
+  file: File;
+  displayName: string;
+  extension: string;
+}
 
 const AFFAIRE_STATUT = 'ExecutionDesTravaux';
 const AFFAIRE_PAGE_SIZE = 15;
@@ -29,6 +52,9 @@ const RESPONSABLE_ROLE_CODE = 'MANAGER';
   styleUrls: ['./bon-commande-update.component.scss'],
 })
 export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
+  @ViewChild('clientDetailsModal') clientDetailsModal!: TemplateRef<any>;
+  @ViewChild('clientCommandeDetailsModal') clientCommandeDetailsModal!: TemplateRef<any>;
+
   isSaving = false;
   bonCommande: IBonCommande | null = null;
 
@@ -40,43 +66,98 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   openPanels: Set<AccordionPanel> = new Set(['global']);
 
   // ================================
-  // Liste déroulante Affaire
+  // Liste déroulante Affaire (ng-select)
   // ================================
-  affaireDropdownOpen = false;
   affaireResults: IAffaire[] = [];
-  selectedAffaireLabel = '';
-  affaireInputValue = '';
+  selectedAffaire: IAffaire | null = null; // Sélection courante liée au ng-select
   selectedAffaireCode: string | null = null; // Code projet (identifiantUnique) — affichage seul
 
-  autreResponsable: string | null = null; // Champ libre, non persisté pour le moment
-
-  // ================================
-  // Liste déroulante Autre Responsable (même source que Responsable, non persisté)
-  // ================================
-  autreResponsableDropdownOpen = false;
-  filteredAutreResponsables: IContactSociete[] = [];
-  autreResponsableInputValue = '';
+  selectedAutresResponsables: IContactSociete[] = []; // Sélection multiple, persistée via BonCommandeAutreResponsable
 
   // Infos client — affichage uniquement, seul clientId est persisté (formControlName)
   selectedClientInfo: IClient | null = null;
   loadingClientInfo = false;
+
+  // Sites associés au client final — alimente la liste déroulante "Lieu"
+  clientSites: ISite[] = [];
+  loadingClientSites = false;
+
+  // Infos client commande — affichage uniquement, alimenté par affaire.clientCommande (non persisté sur BonCommande)
+  selectedClientCommandeInfo: IClient | null = null;
+  loadingClientCommandeInfo = false;
 
   loadingAffaires = false;
   affaireSearchTerm = '';
   affairePage = 0;
   affaireTotalItems = 0;
 
-  private readonly affaireSearch$ = new Subject<string>();
+  protected readonly affaireSearch$ = new Subject<string>();
 
   // ================================
   // Liste déroulante Responsable (contacts ayant le rôle MANAGER)
   // ================================
-  responsableDropdownOpen = false;
   responsables: IContactSociete[] = [];
-  filteredResponsables: IContactSociete[] = [];
-  selectedResponsableLabel = '';
-  responsableInputValue = '';
+  selectedResponsable: IContactSociete | null = null; // Sélection courante liée au ng-select
   loadingResponsables = false;
+
+  // ================================
+  // Articles sélectionnés pour le Bon de Commande (accordéon "Détails Commande")
+  // ================================
+  chosenArticles: ArticleSelection[] = [];
+  savingChosenArticles = false;
+  removingArticleId: number | null = null;
+
+  // ================================
+  // Pièces Jointes (upload manuel + scan PjCare)
+  // ================================
+  pieceJointes: IPieceJointe[] = [];
+  loadingPieceJointes = false;
+  uploadingPieceJointe = false;
+
+  // Pièces jointes sélectionnées avant l'enregistrement du bon de commande
+  // (mode création : pas encore de bonCommande.id, donc pas d'upload possible tout de suite)
+  pendingPieceJointes: PendingPieceJointe[] = [];
+
+  pjcareAvailable = false;
+  scanners: string[] = [];
+  selectedScanner = '';
+  scanFormat: 'jpg' | 'png' | 'pdf' | 'tiff' = 'pdf';
+  scanDpi = 150;
+  scanQuality = 75;
+  scanBitdepth: 'color' | 'gray' | 'bw' = 'color';
+  scanDuplex = false;
+  isScanning = false;
+  isMerging = false;
+  scanPreview: string | null = null;
+  scanError: string | null = null;
+  loadingScanners = false;
+  availableDrivers: PjCareDriverInfo[] = [];
+  selectedDriver: ScanDriver | '' = '';
+  loadingDrivers = false;
+  scanExcludeBlank = false;
+  scanBlankThreshold = 240;
+  scanCoverageThreshold = 5;
+  currentDocumentPages: ScannedPage[] = [];
+  private _pendingDriverFromCookie = '';
+
+  scanAccordionStates: { [key: string]: boolean } = {
+    scanSource: true,
+    scanParams: true,
+  };
+
+  // ================================
+  // Aperçu inline pièce jointe
+  // ================================
+  selectedPjForPreview: IPieceJointe | null = null;
+
+  // ================================
+  // Renommer pièce jointe
+  // ================================
+  showRenamePjModal = false;
+  pjToRename: IPieceJointe | null = null;
+  renamePjNewName = '';
+  renamePjError = '';
+  isRenamingPj = false;
 
   constructor(
     protected bonCommandeService: BonCommandeService,
@@ -84,12 +165,20 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     protected activatedRoute: ActivatedRoute,
     protected affaireService: AffaireService,
     protected clientService: ClientService,
-    protected elementRef: ElementRef,
-    protected modalService: NgbModal
+    protected siteService: SiteService,
+    protected modalService: NgbModal,
+    protected bonCommandeAutreResponsableService: BonCommandeAutreResponsableService,
+    protected bonCommandeArticlesService: BonCommandeArticlesService,
+    protected articleService: ArticleService,
+    protected pieceJointeService: PieceJointeService,
+    protected pjCareService: PjCareService,
+    protected scanSettingsService: ScanSettingsService,
+    protected sanitizer: DomSanitizer,
+    protected cdr: ChangeDetectorRef
   ) {}
-
   ngOnInit(): void {
     this.loadResponsables();
+    this.loadAffaires(''); // Pré-charge la liste des projets dès l'ouverture du formulaire
 
     this.activatedRoute.data.subscribe(({ bonCommande }) => {
       this.bonCommande = bonCommande;
@@ -137,18 +226,6 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   }
 
   // ================================
-  // Fermer dropdown au clic extérieur
-  // ================================
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    if (!this.elementRef.nativeElement.contains(event.target)) {
-      this.affaireDropdownOpen = false;
-      this.responsableDropdownOpen = false;
-      this.autreResponsableDropdownOpen = false;
-    }
-  }
-
-  // ================================
   // Accordéon
   // ================================
   togglePanel(panel: AccordionPanel): void {
@@ -164,36 +241,15 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   }
 
   // ================================
-  // Liste déroulante Affaire
+  // Liste déroulante Affaire (ng-select)
   // ================================
-  openAffaireDropdown(): void {
-    this.affaireDropdownOpen = true;
 
-    if (this.affaireResults.length === 0 && !this.loadingAffaires) {
-      this.loadAffaires('');
-    }
-  }
-
-  toggleAffaireDropdown(event: MouseEvent): void {
-    // Empêche le clic de remonter jusqu'au (focus) de l'input,
-    // qui rouvrirait immédiatement la liste qu'on vient de fermer.
-    event.stopPropagation();
-    event.preventDefault();
-
-    if (this.affaireDropdownOpen) {
-      this.affaireDropdownOpen = false;
-    } else {
-      this.openAffaireDropdown();
-    }
-  }
-
-  onAffaireSearchInput(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-
-    this.affaireInputValue = value;
-    this.affaireDropdownOpen = true;
-
-    this.affaireSearch$.next(value);
+  /**
+   * Appelé par ng-select à chaque frappe dans le champ de recherche
+   * (relié via [typeahead]="affaireSearch$").
+   */
+  onAffaireSearchInput(search: string): void {
+    this.affaireSearch$.next(search);
   }
 
   private loadAffaires(search: string): void {
@@ -216,16 +272,12 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   }
 
   // ================================
-  // Pagination dropdown
+  // Pagination (scroll infini ng-select)
   // ================================
-  onAffaireListScroll(event: Event): void {
-    const el = event.target as HTMLElement;
-
-    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 10;
-
+  onAffaireScrollToEnd(): void {
     const hasMore = this.affaireResults.length < this.affaireTotalItems;
 
-    if (atBottom && hasMore && !this.loadingAffaires) {
+    if (hasMore && !this.loadingAffaires) {
       this.affairePage += 1;
       this.loadingAffaires = true;
 
@@ -243,6 +295,11 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
         });
     }
   }
+
+  /**
+   * Fonction de comparaison pour ng-select (objets IAffaire par id).
+   */
+  compareAffaire = (a: IAffaire | null, b: IAffaire | null): boolean => (a && b ? a.id === b.id : a === b);
 
   private onAffairePageLoaded(res: HttpResponse<IAffaire[]>, reset: boolean): void {
     const items = res.body ?? [];
@@ -265,31 +322,46 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       clientId,
     });
 
-    this.selectedAffaireLabel = `${affaire.designationAffaire} (N° ${affaire.numAffaire})`;
-
-    // Valeur affichée dans l'input
-    this.affaireInputValue = this.selectedAffaireLabel;
+    // Sélection affichée dans le ng-select
+    this.selectedAffaire = affaire;
 
     // Code projet affiché à côté (lecture seule)
     this.selectedAffaireCode = affaire.identifiantUnique ?? null;
 
-    this.affaireDropdownOpen = false;
+    this.loadClientInfo(clientId);
+    this.loadClientCommandeInfo(affaire.clientCommande ?? null);
 
-    this.loadClientInfo(clientId, true);
+    // Un nouveau projet a été choisi : la sélection précédente ne correspond plus à ce projet
+    this.chosenArticles = [];
+  }
+
+  /**
+   * Appelé directement par le (change) du ng-select Affaire.
+   * `null` signifie que l'utilisateur a vidé la sélection.
+   */
+  onAffaireSelectChange(affaire: IAffaire | null): void {
+    if (affaire) {
+      this.selectAffaire(affaire);
+    } else {
+      this.editForm.patchValue({ affaireId: null, clientId: null, lieu: null });
+      this.selectedAffaire = null;
+      this.selectedAffaireCode = null;
+      this.selectedClientInfo = null;
+      this.selectedClientCommandeInfo = null;
+      this.clientSites = [];
+      this.chosenArticles = [];
+    }
   }
 
   /**
    * Récupère les infos complètes du client via un appel API dédié (GET /api/clients/{id}).
    * Affichage uniquement — seul clientId est persisté avec le BonCommande.
-   *
-   * @param syncReferenceClient Si true, pré-remplit referenceClient avec le matricule fiscale
-   *                            du client (utilisé uniquement lors de la sélection d'un projet,
-   *                            pas au chargement d'un bon de commande existant).
    */
-  private loadClientInfo(clientId: number | null, syncReferenceClient = false): void {
+  private loadClientInfo(clientId: number | null): void {
     this.selectedClientInfo = null;
 
     if (clientId === null || clientId === undefined) {
+      this.clientSites = [];
       return;
     }
 
@@ -300,15 +372,64 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
         this.selectedClientInfo = res.body ?? null;
         this.loadingClientInfo = false;
 
-        if (syncReferenceClient) {
-          this.editForm.patchValue({
-            referenceClient: this.selectedClientInfo?.identifiantUnique ?? null,
-          });
-        }
+        // Force la mise à jour de la vue même si l'accordéon "Information Client"
+        // est fermé au moment où la réponse arrive (sinon le champ "Client" reste
+        // vide tant qu'un autre événement ne déclenche pas de détection de changement).
+        this.cdr.detectChanges();
       },
       error: () => {
         this.selectedClientInfo = null;
         this.loadingClientInfo = false;
+        this.cdr.detectChanges();
+      },
+    });
+
+    this.loadClientSites(clientId);
+  }
+
+  /**
+   * Récupère les sites associés au client final (GET /api/sites/client/{clientId}),
+   * pour alimenter la liste déroulante "Lieu".
+   */
+  private loadClientSites(clientId: number): void {
+    this.clientSites = [];
+    this.loadingClientSites = true;
+
+    this.siteService.findByClientId(clientId).subscribe({
+      next: res => {
+        this.clientSites = res.body ?? [];
+        this.loadingClientSites = false;
+      },
+      error: () => {
+        this.clientSites = [];
+        this.loadingClientSites = false;
+      },
+    });
+  }
+
+  /**
+   * Récupère les infos du client commande (affaire.clientCommande) via GET /api/clients/{id}.
+   * Affichage uniquement — ce champ n'est pas persisté avec le BonCommande.
+   */
+  private loadClientCommandeInfo(clientCommandeId: number | null): void {
+    this.selectedClientCommandeInfo = null;
+
+    if (clientCommandeId === null || clientCommandeId === undefined) {
+      return;
+    }
+
+    this.loadingClientCommandeInfo = true;
+
+    this.clientService.find(clientCommandeId).subscribe({
+      next: res => {
+        this.selectedClientCommandeInfo = res.body ?? null;
+        this.loadingClientCommandeInfo = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.selectedClientCommandeInfo = null;
+        this.loadingClientCommandeInfo = false;
+        this.cdr.detectChanges();
       },
     });
   }
@@ -322,91 +443,39 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     this.bonCommandeService.findResponsablesByRole(RESPONSABLE_ROLE_CODE).subscribe({
       next: res => {
         this.responsables = res.body ?? [];
-        this.filteredResponsables = this.responsables;
-        this.filteredAutreResponsables = this.responsables;
         this.loadingResponsables = false;
       },
       error: () => {
         this.responsables = [];
-        this.filteredResponsables = [];
-        this.filteredAutreResponsables = [];
         this.loadingResponsables = false;
       },
     });
   }
 
-  openResponsableDropdown(): void {
-    this.responsableDropdownOpen = true;
-  }
-
-  toggleResponsableDropdown(event: MouseEvent): void {
-    event.stopPropagation();
-    event.preventDefault();
-
-    this.responsableDropdownOpen = !this.responsableDropdownOpen;
-  }
-
-  onResponsableSearchInput(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-
-    this.responsableInputValue = value;
-    this.responsableDropdownOpen = true;
-
-    const term = value.trim().toLowerCase();
-    this.filteredResponsables = term ? this.responsables.filter(r => (r.nomPrenom ?? '').toLowerCase().includes(term)) : this.responsables;
-  }
-
-  selectResponsable(responsable: IContactSociete): void {
+  onResponsableSelectChange(responsable: IContactSociete | null): void {
     this.editForm.patchValue({
-      responsableId: responsable.id !== undefined ? String(responsable.id) : null,
+      responsableId: responsable?.id !== undefined && responsable?.id !== null ? String(responsable.id) : null,
     });
 
-    this.selectedResponsableLabel = responsable.nomPrenom ?? '';
-    this.responsableInputValue = this.selectedResponsableLabel;
-    this.responsableDropdownOpen = false;
+    this.selectedResponsable = responsable;
   }
 
   // ================================
-  // Liste déroulante Autre Responsable (champ libre, non persisté)
+  // Autres Responsables (sélection multiple, persistée via BonCommandeAutreResponsable)
   // ================================
-  openAutreResponsableDropdown(): void {
-    this.autreResponsableDropdownOpen = true;
+  onAutreResponsableSelectChange(responsables: IContactSociete[] | null): void {
+    this.selectedAutresResponsables = responsables ?? [];
   }
 
-  toggleAutreResponsableDropdown(event: MouseEvent): void {
-    event.stopPropagation();
-    event.preventDefault();
-
-    this.autreResponsableDropdownOpen = !this.autreResponsableDropdownOpen;
-  }
-
-  onAutreResponsableSearchInput(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-
-    this.autreResponsableInputValue = value;
-    this.autreResponsable = value;
-    this.autreResponsableDropdownOpen = true;
-
-    const term = value.trim().toLowerCase();
-    this.filteredAutreResponsables = term
-      ? this.responsables.filter(r => (r.nomPrenom ?? '').toLowerCase().includes(term))
-      : this.responsables;
-  }
-
-  selectAutreResponsable(responsable: IContactSociete): void {
-    this.autreResponsable = responsable.nomPrenom ?? '';
-    this.autreResponsableInputValue = this.autreResponsable;
-    this.autreResponsableDropdownOpen = false;
-  }
+  /**
+   * Fonction de comparaison pour ng-select (objets IContactSociete par id).
+   */
+  compareResponsable = (a: IContactSociete | null, b: IContactSociete | null): boolean => (a && b ? a.id === b.id : a === b);
 
   private loadResponsableLabel(responsableId: number): void {
     this.bonCommandeService.findResponsableById(responsableId).subscribe({
       next: res => {
-        const contact = res.body;
-        if (contact) {
-          this.selectedResponsableLabel = contact.nomPrenom ?? '';
-          this.responsableInputValue = this.selectedResponsableLabel;
-        }
+        this.selectedResponsable = res.body ?? null;
       },
     });
   }
@@ -415,14 +484,15 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   // Ouvrir modal de sélection
   // ================================
   openAffaireModal(): void {
-    this.affaireDropdownOpen = false;
-
     const modalRef = this.modalService.open(AffaireSelectorModalComponent, {
       size: 'xl',
       centered: true,
       backdrop: 'static',
       windowClass: 'affaire-selector-modal-window',
     });
+
+    // Statut propre à cette interface — chaque appelant du modal fixe le sien.
+    modalRef.componentInstance.statut = AFFAIRE_STATUT;
 
     modalRef.result
       .then((affaire: IAffaire) => {
@@ -433,6 +503,198 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       .catch(() => {
         // Fermeture du modal sans sélection
       });
+  }
+
+  openResponsableModal(): void {
+    const modalRef = this.modalService.open(ContactSelectorModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'contact-selector-modal-window',
+    });
+
+    modalRef.componentInstance.roleCode = RESPONSABLE_ROLE_CODE;
+    modalRef.componentInstance.modalTitle = 'Sélectionner un responsable';
+
+    modalRef.result
+      .then((contact: IContactSociete) => {
+        if (contact) {
+          this.onResponsableSelectChange(contact);
+        }
+      })
+      .catch(() => {
+        // Fermeture du modal sans sélection
+      });
+  }
+
+  openLieuModal(): void {
+    const modalRef = this.modalService.open(SiteSelectorModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'site-selector-modal-window',
+    });
+
+    modalRef.componentInstance.clientId = this.editForm.get('clientId')?.value ?? null;
+
+    modalRef.result
+      .then((site: ISite) => {
+        if (site) {
+          this.editForm.patchValue({ lieu: site.designation });
+        }
+      })
+      .catch(() => {
+        // Fermeture du modal sans sélection
+      });
+  }
+
+  openArticleModal(): void {
+    const modalRef = this.modalService.open(ArticleSelectorModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'article-selector-modal-window',
+    });
+
+    modalRef.componentInstance.affaireId = this.selectedAffaire?.id ?? null;
+    modalRef.componentInstance.initialSelection = this.chosenArticles;
+
+    modalRef.result
+      .then((selection: ArticleSelection[]) => {
+        this.chosenArticles = selection ?? [];
+        this.saveChosenArticles();
+      })
+      .catch(() => {
+        // Fermeture du modal sans validation
+      });
+  }
+
+  /**
+   * Persiste immédiatement en base la sélection d'articles validée dans la modal,
+   * au lieu d'attendre l'enregistrement global du bon de commande.
+   * Nécessite que le bon de commande soit déjà enregistré (bonCommande.id présent) —
+   * c'est déjà le cas puisque le bouton "Sélectionner des articles" n'est visible
+   * que lorsque bonCommande.id existe (cf. template).
+   */
+  private saveChosenArticles(): void {
+    const bonCommandeId = this.bonCommande?.id;
+
+    if (bonCommandeId === null || bonCommandeId === undefined) {
+      return;
+    }
+
+    const articlesToSave: Partial<IBonCommandeArticles>[] = this.chosenArticles
+      .filter(sel => sel.article.id !== null && sel.article.id !== undefined)
+      .map(sel => ({
+        articleId: sel.article.id as number,
+        qteCommande: sel.qte,
+        qteEffectuee: sel.qteEffectuee ?? 0,
+        // On fige le Prix Achat de l'article au moment de la sélection.
+        prixArticle: sel.article.prixAchat ?? null,
+      }));
+
+    this.savingChosenArticles = true;
+
+    this.bonCommandeArticlesService.replaceForBonCommande(bonCommandeId, articlesToSave).subscribe({
+      next: () => {
+        this.savingChosenArticles = false;
+      },
+      error: () => {
+        this.savingChosenArticles = false;
+        alert("Erreur lors de l'enregistrement des articles sélectionnés.");
+      },
+    });
+  }
+
+  removeChosenArticle(articleId: number): void {
+    const bonCommandeId = this.bonCommande?.id;
+
+    // Bon de commande pas encore enregistré : rien à supprimer côté API,
+    // on garde le comportement actuel (retrait local uniquement).
+    if (bonCommandeId === null || bonCommandeId === undefined) {
+      this.chosenArticles = this.chosenArticles.filter(sel => sel.article.id !== articleId);
+      return;
+    }
+
+    const previousArticles = this.chosenArticles;
+
+    // Mise à jour optimiste de l'affichage
+    this.chosenArticles = this.chosenArticles.filter(sel => sel.article.id !== articleId);
+
+    const articlesToSave: Partial<IBonCommandeArticles>[] = this.chosenArticles
+      .filter(sel => sel.article.id !== null && sel.article.id !== undefined)
+      .map(sel => ({
+        articleId: sel.article.id as number,
+        qteCommande: sel.qte,
+        qteEffectuee: sel.qteEffectuee ?? 0,
+        prixArticle: sel.article.prixAchat ?? null,
+      }));
+
+    this.removingArticleId = articleId;
+    this.savingChosenArticles = true;
+
+    this.bonCommandeArticlesService.replaceForBonCommande(bonCommandeId, articlesToSave).subscribe({
+      next: () => {
+        this.savingChosenArticles = false;
+        this.removingArticleId = null;
+      },
+      error: () => {
+        // Rollback si l'API échoue
+        this.chosenArticles = previousArticles;
+        this.savingChosenArticles = false;
+        this.removingArticleId = null;
+        alert("Erreur lors de la suppression de l'article.");
+      },
+    });
+  }
+
+  onChosenArticleQuantityChange(articleId: number, qte: number | string): void {
+    const parsed = Number(qte);
+    const target = this.chosenArticles.find(sel => sel.article.id === articleId);
+    if (target) {
+      target.qte = Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+    }
+  }
+
+  onChosenArticleQteEffectueeChange(articleId: number, qteEffectuee: number | string): void {
+    const parsed = Number(qteEffectuee);
+    const target = this.chosenArticles.find(sel => sel.article.id === articleId);
+    if (target) {
+      target.qteEffectuee = Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+    }
+  }
+
+  openAutreResponsableModal(): void {
+    const modalRef = this.modalService.open(ContactSelectorModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'contact-selector-modal-window',
+    });
+
+    modalRef.componentInstance.roleCode = RESPONSABLE_ROLE_CODE;
+    modalRef.componentInstance.modalTitle = 'Sélectionner un autre responsable';
+    modalRef.componentInstance.multiple = true;
+    modalRef.componentInstance.initialSelection = this.selectedAutresResponsables;
+
+    modalRef.result
+      .then((contacts: IContactSociete[]) => {
+        this.selectedAutresResponsables = contacts ?? [];
+      })
+      .catch(() => {
+        // Fermeture du modal sans sélection
+      });
+  }
+
+  // ================================
+  // Détails Client / Client Demandeur (modals)
+  // ================================
+  openClientDetailsModal(): void {
+    this.modalService.open(this.clientDetailsModal, { size: 'md', centered: true });
+  }
+
+  openClientCommandeDetailsModal(): void {
+    this.modalService.open(this.clientCommandeDetailsModal, { size: 'md', centered: true });
   }
 
   // ================================
@@ -453,19 +715,75 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     if (bonCommande.id !== null) {
       this.subscribeToSaveResponse(this.bonCommandeService.update(bonCommande));
     } else {
-      this.subscribeToSaveResponse(this.bonCommandeService.create(bonCommande));
+      this.bonCommandeService.generateIdentifiantBonCommande().subscribe({
+        next: res => {
+          bonCommande.identifiantUnique = res.body;
+          this.subscribeToSaveResponse(this.bonCommandeService.create(bonCommande));
+        },
+        error: () => {
+          this.onSaveFinalize();
+        },
+      });
     }
   }
 
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IBonCommande>>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
-      next: () => this.onSaveSuccess(),
+      next: res => this.onSaveSuccess(res.body),
       error: () => this.onSaveError(),
     });
   }
 
-  protected onSaveSuccess(): void {
-    this.previousState();
+  protected onSaveSuccess(bonCommande?: IBonCommande | null): void {
+    this.bonCommande = bonCommande ?? this.bonCommande;
+
+    const bonCommandeId = bonCommande?.id;
+
+    if (bonCommandeId === null || bonCommandeId === undefined) {
+      return;
+    }
+
+    const contactSocieteIds = this.selectedAutresResponsables.map(c => c.id).filter((id): id is number => id !== null && id !== undefined);
+
+    const articlesToSave: Partial<IBonCommandeArticles>[] = this.chosenArticles
+      .filter(sel => sel.article.id !== null && sel.article.id !== undefined)
+      .map(sel => ({
+        articleId: sel.article.id as number,
+        qteCommande: sel.qte,
+        qteEffectuee: sel.qteEffectuee ?? 0,
+        // On fige le Prix Achat de l'article au moment de l'enregistrement du BC.
+        prixArticle: sel.article.prixAchat ?? null,
+      }));
+
+    forkJoin([
+      this.bonCommandeAutreResponsableService.replaceForBonCommande(bonCommandeId, contactSocieteIds),
+      this.bonCommandeArticlesService.replaceForBonCommande(bonCommandeId, articlesToSave),
+    ]).subscribe({
+      // On reste sur l'interface d'édition : on envoie d'abord les éventuelles
+      // pièces jointes mises en attente (mode création), puis on recharge les
+      // données à jour (pièces jointes, articles, autres responsables...) au
+      // lieu de rediriger vers la liste des bons de commande.
+      next: () => this.uploadPendingPieceJointesThenRefresh(bonCommandeId),
+      error: () => this.uploadPendingPieceJointesThenRefresh(bonCommandeId),
+    });
+  }
+
+  /**
+   * Recharge les données du bon de commande après un enregistrement réussi,
+   * sans quitter l'interface d'édition. Utile notamment lors de la création
+   * (premier enregistrement) : bonCommande.id devient alors disponible et
+   * les accordéons dépendants (pièces jointes, articles, etc.) peuvent
+   * être activés/rafraîchis normalement.
+   */
+  private refreshAfterSave(bonCommandeId: number): void {
+    this.bonCommandeService.find(bonCommandeId).subscribe({
+      next: res => {
+        if (res.body) {
+          this.updateForm(res.body);
+        }
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   protected onSaveError(): void {
@@ -484,6 +802,39 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
     this.bonCommandeFormService.resetForm(this.editForm, bonCommande);
 
+    // ================================
+    // Infos client — on essaie toutes les sources disponibles, dans l'ordre
+    // de fiabilité, et on charge dès qu'on a un id valide, sans attendre
+    // le retour (asynchrone, potentiellement incomplet) de l'appel affaire.
+    // ================================
+    const resolveInitialClientId = (): number | null => {
+      const fromBonCommande = bonCommande.clientId;
+      if (fromBonCommande !== null && fromBonCommande !== undefined && fromBonCommande !== ('' as any)) {
+        const n = Number(fromBonCommande);
+        if (!Number.isNaN(n)) {
+          return n;
+        }
+      }
+
+      const fromForm = this.editForm.get('clientId')?.value;
+      if (fromForm !== null && fromForm !== undefined) {
+        const n = Number(fromForm);
+        if (!Number.isNaN(n)) {
+          return n;
+        }
+      }
+
+      return null;
+    };
+
+    const initialClientId = resolveInitialClientId();
+
+    if (initialClientId !== null) {
+      this.loadClientInfo(initialClientId);
+    } else {
+      console.warn('[BonCommande][edit] Aucun clientId trouvé ni sur bonCommande, ni sur le form après resetForm.', bonCommande);
+    }
+
     const affaireId = bonCommande.affaireId;
 
     if (affaireId !== null && affaireId !== undefined) {
@@ -492,21 +843,39 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
           const affaire = res.body;
 
           if (affaire) {
-            this.selectedAffaireLabel = `${affaire.designationAffaire} (N° ${affaire.numAffaire})`;
-
-            this.affaireInputValue = this.selectedAffaireLabel;
-
+            this.selectedAffaire = affaire;
             this.selectedAffaireCode = affaire.identifiantUnique ?? null;
+
+            // Nécessaire pour que le ng-select affiche bien l'option sélectionnée
+            // même si elle n'est pas (encore) dans affaireResults.
+            if (!this.affaireResults.some(a => a.id === affaire.id)) {
+              this.affaireResults = [affaire, ...this.affaireResults];
+            }
+
+            // Force la mise à jour de la vue dès que `selectedAffaire` est connu :
+            // l'accordéon "Détails Commande" n'affiche `chosenArticles` que si
+            // `selectedAffaire` est renseigné. Si loadBonCommandeArticles() a déjà
+            // déclenché son propre detectChanges() avant que cette réponse-ci
+            // n'arrive, la vue restait figée tant qu'aucun autre événement (ex :
+            // ouverture de la modal articles) ne déclenchait un nouveau cycle CD.
+            this.cdr.detectChanges();
+
+            this.loadClientCommandeInfo(affaire.clientCommande ?? null);
+
+            // Filet de sécurité : si aucune des sources précédentes n'a donné de
+            // clientId, on retente via le client rattaché à l'affaire.
+            if (initialClientId === null) {
+              const clientIdFromAffaire = affaire.client?.id ?? null;
+              if (clientIdFromAffaire !== null) {
+                this.loadClientInfo(clientIdFromAffaire);
+              } else {
+                console.warn('[BonCommande][edit] affaire.client est également absent/null.', affaire);
+              }
+            }
           }
         },
+        error: err => console.error('[BonCommande][edit] Erreur lors du chargement de l’affaire', err),
       });
-    }
-
-    // Infos client pour affichage — appel API dédié, indépendant de l'objet affaire
-    const clientId = bonCommande.clientId as number | null | undefined;
-
-    if (clientId !== null && clientId !== undefined) {
-      this.loadClientInfo(clientId);
     }
 
     // Libellé du responsable pour affichage — le formulaire ne persiste que l'id
@@ -515,5 +884,541 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     if (responsableId !== null && responsableId !== undefined && responsableId !== '') {
       this.loadResponsableLabel(Number(responsableId));
     }
+
+    // Autres responsables (sélection multiple) — chargés via la table de liaison
+    if (bonCommande.id !== null && bonCommande.id !== undefined) {
+      this.loadAutresResponsables(bonCommande.id);
+      this.loadBonCommandeArticles(bonCommande.id);
+      this.loadPieceJointes(bonCommande.id);
+    }
+  }
+
+  // ================================
+  // Pièces Jointes — chargement, upload, scan PjCare
+  // ================================
+  private loadPieceJointes(bonCommandeId: number): void {
+    this.loadingPieceJointes = true;
+    this.pieceJointeService.findByBonCommande(bonCommandeId).subscribe({
+      next: res => {
+        this.pieceJointes = res.body ?? [];
+        this.loadingPieceJointes = false;
+      },
+      error: () => {
+        this.pieceJointes = [];
+        this.loadingPieceJointes = false;
+      },
+    });
+  }
+
+  removePieceJointe(id: number): void {
+    this.pieceJointeService.delete(id).subscribe({
+      next: () => {
+        this.pieceJointes = this.pieceJointes.filter(pj => pj.id !== id);
+      },
+    });
+  }
+
+  getPieceJointeFileUrl(id: number): string {
+    return this.pieceJointeService.getFileUrl(id);
+  }
+
+  downloadPieceJointe(pj: IPieceJointe): void {
+    this.pieceJointeService.getFile(pj.id).subscribe({
+      next: (blob: Blob) => {
+        saveAs(blob, pj.nomFichier + '.' + pj.type);
+      },
+      error: err => {
+        console.error('Download failed', err);
+        alert('Échec du téléchargement du fichier');
+      },
+    });
+  }
+
+  openRenamePjModal(pj: IPieceJointe): void {
+    this.pjToRename = pj;
+    this.renamePjNewName = pj.nomFichier || '';
+    this.renamePjError = '';
+    this.showRenamePjModal = true;
+  }
+
+  closeRenamePjModal(): void {
+    if (this.isRenamingPj) {
+      return;
+    }
+    this.showRenamePjModal = false;
+    this.pjToRename = null;
+    this.renamePjNewName = '';
+    this.renamePjError = '';
+  }
+
+  confirmRenamePj(): void {
+    if (!this.pjToRename) {
+      return;
+    }
+
+    const trimmed = (this.renamePjNewName || '').trim();
+    if (!trimmed) {
+      this.renamePjError = 'Le nom ne peut pas être vide';
+      return;
+    }
+
+    this.isRenamingPj = true;
+    this.renamePjError = '';
+
+    this.pieceJointeService.renamePieceJointe(this.pjToRename.id, trimmed).subscribe({
+      next: () => {
+        this.isRenamingPj = false;
+        const idx = this.pieceJointes.findIndex(p => p.id === this.pjToRename!.id);
+        if (idx >= 0) {
+          this.pieceJointes[idx] = { ...this.pieceJointes[idx], nomFichier: trimmed };
+        }
+        if (this.selectedPjForPreview?.id === this.pjToRename!.id) {
+          this.selectedPjForPreview = { ...this.selectedPjForPreview, nomFichier: trimmed };
+        }
+        this.closeRenamePjModal();
+      },
+      error: err => {
+        this.isRenamingPj = false;
+        console.error('Erreur renommage PJ', err);
+        this.renamePjError = 'Erreur lors du renommage';
+      },
+    });
+  }
+
+  // ================================
+  // Aperçu inline pièce jointe
+  // ================================
+  togglePjPreview(pj: IPieceJointe): void {
+    if (this.selectedPjForPreview && this.selectedPjForPreview.id === pj.id) {
+      this.selectedPjForPreview = null;
+    } else {
+      this.selectedPjForPreview = pj;
+    }
+  }
+
+  closePjPreview(): void {
+    this.selectedPjForPreview = null;
+  }
+
+  isImagePj(pj: IPieceJointe): boolean {
+    const t = (pj.type || '').toLowerCase();
+    return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(t);
+  }
+
+  isPdfPj(pj: IPieceJointe): boolean {
+    return (pj.type || '').toLowerCase() === 'pdf';
+  }
+
+  getSafePjUrl(id: number): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(this.getPieceJointeFileUrl(id));
+  }
+
+  private generateRandomId(length = 8): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
+  onFileSelected(event: any): void {
+    const file: File = event.target.files[0];
+    if (!file) {
+      return;
+    }
+    this.uploadFile(file);
+    event.target.value = '';
+  }
+
+  private uploadFile(file: File): void {
+    const bonCommandeId = this.bonCommande?.id;
+
+    // Bon de commande pas encore enregistré : on met le fichier de côté,
+    // il sera réellement envoyé juste après le premier enregistrement (cf. onSaveSuccess).
+    if (bonCommandeId === null || bonCommandeId === undefined) {
+      this.stagePendingPieceJointe(file);
+      return;
+    }
+
+    const uniqueName = this.generateRandomId(10);
+    this.uploadingPieceJointe = true;
+
+    this.pieceJointeService.uploadPieceJointe(file, bonCommandeId, uniqueName).subscribe({
+      next: pj => {
+        this.pieceJointes = [pj, ...this.pieceJointes];
+        this.uploadingPieceJointe = false;
+      },
+      error: () => {
+        this.uploadingPieceJointe = false;
+        alert('Échec du téléchargement du fichier');
+      },
+    });
+  }
+
+  // ================================
+  // Pièces Jointes en attente (mode création, avant le premier enregistrement)
+  // ================================
+  private stagePendingPieceJointe(file: File): void {
+    const lastDot = file.name.lastIndexOf('.');
+    const displayName = lastDot > 0 ? file.name.substring(0, lastDot) : file.name;
+    const extension = lastDot > 0 ? file.name.substring(lastDot + 1) : '';
+
+    this.pendingPieceJointes = [{ tempId: this.generateRandomId(10), file, displayName, extension }, ...this.pendingPieceJointes];
+  }
+
+  removePendingPieceJointe(tempId: string): void {
+    this.pendingPieceJointes = this.pendingPieceJointes.filter(p => p.tempId !== tempId);
+  }
+
+  /**
+   * Envoie les pièces jointes mises en attente juste après le premier enregistrement
+   * du bon de commande (qui vient de recevoir son id), puis rafraîchit l'interface.
+   */
+  private uploadPendingPieceJointesThenRefresh(bonCommandeId: number): void {
+    if (this.pendingPieceJointes.length === 0) {
+      this.refreshAfterSave(bonCommandeId);
+      return;
+    }
+
+    const uploads = this.pendingPieceJointes.map(p =>
+      this.pieceJointeService.uploadPieceJointe(p.file, bonCommandeId, this.generateRandomId(10))
+    );
+
+    forkJoin(uploads).subscribe({
+      next: () => {
+        this.pendingPieceJointes = [];
+        this.refreshAfterSave(bonCommandeId);
+      },
+      error: () => {
+        alert("Certaines pièces jointes n'ont pas pu être envoyées. Vous pouvez réessayer depuis l'accordéon Pièces Jointes.");
+        this.refreshAfterSave(bonCommandeId);
+      },
+    });
+  }
+
+  // -------- PjCare : scan --------
+  openScanModal(content: any): void {
+    this.scanPreview = null;
+    this.scanError = null;
+    this.isMerging = false;
+    this.currentDocumentPages = [];
+
+    const hasSavedSettings = this.scanSettingsService.hasSettings();
+    this.scanAccordionStates['scanSource'] = !hasSavedSettings;
+    this.scanAccordionStates['scanParams'] = !hasSavedSettings;
+
+    this.loadScanSettings();
+    this.checkPjCare();
+    this.modalService.open(content, { size: 'lg', windowClass: 'scan-modal-window' });
+  }
+
+  private loadScanSettings(): void {
+    const s = this.scanSettingsService.load();
+    this.scanFormat = s.scanFormat;
+    this.scanDpi = s.scanDpi;
+    this.scanQuality = s.scanQuality;
+    this.scanBitdepth = s.scanBitdepth;
+    this.scanDuplex = s.scanDuplex;
+    this.scanExcludeBlank = s.scanExcludeBlank;
+    this.scanBlankThreshold = s.scanBlankThreshold;
+    this.scanCoverageThreshold = s.scanCoverageThreshold;
+    this._pendingDriverFromCookie = s.selectedDriver;
+  }
+
+  saveScanSettings(): void {
+    this.scanSettingsService.save({
+      scanFormat: this.scanFormat,
+      scanDpi: this.scanDpi,
+      scanQuality: this.scanQuality,
+      scanBitdepth: this.scanBitdepth,
+      scanDuplex: this.scanDuplex,
+      scanExcludeBlank: this.scanExcludeBlank,
+      scanBlankThreshold: this.scanBlankThreshold,
+      scanCoverageThreshold: this.scanCoverageThreshold,
+      selectedDriver: this.selectedDriver as string,
+    });
+  }
+
+  resetScanSettings(): void {
+    this.scanSettingsService.reset();
+    this.scanFormat = 'pdf';
+    this.scanDpi = 150;
+    this.scanQuality = 75;
+    this.scanBitdepth = 'color';
+    this.scanDuplex = false;
+    this.scanExcludeBlank = false;
+    this.scanBlankThreshold = 240;
+    this.scanCoverageThreshold = 5;
+  }
+
+  checkPjCare(): void {
+    this.loadingScanners = true;
+    this.loadingDrivers = true;
+
+    this.pjCareService.getHealth().subscribe({
+      next: res => {
+        if (res && res.status === 200) {
+          this.pjcareAvailable = true;
+          this.pjCareService.getDrivers().subscribe({
+            next: driverRes => {
+              this.availableDrivers = driverRes.drivers || [];
+              const defaultKey = res.defaultDriver || (this.availableDrivers[0]?.key ?? '');
+
+              const cookieDriver = this._pendingDriverFromCookie;
+              const cookieDriverExists = cookieDriver ? this.availableDrivers.some(d => d.key === cookieDriver) : false;
+
+              this.selectedDriver = (cookieDriverExists ? cookieDriver : defaultKey) as ScanDriver;
+              this._pendingDriverFromCookie = '';
+              this.loadingDrivers = false;
+              this.loadScannersForDriver(this.selectedDriver as ScanDriver);
+            },
+            error: () => {
+              this.availableDrivers = [];
+              this.loadingDrivers = false;
+              this.loadScannersForDriver(undefined);
+            },
+          });
+        } else {
+          this.pjcareAvailable = false;
+          this.loadingScanners = false;
+          this.loadingDrivers = false;
+        }
+      },
+      error: () => {
+        this.pjcareAvailable = false;
+        this.loadingScanners = false;
+        this.loadingDrivers = false;
+      },
+    });
+  }
+
+  loadScannersForDriver(driver?: ScanDriver): void {
+    this.loadingScanners = true;
+    this.scanners = [];
+    this.selectedScanner = '';
+
+    this.pjCareService.getScanners(driver).subscribe({
+      next: scanRes => {
+        this.scanners = scanRes.scanners || [];
+        if (this.scanners.length > 0) {
+          this.selectedScanner = this.scanners[0];
+        }
+        this.loadingScanners = false;
+      },
+      error: () => {
+        this.scanners = [];
+        this.loadingScanners = false;
+      },
+    });
+  }
+
+  onDriverChange(): void {
+    this.scanPreview = null;
+    this.scanError = null;
+    this.loadScannersForDriver((this.selectedDriver as ScanDriver) || undefined);
+  }
+
+  launchScan(): void {
+    this.isScanning = true;
+    this.scanError = null;
+    this.scanPreview = null;
+
+    this.saveScanSettings();
+
+    this.pjCareService
+      .scan({
+        source: this.selectedScanner,
+        driver: (this.selectedDriver as ScanDriver) || undefined,
+        format: this.scanFormat as any,
+        dpi: this.scanDpi,
+        jpegquality: this.scanQuality,
+        bitdepth: this.scanBitdepth,
+        duplex: this.scanDuplex,
+        name: 'bon-commande',
+        excludeBlank: this.scanExcludeBlank,
+        blankThreshold: this.scanBlankThreshold,
+        coverageThreshold: this.scanCoverageThreshold,
+      })
+      .subscribe({
+        next: result => {
+          this.isScanning = false;
+          if (result.status === 200) {
+            const preview = this.scanFormat !== 'pdf' ? `data:image/${this.scanFormat};base64,${result.data}` : null;
+            this.scanPreview = preview ?? 'pdf';
+
+            const page: ScannedPage = {
+              data: result.data,
+              format: result.format || this.scanFormat,
+              preview,
+              pageNumber: this.currentDocumentPages.length + 1,
+            };
+            this.currentDocumentPages.push(page);
+          } else {
+            this.scanError = result.error || 'Erreur inconnue';
+          }
+        },
+        error: () => {
+          this.isScanning = false;
+          this.scanError = 'PjCare inaccessible. Vérifiez que le service tourne.';
+        },
+      });
+  }
+
+  removePage(index: number): void {
+    this.currentDocumentPages.splice(index, 1);
+    this.currentDocumentPages.forEach((p, i) => (p.pageNumber = i + 1));
+    if (this.currentDocumentPages.length === 0) {
+      this.scanPreview = null;
+    }
+  }
+
+  attachScanResult(modal: any): void {
+    if (this.currentDocumentPages.length === 0) {
+      return;
+    }
+
+    // Remarque : si le bon de commande n'est pas encore enregistré, _attachRawResult()
+    // → uploadFile() met le scan en attente au lieu de l'envoyer immédiatement.
+
+    if (this.currentDocumentPages.length === 1) {
+      const p = this.currentDocumentPages[0];
+      this._attachRawResult(p.data, this.scanFormat, modal);
+      return;
+    }
+
+    this.isMerging = true;
+    this.scanError = null;
+
+    this.pjCareService
+      .mergePages({
+        pages: this.currentDocumentPages.map(p => ({ data: p.data, format: p.format })),
+        outputFormat: this.scanFormat as any,
+        jpegquality: this.scanQuality,
+        name: 'bon-commande',
+      })
+      .subscribe({
+        next: result => {
+          this.isMerging = false;
+          if (result.status === 200) {
+            this._attachRawResult(result.data, result.format, modal);
+          } else {
+            this.scanError = result.error || 'Erreur lors de la fusion des pages';
+          }
+        },
+        error: () => {
+          this.isMerging = false;
+          this.scanError = 'Erreur lors de la fusion des pages';
+        },
+      });
+  }
+
+  private _attachRawResult(base64: string, format: string, modal: any): void {
+    const mimeType = format === 'pdf' ? 'application/pdf' : `image/${format}`;
+    const byteString = atob(base64);
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    const blob = new Blob([ab], { type: mimeType });
+    const filename = `scan-${dayjs().format('YYYYMMDD-HHmmss')}.${format}`;
+    const file = new File([blob], filename, { type: mimeType });
+
+    this.uploadFile(file);
+
+    this.currentDocumentPages = [];
+    this.scanPreview = null;
+    modal.close();
+  }
+
+  private loadAutresResponsables(bonCommandeId: number): void {
+    this.bonCommandeAutreResponsableService.findByBonCommande(bonCommandeId).subscribe({
+      next: res => {
+        const links = res.body ?? [];
+        const contactIds = links.map(l => l.contactSocieteId).filter((id): id is number => id !== null && id !== undefined);
+
+        if (contactIds.length === 0) {
+          this.selectedAutresResponsables = [];
+          return;
+        }
+
+        forkJoin(contactIds.map(id => this.bonCommandeService.findResponsableById(id))).subscribe({
+          next: responses => {
+            this.selectedAutresResponsables = responses.map(r => r.body).filter((c): c is IContactSociete => c !== null);
+          },
+        });
+      },
+      error: () => {
+        this.selectedAutresResponsables = [];
+      },
+    });
+  }
+
+  /**
+   * Charge les affectations existantes (articles déjà liés à ce BC) pour pré-remplir
+   * l'accordéon "Détails Commande" en mode édition. Récupère le détail complet de
+   * chaque article (désignation, prix...) via ArticleService, car la table de liaison
+   * ne stocke que l'id et la quantité.
+   */
+  private loadBonCommandeArticles(bonCommandeId: number): void {
+    this.bonCommandeArticlesService.findByBonCommande(bonCommandeId).subscribe({
+      next: res => {
+        const links = res.body ?? [];
+        const validLinks = links.filter(
+          (l): l is IBonCommandeArticles & { articleId: number } => l.articleId !== null && l.articleId !== undefined
+        );
+
+        if (validLinks.length === 0) {
+          this.chosenArticles = [];
+          this.cdr.detectChanges();
+          return;
+        }
+
+        forkJoin(validLinks.map(l => this.articleService.find(l.articleId))).subscribe({
+          next: responses => {
+            const mapped: (ArticleSelection | null)[] = responses.map((res2, index) => {
+              const article = res2.body;
+
+              if (!article) {
+                return null;
+              }
+
+              const persistedPrix = validLinks[index].prixArticle;
+
+              // Le Prix Achat affiché doit rester celui figé lors de l'enregistrement
+              // du bon de commande, et non le prix courant de l'article (qui peut
+              // avoir changé depuis).
+              if (persistedPrix !== null && persistedPrix !== undefined) {
+                article.prixAchat = persistedPrix;
+              }
+
+              const sel: ArticleSelection = {
+                article,
+                qte: validLinks[index].qteCommande ?? 1,
+                qteEffectuee: validLinks[index].qteEffectuee ?? null,
+              };
+              return sel;
+            });
+
+            this.chosenArticles = mapped.filter((sel): sel is ArticleSelection => sel !== null);
+
+            // Force la mise à jour de la vue même si l'accordéon "Détails Commande"
+            // est fermé au moment où la réponse arrive (même problème que pour
+            // loadClientInfo / loadClientCommandeInfo — sinon la liste reste vide
+            // à l'affichage tant qu'un autre événement ne déclenche pas de CD).
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            this.chosenArticles = [];
+            this.cdr.detectChanges();
+          },
+        });
+      },
+      error: () => {
+        this.chosenArticles = [];
+        this.cdr.detectChanges();
+      },
+    });
   }
 }

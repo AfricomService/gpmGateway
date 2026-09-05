@@ -20,39 +20,6 @@
   color: var(--cp-text);
 }
 
-.btn-cu-back-floating {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  margin-top: 2px;
-  border-radius: 50%;
-  border: 1px solid var(--cp-border);
-  background: var(--cp-surface);
-  color: var(--cp-text-muted);
-  font-size: 0.95rem;
-  box-shadow: 0 4px 14px -8px rgba(26, 34, 51, 0.25);
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
-  z-index: 10;
-  white-space: nowrap;
-  flex-shrink: 0;
-
-  &:hover {
-    background: var(--cp-surface-hover);
-    color: var(--cp-accent);
-    border-color: var(--cp-accent);
-    transform: translateX(-2px);
-  }
-}
-
-@media (max-width: 1300px) {
-  .btn-cu-back-floating {
-    display: none;
-  }
-}
-
 .cu-container {
   position: relative;
   width: 100%;

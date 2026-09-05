@@ -4,15 +4,16 @@
       "home": {
         "title": "Bon Commandes",
         "refreshListLabel": "Refresh list",
-        "createLabel": "Global Information",
-        "createOrEditLabel": "Global Information",
+        "createLabel": "New purchase order",
+        "createOrEditLabel": "New purchase order",
         "notFound": "No Bon Commandes found"
       },
       "delete": {
         "question": "Are you sure you want to delete Bon Commande {{ id }}?"
       },
       "detail": {
-        "title": "Bon Commande"
+        "title": "Bon Commande",
+        "globalInfoLabel": "Global Information"
       },
       "id": "ID",
       "clientId": "Client Id",

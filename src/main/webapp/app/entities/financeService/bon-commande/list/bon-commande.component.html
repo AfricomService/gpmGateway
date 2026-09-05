@@ -6,7 +6,6 @@
         <h2 id="page-heading" data-cy="BonCommandeHeading" class="bc-title">
           <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.home.title">Bons de Commande</span>
         </h2>
-        <span class="bc-count" *ngIf="bonCommandes">{{ totalItems }} élément(s)</span>
       </div>
 
       <div class="bc-header-actions">
@@ -21,7 +20,35 @@
           [routerLink]="['/bon-commande/new']"
         >
           <fa-icon icon="plus"></fa-icon>
-          <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.home.createLabel"> Créer un nouveau Bon Commande </span>
+          <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.home.createLabel"> Nouveau bon de commande </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Barre de recherche : input + compteur + toggle de vue -->
+    <div class="bc-searchbar">
+      <div class="bc-search">
+        <fa-icon icon="search" class="bc-search-icon"></fa-icon>
+        <input
+          type="text"
+          class="bc-search-input"
+          placeholder="Rechercher (réf. client, lieu, n° BC)..."
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearchChange()"
+        />
+        <button type="button" class="bc-search-clear" *ngIf="searchTerm" (click)="clearSearch()" title="Effacer">
+          <fa-icon icon="times"></fa-icon>
+        </button>
+      </div>
+
+      <span class="bc-count" *ngIf="bonCommandes">{{ totalItems }} résultat(s)</span>
+
+      <div class="bc-view-toggle">
+        <button type="button" [class.active]="viewMode === 'grid'" (click)="setViewMode('grid')" title="Vue grille">
+          <fa-icon icon="th-large"></fa-icon>
+        </button>
+        <button type="button" [class.active]="viewMode === 'list'" (click)="setViewMode('list')" title="Vue tableau">
+          <fa-icon icon="list"></fa-icon>
         </button>
       </div>
     </div>
@@ -35,18 +62,14 @@
       <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.home.notFound">Aucun Bon Commande trouvé</span>
     </div>
 
-    <!-- Table card -->
-    <div class="bc-card" id="entities" *ngIf="bonCommandes && bonCommandes.length > 0">
+    <!-- ==================================================== -->
+    <!-- VUE TABLEAU (liste) -->
+    <!-- ==================================================== -->
+    <div class="bc-card" id="entities" *ngIf="bonCommandes && bonCommandes.length > 0 && viewMode === 'list'">
       <div class="table-responsive">
         <table class="bc-table" aria-describedby="page-heading">
           <thead>
             <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
-              <th scope="col" jhiSortBy="id">
-                <div class="d-flex align-items-center">
-                  <span jhiTranslate="global.field.id">ID</span>
-                  <fa-icon class="bc-sort-icon" icon="sort"></fa-icon>
-                </div>
-              </th>
               <th scope="col" jhiSortBy="clientId">
                 <div class="d-flex align-items-center">
                   <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.clientId">Client</span>
@@ -99,11 +122,12 @@
               class="bc-row-clickable"
               (dblclick)="onRowDoubleClick(bonCommande)"
             >
-              <td class="bc-cell-strong" data-label="ID">
-                <a [routerLink]="['/bon-commande', bonCommande.id, 'view']" (click)="$event.stopPropagation()">{{ bonCommande.id }}</a>
+              <td data-label="Client">
+                {{ bonCommande.clientId ? clientNames.get(bonCommande.clientId) || bonCommande.clientId : '—' }}
               </td>
-              <td data-label="Client">{{ bonCommande.clientId || '—' }}</td>
-              <td data-label="Affaire">{{ bonCommande.affaireId || '—' }}</td>
+              <td data-label="Affaire">
+                {{ bonCommande.affaireId ? affaireNames.get(bonCommande.affaireId) || bonCommande.affaireId : '—' }}
+              </td>
               <td data-label="Lieu">
                 <span class="bc-badge-lieu" *ngIf="bonCommande.lieu">{{ bonCommande.lieu }}</span>
                 <span class="bc-empty-value" *ngIf="!bonCommande.lieu">—</span>
@@ -120,28 +144,6 @@
                 <div class="bc-actions">
                   <button
                     type="button"
-                    [routerLink]="['/bon-commande', bonCommande.id, 'view']"
-                    (click)="$event.stopPropagation()"
-                    class="btn-bc-icon btn-bc-view"
-                    data-cy="entityDetailsButton"
-                    title="Voir"
-                  >
-                    <fa-icon icon="eye"></fa-icon>
-                  </button>
-
-                  <button
-                    type="button"
-                    [routerLink]="['/bon-commande', bonCommande.id, 'edit']"
-                    (click)="$event.stopPropagation()"
-                    class="btn-bc-icon btn-bc-edit"
-                    data-cy="entityEditButton"
-                    title="Éditer"
-                  >
-                    <fa-icon icon="pencil-alt"></fa-icon>
-                  </button>
-
-                  <button
-                    type="button"
                     (click)="delete(bonCommande); $event.stopPropagation()"
                     class="btn-bc-icon btn-bc-delete"
                     data-cy="entityDeleteButton"
@@ -154,6 +156,52 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- VUE GRILLE (cartes) -->
+    <!-- ==================================================== -->
+    <div class="bc-grid" id="entities-grid" *ngIf="bonCommandes && bonCommandes.length > 0 && viewMode === 'grid'">
+      <div class="bc-card-item" *ngFor="let bonCommande of bonCommandes; trackBy: trackId" (click)="onRowDoubleClick(bonCommande)">
+        <div class="bc-card-item-header">
+          <span class="bc-card-ref">{{ bonCommande.identifiantUnique || '#' + bonCommande.id }}</span>
+          <button
+            type="button"
+            (click)="delete(bonCommande); $event.stopPropagation()"
+            class="btn-bc-icon btn-bc-delete"
+            data-cy="entityDeleteButton"
+            title="Supprimer"
+          >
+            <fa-icon icon="trash-alt"></fa-icon>
+          </button>
+        </div>
+
+        <h3 class="bc-card-title">
+          {{ bonCommande.clientId ? clientNames.get(bonCommande.clientId) || 'Client #' + bonCommande.clientId : '—' }}
+        </h3>
+
+        <div class="bc-card-meta">
+          <span>{{ bonCommande.affaireId ? affaireNames.get(bonCommande.affaireId) || 'Affaire #' + bonCommande.affaireId : '—' }}</span>
+          <span class="bc-card-meta-sep" *ngIf="bonCommande.lieu">·</span>
+          <span *ngIf="bonCommande.lieu">{{ bonCommande.lieu }}</span>
+        </div>
+
+        <div class="bc-card-item-footer">
+          <span class="bc-card-date">{{ (bonCommande.dateBonCommande | formatMediumDatetime) || '—' }}</span>
+          <span class="bc-card-ref-client" *ngIf="bonCommande.referenceClient">Réf. {{ bonCommande.referenceClient }}</span>
+        </div>
+
+        <div class="bc-card-amounts">
+          <div class="bc-card-amount-block">
+            <span class="bc-card-amount-label">Total</span>
+            <span class="bc-amount">{{ bonCommande.montantTotal || '—' }}</span>
+          </div>
+          <div class="bc-card-amount-block">
+            <span class="bc-card-amount-label">Consommé</span>
+            <span class="bc-amount bc-amount-muted">{{ bonCommande.montantConsomme || '—' }}</span>
+          </div>
+        </div>
       </div>
     </div>
 

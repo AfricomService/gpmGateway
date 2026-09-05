@@ -197,38 +197,17 @@
   border-bottom: 1px dashed var(--cp-border);
 }
 
-/* ============ DISPOSITION 70% / 30% ============ */
+/* ============ DISPOSITION EMPILÉE (Info Globale au-dessus, Client en dessous) ============ */
 .cu-accordion-row {
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 1rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.85rem;
 
-  .cu-col-global {
-    flex: 0 0 68%;
-    max-width: 68%;
-  }
-
+  .cu-col-global,
   .cu-col-client {
-    flex: 0 0 calc(32% - 1rem);
-    max-width: calc(32% - 1rem);
+    flex: 1 1 100%;
+    max-width: 100%;
   }
-}
-
-@media (max-width: 992px) {
-  .cu-accordion-row {
-    flex-direction: column;
-
-    .cu-col-global,
-    .cu-col-client {
-      flex: 1 1 100%;
-      max-width: 100%;
-    }
-  }
-}
-
-/* ============ LISTE DEROULANTE RECHERCHABLE (Affaire) ============ */
-.cu-searchable-field {
-  position: relative;
 }
 
 /* ============ SELECT AFFAIRE + BOUTON MODAL ============ */
@@ -238,7 +217,7 @@
   align-items: stretch;
   gap: 0.5rem;
 
-  .cu-select-search {
+  ::ng-deep .custom-ng-select {
     flex: 1;
     min-width: 0;
   }
@@ -278,103 +257,6 @@
   }
 }
 
-.cu-select-search {
-  position: relative;
-
-  .cu-select-search-input-wrap {
-    position: relative;
-
-    .form-control {
-      padding-right: 2.25rem;
-      cursor: text;
-    }
-  }
-
-  .cu-select-chevron {
-    position: absolute;
-    right: 0.85rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--cp-text-muted);
-    transition: transform 0.2s ease;
-    cursor: pointer;
-    z-index: 1;
-  }
-
-  &.open .cu-select-chevron {
-    transform: translateY(-50%) rotate(180deg);
-    color: var(--cp-accent);
-  }
-
-  &.open .form-control {
-    border-color: var(--cp-accent);
-    box-shadow: 0 0 0 3px var(--cp-accent-soft);
-  }
-}
-
-.cu-select-dropdown {
-  position: absolute;
-  z-index: 20;
-  top: calc(100% + 6px);
-  left: 0;
-  right: 0;
-  background: var(--cp-surface);
-  border: 1px solid var(--cp-border);
-  border-radius: 10px;
-  box-shadow: 0 12px 28px -12px rgba(26, 34, 51, 0.25);
-  overflow: hidden;
-}
-
-.cu-select-list {
-  max-height: 260px;
-  overflow-y: auto;
-}
-
-.cu-select-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  padding: 0.6rem 0.9rem;
-  cursor: pointer;
-  transition: background 0.15s ease;
-  border-bottom: 1px solid var(--cp-border);
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  &:hover {
-    background: var(--cp-surface-hover);
-  }
-
-  &.active {
-    background: var(--cp-accent-soft);
-  }
-}
-
-.cu-select-item-title {
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--cp-text);
-}
-
-.cu-select-item-sub {
-  font-size: 0.75rem;
-  color: var(--cp-text-muted);
-}
-
-.cu-select-loading,
-.cu-select-empty {
-  text-align: center;
-  padding: 0.85rem;
-  color: var(--cp-text-muted);
-  font-size: 0.85rem;
-}
-
-.cu-select-empty {
-  font-style: italic;
-}
-
 /* ============ CONTENU VIDE (accordéons en attente de contenu) ============ */
 .cu-empty-panel {
   display: flex;
@@ -387,7 +269,260 @@
   font-style: italic;
 }
 
+/* ============ BADGE COMPTEUR DANS L'EN-TÊTE DE L'ACCORDÉON ============ */
+.cu-accordion-count {
+  background: var(--cp-accent-soft);
+  color: var(--cp-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.cu-accordion-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.btn-cu-add {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--cp-accent-soft);
+  color: var(--cp-accent);
+  font-weight: 600;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    background: var(--cp-accent);
+    color: #ffffff;
+  }
+}
+
+.cu-detail-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.cu-item-remove {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 8px;
+  background: rgba(224, 82, 77, 0.12);
+  color: #e0524d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.18s ease, color 0.18s ease;
+
+  &:hover {
+    background: #e0524d;
+    color: #ffffff;
+  }
+}
+
+/* ============ LISTE DES ARTICLES DU PROJET (Détails Commande) ============ */
+.cu-item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.cu-item-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--cp-surface-hover);
+  border: 1px solid var(--cp-border);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.cu-item-card-selectable {
+  &:has(.cu-item-checkbox:checked) {
+    border-color: var(--cp-accent);
+    background: var(--cp-accent-soft);
+  }
+}
+
+.cu-item-checkbox {
+  flex-shrink: 0;
+  width: 1.15rem;
+  height: 1.15rem;
+  cursor: pointer;
+}
+
+.cu-item-qte {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+}
+
+.cu-item-qte-label {
+  font-size: 0.72rem;
+  color: var(--cp-text-muted);
+}
+
+.cu-item-qte-input {
+  width: 90px;
+  text-align: center;
+}
+
+.cu-item-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.cu-item-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--cp-text);
+}
+
+.cu-empty {
+  text-align: center;
+  padding: 1.5rem 0;
+  color: var(--cp-text-muted);
+  font-size: 0.88rem;
+}
+
+.articles-content-wrapper {
+  min-height: 120px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  position: relative;
+}
+
+.articles-spinner-overlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 2rem 0;
+}
+
+.text-orange {
+  color: #ff6b00 !important;
+}
+
+/* Pagination orange (reprise de l'interface Affaire) */
+::ng-deep .modern-orange-pagination {
+  .pagination {
+    margin-bottom: 0;
+    gap: 6px;
+  }
+
+  .page-item {
+    .page-link {
+      border: 1px solid #e9ecef;
+      border-radius: 8px !important;
+      color: #495057;
+      font-weight: 500;
+      font-size: 0.875rem;
+      padding: 6px 12px;
+      transition: all 0.2s ease-in-out;
+      background-color: #ffffff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+
+      &:hover {
+        color: #ff6b00;
+        background-color: #fff6f0;
+        border-color: #ffc299;
+        transform: translateY(-1px);
+      }
+
+      &:focus {
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 0, 0.2);
+      }
+    }
+
+    &.active .page-link {
+      background-color: #ff6b00 !important;
+      border-color: #ff6b00 !important;
+      color: #ffffff !important;
+      font-weight: 600;
+      box-shadow: 0 3px 8px rgba(255, 107, 0, 0.35);
+    }
+
+    &.disabled .page-link {
+      color: #ced4da;
+      background-color: #f8f9fa;
+      border-color: #f1f3f5;
+      box-shadow: none;
+    }
+  }
+}
+
 /* ============ CHAMPS CLIENT (liste verticale compacte) ============ */
+.cu-client-columns {
+  display: flex;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+.cu-client-col {
+  flex: 1 1 50%;
+  min-width: 0;
+
+  &:not(:last-child) {
+    padding-right: 1.5rem;
+    border-right: 1px solid rgba(138, 147, 163, 0.3);
+  }
+}
+
+.cu-client-col-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.cu-client-col-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cp-accent);
+}
+
+.btn-cu-details {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface);
+  color: var(--cp-text-muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    background: var(--cp-accent-soft);
+    color: var(--cp-accent);
+    border-color: var(--cp-accent);
+  }
+}
+
 .cu-client-field {
   margin-bottom: 0.85rem;
 
@@ -456,5 +591,122 @@
 
   .cu-toolbar-left {
     justify-content: space-between;
+  }
+
+  .cu-client-columns {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .cu-client-col:not(:last-child) {
+    padding-right: 0;
+    padding-bottom: 1rem;
+    border-right: none;
+    border-bottom: 1px dashed var(--cp-border);
+  }
+}
+// ============================================================
+// MODAL RENOMMER PJ
+// ============================================================
+.rename-pj-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1065;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.rename-pj-dialog {
+  background: #fff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.rename-pj-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--cp-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--cp-surface-hover);
+  border-radius: 12px 12px 0 0;
+
+  h5 {
+    margin: 0;
+    font-weight: 700;
+    color: var(--cp-text);
+    font-size: 15px;
+    text-transform: uppercase;
+  }
+}
+
+.rename-pj-close-btn {
+  background: none;
+  border: 1px solid var(--cp-border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--cp-text-muted);
+
+  &:hover:not(:disabled) {
+    background: #f1f5f9;
+  }
+}
+
+.rename-pj-body {
+  padding: 20px;
+}
+
+.rename-pj-current-name {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--cp-text-muted);
+}
+
+.rename-pj-input-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  .form-control {
+    flex: 1;
+  }
+}
+
+.rename-pj-extension {
+  color: var(--cp-text-muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.rename-pj-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--cp-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  background: var(--cp-surface-hover);
+  border-radius: 0 0 12px 12px;
+}
+/* ============ LARGEUR DE LA FENÊTRE MODALE SCAN PJCARE (ng-bootstrap) ============ */
+/* windowClass="scan-modal-window" passé lors de modalService.open() dans openScanModal() */
+::ng-deep .scan-modal-window {
+  .modal-dialog {
+    max-width: 700px;
+  }
+}
+
+@media (max-width: 992px) {
+  ::ng-deep .scan-modal-window .modal-dialog {
+    max-width: 95vw;
   }
 }

@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpHeaders } from '@angular/common/http';
 import { ActivatedRoute, Data, ParamMap, Router } from '@angular/router';
-import { combineLatest, filter, Observable, switchMap, tap } from 'rxjs';
+import { combineLatest, filter, forkJoin, Observable, of, Subject, switchMap, tap } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { IBonCommande } from '../bon-commande.model';
@@ -10,13 +11,15 @@ import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/co
 import { ASC, DESC, SORT, ITEM_DELETED_EVENT, DEFAULT_SORT_DATA } from 'app/config/navigation.constants';
 import { EntityArrayResponseType, BonCommandeService } from '../service/bon-commande.service';
 import { BonCommandeDeleteDialogComponent } from '../delete/bon-commande-delete-dialog.component';
+import { AffaireService } from 'app/entities/projectService/affaire/service/affaire.service';
+import { ClientService } from 'app/entities/projectService/client/service/client.service';
 
 @Component({
   selector: 'jhi-bon-commande',
   templateUrl: './bon-commande.component.html',
   styleUrls: ['./bon-commande.component.scss'],
 })
-export class BonCommandeComponent implements OnInit {
+export class BonCommandeComponent implements OnInit, OnDestroy {
   bonCommandes?: IBonCommande[];
   isLoading = false;
 
@@ -27,21 +30,56 @@ export class BonCommandeComponent implements OnInit {
   totalItems = 0;
   page = 1;
 
+  // Bascule d'affichage : tableau (liste) ou cartes (grille)
+  viewMode: 'grid' | 'list' = 'grid';
+
+  // Recherche (referenceClient, lieu, identifiantUnique — filtrée côté backend)
+  searchTerm = '';
+  protected readonly search$ = new Subject<string>();
+
+  // Libellés résolus par id, pour affichage dans le tableau/les cartes (raisonSociale / designationAffaire)
+  clientNames = new Map<number, string>();
+  affaireNames = new Map<number, string>();
+
   constructor(
     protected bonCommandeService: BonCommandeService,
     protected activatedRoute: ActivatedRoute,
     public router: Router,
-    protected modalService: NgbModal
+    protected modalService: NgbModal,
+    protected affaireService: AffaireService,
+    protected clientService: ClientService
   ) {}
 
   trackId = (_index: number, item: IBonCommande): number => this.bonCommandeService.getBonCommandeIdentifier(item);
 
   ngOnInit(): void {
     this.load();
+
+    this.search$.pipe(debounceTime(300), distinctUntilChanged()).subscribe(() => {
+      this.page = 1;
+      this.load();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.search$.complete();
+  }
+
+  onSearchChange(): void {
+    this.search$.next(this.searchTerm);
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.onSearchChange();
   }
 
   onRowDoubleClick(bonCommande: IBonCommande): void {
     this.router.navigate(['/bon-commande', bonCommande.id, 'edit']);
+  }
+
+  setViewMode(mode: 'grid' | 'list'): void {
+    this.viewMode = mode;
   }
 
   delete(bonCommande: IBonCommande): void {
@@ -76,6 +114,22 @@ export class BonCommandeComponent implements OnInit {
     this.handleNavigation(page, this.predicate, this.ascending);
   }
 
+  // --- Aide à l'affichage (vue grille) -------------------------------
+
+  clientName(clientId?: number | null): string {
+    if (!clientId) {
+      return '—';
+    }
+    return this.clientNames.get(clientId) ?? `Client #${clientId}`;
+  }
+
+  affaireName(affaireId?: number | null): string {
+    if (!affaireId) {
+      return '—';
+    }
+    return this.affaireNames.get(affaireId) ?? `Affaire #${affaireId}`;
+  }
+
   protected loadFromBackendWithRouteInformations(): Observable<EntityArrayResponseType> {
     return combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data]).pipe(
       tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
@@ -95,6 +149,43 @@ export class BonCommandeComponent implements OnInit {
     this.fillComponentAttributesFromResponseHeader(response.headers);
     const dataFromBody = this.fillComponentAttributesFromResponseBody(response.body);
     this.bonCommandes = dataFromBody;
+    this.loadRelatedNames(dataFromBody);
+  }
+
+  /**
+   * Résout les libellés (raisonSociale du client, designationAffaire du projet)
+   * pour les clientId/affaireId présents sur la page courante, et les met en cache
+   * dans clientNames/affaireNames pour affichage dans le tableau et les cartes.
+   */
+  private loadRelatedNames(bonCommandes: IBonCommande[]): void {
+    const clientIds = Array.from(
+      new Set(bonCommandes.map(bc => bc.clientId).filter((id): id is number => id !== null && id !== undefined))
+    );
+    const affaireIds = Array.from(
+      new Set(bonCommandes.map(bc => bc.affaireId).filter((id): id is number => id !== null && id !== undefined))
+    );
+
+    if (clientIds.length > 0) {
+      forkJoin(clientIds.map(id => this.clientService.find(id).pipe(catchError(() => of(null))))).subscribe(results => {
+        results.forEach(res => {
+          const client = res?.body;
+          if (client?.id !== undefined && client?.id !== null) {
+            this.clientNames.set(client.id, client.raisonSociale ?? '—');
+          }
+        });
+      });
+    }
+
+    if (affaireIds.length > 0) {
+      forkJoin(affaireIds.map(id => this.affaireService.find(id).pipe(catchError(() => of(null))))).subscribe(results => {
+        results.forEach(res => {
+          const affaire = res?.body;
+          if (affaire?.id !== undefined && affaire?.id !== null) {
+            this.affaireNames.set(affaire.id, affaire.designationAffaire ?? '—');
+          }
+        });
+      });
+    }
   }
 
   protected fillComponentAttributesFromResponseBody(data: IBonCommande[] | null): IBonCommande[] {
@@ -108,11 +199,14 @@ export class BonCommandeComponent implements OnInit {
   protected queryBackend(page?: number, predicate?: string, ascending?: boolean): Observable<EntityArrayResponseType> {
     this.isLoading = true;
     const pageToLoad: number = page ?? 1;
-    const queryObject = {
+    const queryObject: any = {
       page: pageToLoad - 1,
       size: this.itemsPerPage,
       sort: this.getSortQueryParam(predicate, ascending),
     };
+    if (this.searchTerm?.trim()) {
+      queryObject.search = this.searchTerm.trim();
+    }
     return this.bonCommandeService.query(queryObject).pipe(tap(() => (this.isLoading = false)));
   }
 

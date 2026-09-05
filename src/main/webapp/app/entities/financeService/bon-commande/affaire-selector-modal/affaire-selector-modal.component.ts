@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subject } from 'rxjs';
@@ -7,7 +7,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { IAffaire } from 'app/entities/projectService/affaire/affaire.model';
 import { AffaireService } from 'app/entities/projectService/affaire/service/affaire.service';
 
-const AFFAIRE_STATUT = 'ExecutionDesTravaux';
+const AFFAIRE_STATUT_DEFAULT = 'ExecutionDesTravaux';
 const AFFAIRE_PAGE_SIZE = 20;
 
 @Component({
@@ -16,6 +16,13 @@ const AFFAIRE_PAGE_SIZE = 20;
   styleUrls: ['./affaire-selector-modal.component.scss'],
 })
 export class AffaireSelectorModalComponent implements OnInit, OnDestroy {
+  /**
+   * Statut à filtrer, injecté par le composant appelant via
+   * `modalRef.componentInstance.statut = ...`. Valeur par défaut
+   * conservée pour compatibilité si personne ne la fixe.
+   */
+  @Input() statut = AFFAIRE_STATUT_DEFAULT;
+
   affaires: IAffaire[] = [];
 
   search = '';
@@ -47,7 +54,7 @@ export class AffaireSelectorModalComponent implements OnInit, OnDestroy {
     this.loading = true;
 
     this.affaireService
-      .findByStatut(AFFAIRE_STATUT, search, {
+      .findByStatut(this.statut, search, {
         page: 0,
         size: AFFAIRE_PAGE_SIZE,
         sort: ['designationAffaire,asc'],

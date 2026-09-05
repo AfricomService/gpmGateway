@@ -131,6 +131,15 @@ export class AffaireUpdateComponent implements OnInit {
     this.editForm.get('responsableProjetId')?.markAsTouched();
   }
 
+  // ── Client Demandeur → pré-remplit Client Finale par défaut (reste éditable) ──
+  onClientCommandeChange(client: IClient | null): void {
+    if (client) {
+      this.editForm.patchValue({ client });
+      this.editForm.get('client')?.markAsDirty();
+      this.editForm.get('client')?.markAsTouched();
+    }
+  }
+
   ngOnInit(): void {
     // Setup debounced search for the main articles list
     this.articleSearchSubject.pipe(debounceTime(300), distinctUntilChanged()).subscribe(searchTerm => {

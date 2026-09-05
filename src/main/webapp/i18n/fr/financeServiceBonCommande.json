@@ -4,15 +4,16 @@
       "home": {
         "title": "BonCommandes",
         "refreshListLabel": "Actualiser la liste",
-        "createLabel": "Information Globale",
-        "createOrEditLabel": "Information Globale",
+        "createLabel": "Nouveau bon de commande",
+        "createOrEditLabel": "Nouveau bon de commande",
         "notFound": "Aucun Bon Commande trouvé"
       },
       "delete": {
         "question": "Êtes-vous certain de vouloir supprimer le Bon Commande {{ id }} ?"
       },
       "detail": {
-        "title": "Bon Commande"
+        "title": "Bon Commande",
+        "globalInfoLabel": "Information Globale"
       },
       "id": "ID",
       "clientId": "Client Id",

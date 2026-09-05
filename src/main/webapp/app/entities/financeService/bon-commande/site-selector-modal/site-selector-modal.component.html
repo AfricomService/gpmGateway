@@ -1,0 +1,111 @@
+<div class="site-modal">
+  <!-- ====================================================== -->
+  <!-- HEADER -->
+  <!-- ====================================================== -->
+  <div class="site-modal-header">
+    <div class="site-modal-header-icon">
+      <fa-icon icon="map-marker-alt"></fa-icon>
+    </div>
+
+    <div class="site-modal-header-text">
+      <h5 class="site-modal-title">Sélectionner un lieu</h5>
+      <span class="site-modal-subtitle">Recherchez puis sélectionnez le site à associer au bon de commande.</span>
+    </div>
+
+    <button type="button" class="site-modal-close" aria-label="Fermer" (click)="cancel()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+
+  <!-- ====================================================== -->
+  <!-- BODY -->
+  <!-- ====================================================== -->
+  <div class="site-modal-body">
+    <!-- Recherche -->
+    <div class="site-modal-search">
+      <input
+        id="site-modal-search"
+        type="text"
+        class="form-control"
+        [(ngModel)]="search"
+        (ngModelChange)="onSearchChange()"
+        placeholder="Désignation ou code du site..."
+        autocomplete="off"
+        [disabled]="clientId === null"
+      />
+    </div>
+
+    <!-- Aucun client sélectionné -->
+    <div *ngIf="clientId === null" class="site-modal-empty-panel">
+      <fa-icon icon="info-circle"></fa-icon>
+      <span>Sélectionnez d'abord un projet pour afficher les sites du client associé.</span>
+    </div>
+
+    <ng-container *ngIf="clientId !== null">
+      <!-- Chargement -->
+      <div *ngIf="loading" class="site-modal-loading">
+        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+        Chargement des sites...
+      </div>
+
+      <!-- Tableau -->
+      <div *ngIf="!loading" class="site-modal-table-wrap">
+        <table class="site-modal-table">
+          <thead>
+            <tr>
+              <th style="width: 110px">Code</th>
+              <th>Nom du site</th>
+              <th>Ville</th>
+              <th style="width: 90px">Coord. X</th>
+              <th style="width: 90px">Coord. Y</th>
+              <th>Zone</th>
+              <th style="width: 90px">Nodale</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let site of sites" (click)="choose(site)" class="site-modal-row">
+              <td>
+                <span class="site-modal-badge">{{ site.code || '—' }}</span>
+              </td>
+
+              <td class="site-modal-designation">{{ site.designation }}</td>
+
+              <td>{{ site.ville?.nom || '—' }}</td>
+
+              <td>{{ site.gpsX ?? '—' }}</td>
+
+              <td>{{ site.gpsY ?? '—' }}</td>
+
+              <td>{{ site.zoneNom || '—' }}</td>
+
+              <td>{{ site.nodaleGpm || '—' }}</td>
+            </tr>
+
+            <!-- Aucun résultat -->
+            <tr *ngIf="sites.length === 0" class="site-modal-empty-row">
+              <td colspan="7">
+                <div class="site-modal-empty">
+                  <fa-icon icon="search"></fa-icon>
+                  <span>Aucun site trouvé pour ce client.</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- ====================================================== -->
+  <!-- FOOTER -->
+  <!-- ====================================================== -->
+  <div class="site-modal-footer">
+    <span class="site-modal-count" *ngIf="!loading && clientId !== null">
+      {{ sites.length }} site{{ sites.length > 1 ? 's' : '' }} trouvé{{ sites.length > 1 ? 's' : '' }}
+    </span>
+    <span class="site-modal-count" *ngIf="clientId === null"></span>
+
+    <button type="button" class="btn-site-cancel" (click)="cancel()">Annuler</button>
+  </div>
+</div>

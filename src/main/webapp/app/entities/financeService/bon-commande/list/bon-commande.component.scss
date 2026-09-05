@@ -60,6 +60,119 @@
   flex-wrap: wrap;
 }
 
+/* ============ BARRE DE RECHERCHE (compteur + recherche + toggle vue) ============ */
+.bc-searchbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--cp-border);
+  border-radius: 12px;
+  background: var(--cp-surface);
+}
+
+.bc-searchbar .bc-search {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  padding: 0;
+}
+
+.bc-searchbar .bc-count {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* ============ RECHERCHE ============ */
+.bc-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 40px;
+  min-width: 240px;
+  border-radius: 10px;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface);
+  padding: 0 12px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+
+  &:focus-within {
+    border-color: var(--cp-accent);
+    box-shadow: 0 0 0 3px var(--cp-accent-soft);
+  }
+}
+
+.bc-search-icon {
+  flex-shrink: 0;
+  color: var(--cp-text-muted);
+  font-size: 0.8rem;
+  pointer-events: none;
+}
+
+.bc-search-input {
+  flex: 1;
+  height: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  box-shadow: none !important;
+  font-size: 0.85rem;
+  color: var(--cp-text);
+
+  &:focus {
+    border: none;
+    box-shadow: none !important;
+  }
+}
+
+.bc-search-clear {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: var(--cp-text-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+
+  &:hover {
+    color: var(--cp-text);
+  }
+}
+
+/* ============ TOGGLE VUE GRILLE / LISTE ============ */
+.bc-view-toggle {
+  display: flex;
+  border: 1px solid var(--cp-border);
+  border-radius: 10px;
+  overflow: hidden;
+
+  button {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: var(--cp-surface);
+    color: var(--cp-text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.25s ease, color 0.25s ease;
+
+    &.active {
+      background: var(--cp-accent-soft);
+      color: var(--cp-accent);
+    }
+
+    &:hover {
+      background: var(--cp-surface-hover);
+    }
+  }
+}
+
 .btn-bc-refresh {
   display: flex;
   align-items: center;
@@ -125,7 +238,7 @@
   opacity: 0.6;
 }
 
-/* ============ CARD / TABLE ============ */
+/* ============ CARD / TABLE (vue liste) ============ */
 .bc-card {
   background: var(--cp-surface);
   border: 1px solid var(--cp-border);
@@ -240,7 +353,7 @@
   font-weight: 600;
 }
 
-/* ============ ROW ACTIONS ============ */
+/* ============ ROW ACTIONS (vue liste) ============ */
 .bc-actions {
   display: flex;
   align-items: center;
@@ -259,6 +372,7 @@
   border-radius: 8px;
   font-size: 0.8rem;
   transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+  flex-shrink: 0;
 
   &:hover {
     transform: translateY(-1px);
@@ -293,6 +407,106 @@
     background: var(--cp-danger);
     color: #ffffff;
   }
+}
+
+/* ============ VUE GRILLE (cartes) ============ */
+.bc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.bc-card-item {
+  position: relative;
+  background: var(--cp-surface);
+  border: 1px solid var(--cp-border);
+  border-radius: 14px;
+  padding: 1.1rem 1.2rem;
+  cursor: pointer;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+
+  &:hover {
+    border-color: var(--cp-accent);
+    box-shadow: 0 12px 26px -16px rgba(245, 130, 42, 0.4);
+    transform: translateY(-2px);
+  }
+}
+
+.bc-card-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.bc-card-ref {
+  font-weight: 700;
+  color: var(--cp-accent);
+  font-size: 0.92rem;
+}
+
+.bc-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--cp-text);
+  margin: 0.15rem 0 0.35rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.bc-card-meta {
+  font-size: 0.85rem;
+  color: var(--cp-text-muted);
+  padding-bottom: 0.75rem;
+  border-bottom: 1px dashed var(--cp-border);
+  margin-bottom: 0.75rem;
+
+  .bc-card-meta-sep {
+    margin: 0 0.35rem;
+  }
+}
+
+.bc-card-item-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: var(--cp-text-muted);
+  gap: 0.5rem;
+}
+
+.bc-card-date {
+  white-space: nowrap;
+}
+
+.bc-card-ref-client {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bc-card-amounts {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 1.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--cp-border);
+}
+
+.bc-card-amount-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.bc-card-amount-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--cp-text-muted);
+  font-weight: 600;
 }
 
 /* ============ FOOTER (centré, empilé) ============ */
@@ -374,6 +588,15 @@
 
   .bc-header-actions {
     justify-content: stretch;
+  }
+
+  .bc-search {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .bc-searchbar {
+    flex-wrap: wrap;
   }
 
   .btn-bc-create {
