@@ -660,8 +660,15 @@
                       />
                     </div>
 
-                    <button *ngIf="sel.article.id" type="button" class="cu-item-remove" (click)="removeChosenArticle(sel.article.id)">
-                      <fa-icon icon="times"></fa-icon>
+                    <button
+                      *ngIf="sel.article.id"
+                      type="button"
+                      class="cu-item-remove"
+                      [disabled]="removingArticleId === sel.article.id"
+                      (click)="removeChosenArticle(sel.article.id)"
+                    >
+                      <span *ngIf="removingArticleId === sel.article.id" class="spinner-border spinner-border-sm" role="status"></span>
+                      <fa-icon *ngIf="removingArticleId !== sel.article.id" icon="times"></fa-icon>
                     </button>
                   </div>
                 </div>

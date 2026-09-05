@@ -74,6 +74,8 @@ import {
   faFileExcel,
   faKey,
   faPaperclip,
+  faEllipsisH,
+  faBoxOpen,
   // jhipster-needle-add-icon-import
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -153,5 +155,7 @@ export const fontAwesomeIcons = [
   faFileExcel,
   faKey,
   faPaperclip,
+  faEllipsisH,
+  faBoxOpen,
   // jhipster-needle-add-icon-import
 ];

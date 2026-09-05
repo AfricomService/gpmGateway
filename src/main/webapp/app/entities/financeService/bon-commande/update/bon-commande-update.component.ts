@@ -105,6 +105,7 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   // ================================
   chosenArticles: ArticleSelection[] = [];
   savingChosenArticles = false;
+  removingArticleId: number | null = null;
 
   // ================================
   // Pièces Jointes (upload manuel + scan PjCare)
@@ -606,7 +607,45 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   }
 
   removeChosenArticle(articleId: number): void {
+    const bonCommandeId = this.bonCommande?.id;
+
+    // Bon de commande pas encore enregistré : rien à supprimer côté API,
+    // on garde le comportement actuel (retrait local uniquement).
+    if (bonCommandeId === null || bonCommandeId === undefined) {
+      this.chosenArticles = this.chosenArticles.filter(sel => sel.article.id !== articleId);
+      return;
+    }
+
+    const previousArticles = this.chosenArticles;
+
+    // Mise à jour optimiste de l'affichage
     this.chosenArticles = this.chosenArticles.filter(sel => sel.article.id !== articleId);
+
+    const articlesToSave: Partial<IBonCommandeArticles>[] = this.chosenArticles
+      .filter(sel => sel.article.id !== null && sel.article.id !== undefined)
+      .map(sel => ({
+        articleId: sel.article.id as number,
+        qteCommande: sel.qte,
+        qteEffectuee: sel.qteEffectuee ?? 0,
+        prixArticle: sel.article.prixAchat ?? null,
+      }));
+
+    this.removingArticleId = articleId;
+    this.savingChosenArticles = true;
+
+    this.bonCommandeArticlesService.replaceForBonCommande(bonCommandeId, articlesToSave).subscribe({
+      next: () => {
+        this.savingChosenArticles = false;
+        this.removingArticleId = null;
+      },
+      error: () => {
+        // Rollback si l'API échoue
+        this.chosenArticles = previousArticles;
+        this.savingChosenArticles = false;
+        this.removingArticleId = null;
+        alert("Erreur lors de la suppression de l'article.");
+      },
+    });
   }
 
   onChosenArticleQuantityChange(articleId: number, qte: number | string): void {
