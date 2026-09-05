@@ -613,7 +613,7 @@
             <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
           </button>
 
-          <div class="cu-accordion-body" *ngIf="isPanelOpen('detailsCommande')">
+          <div class="cu-accordion-body" [hidden]="!isPanelOpen('detailsCommande')">
             <ng-container *ngIf="bonCommande?.id; else bcNotSavedDetailsCommande">
               <div class="cu-detail-toolbar" *ngIf="selectedAffaire">
                 <button type="button" class="btn-cu-add" (click)="openArticleModal()" [disabled]="savingChosenArticles">
