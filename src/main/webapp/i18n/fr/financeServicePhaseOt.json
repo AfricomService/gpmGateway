@@ -1,0 +1,36 @@
+{
+  "gpmGatewayApp": {
+    "financeServicePhaseOt": {
+      "home": {
+        "title": "PhaseOts",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Phase Ot",
+        "createOrEditLabel": "Créer ou éditer un Phase Ot",
+        "notFound": "Aucun Phase Ot trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Phase Ot {{ id }} ?"
+      },
+      "detail": {
+        "title": "Phase Ot"
+      },
+      "id": "ID",
+      "nom": "Nom",
+      "description": "Description",
+      "duree": "Duree",
+      "bloquante": "Bloquante",
+      "statut": "Statut",
+      "dateDebut": "Date Debut",
+      "dl": "Dl",
+      "dlc": "Dlc",
+      "phaseParentId": "Phase Parent Id"
+    }
+  },
+  "financeServiceApp": {
+    "financeServicePhaseOt": {
+      "created": "Un nouveau Phase Ot a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Phase Ot avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Phase Ot avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

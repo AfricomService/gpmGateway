@@ -68,6 +68,34 @@ export class PieceJointeService {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }
 
+  uploadPieceJointe(file: File, bonCommandeId: number, uniqueName: string): Observable<IPieceJointe> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('bonCommandeId', String(bonCommandeId));
+    formData.append('uniqueName', uniqueName);
+    return this.http.post<RestPieceJointe>(`${this.resourceUrl}/upload`, formData).pipe(map(res => this.convertDateFromServer(res)));
+  }
+
+  findByBonCommande(bonCommandeId: number): Observable<EntityArrayResponseType> {
+    return this.http
+      .get<RestPieceJointe[]>(`${this.resourceUrl}/by-bon-commande/${bonCommandeId}`, { observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
+  getFileUrl(id: number): string {
+    return `${this.resourceUrl}/getFile?id=${id}`;
+  }
+
+  getFile(id: number): Observable<Blob> {
+    return this.http.get(`${this.resourceUrl}/getFile`, { params: { id }, responseType: 'blob' });
+  }
+
+  renamePieceJointe(id: number, nomFichier: string): Observable<EntityResponseType> {
+    return this.http
+      .patch<RestPieceJointe>(`${this.resourceUrl}/${id}/rename`, { nomFichier }, { observe: 'response' })
+      .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+
   getPieceJointeIdentifier(pieceJointe: Pick<IPieceJointe, 'id'>): number {
     return pieceJointe.id;
   }

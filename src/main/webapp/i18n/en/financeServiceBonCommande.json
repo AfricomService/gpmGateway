@@ -1,0 +1,38 @@
+{
+  "gpmGatewayApp": {
+    "financeServiceBonCommande": {
+      "home": {
+        "title": "Bon Commandes",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "New purchase order",
+        "createOrEditLabel": "New purchase order",
+        "notFound": "No Bon Commandes found"
+      },
+      "delete": {
+        "question": "Are you sure you want to delete Bon Commande {{ id }}?"
+      },
+      "detail": {
+        "title": "Bon Commande",
+        "globalInfoLabel": "Global Information"
+      },
+      "id": "ID",
+      "clientId": "Client Id",
+      "affaireId": "Projet",
+      "lieu": "Lieu",
+      "responsableId": "Responsable ",
+      "referenceClient": "Reference Client",
+      "dateBonCommande": "Date Bon Commande",
+      "montantTotal": "Montant Total",
+      "montantCommande": "Montant Commande",
+      "montantConsomme": "Montant Consomme",
+      "montantMissionEffectue": "Montant Mission Effectue"
+    }
+  },
+  "financeServiceApp": {
+    "financeServiceBonCommande": {
+      "created": "A new Bon Commande is created with identifier {{ param }}",
+      "updated": "A Bon Commande is updated with identifier {{ param }}",
+      "deleted": "A Bon Commande is deleted with identifier {{ param }}"
+    }
+  }
+}

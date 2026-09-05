@@ -72,10 +72,13 @@
       "WoSite",
       "WoUtilisateur",
       "Zone",
+      "BonCommande",
       "Numsequentielle",
       "Ressource",
       "TypeRessource",
-      "DetailRessource"
+      "DetailRessource",
+      "PhaseOt",
+      "ModelPhaseOT"
     ],
     "entitySuffix": "",
     "gradleEnterpriseHost": "",

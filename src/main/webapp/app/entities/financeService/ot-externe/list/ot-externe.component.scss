@@ -420,6 +420,62 @@ $bg-card: #ffffff;
   }
 }
 
+.sidebar-navigation {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e9ecef;
+}
+
+.sidebar-nav-group,
+.sidebar-nav-link {
+  width: 100%;
+}
+
+.sidebar-nav-group {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.sidebar-chevron {
+  margin-left: auto;
+  transition: transform 0.2s ease;
+}
+
+.sidebar-chevron.rotated {
+  transform: rotate(180deg);
+}
+
+.sidebar-sublist {
+  margin-left: 20px;
+  padding-left: 12px;
+  border-left: 1px solid #e9ecef;
+}
+
+.sidebar-subitem {
+  display: block;
+  padding: 8px 12px;
+  color: #6c757d;
+  text-decoration: none;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.sidebar-subitem:hover {
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+.sidebar-subitem.active {
+  color: #f57c00;
+  font-weight: 600;
+  background-color: #fff3e6;
+}
+
 // ===== Responsive =====
 @media (max-width: 900px) {
   .ot-externe-layout {

@@ -20,6 +20,24 @@ interface StatutFilterOption {
   icon: IconProp;
 }
 
+interface OtExterneNavChildItem {
+  label: string;
+  route: string;
+}
+
+interface OtExterneNavItem {
+  label: string;
+  route?: string;
+  icon: IconProp;
+  children?: OtExterneNavChildItem[];
+}
+
+interface StatutFilterOption {
+  label: string;
+  value: string | null;
+  icon: IconProp;
+}
+
 @Component({
   selector: 'jhi-ot-externe',
   templateUrl: './ot-externe.component.html',
@@ -47,6 +65,19 @@ export class OtExterneComponent implements OnInit {
     { label: 'Fin', value: 'Fin', icon: 'check-circle' },
   ];
 
+  navItems: OtExterneNavItem[] = [
+    {
+      label: 'Paramètre OT',
+      icon: ['fas', 'cog'],
+      children: [
+        { label: 'Phase OT', route: 'phase-ot' },
+        { label: 'Modele OT', route: 'model-phase-ot' },
+      ],
+    },
+  ];
+
+  expandedGroup: string | null = null;
+
   predicate = 'id';
   ascending = true;
 
@@ -67,6 +98,16 @@ export class OtExterneComponent implements OnInit {
   ngOnInit(): void {
     this.loadClients();
     this.load();
+  }
+
+  toggleGroup(item: OtExterneNavItem): void {
+    // En mode réduit, on ouvre automatiquement la sidebar
+    // afin de pouvoir afficher le sous-menu.
+    if (this.isSidebarCollapsed) {
+      this.isSidebarCollapsed = false;
+    }
+
+    this.expandedGroup = this.expandedGroup === item.label ? null : item.label;
   }
 
   delete(otExterne: IOtExterne): void {

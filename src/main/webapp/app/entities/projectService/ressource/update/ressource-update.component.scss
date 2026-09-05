@@ -277,6 +277,115 @@
   padding: 0.3rem 0.75rem;
 }
 
+.cu-statut-group {
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.cu-badge-status {
+  font-size: 0.78rem;
+  color: var(--cp-text-muted);
+  background: var(--cp-surface);
+  border: 1px solid var(--cp-border);
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  white-space: nowrap;
+
+  strong {
+    color: var(--cp-text);
+  }
+}
+
+.btn-cu-statut {
+  --statut-color: #{var(--cp-text-muted)};
+
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface);
+  color: var(--cp-text-muted);
+  font-weight: 600;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+
+  .btn-cu-statut-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.55;
+    flex-shrink: 0;
+  }
+
+  &:hover:not(:disabled):not(.btn-cu-statut-active) {
+    background: var(--cp-surface-hover);
+    color: var(--cp-text);
+  }
+
+  &:disabled:not(.btn-cu-statut-active) {
+    opacity: 0.45;
+    cursor: default;
+  }
+
+  /* === Couleurs par statut (état inactif : liseré discret) === */
+  &.btn-cu-statut-disponible {
+    border-color: rgba(46, 160, 90, 0.35);
+    color: #2ea05a;
+  }
+
+  &.btn-cu-statut-enmission {
+    border-color: rgba(41, 121, 255, 0.35);
+    color: #2979ff;
+  }
+
+  &.btn-cu-statut-enmaintenance {
+    border-color: rgba(245, 158, 11, 0.4);
+    color: #b5750a;
+  }
+
+  &.btn-cu-statut-horsservice {
+    border-color: rgba(224, 82, 77, 0.35);
+    color: var(--cp-danger);
+  }
+
+  /* === État actif : fond plein coloré === */
+  &.btn-cu-statut-active {
+    cursor: default;
+    color: #ffffff;
+    border-color: transparent;
+    opacity: 1;
+
+    .btn-cu-statut-dot {
+      opacity: 1;
+      background: #ffffff;
+    }
+
+    &.btn-cu-statut-disponible {
+      background: #2ea05a;
+      box-shadow: 0 4px 12px -6px rgba(46, 160, 90, 0.7);
+    }
+
+    &.btn-cu-statut-enmission {
+      background: #2979ff;
+      box-shadow: 0 4px 12px -6px rgba(41, 121, 255, 0.7);
+    }
+
+    &.btn-cu-statut-enmaintenance {
+      background: #f59e0b;
+      box-shadow: 0 4px 12px -6px rgba(245, 158, 11, 0.7);
+    }
+
+    &.btn-cu-statut-horsservice {
+      background: var(--cp-danger);
+      box-shadow: 0 4px 12px -6px rgba(224, 82, 77, 0.7);
+    }
+  }
+}
+
 /* ============ RESPONSIVE ============ */
 @media (max-width: 768px) {
   .ressource-update-page {

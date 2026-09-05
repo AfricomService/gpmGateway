@@ -1,0 +1,497 @@
+.phase-ot-update-page {
+  --pu-accent: #f5822a;
+  --pu-accent-hover: #ff9a4d;
+  --pu-accent-soft: rgba(245, 130, 42, 0.12);
+  --pu-text: #1a2233;
+  --pu-text-muted: #8a93a3;
+  --pu-border: #e7e9ee;
+  --pu-surface: #ffffff;
+  --pu-surface-hover: #f2f4f8;
+  --pu-danger: #e0524d;
+  --pu-danger-soft: rgba(224, 82, 77, 0.12);
+  --pu-success: #1f9d55;
+  --pu-success-soft: rgba(31, 157, 85, 0.12);
+
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 96px 1.5rem 2rem;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  color: var(--pu-text);
+}
+
+.btn-pu-back-floating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  margin-top: 2px;
+  border-radius: 50%;
+  border: 1px solid var(--pu-border);
+  background: var(--pu-surface);
+  color: var(--pu-text-muted);
+  font-size: 0.95rem;
+  box-shadow: 0 4px 14px -8px rgba(26, 34, 51, 0.25);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  z-index: 10;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &:hover {
+    background: var(--pu-surface-hover);
+    color: var(--pu-accent);
+    border-color: var(--pu-accent);
+    transform: translateX(-2px);
+  }
+}
+
+@media (max-width: 1300px) {
+  .btn-pu-back-floating {
+    display: none;
+  }
+}
+
+.pu-container {
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
+}
+
+/* ============ TOOLBAR ============ */
+.pu-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  background: var(--pu-surface-hover);
+  border: 1px solid var(--pu-border);
+  border-radius: 12px;
+  padding: 0.45rem 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 14px -10px rgba(26, 34, 51, 0.15);
+}
+
+.pu-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.pu-page-kicker {
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-style: italic;
+  color: var(--pu-text-muted);
+}
+
+.pu-page-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--pu-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pu-badge-id {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--pu-accent);
+  background: var(--pu-accent-soft);
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.btn-pu-save {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 8px;
+  border: none;
+  background: var(--pu-accent);
+  color: #ffffff;
+  font-size: 0.85rem;
+  box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
+  transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--pu-accent-hover);
+    box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.7);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: default;
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+/* ============ ACCORDEON ============ */
+.pu-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.pu-accordion-item {
+  background: var(--pu-surface);
+  border: 1px solid var(--pu-border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &.open {
+    border-color: var(--pu-accent);
+    box-shadow: 0 10px 24px -18px rgba(245, 130, 42, 0.5);
+  }
+}
+
+.pu-accordion-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: none;
+  background: var(--pu-surface);
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: var(--pu-surface-hover);
+  }
+}
+
+.pu-accordion-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--pu-text);
+  min-width: 0;
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.pu-accordion-icon {
+  color: var(--pu-accent);
+  flex-shrink: 0;
+}
+
+.pu-accordion-chevron {
+  color: var(--pu-text-muted);
+  transition: transform 0.25s ease;
+}
+
+.pu-accordion-item.open .pu-accordion-chevron {
+  transform: rotate(180deg);
+  color: var(--pu-accent);
+}
+
+.pu-accordion-body {
+  padding: 1.25rem;
+  border-top: 1px dashed var(--pu-border);
+
+  .form-label {
+    font-size: 0.85rem;
+    color: var(--pu-text-muted);
+    margin-bottom: 0.35rem;
+  }
+
+  .form-control {
+    border-radius: 10px;
+    border: 1px solid var(--pu-border);
+    padding: 0.55rem 0.85rem;
+    font-size: 0.9rem;
+
+    &:focus {
+      border-color: var(--pu-accent);
+      box-shadow: 0 0 0 3px var(--pu-accent-soft);
+    }
+  }
+}
+
+/* ============ TOGGLE BLOQUANTE / GENERIQUE ============ */
+.pu-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  height: 100%;
+  padding-top: 1.6rem;
+}
+
+.pu-toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+
+    &:checked + .pu-toggle-slider {
+      background: var(--pu-accent);
+    }
+
+    &:checked + .pu-toggle-slider::before {
+      transform: translateX(20px);
+    }
+  }
+
+  .pu-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: var(--pu-border);
+    border-radius: 999px;
+    transition: background 0.2s ease;
+
+    &::before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      left: 3px;
+      top: 3px;
+      background: #ffffff;
+      border-radius: 50%;
+      transition: transform 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    }
+  }
+}
+
+.pu-toggle-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--pu-text);
+}
+
+/* ============ FOOTER ============ */
+.btn-pu-cancel {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--pu-border);
+  background: var(--pu-surface);
+  color: var(--pu-text-muted);
+  font-weight: 600;
+  font-size: 0.8rem;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    background: var(--pu-surface-hover);
+    color: var(--pu-text);
+    border-color: var(--pu-accent);
+  }
+}
+
+.pu-toolbar-bottom {
+  justify-content: space-between;
+  padding: 0.3rem 0.75rem;
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 768px) {
+  .phase-ot-update-page {
+    padding: 88px 1rem 1.5rem;
+  }
+
+  .pu-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pu-toolbar-left {
+    justify-content: space-between;
+  }
+}
+
+/* ============ PHASE PARENTE (champ d'édition) ============ */
+.pu-parent-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.pu-toggle-row-inline {
+  padding-top: 0;
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.pu-parent-select {
+  flex: 1;
+  min-width: 180px;
+  animation: pu-fade-in 0.18s ease;
+
+  .form-select,
+  .form-control {
+    border-radius: 10px;
+    border: 1px solid var(--pu-border);
+    padding: 0.55rem 0.85rem;
+    font-size: 0.9rem;
+
+    &:focus {
+      border-color: var(--pu-accent);
+      box-shadow: 0 0 0 3px var(--pu-accent-soft);
+    }
+  }
+
+  .form-text {
+    margin-top: 0.3rem;
+  }
+}
+
+@keyframes pu-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ============ BADGE STATUT ============ */
+.pu-badge-statut {
+  font-weight: 700;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: var(--pu-accent-soft);
+  color: var(--pu-accent);
+
+  &.is-creation {
+    background: rgba(124, 92, 255, 0.12);
+    color: #7c5cff;
+  }
+
+  &.is-en-cours {
+    background: rgba(217, 119, 6, 0.12);
+    color: #d97706;
+  }
+
+  &.is-fin {
+    background: var(--pu-success-soft);
+    color: var(--pu-success);
+  }
+}
+
+/* ============ BOUTON WORKFLOW STATUT ============ */
+.btn-pu-statut {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--pu-accent-soft);
+  color: var(--pu-accent);
+  font-weight: 600;
+  font-size: 0.8rem;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--pu-accent);
+    color: #ffffff;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+/* ============ SOUS PHASES / PHASE PARENTE ============ */
+.pu-relation-loading {
+  display: flex;
+  align-items: center;
+  color: var(--pu-text-muted);
+  font-size: 0.9rem;
+  padding: 0.5rem 0;
+}
+
+.pu-relation-empty {
+  color: var(--pu-text-muted);
+  font-size: 0.88rem;
+  font-style: italic;
+  padding: 0.75rem 0.25rem;
+}
+
+.pu-relation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.pu-relation-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--pu-border);
+  border-radius: 10px;
+  background: var(--pu-surface);
+  color: var(--pu-text);
+  text-decoration: none;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    background: var(--pu-surface-hover);
+    border-color: var(--pu-accent);
+    color: var(--pu-text);
+    transform: translateX(2px);
+  }
+}
+
+.pu-relation-item-icon {
+  color: var(--pu-accent);
+  flex-shrink: 0;
+}
+
+.pu-relation-item-name {
+  flex: 1;
+  font-weight: 600;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pu-relation-item-arrow {
+  color: var(--pu-text-muted);
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}

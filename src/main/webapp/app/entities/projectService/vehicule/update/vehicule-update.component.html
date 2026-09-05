@@ -144,34 +144,6 @@
                   </small>
                 </div>
               </div>
-
-              <div class="col-md-4 mb-3">
-                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceVehicule.agence" for="field_agence"
-                  >Agence</label
-                >
-                <select
-                  class="form-control"
-                  id="field_agence"
-                  data-cy="agence"
-                  name="agence"
-                  formControlName="agence"
-                  [compareWith]="compareAgence"
-                >
-                  <option *ngIf="editForm.get(['agence'])!.value == null" [ngValue]="null" selected></option>
-                  <option [ngValue]="agenceOption" *ngFor="let agenceOption of agencesSharedCollection">
-                    {{ agenceOption.designation }}
-                  </option>
-                </select>
-                <div *ngIf="editForm.get(['agence'])!.invalid && (editForm.get(['agence'])!.dirty || editForm.get(['agence'])!.touched)">
-                  <small
-                    class="form-text text-danger"
-                    *ngIf="editForm.get(['agence'])?.errors?.required"
-                    jhiTranslate="entity.validation.required"
-                  >
-                    Ce champ est obligatoire.
-                  </small>
-                </div>
-              </div>
             </div>
           </div>
         </div>

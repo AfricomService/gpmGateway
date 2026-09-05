@@ -99,8 +99,7 @@ export class VehiculeComponent implements OnInit {
         v =>
           (v.marque ?? '').toLowerCase().includes(term) ||
           (v.matricule ?? '').toLowerCase().includes(term) ||
-          (v.type ?? '').toLowerCase().includes(term) ||
-          (v.agence?.designation ?? '').toLowerCase().includes(term)
+          (v.type ?? '').toLowerCase().includes(term)
       );
     }
 

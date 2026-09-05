@@ -1,0 +1,64 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="phaseOt">
+      <h2 data-cy="phaseOtDetailsHeading"><span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.detail.title">Phase Ot</span></h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ phaseOt.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.nom">Nom</span></dt>
+        <dd>
+          <span>{{ phaseOt.nom }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.description">Description</span></dt>
+        <dd>
+          <span>{{ phaseOt.description }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.duree">Duree</span></dt>
+        <dd>
+          <span>{{ phaseOt.duree }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.bloquante">Bloquante</span></dt>
+        <dd>
+          <span>{{ phaseOt.bloquante }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.statut">Statut</span></dt>
+        <dd>
+          <span>{{ phaseOt.statut }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.dateDebut">Date Debut</span></dt>
+        <dd>
+          <span>{{ phaseOt.dateDebut | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.dl">Dl</span></dt>
+        <dd>
+          <span>{{ phaseOt.dl | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.dlc">Dlc</span></dt>
+        <dd>
+          <span>{{ phaseOt.dlc | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServicePhaseOt.phaseParentId">Phase Parent Id</span></dt>
+        <dd>
+          <span>{{ phaseOt.phaseParentId }}</span>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/phase-ot', phaseOt.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

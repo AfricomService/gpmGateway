@@ -1,0 +1,258 @@
+```html
+<div class="model-phase-ot-update-page">
+  <button
+    type="button"
+    id="back-to-model-phase-ot-list"
+    data-cy="entityBackButton"
+    title="Retour à la liste"
+    class="btn-mpu-back-floating"
+    [routerLink]="['/ot-externe/model-phase-ot']"
+  >
+    <fa-icon [icon]="faArrowLeft"></fa-icon>
+  </button>
+
+  <div class="mpu-container">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <jhi-alert-error></jhi-alert-error>
+
+      <!-- Success message -->
+      <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+        <fa-icon [icon]="faCheckCircle" class="me-2"></fa-icon>
+        {{ successMessage }}
+        <button type="button" class="btn-close" (click)="dismissSuccessMessage()"></button>
+      </div>
+
+      <!-- Toolbar : Nom / Identifiant (gauche) + Enregistrer (droite) -->
+      <div class="mpu-toolbar">
+        <div class="mpu-toolbar-left">
+          <span
+            class="mpu-page-kicker"
+            *ngIf="editForm.get('id')?.value === null"
+            jhiTranslate="gpmGatewayApp.financeServiceModelPhaseOt.home.createOrEditLabel"
+          >
+            Créer ou éditer un Model Phase OT
+          </span>
+
+          <ng-container *ngIf="editForm.get('id')?.value !== null">
+            <span style="font-style: italic; font-weight: 700; text-transform: uppercase" class="mpu-page-title">
+              {{ modelPhaseOT?.nom }}
+            </span>
+          </ng-container>
+        </div>
+
+        <button
+          type="submit"
+          id="save-entity-top"
+          data-cy="entityCreateSaveButton"
+          title="Enregistrer"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn-mpu-save"
+        >
+          <fa-icon [icon]="faSave"></fa-icon>
+        </button>
+      </div>
+
+      <!-- Accordéon -->
+      <div class="mpu-accordion">
+        <!-- Informations Générales -->
+        <div class="mpu-accordion-item" [class.open]="isSectionOpen('general')">
+          <button type="button" class="mpu-accordion-header" (click)="toggleSection('general')">
+            <span class="mpu-accordion-header-left">
+              <fa-icon [icon]="faIdCard" class="mpu-accordion-icon"></fa-icon>
+
+              <span>Informations Générales</span>
+            </span>
+
+            <fa-icon [icon]="faChevronDown" class="mpu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="mpu-accordion-body" *ngIf="isSectionOpen('general')">
+            <div class="row">
+              <div class="col-md-12 mb-3">
+                <label class="form-label fw-bold" for="field_nom">
+                  <span jhiTranslate="gpmGatewayApp.financeServiceModelPhaseOt.nom"> Nom </span>
+                </label>
+
+                <input type="text" class="form-control" name="nom" id="field_nom" data-cy="nom" formControlName="nom" />
+              </div>
+
+              <div class="col-md-12 mb-3">
+                <label class="form-label fw-bold" for="field_description">
+                  <span jhiTranslate="gpmGatewayApp.financeServiceModelPhaseOt.description"> Description </span>
+                </label>
+
+                <textarea
+                  class="form-control"
+                  name="description"
+                  id="field_description"
+                  data-cy="description"
+                  formControlName="description"
+                  rows="5"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phases Associées -->
+        <div class="mpu-accordion-item" [class.open]="isSectionOpen('phases')" *ngIf="modelPhaseOT?.id">
+          <button type="button" class="mpu-accordion-header" (click)="toggleSection('phases')">
+            <span class="mpu-accordion-header-left">
+              <fa-icon [icon]="faList" class="mpu-accordion-icon"></fa-icon>
+
+              <span>Phases Associées</span>
+
+              <span class="mpu-accordion-count" *ngIf="phasesAssociees.length">
+                {{ phasesAssociees.length }}
+              </span>
+            </span>
+
+            <fa-icon [icon]="faChevronDown" class="mpu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="mpu-accordion-body" *ngIf="isSectionOpen('phases')">
+            <!-- Hint -->
+            <div class="mpu-phase-hint" *ngIf="!isLoadingPhases && !hasEnoughPhases">
+              &nbsp;Un modèle est normalement composé d'au moins deux phases. Actuellement :
+              {{ phasesAssociees.length }}
+              phase{{ phasesAssociees.length > 1 ? 's' : '' }}.
+            </div>
+
+            <!-- Add a phase -->
+            <div class="mpu-phase-add-row">
+              <select
+                class="form-select"
+                [(ngModel)]="selectedPhaseIdToAdd"
+                [ngModelOptions]="{ standalone: true }"
+                [disabled]="isLoadingAllPhaseOts || availablePhaseOtsToAdd.length === 0"
+              >
+                <option [ngValue]="null">
+                  {{
+                    availablePhaseOtsToAdd.length === 0 && !isLoadingAllPhaseOts
+                      ? 'Toutes les phases principales sont déjà associées'
+                      : 'Choisir une phase à ajouter...'
+                  }}
+                </option>
+
+                <option *ngFor="let phase of availablePhaseOtsToAdd" [ngValue]="phase.id">
+                  {{ phase.nom }}
+                </option>
+              </select>
+
+              <button
+                type="button"
+                class="btn-mpu-phase-add"
+                [disabled]="!selectedPhaseIdToAdd || isAssigningPhase"
+                (click)="assignPhase()"
+              >
+                <span *ngIf="isAssigningPhase" class="spinner-border spinner-border-sm"></span>
+
+                <fa-icon *ngIf="!isAssigningPhase" [icon]="faPlus"></fa-icon>
+
+                &nbsp;Ajouter
+              </button>
+            </div>
+
+            <!-- Ordered list -->
+            <div *ngIf="phasesAssociees.length > 0; else noPhases" class="mpu-phase-list">
+              <div class="mpu-phase-card" *ngFor="let liaison of phasesAssociees; let i = index">
+                <div class="mpu-phase-order-badge">
+                  {{ ordinalLabel(i) }}
+                </div>
+
+                <div class="mpu-phase-info">
+                  <div class="mpu-phase-title">
+                    {{ getPhaseDetails(liaison.phaseId)?.nom ?? 'Phase #' + liaison.phaseId }}
+                  </div>
+
+                  <div class="mpu-phase-meta" *ngIf="getPhaseDetails(liaison.phaseId) as phase">
+                    <span *ngIf="phase.description">
+                      {{ phase.description }}
+                    </span>
+                  </div>
+
+                  <div class="mpu-phase-children" *ngIf="hasChildren(liaison.phaseId)">
+                    <div class="mpu-phase-children-label">
+                      <fa-icon [icon]="faSitemap"></fa-icon>
+                      &nbsp;Sous-phases ({{ getChildrenOf(liaison.phaseId).length }})
+                    </div>
+
+                    <div class="mpu-phase-child-row" *ngFor="let child of getChildrenOf(liaison.phaseId)">
+                      <fa-icon [icon]="faLevelUpAlt" class="mpu-phase-child-icon"></fa-icon>
+
+                      <span class="mpu-phase-child-title">
+                        {{ child.nom }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mpu-phase-actions">
+                  <!-- Monter -->
+                  <button
+                    type="button"
+                    class="btn-mpu-phase-move"
+                    title="Monter"
+                    [disabled]="isFirstPhase(liaison) || movingLiaisonId === liaison.id"
+                    (click)="movePhaseUp(liaison)"
+                  >
+                    <fa-icon [icon]="faArrowUp"></fa-icon>
+                  </button>
+
+                  <!-- Descendre -->
+                  <button
+                    type="button"
+                    class="btn-mpu-phase-move"
+                    title="Descendre"
+                    [disabled]="isLastPhase(liaison) || movingLiaisonId === liaison.id"
+                    (click)="movePhaseDown(liaison)"
+                  >
+                    <fa-icon [icon]="faArrowDown"></fa-icon>
+                  </button>
+
+                  <!-- Retirer -->
+                  <button
+                    type="button"
+                    class="btn-mpu-phase-remove"
+                    title="Retirer cette phase"
+                    [disabled]="removingLiaisonId === liaison.id"
+                    (click)="removePhase(liaison)"
+                  >
+                    <span *ngIf="removingLiaisonId === liaison.id" class="spinner-border spinner-border-sm"></span>
+
+                    <fa-icon *ngIf="removingLiaisonId !== liaison.id" [icon]="faTimes"></fa-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <ng-template #noPhases>
+              <div class="mpu-phase-empty" *ngIf="!isLoadingPhases">
+                <fa-icon [icon]="faInfoCircle"></fa-icon>
+                &nbsp;Aucune phase associée à ce modèle pour l'instant
+              </div>
+
+              <div class="mpu-phase-empty" *ngIf="isLoadingPhases">
+                <span class="spinner-border spinner-border-sm me-2"></span>
+
+                Chargement des phases...
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom toolbar -->
+      <div class="mpu-toolbar mpu-toolbar-bottom">
+        <span></span>
+
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-mpu-cancel" (click)="previousState()">
+          <fa-icon [icon]="faBan"></fa-icon>
+          &nbsp;
+          <span jhiTranslate="entity.action.cancel"> Annuler </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+```
