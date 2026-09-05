@@ -59,6 +59,11 @@ import { RouterModule } from '@angular/router';
           import('./operationsService/article-mission/article-mission.module').then(m => m.OperationsServiceArticleMissionModule),
       },
       {
+        path: 'bon-commande',
+        data: { pageTitle: 'gpmGatewayApp.financeServiceBonCommande.home.title' },
+        loadChildren: () => import('./financeService/bon-commande/bon-commande.module').then(m => m.FinanceServiceBonCommandeModule),
+      },
+      {
         path: 'client',
         data: { pageTitle: 'gpmGatewayApp.projectServiceClient.home.title' },
         loadChildren: () => import('./projectService/client/client.module').then(m => m.ProjectServiceClientModule),

@@ -8,6 +8,7 @@ export interface IPieceJointe {
   fichierURL?: string | null;
   dateUpload?: dayjs.Dayjs | null;
   workOrderId?: number | null;
+  bonCommandeId?: number | null;
   affaire?: Pick<IAffaire, 'id' | 'designationAffaire'> | null;
 }
 

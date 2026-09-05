@@ -1,4 +1,4 @@
-<nav *ngIf="account !== null" data-cy="navbar" class="navbar navbar-light bg-white navbar-expand-md shadow-sm fixed-top">
+<nav *ngIf="account !== null" data-cy="navbar" class="navbar navbar-light bg-white navbar-expand-lg shadow-sm fixed-top">
   <div class="container-fluid">
     <!-- Left Section: Logo -->
     <a class="navbar-brand logo me-2" routerLink="/" (click)="collapseNavbar()">
@@ -7,12 +7,11 @@
 
     <button
       class="navbar-toggler"
-      [class.toggler-locked]="navbarToggleLock"
       type="button"
       aria-controls="navbarResponsive"
       [attr.aria-expanded]="!isNavbarCollapsed"
       aria-label="Toggle navigation"
-      (click)="toggleNavbar($event)"
+      (click)="toggleNavbar()"
     >
       <fa-icon [icon]="isNavbarCollapsed ? 'bars' : 'times'"></fa-icon>
     </button>
@@ -42,8 +41,8 @@
         </li>
 
         <!-- Bon de Commande -->
-        <li class="nav-item">
-          <a class="nav-link" href="javascript:void(0);">
+        <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <a class="nav-link" routerLink="bon-commande" (click)="collapseNavbar()">
             <fa-icon icon="file-signature"></fa-icon>
             <span class="nav-label">Bon de Commande</span>
           </a>
@@ -88,7 +87,7 @@
 
         <!-- Rapport -->
         <li class="nav-item">
-          <a class="nav-link" href="javascript:void(0);">
+          <a class="nav-link" href="javascript:void(0);" (click)="collapseNavbar()">
             <fa-icon icon="chart-bar"></fa-icon>
             <span class="nav-label">Rapport</span>
           </a>
@@ -273,6 +272,10 @@
         <button type="button" class="entity-tile" routerLink="facture/new" (click)="modal.close()">
           <span class="entity-tile-icon"><fa-icon icon="file-invoice-dollar"></fa-icon></span>
           <span class="entity-tile-label">Facture</span>
+        </button>
+        <button type="button" class="entity-tile" routerLink="bon-commande/new" (click)="modal.close()">
+          <span class="entity-tile-icon"><fa-icon icon="file-signature"></fa-icon></span>
+          <span class="entity-tile-label">Bon de Commande</span>
         </button>
         <button type="button" class="entity-tile" routerLink="devis/new" (click)="modal.close()">
           <span class="entity-tile-icon"><fa-icon icon="file-invoice"></fa-icon></span>

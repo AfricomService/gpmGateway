@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
@@ -36,11 +36,16 @@ export class RessourceUpdateComponent implements OnInit {
   loadingDetailRessourceFields = false;
   validationDetailRessourceErrors: { [code: string]: string } = {};
 
+  // === Gestion du statut de la ressource ===
+  ressourceStatuts: string[] = ['Disponible', 'EnMission', 'EnMaintenance', 'HorsService'];
+  changingStatut = false;
+
   constructor(
     protected ressourceService: RessourceService,
     protected ressourceFormService: RessourceFormService,
     protected activatedRoute: ActivatedRoute,
-    protected typeRessourceService: TypeRessourceService
+    protected typeRessourceService: TypeRessourceService,
+    protected router: Router
   ) {}
 
   ngOnInit(): void {
@@ -233,13 +238,21 @@ export class RessourceUpdateComponent implements OnInit {
 
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IRessource>>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
-      next: () => this.onSaveSuccess(),
+      next: response => this.onSaveSuccess(response),
       error: () => this.onSaveError(),
     });
   }
 
-  protected onSaveSuccess(): void {
-    this.previousState();
+  protected onSaveSuccess(response: HttpResponse<IRessource>): void {
+    const saved = response.body;
+    if (saved && saved.id !== null && saved.id !== undefined) {
+      this.router.navigate(['/ressource', saved.id, 'edit'], { replaceUrl: true }).then(() => {
+        this.updateForm(saved);
+        if (saved.typeRessourceId) {
+          this.loadDetailRessourceFields(saved.typeRessourceId);
+        }
+      });
+    }
   }
 
   protected onSaveError(): void {
@@ -248,6 +261,25 @@ export class RessourceUpdateComponent implements OnInit {
 
   protected onSaveFinalize(): void {
     this.isSaving = false;
+  }
+
+  changerStatut(statut: string): void {
+    if (!this.ressource?.id) {
+      return;
+    }
+    this.changingStatut = true;
+    this.ressourceService.changerStatut(this.ressource.id, statut).subscribe({
+      next: res => {
+        this.changingStatut = false;
+        if (res.body) {
+          this.ressource = res.body;
+          this.editForm.patchValue({ statut: res.body.statut });
+        }
+      },
+      error: () => {
+        this.changingStatut = false;
+      },
+    });
   }
 
   protected updateForm(ressource: IRessource): void {

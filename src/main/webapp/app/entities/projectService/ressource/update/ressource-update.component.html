@@ -285,7 +285,26 @@
       </div>
 
       <div class="cu-toolbar cu-toolbar-bottom">
-        <div class="cu-toolbar-left"></div>
+        <div class="cu-toolbar-left cu-statut-group" *ngIf="ressource?.id">
+          <span class="cu-badge-status" *ngIf="editForm.get('statut')?.value">
+            Statut actuel : <strong>{{ editForm.get('statut')?.value }}</strong>
+          </span>
+
+          <button
+            type="button"
+            *ngFor="let statut of ressourceStatuts"
+            class="btn-cu-statut"
+            [ngClass]="'btn-cu-statut-' + statut.toLowerCase()"
+            [class.btn-cu-statut-active]="editForm.get('statut')?.value === statut"
+            [disabled]="changingStatut || editForm.get('statut')?.value === statut"
+            (click)="changerStatut(statut)"
+          >
+            <span class="btn-cu-statut-dot"></span>
+            {{ statut }}
+          </button>
+        </div>
+        <div class="cu-toolbar-left" *ngIf="!ressource?.id"></div>
+
         <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
           <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
         </button>

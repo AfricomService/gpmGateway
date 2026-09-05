@@ -234,11 +234,37 @@
   display: inline-block;
   padding: 0.3rem 0.65rem;
   border-radius: 8px;
-  background: var(--cp-success-soft);
-  color: var(--cp-success);
+  background: var(--cp-surface-hover);
+  color: var(--cp-text-muted);
   font-weight: 600;
   font-size: 0.8rem;
   text-transform: capitalize;
+
+  /* === Couleurs par statut (alignées avec l'interface d'édition) === */
+  &.rs-badge-statut-disponible {
+    background: rgba(46, 160, 90, 0.12);
+    color: #2ea05a;
+  }
+
+  &.rs-badge-statut-enmission {
+    background: rgba(41, 121, 255, 0.12);
+    color: #2979ff;
+  }
+
+  &.rs-badge-statut-enmaintenance {
+    background: rgba(245, 158, 11, 0.14);
+    color: #b5750a;
+  }
+
+  &.rs-badge-statut-horsservice {
+    background: var(--cp-danger-soft);
+    color: var(--cp-danger);
+  }
+
+  &.rs-badge-statut-actif {
+    background: var(--cp-info-soft);
+    color: var(--cp-info);
+  }
 }
 
 /* ============ ROW ACTIONS ============ */
@@ -351,18 +377,41 @@
 }
 
 /* ============ RESPONSIVE ============ */
+
+/* --- Tablette : on garde le tableau mais on resserre --- */
+@media (max-width: 992px) {
+  .ressource-list-page {
+    padding: 1.25rem 1rem 1.75rem;
+  }
+
+  .rs-cell-truncate {
+    max-width: 140px;
+  }
+}
+
+/* --- Mobile : header, footer et création empilés --- */
 @media (max-width: 768px) {
   .ressource-list-page {
-    padding: 1rem 1rem 1.5rem;
+    padding: 1rem 0.75rem 1.5rem;
   }
 
   .rs-header {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.75rem;
   }
 
   .rs-header-actions {
-    justify-content: space-between;
+    justify-content: stretch;
+  }
+
+  .btn-rs-create {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .btn-rs-refresh {
+    justify-content: center;
   }
 
   .rs-footer {
@@ -370,9 +419,75 @@
     align-items: center;
   }
 
+  .rs-footer-pagination ::ng-deep .pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+/* --- Mobile étroit : le tableau devient une liste de cartes --- */
+@media (max-width: 576px) {
+  .rs-card {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
+  }
+
   .rs-table {
-    tbody td {
+    thead {
+      display: none; /* on cache l'entête, remplacée par data-label */
+    }
+
+    tbody {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    tr {
+      display: block;
+      background: var(--cp-surface);
+      border: 1px solid var(--cp-border);
+      border-radius: 12px;
+      padding: 0.5rem 0.9rem;
+      box-shadow: 0 4px 14px -10px rgba(26, 34, 51, 0.12);
+
+      &:not(:last-child) td {
+        border-bottom: 1px dashed var(--cp-border);
+      }
+    }
+
+    td {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.6rem 0;
       white-space: normal;
+      text-align: right;
+
+      &::before {
+        content: attr(data-label);
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--cp-text-muted);
+        text-align: left;
+      }
+    }
+
+    .rs-cell-truncate {
+      max-width: 60%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .rs-actions {
+      justify-content: flex-end;
+      width: 100%;
     }
   }
 }

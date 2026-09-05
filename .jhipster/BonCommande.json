@@ -1,0 +1,56 @@
+{
+  "changelogDate": "20260713130634",
+  "clientRootFolder": "financeService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "clientId",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "affaireId",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "lieu",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "responsableId",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "referenceClient",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "dateBonCommande",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "montantTotal",
+      "fieldType": "BigDecimal"
+    },
+    {
+      "fieldName": "montantCommande",
+      "fieldType": "BigDecimal"
+    },
+    {
+      "fieldName": "montantConsomme",
+      "fieldType": "BigDecimal"
+    },
+    {
+      "fieldName": "montantMissionEffectue",
+      "fieldType": "BigDecimal"
+    }
+  ],
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "financeService",
+  "microservicePath": "D:\\CODE\\GPM\\financeService",
+  "name": "BonCommande",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceClass"
+}

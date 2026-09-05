@@ -1,0 +1,222 @@
+// Les variables sont redéfinies ici (et non héritées de .bon-commande-update-page)
+// car NgbModal injecte ce composant hors de l'arbre DOM de la page (dans <ngb-modal-window>,
+// proche de <body>), donc les custom properties du parent ne descendent pas jusqu'ici.
+:host {
+  --cs-accent: #f5822a;
+  --cs-accent-hover: #ff9a4d;
+  --cs-accent-soft: rgba(245, 130, 42, 0.12);
+  --cs-text: #1a2233;
+  --cs-text-muted: #8a93a3;
+  --cs-border: #e7e9ee;
+  --cs-surface: #ffffff;
+  --cs-surface-hover: #f2f4f8;
+
+  display: block;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  color: var(--cs-text);
+}
+
+.cs-modal-header {
+  border-bottom: 1px solid var(--cs-border);
+  align-items: center;
+
+  .modal-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--cs-text);
+  }
+}
+
+.cs-modal-body {
+  padding: 1.25rem;
+}
+
+.cs-role-selector {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.cs-role-btn {
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--cs-border);
+  background: var(--cs-surface);
+  color: var(--cs-text-muted);
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    background: var(--cs-surface-hover);
+    border-color: var(--cs-accent);
+  }
+
+  &.active {
+    background: var(--cs-accent);
+    border-color: var(--cs-accent);
+    color: #ffffff;
+  }
+}
+
+.cs-search-bar {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.cs-search-input {
+  border-radius: 10px;
+  border: 1px solid var(--cs-border);
+  padding: 0.6rem 0.85rem;
+  font-size: 0.9rem;
+
+  &:focus {
+    border-color: var(--cs-accent);
+    box-shadow: 0 0 0 3px var(--cs-accent-soft);
+  }
+}
+
+.cs-list {
+  height: 420px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cs-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--cs-border);
+  border-radius: 10px;
+  background: var(--cs-surface);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    background: var(--cs-surface-hover);
+    border-color: var(--cs-accent);
+    transform: translateY(-1px);
+  }
+
+  &.cs-list-item-selected {
+    background: var(--cs-accent-soft);
+    border-color: var(--cs-accent);
+  }
+}
+
+.cs-list-item-checkbox {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--cs-accent);
+  cursor: pointer;
+}
+
+.cs-list-item-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cs-list-item-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--cs-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cs-list-item-email {
+  font-size: 0.8rem;
+  color: var(--cs-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cs-list-item-matricule {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--cs-accent);
+  background: var(--cs-accent-soft);
+  padding: 0.25rem 0.6rem;
+  border-radius: 8px;
+}
+
+.cs-empty,
+.cs-loading {
+  text-align: center;
+  color: var(--cs-text-muted);
+  font-style: italic;
+  padding: 2rem 1rem;
+}
+
+.cs-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 420px;
+}
+
+.cs-modal-footer {
+  border-top: 1px solid var(--cs-border);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cs-selection-count {
+  margin-right: auto;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--cs-text-muted);
+}
+
+.btn-cs-cancel {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--cs-border);
+  background: var(--cs-surface);
+  color: var(--cs-text-muted);
+  font-weight: 600;
+  font-size: 0.8rem;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    background: var(--cs-surface-hover);
+    color: var(--cs-text);
+    border-color: var(--cs-accent);
+  }
+}
+
+.btn-cs-confirm {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--cs-accent);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.8rem;
+  transition: background 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    background: var(--cs-accent-hover);
+    transform: translateY(-1px);
+  }
+}

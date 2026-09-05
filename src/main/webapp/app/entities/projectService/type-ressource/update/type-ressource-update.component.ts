@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin, Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
@@ -35,7 +35,8 @@ export class TypeRessourceUpdateComponent implements OnInit {
     protected typeRessourceService: TypeRessourceService,
     protected typeRessourceFormService: TypeRessourceFormService,
     protected detailRessourceService: DetailRessourceService,
-    protected activatedRoute: ActivatedRoute
+    protected activatedRoute: ActivatedRoute,
+    protected router: Router
   ) {}
 
   // === Accordéon ===
@@ -118,15 +119,26 @@ export class TypeRessourceUpdateComponent implements OnInit {
   }
 
   protected onSaveSuccess(response?: HttpResponse<ITypeRessource>): void {
-    const savedId = response?.body?.id ?? this.typeRessource?.id;
+    const saved = response?.body;
+    const savedId = saved?.id ?? this.typeRessource?.id;
+
     if (savedId != null) {
       this.typeRessourceService.replaceDetails(savedId, Array.from(this.selectedDetailIds)).subscribe({
-        next: () => this.previousState(),
-        error: () => this.previousState(),
+        next: () => this.stayOnEditPage(savedId, saved),
+        error: () => this.stayOnEditPage(savedId, saved),
       });
     } else {
       this.previousState();
     }
+  }
+
+  protected stayOnEditPage(savedId: number, saved?: ITypeRessource | null): void {
+    this.router.navigate(['/type-ressource', savedId, 'edit'], { replaceUrl: true }).then(() => {
+      if (saved) {
+        this.updateForm(saved);
+      }
+      this.loadAssignedDetails(savedId);
+    });
   }
 
   protected onSaveError(): void {

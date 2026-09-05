@@ -76,9 +76,6 @@
           <div>
             <fa-icon icon="gas-pump" class="text-muted"></fa-icon><span>{{ vehicule.typeCarburant || '—' }}</span>
           </div>
-          <div>
-            <fa-icon icon="building" class="text-muted"></fa-icon><span>{{ vehicule.agence?.designation || '—' }}</span>
-          </div>
         </div>
 
         <div class="vehicule-card-footer">
@@ -118,9 +115,6 @@
             <th scope="col" jhiSortBy="typeCarburant">
               <div class="d-flex"><span>Carburant</span><fa-icon class="p-1" icon="sort"></fa-icon></div>
             </th>
-            <th scope="col" jhiSortBy="agence.designation">
-              <div class="d-flex"><span>Agence</span><fa-icon class="p-1" icon="sort"></fa-icon></div>
-            </th>
             <th scope="col"></th>
           </tr>
         </thead>
@@ -135,7 +129,6 @@
             <td>{{ vehicule.matricule }}</td>
             <td>{{ vehicule.type }}</td>
             <td>{{ vehicule.typeCarburant }}</td>
-            <td>{{ vehicule.agence?.designation || '—' }}</td>
             <td class="text-end" (click)="$event.stopPropagation()">
               <button (click)="delete(vehicule)" class="action-btn btn-delete" data-cy="entityDeleteButton" title="Supprimer" type="button">
                 <fa-icon icon="trash-alt"></fa-icon>

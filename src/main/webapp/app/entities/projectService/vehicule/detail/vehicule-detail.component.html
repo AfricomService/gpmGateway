@@ -72,13 +72,6 @@
       <ng-template ngbPanelContent>
         <div class="row g-3">
           <div class="col-md-6">
-            <small class="text-muted">Agence</small>
-            <div *ngIf="v.agence; else noAgence">
-              <a [routerLink]="['/agence', v.agence.id, 'view']">{{ v.agence.designation }}</a>
-            </div>
-            <ng-template #noAgence><div>-</div></ng-template>
-          </div>
-          <div class="col-md-6">
             <small class="text-muted">Charge fixe</small>
             <div>{{ v.chargeFixe || '-' }}</div>
           </div>

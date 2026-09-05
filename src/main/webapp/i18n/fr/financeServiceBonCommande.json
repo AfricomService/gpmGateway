@@ -1,0 +1,38 @@
+{
+  "gpmGatewayApp": {
+    "financeServiceBonCommande": {
+      "home": {
+        "title": "BonCommandes",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Nouveau bon de commande",
+        "createOrEditLabel": "Nouveau bon de commande",
+        "notFound": "Aucun Bon Commande trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Bon Commande {{ id }} ?"
+      },
+      "detail": {
+        "title": "Bon Commande",
+        "globalInfoLabel": "Information Globale"
+      },
+      "id": "ID",
+      "clientId": "Client Id",
+      "affaireId": "Projet",
+      "lieu": "Lieu",
+      "responsableId": "Responsable ",
+      "referenceClient": "Reference Client",
+      "dateBonCommande": "Date Bon Commande",
+      "montantTotal": "Montant Total",
+      "montantCommande": "Montant Commande",
+      "montantConsomme": "Montant Consomme",
+      "montantMissionEffectue": "Montant Mission Effectue"
+    }
+  },
+  "financeServiceApp": {
+    "financeServiceBonCommande": {
+      "created": "Un nouveau Bon Commande a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Bon Commande avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Bon Commande avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

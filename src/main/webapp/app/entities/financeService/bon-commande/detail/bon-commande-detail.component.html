@@ -1,0 +1,70 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="bonCommande">
+      <h2 data-cy="bonCommandeDetailsHeading">
+        <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.detail.title">Bon Commande</span>
+      </h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ bonCommande.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.clientId">Client Id</span></dt>
+        <dd>
+          <span>{{ bonCommande.clientId }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.affaireId">Affaire Id</span></dt>
+        <dd>
+          <span>{{ bonCommande.affaireId }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.lieu">Lieu</span></dt>
+        <dd>
+          <span>{{ bonCommande.lieu }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.responsableId">Responsable Id</span></dt>
+        <dd>
+          <span>{{ bonCommande.responsableId }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.referenceClient">Reference Client</span></dt>
+        <dd>
+          <span>{{ bonCommande.referenceClient }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.dateBonCommande">Date Bon Commande</span></dt>
+        <dd>
+          <span>{{ bonCommande.dateBonCommande | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.montantTotal">Montant Total</span></dt>
+        <dd>
+          <span>{{ bonCommande.montantTotal }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.montantCommande">Montant Commande</span></dt>
+        <dd>
+          <span>{{ bonCommande.montantCommande }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.montantConsomme">Montant Consomme</span></dt>
+        <dd>
+          <span>{{ bonCommande.montantConsomme }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.montantMissionEffectue">Montant Mission Effectue</span></dt>
+        <dd>
+          <span>{{ bonCommande.montantMissionEffectue }}</span>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/bon-commande', bonCommande.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

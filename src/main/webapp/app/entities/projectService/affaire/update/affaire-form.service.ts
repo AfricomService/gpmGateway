@@ -56,6 +56,7 @@ type AffaireFormGroupContent = {
   client: FormControl<AffaireFormRawValue['client']>;
   societeId: FormControl<AffaireFormRawValue['societeId']>;
   identifiantUnique: FormControl<AffaireFormRawValue['identifiantUnique']>;
+  clientCommande: FormControl<AffaireFormRawValue['clientCommande']>;
 };
 
 export type AffaireFormGroup = FormGroup<AffaireFormGroupContent>;
@@ -105,6 +106,7 @@ export class AffaireFormService {
       }),
       societeId: new FormControl(affaireRawValue.societeId),
       identifiantUnique: new FormControl(affaireRawValue.identifiantUnique),
+      clientCommande: new FormControl(affaireRawValue.clientCommande),
     });
   }
 

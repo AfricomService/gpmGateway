@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
@@ -44,7 +44,8 @@ export class DetailRessourceUpdateComponent implements OnInit {
   constructor(
     protected detailRessourceService: DetailRessourceService,
     protected detailRessourceFormService: DetailRessourceFormService,
-    protected activatedRoute: ActivatedRoute
+    protected activatedRoute: ActivatedRoute,
+    protected router: Router
   ) {}
 
   // === Accordéon ===
@@ -115,13 +116,18 @@ export class DetailRessourceUpdateComponent implements OnInit {
 
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IDetailRessource>>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
-      next: () => this.onSaveSuccess(),
+      next: response => this.onSaveSuccess(response),
       error: () => this.onSaveError(),
     });
   }
 
-  protected onSaveSuccess(): void {
-    this.previousState();
+  protected onSaveSuccess(response: HttpResponse<IDetailRessource>): void {
+    const saved = response.body;
+    if (saved && saved.id !== null && saved.id !== undefined) {
+      this.router.navigate(['/detail-ressource', saved.id, 'edit'], { replaceUrl: true }).then(() => {
+        this.updateForm(saved);
+      });
+    }
   }
 
   protected onSaveError(): void {
