@@ -8,6 +8,7 @@ export interface IBonCommandeArticles {
   qteCommande?: number | null;
   qteEffectuee?: number | null;
   prixArticle?: number | null;
+  prixArticleHT?: number | null;
 }
 
 export type NewBonCommandeArticles = Omit<IBonCommandeArticles, 'id'> & { id: null };
