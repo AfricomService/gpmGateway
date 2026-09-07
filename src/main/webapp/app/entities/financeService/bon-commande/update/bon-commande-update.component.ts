@@ -589,8 +589,9 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
         articleId: sel.article.id as number,
         qteCommande: sel.qte,
         qteEffectuee: sel.qteEffectuee ?? 0,
-        // On fige le Prix Achat de l'article au moment de la sélection.
+        // On fige le Prix Achat et le Prix HT de l'article au moment de la sélection.
         prixArticle: sel.article.prixAchat ?? null,
+        prixArticleHT: sel.article.prixUnitHT ?? null,
       }));
 
     this.savingChosenArticles = true;
@@ -628,6 +629,7 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
         qteCommande: sel.qte,
         qteEffectuee: sel.qteEffectuee ?? 0,
         prixArticle: sel.article.prixAchat ?? null,
+        prixArticleHT: sel.article.prixUnitHT ?? null,
       }));
 
     this.removingArticleId = articleId;
@@ -713,7 +715,7 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     const bonCommande = this.bonCommandeFormService.getBonCommande(this.editForm);
 
     if (bonCommande.id !== null) {
-      this.subscribeToSaveResponse(this.bonCommandeService.update(bonCommande));
+      this.subscribeToSaveResponse(this.bonCommandeService.partialUpdate(bonCommande));
     } else {
       this.bonCommandeService.generateIdentifiantBonCommande().subscribe({
         next: res => {
@@ -751,8 +753,9 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
         articleId: sel.article.id as number,
         qteCommande: sel.qte,
         qteEffectuee: sel.qteEffectuee ?? 0,
-        // On fige le Prix Achat de l'article au moment de l'enregistrement du BC.
+        // On fige le Prix Achat et le Prix HT de l'article au moment de l'enregistrement du BC.
         prixArticle: sel.article.prixAchat ?? null,
+        prixArticleHT: sel.article.prixUnitHT ?? null,
       }));
 
     forkJoin([
@@ -1385,12 +1388,16 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
               }
 
               const persistedPrix = validLinks[index].prixArticle;
+              const persistedPrixHT = validLinks[index].prixArticleHT;
 
-              // Le Prix Achat affiché doit rester celui figé lors de l'enregistrement
-              // du bon de commande, et non le prix courant de l'article (qui peut
-              // avoir changé depuis).
+              // Le Prix Achat et le Prix HT affichés doivent rester ceux figés lors
+              // de l'enregistrement du bon de commande, et non le prix courant de
+              // l'article (qui peut avoir changé depuis).
               if (persistedPrix !== null && persistedPrix !== undefined) {
                 article.prixAchat = persistedPrix;
+              }
+              if (persistedPrixHT !== null && persistedPrixHT !== undefined) {
+                article.prixUnitHT = persistedPrixHT;
               }
 
               const sel: ArticleSelection = {
