@@ -630,7 +630,7 @@
                     <div class="cu-item-info">
                       <div class="cu-item-title">
                         <strong>{{ sel.article.code }} - ({{ sel.article.codeClient }})</strong> — {{ sel.article.designation }}
-                        <span class="text-muted ms-2"
+                        <span class="text-muted ms-2" *jhiHasAnyAuthority="'ROLE_CAN_SEE_PRICE'"
                           >(Prix HT: {{ sel.article.prixUnitHT }} DT - Prix Achat: {{ sel.article.prixAchat }} DT)</span
                         >
                       </div>
