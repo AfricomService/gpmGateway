@@ -19,6 +19,7 @@
       "statut": "Statut",
       "affaireId": "Affaire Id",
       "clientId": "Client Id",
+      "bonCommandeId": "Bon de commande",
       "createdAt": "Created At",
       "updatedAt": "Updated At",
       "createdBy": "Created By",
@@ -28,6 +29,22 @@
       "help": {
         "affaireId": "Cross-service FK → Affaire (projectService)",
         "clientId": "Cross-service FK → Client (projectService)"
+      },
+      "bonCommande": {
+        "selectBonCommande": "Sélectionner un bon de commande"
+      },
+      "dateDebut": "Date de début OT",
+      "selectAffaire": "Sélectionner une affaire",
+      "selectClient": "Sélectionner un client",
+      "selectBonCommande": "Sélectionner un bon de commande",
+      "modeleOt": "Modèle OT",
+      "selectModeleOt": "Sélectionner un modèle",
+      "modeModele": "Basé sur un modèle OT",
+      "modeLibre": "OT libre",
+      "section": {
+        "informationsGenerales": "Informations Générales",
+        "modeCreation": "Mode de création",
+        "modeleOtPhases": "Modèle OT et phases"
       }
     }
   },

@@ -1,155 +1,195 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
+<div class="cu-ot-externe-update">
+  <div class="cu-container">
     <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-      <h2
-        id="jhi-ot-externe-heading"
-        data-cy="OtExterneCreateUpdateHeading"
-        jhiTranslate="gpmGatewayApp.financeServiceOtExterne.home.createOrEditLabel"
-      >
-        Créer ou éditer un Ot Externe
-      </h2>
+      <jhi-alert-error></jhi-alert-error>
 
-      <div>
-        <jhi-alert-error></jhi-alert-error>
-
-        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
-          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
-          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.reference" for="field_reference">Reference</label>
-          <input type="text" class="form-control" name="reference" id="field_reference" data-cy="reference" formControlName="reference" />
-          <div *ngIf="editForm.get('reference')!.invalid && (editForm.get('reference')!.dirty || editForm.get('reference')!.touched)">
-            <small
-              class="form-text text-danger"
-              *ngIf="editForm.get('reference')?.errors?.required"
-              jhiTranslate="entity.validation.required"
-            >
-              Ce champ est obligatoire.
-            </small>
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.statut" for="field_statut">Statut</label>
-          <select class="form-control" name="statut" formControlName="statut" id="field_statut" data-cy="statut">
-            <option [ngValue]="null">{{ 'gpmGatewayApp.StatutOtExterne.null' | translate }}</option>
-            <option *ngFor="let statutOtExterne of statutOtExterneValues" [value]="statutOtExterne">
-              {{ 'gpmGatewayApp.StatutOtExterne.' + statutOtExterne | translate }}
-            </option>
-          </select>
-          <div *ngIf="editForm.get('statut')!.invalid && (editForm.get('statut')!.dirty || editForm.get('statut')!.touched)">
-            <small class="form-text text-danger" *ngIf="editForm.get('statut')?.errors?.required" jhiTranslate="entity.validation.required">
-              Ce champ est obligatoire.
-            </small>
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <label
-            class="form-label"
-            jhiTranslate="gpmGatewayApp.financeServiceOtExterne.affaireId"
-            for="field_affaireId"
-            [ngbTooltip]="'gpmGatewayApp.financeServiceOtExterne.help.affaireId' | translate"
-            >Affaire Id</label
-          >
-          <input type="number" class="form-control" name="affaireId" id="field_affaireId" data-cy="affaireId" formControlName="affaireId" />
-        </div>
-
-        <div class="row mb-3">
-          <label
-            class="form-label"
-            jhiTranslate="gpmGatewayApp.financeServiceOtExterne.clientId"
-            for="field_clientId"
-            [ngbTooltip]="'gpmGatewayApp.financeServiceOtExterne.help.clientId' | translate"
-            >Client Id</label
-          >
-          <input type="number" class="form-control" name="clientId" id="field_clientId" data-cy="clientId" formControlName="clientId" />
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.createdAt" for="field_createdAt">Created At</label>
-          <div class="d-flex">
-            <input
-              id="field_createdAt"
-              data-cy="createdAt"
-              type="datetime-local"
-              class="form-control"
-              name="createdAt"
-              formControlName="createdAt"
-              placeholder="YYYY-MM-DD HH:mm"
-            />
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.updatedAt" for="field_updatedAt">Updated At</label>
-          <div class="d-flex">
-            <input
-              id="field_updatedAt"
-              data-cy="updatedAt"
-              type="datetime-local"
-              class="form-control"
-              name="updatedAt"
-              formControlName="updatedAt"
-              placeholder="YYYY-MM-DD HH:mm"
-            />
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.createdBy" for="field_createdBy">Created By</label>
-          <input type="text" class="form-control" name="createdBy" id="field_createdBy" data-cy="createdBy" formControlName="createdBy" />
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.createdByUserLogin" for="field_createdByUserLogin"
-            >Created By User Login</label
-          >
-          <input
-            type="text"
-            class="form-control"
-            name="createdByUserLogin"
-            id="field_createdByUserLogin"
-            data-cy="createdByUserLogin"
-            formControlName="createdByUserLogin"
-          />
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.updatedBy" for="field_updatedBy">Updated By</label>
-          <input type="text" class="form-control" name="updatedBy" id="field_updatedBy" data-cy="updatedBy" formControlName="updatedBy" />
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.updatedByUserLogin" for="field_updatedByUserLogin"
-            >Updated By User Login</label
-          >
-          <input
-            type="text"
-            class="form-control"
-            name="updatedByUserLogin"
-            id="field_updatedByUserLogin"
-            data-cy="updatedByUserLogin"
-            formControlName="updatedByUserLogin"
-          />
-        </div>
-      </div>
-
-      <div>
-        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
-          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
-        </button>
+      <!-- ====================================================== -->
+      <!-- TOOLBAR -->
+      <!-- ====================================================== -->
+      <div class="cu-toolbar cu-toolbar-end">
+        <span
+          class="cu-item-badge-id"
+          *ngIf="editForm.controls.statut.value"
+          [ngClass]="'cu-badge-' + (editForm.controls.statut.value | lowercase)"
+        >
+          {{ 'gpmGatewayApp.StatutOtExterne.' + editForm.controls.statut.value | translate }}
+        </span>
 
         <button
           type="submit"
           id="save-entity"
           data-cy="entityCreateSaveButton"
+          title="Sauvegarder"
           [disabled]="editForm.invalid || isSaving"
-          class="btn btn-primary"
+          class="btn-cu-save"
         >
-          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+          <fa-icon icon="save"></fa-icon>
+        </button>
+      </div>
+
+      <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
+        <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
+        <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+      </div>
+
+      <!-- ====================================================== -->
+      <!-- ACCORDEON -->
+      <!-- ====================================================== -->
+      <div class="cu-accordion">
+        <!-- SECTION 1 : INFORMATIONS GENERALES -->
+        <div class="cu-accordion-item" [class.open]="isPanelOpen('global')">
+          <button type="button" class="cu-accordion-header" (click)="togglePanel('global')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="file-invoice" class="cu-accordion-icon"></fa-icon>
+              <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.section.informationsGenerales">Informations Générales</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isPanelOpen('global')">
+            <div class="row">
+              <div class="col-md-12 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.dateDebut" for="field_dateDebut"
+                  >Date de début OT</label
+                >
+                <input
+                  type="date"
+                  class="form-control cu-input"
+                  name="dateDebut"
+                  id="field_dateDebut"
+                  data-cy="dateDebut"
+                  formControlName="dateDebut"
+                />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.affaireId" for="field_affaireId"
+                  >Affaire</label
+                >
+                <select class="form-control cu-input" name="affaireId" id="field_affaireId" data-cy="affaireId" formControlName="affaireId">
+                  <option [ngValue]="null" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.selectAffaire">
+                    Sélectionner une affaire
+                  </option>
+                  <option *ngFor="let affaire of affaires" [ngValue]="affaire.id">
+                    {{ affaire.designationAffaire ?? 'Affaire #' + affaire.numAffaire }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.clientId" for="field_clientId">Client</label>
+                <select class="form-control cu-input" name="clientId" id="field_clientId" data-cy="clientId" formControlName="clientId">
+                  <option [ngValue]="null" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.selectClient">Sélectionner un client</option>
+                  <option *ngFor="let client of clients" [ngValue]="client.id">{{ client.raisonSociale }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.bonCommandeId" for="field_bonCommandeId"
+                  >Bon de commande</label
+                >
+                <select
+                  class="form-control cu-input"
+                  name="bonCommandeId"
+                  id="field_bonCommandeId"
+                  data-cy="bonCommandeId"
+                  formControlName="bonCommandeId"
+                >
+                  <option [ngValue]="null" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.selectBonCommande">
+                    Sélectionner un bon de commande
+                  </option>
+                  <option *ngFor="let bonCommande of bonCommandes" [ngValue]="bonCommande.id">
+                    {{ bonCommande.identifiantUnique ?? 'BC #' + bonCommande.id }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2 : MODE DE CREATION -->
+        <div class="cu-accordion-item" [class.open]="isPanelOpen('mode')">
+          <button type="button" class="cu-accordion-header" (click)="togglePanel('mode')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="sliders-h" class="cu-accordion-icon"></fa-icon>
+              <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.section.modeCreation">Mode de création</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isPanelOpen('mode')">
+            <div class="cu-mode-creation d-flex align-items-center gap-2">
+              <button
+                type="button"
+                class="btn cu-mode-btn"
+                [class.cu-mode-btn-active]="modeCreation === 'MODELE'"
+                (click)="selectModeCreation('MODELE')"
+                data-cy="modeModele"
+              >
+                <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.modeModele">Basé sur un modèle OT</span>
+              </button>
+
+              <button
+                type="button"
+                class="btn cu-mode-btn"
+                [class.cu-mode-btn-active]="modeCreation === 'LIBRE'"
+                (click)="selectModeCreation('LIBRE')"
+                data-cy="modeLibre"
+              >
+                <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.modeLibre">OT libre</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3 : MODELE OT ET PHASES (uniquement si mode = MODELE) -->
+        <div class="cu-accordion-item" [class.open]="isPanelOpen('modele')" *ngIf="modeCreation === 'MODELE'">
+          <button type="button" class="cu-accordion-header" (click)="togglePanel('modele')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="layer-group" class="cu-accordion-icon"></fa-icon>
+              <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.section.modeleOtPhases">Modèle OT et phases</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isPanelOpen('modele')">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.modeleOt" for="field_modeleOtId"
+                  >Modèle OT</label
+                >
+                <select
+                  class="form-control cu-input"
+                  name="modeleOtId"
+                  id="field_modeleOtId"
+                  data-cy="modeleOtId"
+                  formControlName="modeleOtId"
+                >
+                  <option [ngValue]="null" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.selectModeleOt">
+                    Sélectionner un modèle
+                  </option>
+                  <!-- TODO : brancher sur ton ModeleOtService (liste des modèles OT + phases) -->
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================== -->
+      <!-- FOOTER -->
+      <!-- ====================================================== -->
+      <div class="cu-toolbar cu-toolbar-bottom">
+        <div class="cu-toolbar-left"></div>
+
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>
+          &nbsp;
+          <span jhiTranslate="entity.action.cancel">Annuler</span>
         </button>
       </div>
     </form>
