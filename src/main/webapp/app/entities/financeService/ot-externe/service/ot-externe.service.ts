@@ -29,6 +29,8 @@ export type EntityArrayResponseType = HttpResponse<IOtExterne[]>;
 export class OtExterneService {
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/ot-externes', 'financeservice');
 
+  protected numsequentielleResourceUrl = this.applicationConfigService.getEndpointFor('api/numsequentielles', 'projectservice');
+
   constructor(protected http: HttpClient, protected applicationConfigService: ApplicationConfigService) {}
 
   create(otExterne: NewOtExterne): Observable<EntityResponseType> {
@@ -67,6 +69,17 @@ export class OtExterneService {
 
   delete(id: number): Observable<HttpResponse<{}>> {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
+  }
+
+  /**
+   * Génère et incrémente l'identifiant unique (reference) de l'OT externe (ex: OT-0001-26).
+   * L'endpoint renvoie du texte brut, d'où responseType: 'text'.
+   */
+  generateIdentifiantOtExterne(): Observable<HttpResponse<string>> {
+    return this.http.post(`${this.numsequentielleResourceUrl}/generate-identifiant-ot-externe`, null, {
+      observe: 'response',
+      responseType: 'text',
+    });
   }
 
   getOtExterneIdentifier(otExterne: Pick<IOtExterne, 'id'>): number {

@@ -7,13 +7,7 @@
       <!-- TOOLBAR -->
       <!-- ====================================================== -->
       <div class="cu-toolbar cu-toolbar-end">
-        <span
-          class="cu-item-badge-id"
-          *ngIf="editForm.controls.statut.value"
-          [ngClass]="'cu-badge-' + (editForm.controls.statut.value | lowercase)"
-        >
-          {{ 'gpmGatewayApp.StatutOtExterne.' + editForm.controls.statut.value | translate }}
-        </span>
+        <span class="cu-badge-id" *ngIf="otExterne?.reference"> {{ otExterne?.reference }} </span>
 
         <button
           type="submit"
@@ -25,11 +19,6 @@
         >
           <fa-icon icon="save"></fa-icon>
         </button>
-      </div>
-
-      <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
-        <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
-        <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
       </div>
 
       <!-- ====================================================== -->
@@ -184,7 +173,15 @@
       <!-- FOOTER -->
       <!-- ====================================================== -->
       <div class="cu-toolbar cu-toolbar-bottom">
-        <div class="cu-toolbar-left"></div>
+        <div class="cu-toolbar-left">
+          <span
+            class="cu-item-badge-id"
+            *ngIf="editForm.controls.statut.value"
+            [ngClass]="'cu-badge-' + (editForm.controls.statut.value | lowercase)"
+          >
+            {{ 'gpmGatewayApp.StatutOtExterne.' + editForm.controls.statut.value | translate }}
+          </span>
+        </div>
 
         <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
           <fa-icon icon="ban"></fa-icon>

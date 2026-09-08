@@ -66,9 +66,7 @@ export class OtExterneFormService {
       // Champ "reference" retiré de l'UI : plus de validateur "required",
       // sa valeur est désormais générée automatiquement (voir getFormDefaults).
       reference: new FormControl(otExterneRawValue.reference),
-      statut: new FormControl(otExterneRawValue.statut, {
-        validators: [Validators.required],
-      }),
+      statut: new FormControl(otExterneRawValue.statut),
       affaireId: new FormControl(otExterneRawValue.affaireId),
       clientId: new FormControl(otExterneRawValue.clientId),
       bonCommandeId: new FormControl(otExterneRawValue.bonCommandeId),

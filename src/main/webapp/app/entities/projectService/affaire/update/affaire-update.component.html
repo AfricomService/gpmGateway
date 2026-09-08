@@ -183,22 +183,48 @@
                   Responsable Projet
                   <span class="text-danger">*</span>
                 </label>
-                <ng-select
-                  id="field_responsable"
-                  name="responsable"
-                  [items]="usersSharedCollection"
-                  [searchable]="true"
-                  [(ngModel)]="selectedResponsable"
-                  [ngModelOptions]="{ standalone: true }"
-                  (ngModelChange)="onResponsableChange($event)"
-                  class="custom-ng-select"
-                  placeholder="Rechercher un responsable..."
-                  [readonly]="!isEditMode"
-                >
-                  <ng-template ng-label-tmp let-item="item"> {{ item.firstName }} {{ item.lastName }} </ng-template>
 
-                  <ng-template ng-option-tmp let-item="item"> {{ item.firstName }} {{ item.lastName }} </ng-template>
-                </ng-select>
+                <!-- ID réel du responsable (contact ayant le rôle MANAGER) -->
+                <input type="hidden" formControlName="responsableProjetId" />
+
+                <div class="cu-affaire-selector">
+                  <ng-select
+                    id="field_responsable"
+                    data-cy="responsable"
+                    name="responsable"
+                    class="custom-ng-select"
+                    [items]="responsables"
+                    bindLabel="nomPrenom"
+                    [compareWith]="compareResponsable"
+                    [searchable]="true"
+                    [clearable]="true"
+                    [loading]="loadingResponsables"
+                    placeholder="Rechercher un responsable..."
+                    notFoundText="Aucun responsable trouvé"
+                    loadingText="Chargement..."
+                    [ngModel]="selectedResponsable"
+                    [ngModelOptions]="{ standalone: true }"
+                    (change)="onResponsableSelectChange($event)"
+                    [readonly]="!isEditMode"
+                  >
+                    <ng-template ng-option-tmp let-item="item">
+                      <div>{{ item.nomPrenom }}</div>
+                      <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
+                    </ng-template>
+                  </ng-select>
+
+                  <button
+                    *ngIf="isEditMode"
+                    type="button"
+                    class="btn-cu-affaire-modal"
+                    title="Rechercher un responsable"
+                    aria-label="Rechercher un responsable"
+                    (click)="openResponsableModal()"
+                  >
+                    <fa-icon icon="search"></fa-icon>
+                  </button>
+                </div>
+
                 <div
                   *ngIf="
                     editForm.get('responsableProjetId')!.invalid &&

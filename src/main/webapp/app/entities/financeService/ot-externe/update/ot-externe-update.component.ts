@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
@@ -46,6 +46,7 @@ export class OtExterneUpdateComponent implements OnInit {
     protected otExterneService: OtExterneService,
     protected otExterneFormService: OtExterneFormService,
     protected activatedRoute: ActivatedRoute,
+    protected router: Router,
     protected affaireService: AffaireService,
     protected clientService: ClientService,
     protected bonCommandeService: BonCommandeService
@@ -93,10 +94,19 @@ export class OtExterneUpdateComponent implements OnInit {
   save(): void {
     this.isSaving = true;
     const otExterne = this.otExterneFormService.getOtExterne(this.editForm);
+
     if (otExterne.id !== null) {
       this.subscribeToSaveResponse(this.otExterneService.update(otExterne));
     } else {
-      this.subscribeToSaveResponse(this.otExterneService.create(otExterne));
+      this.otExterneService.generateIdentifiantOtExterne().subscribe({
+        next: res => {
+          otExterne.reference = res.body;
+          this.subscribeToSaveResponse(this.otExterneService.create(otExterne));
+        },
+        error: () => {
+          this.onSaveFinalize();
+        },
+      });
     }
   }
 
@@ -114,13 +124,18 @@ export class OtExterneUpdateComponent implements OnInit {
 
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IOtExterne>>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
-      next: () => this.onSaveSuccess(),
+      next: response => this.onSaveSuccess(response.body),
       error: () => this.onSaveError(),
     });
   }
 
-  protected onSaveSuccess(): void {
-    this.previousState();
+  protected onSaveSuccess(otExterne?: IOtExterne | null): void {
+    if (otExterne?.id) {
+      // Redirection vers la page d'édition de l'OT nouvellement créé
+      this.router.navigate(['../', otExterne.id, 'edit'], { relativeTo: this.activatedRoute });
+    } else {
+      this.previousState();
+    }
   }
 
   protected onSaveError(): void {

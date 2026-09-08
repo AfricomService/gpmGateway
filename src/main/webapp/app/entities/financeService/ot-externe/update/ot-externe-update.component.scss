@@ -57,6 +57,16 @@
   padding: 0.3rem 0.75rem;
 }
 
+.cu-badge-id {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--cp-accent);
+  background: var(--cp-accent-soft);
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  margin-right: auto;
+}
+
 .cu-item-badge-id {
   display: inline-flex;
   align-items: center;
