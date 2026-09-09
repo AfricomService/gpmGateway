@@ -6,9 +6,10 @@ import { OtExterneDetailComponent } from './detail/ot-externe-detail.component';
 import { OtExterneUpdateComponent } from './update/ot-externe-update.component';
 import { OtExterneDeleteDialogComponent } from './delete/ot-externe-delete-dialog.component';
 import { OtExterneRoutingModule } from './route/ot-externe-routing.module';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 @NgModule({
-  imports: [SharedModule, NgbAccordionModule, OtExterneRoutingModule],
+  imports: [SharedModule, NgbAccordionModule, OtExterneRoutingModule, NgSelectModule],
   declarations: [OtExterneComponent, OtExterneDetailComponent, OtExterneUpdateComponent, OtExterneDeleteDialogComponent],
 })
 export class FinanceServiceOtExterneModule {}

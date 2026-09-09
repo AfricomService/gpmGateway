@@ -36,6 +36,7 @@ type OtExterneFormGroupContent = {
   statut: FormControl<OtExterneFormRawValue['statut']>;
   affaireId: FormControl<OtExterneFormRawValue['affaireId']>;
   clientId: FormControl<OtExterneFormRawValue['clientId']>;
+  lieu: FormControl<OtExterneFormRawValue['lieu']>;
   bonCommandeId: FormControl<OtExterneFormRawValue['bonCommandeId']>;
   modeleOtId: FormControl<OtExterneFormRawValue['modeleOtId']>;
   createdAt: FormControl<OtExterneFormRawValue['createdAt']>;
@@ -69,6 +70,7 @@ export class OtExterneFormService {
       statut: new FormControl(otExterneRawValue.statut),
       affaireId: new FormControl(otExterneRawValue.affaireId),
       clientId: new FormControl(otExterneRawValue.clientId),
+      lieu: new FormControl(otExterneRawValue.lieu),
       bonCommandeId: new FormControl(otExterneRawValue.bonCommandeId),
       modeleOtId: new FormControl(otExterneRawValue.modeleOtId),
       createdAt: new FormControl(otExterneRawValue.createdAt),

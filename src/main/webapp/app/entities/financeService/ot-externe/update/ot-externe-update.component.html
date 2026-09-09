@@ -57,22 +57,102 @@
                 <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.affaireId" for="field_affaireId"
                   >Affaire</label
                 >
-                <select class="form-control cu-input" name="affaireId" id="field_affaireId" data-cy="affaireId" formControlName="affaireId">
-                  <option [ngValue]="null" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.selectAffaire">
-                    Sélectionner une affaire
-                  </option>
-                  <option *ngFor="let affaire of affaires" [ngValue]="affaire.id">
-                    {{ affaire.designationAffaire ?? 'Affaire #' + affaire.numAffaire }}
-                  </option>
-                </select>
+
+                <!-- ID réel de l'affaire -->
+                <input type="hidden" formControlName="affaireId" />
+
+                <div class="cu-affaire-selector">
+                  <ng-select
+                    id="field_affaireId"
+                    data-cy="affaireId"
+                    name="affaireId"
+                    class="custom-ng-select"
+                    [items]="affaireResults"
+                    [compareWith]="compareAffaire"
+                    [searchable]="true"
+                    [clearable]="true"
+                    [loading]="loadingAffaires"
+                    [typeahead]="affaireSearch$"
+                    (scrollToEnd)="onAffaireScrollToEnd()"
+                    placeholder="Rechercher un projet..."
+                    notFoundText="Aucune affaire trouvée"
+                    loadingText="Chargement..."
+                    [ngModel]="selectedAffaire"
+                    [ngModelOptions]="{ standalone: true }"
+                    (change)="onAffaireSelectChange($event)"
+                  >
+                    <ng-template ng-label-tmp let-item="item"> {{ item.designationAffaire }} (N° {{ item.numAffaire }}) </ng-template>
+                    <ng-template ng-option-tmp let-item="item">
+                      <div>{{ item.designationAffaire }}</div>
+                      <small class="text-muted">N° {{ item.numAffaire }}</small>
+                    </ng-template>
+                  </ng-select>
+
+                  <button
+                    type="button"
+                    class="btn-cu-affaire-modal"
+                    title="Rechercher un projet"
+                    aria-label="Rechercher un projet"
+                    (click)="openAffaireModal()"
+                  >
+                    <fa-icon icon="search"></fa-icon>
+                  </button>
+                </div>
               </div>
 
+              <!-- CODE PROJET (lecture seule) -->
               <div class="col-md-6 mb-3">
-                <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.clientId" for="field_clientId">Client</label>
-                <select class="form-control cu-input" name="clientId" id="field_clientId" data-cy="clientId" formControlName="clientId">
-                  <option [ngValue]="null" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.selectClient">Sélectionner un client</option>
-                  <option *ngFor="let client of clients" [ngValue]="client.id">{{ client.raisonSociale }}</option>
-                </select>
+                <label class="form-label" for="field_codeProjet">Code projet</label>
+                <input
+                  type="text"
+                  class="form-control cu-input"
+                  id="field_codeProjet"
+                  data-cy="codeProjet"
+                  [value]="selectedAffaireCode ?? ''"
+                  placeholder="Sélectionnez d'abord un projet"
+                  readonly
+                />
+              </div>
+            </div>
+
+            <!-- LIEU (liste des sites du client final) — identique à bon-commande-update -->
+            <div class="row">
+              <div class="col-md-12 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.lieu" for="field_lieu">Lieu</label>
+
+                <div class="cu-affaire-selector">
+                  <ng-select
+                    id="field_lieu"
+                    data-cy="lieu"
+                    name="lieu"
+                    class="custom-ng-select"
+                    [items]="clientSites"
+                    bindLabel="designation"
+                    bindValue="designation"
+                    [searchable]="true"
+                    [clearable]="true"
+                    [loading]="loadingClientSites"
+                    formControlName="lieu"
+                    placeholder="Sélectionnez d'abord un projet"
+                    notFoundText="Aucun site trouvé pour ce client"
+                    loadingText="Chargement..."
+                  >
+                    <ng-template ng-option-tmp let-item="item">
+                      <div>{{ item.designation }}</div>
+                      <small class="text-muted" *ngIf="item.code">Code : {{ item.code }}</small>
+                    </ng-template>
+                  </ng-select>
+
+                  <button
+                    type="button"
+                    class="btn-cu-affaire-modal"
+                    title="Rechercher un lieu"
+                    aria-label="Rechercher un lieu"
+                    (click)="openLieuModal()"
+                  >
+                    <fa-icon icon="search"></fa-icon>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -95,6 +175,71 @@
                     {{ bonCommande.identifiantUnique ?? 'BC #' + bonCommande.id }}
                   </option>
                 </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION : INFORMATION CLIENT (identique à bon-commande-update) -->
+        <div class="cu-accordion-item" [class.open]="isPanelOpen('client')">
+          <button type="button" class="cu-accordion-header" (click)="togglePanel('client')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="building" class="cu-accordion-icon"></fa-icon>
+              <span>Information Client</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" [hidden]="!isPanelOpen('client')">
+            <div class="cu-client-columns">
+              <!-- CLIENT FINAL -->
+              <div class="cu-client-col">
+                <div class="cu-client-col-header">
+                  <div class="cu-client-col-title">Client Final</div>
+                  <button type="button" class="btn-cu-details" (click)="openClientDetailsModal()">
+                    <fa-icon icon="ellipsis-h"></fa-icon>&nbsp;Voir plus
+                  </button>
+                </div>
+
+                <div class="cu-client-field">
+                  <label class="form-label fw-bold" for="field_clientId">Client</label>
+
+                  <!-- ID réel du client, persisté avec l'OT -->
+                  <input type="hidden" formControlName="clientId" />
+
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="field_clientId"
+                    data-cy="clientId"
+                    [value]="loadingClientInfo ? 'Chargement...' : selectedClientInfo?.raisonSociale ?? ''"
+                    placeholder="Sélectionnez d'abord une affaire"
+                    readonly
+                  />
+                </div>
+              </div>
+
+              <!-- CLIENT DEMANDEUR -->
+              <div class="cu-client-col">
+                <div class="cu-client-col-header">
+                  <div class="cu-client-col-title">Client Demandeur</div>
+                  <button type="button" class="btn-cu-details" (click)="openClientCommandeDetailsModal()">
+                    <fa-icon icon="ellipsis-h"></fa-icon>&nbsp;Voir plus
+                  </button>
+                </div>
+
+                <div class="cu-client-field">
+                  <label class="form-label fw-bold" for="field_clientCommandeRaisonSociale">Client Demandeur</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="field_clientCommandeRaisonSociale"
+                    data-cy="clientCommandeRaisonSociale"
+                    [value]="loadingClientCommandeInfo ? 'Chargement...' : selectedClientCommandeInfo?.raisonSociale ?? ''"
+                    placeholder="Aucun client demandeur associé"
+                    readonly
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -168,6 +313,108 @@
           </div>
         </div>
       </div>
+
+      <!-- MODAL : Détails Client Final -->
+      <ng-template #clientDetailsModal let-modal>
+        <div class="modal-header">
+          <h5 class="modal-title">Détails — Client Final</h5>
+          <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="cu-client-field">
+            <label class="form-label" for="modal_field_matriculeFiscale">Matricule Fiscale</label>
+            <input
+              type="text"
+              class="form-control"
+              id="modal_field_matriculeFiscale"
+              [value]="selectedClientInfo?.identifiantUnique ?? ''"
+              readonly
+            />
+          </div>
+          <div class="cu-client-field">
+            <label class="form-label" for="modal_field_adresse">Adresse</label>
+            <input type="text" class="form-control" id="modal_field_adresse" [value]="selectedClientInfo?.adresse ?? ''" readonly />
+          </div>
+          <div class="cu-client-field">
+            <label class="form-label" for="modal_field_fax">Fax</label>
+            <input type="text" class="form-control" id="modal_field_fax" [value]="selectedClientInfo?.fax ?? ''" readonly />
+          </div>
+          <div class="cu-client-field">
+            <label class="form-label" for="modal_field_telephonne">Téléphone</label>
+            <input type="text" class="form-control" id="modal_field_telephonne" [value]="selectedClientInfo?.telephone ?? ''" readonly />
+          </div>
+          <div class="cu-client-field">
+            <label class="form-label" for="modal_field_email">Email</label>
+            <input type="email" class="form-control" id="modal_field_email" [value]="selectedClientInfo?.email ?? ''" readonly />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Fermer</button>
+        </div>
+      </ng-template>
+
+      <!-- MODAL : Détails Client Demandeur -->
+      <ng-template #clientCommandeDetailsModal let-modal>
+        <div class="modal-header">
+          <h5 class="modal-title">Détails — Client Demandeur</h5>
+          <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="cu-client-field">
+            <label class="form-label" for="modal_field_clientCommandeMatriculeFiscale">Matricule Fiscale</label>
+            <input
+              type="text"
+              class="form-control"
+              id="modal_field_clientCommandeMatriculeFiscale"
+              [value]="selectedClientCommandeInfo?.identifiantUnique ?? ''"
+              readonly
+            />
+          </div>
+          <div class="cu-client-field">
+            <label class="form-label" for="modal_field_clientCommandeAdresse">Adresse</label>
+            <input
+              type="text"
+              class="form-control"
+              id="modal_field_clientCommandeAdresse"
+              [value]="selectedClientCommandeInfo?.adresse ?? ''"
+              readonly
+            />
+          </div>
+          <div class="cu-client-field">
+            <label class="form-label" for="modal_field_clientCommandeFax">Fax</label>
+            <input
+              type="text"
+              class="form-control"
+              id="modal_field_clientCommandeFax"
+              [value]="selectedClientCommandeInfo?.fax ?? ''"
+              readonly
+            />
+          </div>
+          <div class="cu-client-field">
+            <label class="form-label" for="modal_field_clientCommandeTelephone">Téléphone</label>
+            <input
+              type="text"
+              class="form-control"
+              id="modal_field_clientCommandeTelephone"
+              [value]="selectedClientCommandeInfo?.telephone ?? ''"
+              readonly
+            />
+          </div>
+          <div class="cu-client-field">
+            <label class="form-label" for="modal_field_clientCommandeEmail">Email</label>
+            <input
+              type="email"
+              class="form-control"
+              id="modal_field_clientCommandeEmail"
+              [value]="selectedClientCommandeInfo?.email ?? ''"
+              readonly
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Fermer</button>
+        </div>
+      </ng-template>
 
       <!-- ====================================================== -->
       <!-- FOOTER -->
