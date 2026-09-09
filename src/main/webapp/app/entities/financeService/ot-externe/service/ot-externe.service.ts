@@ -9,11 +9,15 @@ import { ApplicationConfigService } from 'app/core/config/application-config.ser
 import { createRequestOption } from 'app/core/request/request-util';
 import { IOtExterne, NewOtExterne } from '../ot-externe.model';
 
+// dateDebut est une date "pure" (pas d'heure), au format attendu par le backend (LocalDate).
+const DATE_FORMAT = 'YYYY-MM-DD';
+
 export type PartialUpdateOtExterne = Partial<IOtExterne> & Pick<IOtExterne, 'id'>;
 
-type RestOf<T extends IOtExterne | NewOtExterne> = Omit<T, 'createdAt' | 'updatedAt'> & {
+type RestOf<T extends IOtExterne | NewOtExterne> = Omit<T, 'createdAt' | 'updatedAt' | 'dateDebut'> & {
   createdAt?: string | null;
   updatedAt?: string | null;
+  dateDebut?: string | null;
 };
 
 export type RestOtExterne = RestOf<IOtExterne>;
@@ -115,6 +119,7 @@ export class OtExterneService {
       ...otExterne,
       createdAt: otExterne.createdAt?.toJSON() ?? null,
       updatedAt: otExterne.updatedAt?.toJSON() ?? null,
+      dateDebut: otExterne.dateDebut ? otExterne.dateDebut.format(DATE_FORMAT) : null,
     };
   }
 
@@ -123,6 +128,7 @@ export class OtExterneService {
       ...restOtExterne,
       createdAt: restOtExterne.createdAt ? dayjs(restOtExterne.createdAt) : undefined,
       updatedAt: restOtExterne.updatedAt ? dayjs(restOtExterne.updatedAt) : undefined,
+      dateDebut: restOtExterne.dateDebut ? dayjs(restOtExterne.dateDebut, DATE_FORMAT) : undefined,
     };
   }
 

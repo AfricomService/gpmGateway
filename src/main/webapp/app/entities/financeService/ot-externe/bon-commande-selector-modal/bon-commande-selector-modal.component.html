@@ -1,0 +1,36 @@
+<div class="modal-header">
+  <h5 class="modal-title">Sélectionner un bon de commande</h5>
+  <button type="button" class="btn-close" (click)="dismiss()"></button>
+</div>
+
+<div class="modal-body">
+  <input type="text" class="form-control mb-3" placeholder="Rechercher un bon de commande..." [(ngModel)]="searchTerm" />
+
+  <div *ngIf="loading" class="text-center py-4">
+    <div class="spinner-border spinner-border-sm" role="status"></div>
+  </div>
+
+  <div *ngIf="!loading && affaireId === null" class="text-muted text-center py-4">
+    Sélectionnez d'abord un projet pour voir ses bons de commande.
+  </div>
+
+  <div *ngIf="!loading && affaireId !== null && filteredBonCommandes.length === 0" class="text-muted text-center py-4">
+    Aucun bon de commande trouvé pour ce projet.
+  </div>
+
+  <div *ngIf="!loading && filteredBonCommandes.length > 0" class="list-group">
+    <button
+      type="button"
+      class="list-group-item list-group-item-action"
+      *ngFor="let bc of filteredBonCommandes"
+      (click)="selectBonCommande(bc)"
+    >
+      <strong>{{ bc.identifiantUnique ?? 'BC #' + bc.id }}</strong>
+      <div class="text-muted small" *ngIf="bc.referenceClient">Réf. client : {{ bc.referenceClient }}</div>
+    </button>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-outline-secondary" (click)="dismiss()">Fermer</button>
+</div>

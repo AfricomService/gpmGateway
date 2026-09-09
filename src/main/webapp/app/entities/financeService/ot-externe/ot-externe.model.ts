@@ -8,6 +8,7 @@ export interface IOtExterne {
   affaireId?: number | null;
   clientId?: number | null;
   lieu?: string | null;
+  dateDebut?: dayjs.Dayjs | null;
   responsableId?: string | null;
   bonCommandeId?: number | null;
   modeleOtId?: number | null;

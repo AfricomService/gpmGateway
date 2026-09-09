@@ -22,6 +22,7 @@ import { IBonCommande } from 'app/entities/financeService/bon-commande/bon-comma
 import { AffaireSelectorModalComponent } from 'app/entities/financeService/bon-commande/affaire-selector-modal/affaire-selector-modal.component';
 import { SiteSelectorModalComponent } from 'app/entities/financeService/bon-commande/site-selector-modal/site-selector-modal.component';
 import { ContactSelectorModalComponent } from 'app/entities/financeService/bon-commande/contact-selector-modal/contact-selector-modal.component';
+import { BonCommandeSelectorModalComponent } from '../bon-commande-selector-modal/bon-commande-selector-modal.component';
 import { IContactSociete } from 'app/entities/projectService/societe/contact-societe.model';
 import { OtExterneAutreResponsableService } from '../service/ot-externe-autre-responsable.service';
 import { forkJoin } from 'rxjs';
@@ -32,6 +33,7 @@ type AccordionPanel = 'global' | 'mode' | 'modele' | 'client';
 const AFFAIRE_STATUT = 'ExecutionDesTravaux';
 const AFFAIRE_PAGE_SIZE = 15;
 const RESPONSABLE_ROLE_CODE = 'MANAGER';
+const BON_COMMANDE_STATUT = 'ACTIF';
 
 @Component({
   selector: 'jhi-ot-externe-update',
@@ -46,7 +48,7 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   otExterne: IOtExterne | null = null;
   statutOtExterneValues = Object.keys(StatutOtExterne);
 
-  bonCommandes: IBonCommande[] = [];
+  selectedBonCommande: IBonCommande | null = null;
 
   modeCreation: ModeCreation = 'MODELE';
 
@@ -119,8 +121,6 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
         this.updateForm(otExterne);
       }
     });
-
-    this.loadBonCommandes();
 
     // Recherche avec debounce de 300 ms — identique à bon-commande-update
     this.affaireSearch$
@@ -286,6 +286,8 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
       this.selectedClientInfo = null;
       this.selectedClientCommandeInfo = null;
       this.clientSites = [];
+      this.selectedBonCommande = null;
+      this.editForm.patchValue({ bonCommandeId: null });
       // Note : contrairement à bon-commande-update, on ne réinitialise pas responsableId
       // ni selectedAutresResponsables ici, car ce ne sont pas des champs dépendants de l'affaire.
     }
@@ -515,6 +517,31 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
       });
   }
 
+  openBonCommandeModal(): void {
+    const affaireId = this.editForm.get('affaireId')?.value ?? null;
+
+    const modalRef = this.modalService.open(BonCommandeSelectorModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'bon-commande-selector-modal-window',
+    });
+
+    modalRef.componentInstance.affaireId = affaireId;
+    modalRef.componentInstance.statut = BON_COMMANDE_STATUT;
+
+    modalRef.result
+      .then((bonCommande: IBonCommande) => {
+        if (bonCommande) {
+          this.selectedBonCommande = bonCommande;
+          this.editForm.patchValue({ bonCommandeId: bonCommande.id });
+        }
+      })
+      .catch(() => {
+        // Fermeture du modal sans sélection
+      });
+  }
+
   // ================================
   // Détails Client / Client Demandeur (modals)
   // ================================
@@ -524,10 +551,6 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
 
   openClientCommandeDetailsModal(): void {
     this.modalService.open(this.clientCommandeDetailsModal, { size: 'md', centered: true });
-  }
-
-  protected loadBonCommandes(): void {
-    this.bonCommandeService.query().subscribe(res => (this.bonCommandes = res.body ?? []));
   }
 
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IOtExterne>>): void {
@@ -609,6 +632,17 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
     // Autres responsables (sélection multiple) — chargés via la table de liaison
     if (otExterne.id !== null && otExterne.id !== undefined) {
       this.loadAutresResponsables(otExterne.id);
+    }
+
+    // Libellé du bon de commande déjà lié — affichage uniquement
+    const bonCommandeId = otExterne.bonCommandeId;
+
+    if (bonCommandeId !== null && bonCommandeId !== undefined) {
+      this.bonCommandeService.find(bonCommandeId).subscribe({
+        next: res => {
+          this.selectedBonCommande = res.body ?? null;
+        },
+      });
     }
   }
 }

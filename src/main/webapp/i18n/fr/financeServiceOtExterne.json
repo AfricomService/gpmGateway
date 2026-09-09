@@ -17,7 +17,7 @@
       "id": "ID",
       "reference": "Reference",
       "statut": "Statut",
-      "affaireId": "Affaire Id",
+      "affaireId": "Projet",
       "clientId": "Client Id",
       "lieu": "Lieu",
       "responsableId": "Responsable",

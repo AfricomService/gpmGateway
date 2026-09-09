@@ -37,22 +37,6 @@
 
           <div class="cu-accordion-body" *ngIf="isPanelOpen('global')">
             <div class="row">
-              <div class="col-md-12 mb-3">
-                <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.dateDebut" for="field_dateDebut"
-                  >Date de début OT</label
-                >
-                <input
-                  type="date"
-                  class="form-control cu-input"
-                  name="dateDebut"
-                  id="field_dateDebut"
-                  data-cy="dateDebut"
-                  formControlName="dateDebut"
-                />
-              </div>
-            </div>
-
-            <div class="row">
               <div class="col-md-6 mb-3">
                 <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.affaireId" for="field_affaireId"
                   >Affaire</label
@@ -117,7 +101,7 @@
 
             <!-- LIEU (liste des sites du client final) — identique à bon-commande-update -->
             <div class="row">
-              <div class="col-md-12 mb-3">
+              <div class="col-md-6 mb-3">
                 <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.lieu" for="field_lieu">Lieu</label>
 
                 <div class="cu-affaire-selector">
@@ -153,6 +137,20 @@
                     <fa-icon icon="search"></fa-icon>
                   </button>
                 </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.dateDebut" for="field_dateDebut"
+                  >Date de début OT</label
+                >
+                <input
+                  type="date"
+                  class="form-control cu-input"
+                  name="dateDebut"
+                  id="field_dateDebut"
+                  data-cy="dateDebut"
+                  formControlName="dateDebut"
+                />
               </div>
             </div>
 
@@ -251,20 +249,31 @@
                 <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.bonCommandeId" for="field_bonCommandeId"
                   >Bon de commande</label
                 >
-                <select
-                  class="form-control cu-input"
-                  name="bonCommandeId"
-                  id="field_bonCommandeId"
-                  data-cy="bonCommandeId"
-                  formControlName="bonCommandeId"
-                >
-                  <option [ngValue]="null" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.selectBonCommande">
-                    Sélectionner un bon de commande
-                  </option>
-                  <option *ngFor="let bonCommande of bonCommandes" [ngValue]="bonCommande.id">
-                    {{ bonCommande.identifiantUnique ?? 'BC #' + bonCommande.id }}
-                  </option>
-                </select>
+
+                <!-- ID réel du bon de commande -->
+                <input type="hidden" formControlName="bonCommandeId" />
+
+                <div class="cu-affaire-selector">
+                  <input
+                    type="text"
+                    class="form-control cu-input"
+                    id="field_bonCommandeId"
+                    data-cy="bonCommandeId"
+                    [value]="selectedBonCommande?.identifiantUnique ?? (selectedBonCommande ? 'BC #' + selectedBonCommande?.id : '')"
+                    placeholder="Sélectionnez un bon de commande"
+                    readonly
+                  />
+
+                  <button
+                    type="button"
+                    class="btn-cu-affaire-modal"
+                    title="Rechercher un bon de commande"
+                    aria-label="Rechercher un bon de commande"
+                    (click)="openBonCommandeModal()"
+                  >
+                    <fa-icon icon="search"></fa-icon>
+                  </button>
+                </div>
               </div>
             </div>
           </div>

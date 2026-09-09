@@ -1736,7 +1736,11 @@
       <!-- FOOTER -->
       <!-- ====================================================== -->
       <div class="cu-toolbar cu-toolbar-bottom">
-        <div class="cu-toolbar-left"></div>
+        <div class="cu-toolbar-left">
+          <span class="cu-status-badge" *ngIf="bonCommande?.status">
+            {{ bonCommande?.status }}
+          </span>
+        </div>
 
         <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
           <fa-icon icon="ban"></fa-icon>

@@ -578,6 +578,19 @@
   padding: 0.3rem 0.75rem;
 }
 
+.cu-status-badge {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--cp-accent);
+  background: var(--cp-accent-soft);
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
 /* ============ RESPONSIVE ============ */
 @media (max-width: 768px) {
   .bon-commande-update-page {
