@@ -91,6 +91,52 @@
   flex-shrink: 0;
 }
 
+/* ============ SELECT RESPONSABLE + BOUTON MODAL (aligné sur bon-commande) ============ */
+.cu-affaire-selector {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+
+  ::ng-deep .custom-ng-select {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.btn-cu-affaire-modal {
+  flex: 0 0 42px;
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid var(--cp-border);
+  border-radius: 10px;
+
+  background: var(--cp-surface);
+  color: var(--cp-accent);
+
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    background: var(--cp-accent-soft);
+    border-color: var(--cp-accent);
+    color: var(--cp-accent);
+    transform: translateY(-1px);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--cp-accent);
+    box-shadow: 0 0 0 3px var(--cp-accent-soft);
+  }
+}
+
 .btn-cu-save {
   display: flex;
   align-items: center;

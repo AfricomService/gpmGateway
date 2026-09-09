@@ -5,6 +5,10 @@ import dayjs from 'dayjs/esm';
 import { DATE_TIME_FORMAT } from 'app/config/input.constants';
 import { IOtExterne, NewOtExterne } from '../ot-externe.model';
 
+// Format attendu par l'input HTML natif type="date" (yyyy-MM-dd), distinct du
+// DATE_TIME_FORMAT utilisé pour createdAt/updatedAt (qui incluent l'heure).
+const DATE_FORMAT = 'YYYY-MM-DD';
+
 /**
  * A partial Type with required key is used as form input.
  */
@@ -19,16 +23,17 @@ type OtExterneFormGroupInput = IOtExterne | PartialWithRequiredKeyOf<NewOtExtern
 /**
  * Type that converts some properties for forms.
  */
-type FormValueOf<T extends IOtExterne | NewOtExterne> = Omit<T, 'createdAt' | 'updatedAt'> & {
+type FormValueOf<T extends IOtExterne | NewOtExterne> = Omit<T, 'createdAt' | 'updatedAt' | 'dateDebut'> & {
   createdAt?: string | null;
   updatedAt?: string | null;
+  dateDebut?: string | null;
 };
 
 type OtExterneFormRawValue = FormValueOf<IOtExterne>;
 
 type NewOtExterneFormRawValue = FormValueOf<NewOtExterne>;
 
-type OtExterneFormDefaults = Pick<NewOtExterne, 'id' | 'createdAt' | 'updatedAt'>;
+type OtExterneFormDefaults = Pick<NewOtExterne, 'id' | 'reference' | 'createdAt' | 'updatedAt' | 'dateDebut'>;
 
 type OtExterneFormGroupContent = {
   id: FormControl<OtExterneFormRawValue['id'] | NewOtExterne['id']>;
@@ -36,6 +41,11 @@ type OtExterneFormGroupContent = {
   statut: FormControl<OtExterneFormRawValue['statut']>;
   affaireId: FormControl<OtExterneFormRawValue['affaireId']>;
   clientId: FormControl<OtExterneFormRawValue['clientId']>;
+  lieu: FormControl<OtExterneFormRawValue['lieu']>;
+  dateDebut: FormControl<OtExterneFormRawValue['dateDebut']>;
+  responsableId: FormControl<OtExterneFormRawValue['responsableId']>;
+  bonCommandeId: FormControl<OtExterneFormRawValue['bonCommandeId']>;
+  modeleOtId: FormControl<OtExterneFormRawValue['modeleOtId']>;
   createdAt: FormControl<OtExterneFormRawValue['createdAt']>;
   updatedAt: FormControl<OtExterneFormRawValue['updatedAt']>;
   createdBy: FormControl<OtExterneFormRawValue['createdBy']>;
@@ -61,14 +71,17 @@ export class OtExterneFormService {
           validators: [Validators.required],
         }
       ),
-      reference: new FormControl(otExterneRawValue.reference, {
-        validators: [Validators.required],
-      }),
-      statut: new FormControl(otExterneRawValue.statut, {
-        validators: [Validators.required],
-      }),
+      // Champ "reference" retiré de l'UI : plus de validateur "required",
+      // sa valeur est désormais générée automatiquement (voir getFormDefaults).
+      reference: new FormControl(otExterneRawValue.reference),
+      statut: new FormControl(otExterneRawValue.statut),
       affaireId: new FormControl(otExterneRawValue.affaireId),
       clientId: new FormControl(otExterneRawValue.clientId),
+      lieu: new FormControl(otExterneRawValue.lieu),
+      dateDebut: new FormControl(otExterneRawValue.dateDebut),
+      responsableId: new FormControl(otExterneRawValue.responsableId),
+      bonCommandeId: new FormControl(otExterneRawValue.bonCommandeId),
+      modeleOtId: new FormControl(otExterneRawValue.modeleOtId),
       createdAt: new FormControl(otExterneRawValue.createdAt),
       updatedAt: new FormControl(otExterneRawValue.updatedAt),
       createdBy: new FormControl(otExterneRawValue.createdBy),
@@ -97,9 +110,25 @@ export class OtExterneFormService {
 
     return {
       id: null,
+      // Le champ n'étant plus saisissable dans le formulaire, on génère ici
+      // une référence technique afin de continuer à satisfaire la contrainte
+      // @NotNull + unique du backend, sans rien modifier côté backend.
+      reference: this.generateTechnicalReference(),
       createdAt: currentTime,
       updatedAt: currentTime,
+      // Pré-remplit "Date de début OT" avec la date du jour à la création.
+      // En édition, resetForm() écrasera cette valeur par défaut avec celle
+      // réellement enregistrée (cf. spread { ...getFormDefaults(), ...otExterne }).
+      dateDebut: currentTime,
     };
+  }
+
+  /**
+   * Génère une référence technique unique, utilisée uniquement en interne
+   * (le champ n'est plus visible ni modifiable dans l'interface).
+   */
+  private generateTechnicalReference(): string {
+    return `OTE-AUTO-${Date.now()}`;
   }
 
   private convertOtExterneRawValueToOtExterne(rawOtExterne: OtExterneFormRawValue | NewOtExterneFormRawValue): IOtExterne | NewOtExterne {
@@ -107,6 +136,7 @@ export class OtExterneFormService {
       ...rawOtExterne,
       createdAt: dayjs(rawOtExterne.createdAt, DATE_TIME_FORMAT),
       updatedAt: dayjs(rawOtExterne.updatedAt, DATE_TIME_FORMAT),
+      dateDebut: rawOtExterne.dateDebut ? dayjs(rawOtExterne.dateDebut, DATE_FORMAT) : undefined,
     };
   }
 
@@ -117,6 +147,7 @@ export class OtExterneFormService {
       ...otExterne,
       createdAt: otExterne.createdAt ? otExterne.createdAt.format(DATE_TIME_FORMAT) : undefined,
       updatedAt: otExterne.updatedAt ? otExterne.updatedAt.format(DATE_TIME_FORMAT) : undefined,
+      dateDebut: otExterne.dateDebut ? otExterne.dateDebut.format(DATE_FORMAT) : undefined,
     };
   }
 }

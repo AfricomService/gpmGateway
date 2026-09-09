@@ -12,8 +12,9 @@ import { AffaireService, RestPage } from '../service/affaire.service';
 import { IClient } from 'app/entities/projectService/client/client.model';
 import { ClientService } from 'app/entities/projectService/client/service/client.service';
 import { StatutAffaire } from 'app/entities/enumerations/statut-affaire.model';
-import { IUser } from 'app/entities/user/user.model';
-import { UserService } from 'app/entities/user/user.service';
+import { IContactSociete } from 'app/entities/projectService/societe/contact-societe.model';
+import { ContactSelectorModalComponent } from 'app/entities/financeService/bon-commande/contact-selector-modal/contact-selector-modal.component';
+import { BonCommandeService } from 'app/entities/financeService/bon-commande/service/bon-commande.service';
 
 import { IArticle } from 'app/entities/projectService/article/article.model';
 import { ArticleService } from 'app/entities/projectService/article/service/article.service';
@@ -31,6 +32,8 @@ import { IAgence } from 'app/entities/projectService/agence/agence.model';
 import { Authority } from '../../../../config/authority.constants';
 
 type AccordionSection = 'general' | 'dates' | 'articles' | 'societes';
+
+const RESPONSABLE_ROLE_CODE = 'MANAGER';
 
 @Component({
   selector: 'jhi-affaire-update',
@@ -54,8 +57,9 @@ export class AffaireUpdateComponent implements OnInit {
   isChangingStatut = false;
 
   clientsSharedCollection: IClient[] = [];
-  usersSharedCollection: IUser[] = [];
-  selectedResponsable: IUser | null = null;
+  responsables: IContactSociete[] = [];
+  selectedResponsable: IContactSociete | null = null;
+  loadingResponsables = false;
 
   // ── Server-Side Paginated Articles for Affaire ───────────────────
   selectedArticles: IArticle[] = [];
@@ -107,7 +111,7 @@ export class AffaireUpdateComponent implements OnInit {
     protected affaireService: AffaireService,
     protected affaireFormService: AffaireFormService,
     protected clientService: ClientService,
-    protected userService: UserService,
+    protected bonCommandeService: BonCommandeService,
     protected articleService: ArticleService,
     protected articleImportService: ArticleImportService,
     protected affaireArticleService: AffaireArticleService,
@@ -121,14 +125,61 @@ export class AffaireUpdateComponent implements OnInit {
     protected location: Location
   ) {}
 
-  onResponsableChange(user: IUser | null): void {
-    this.selectedResponsable = user;
+  onResponsableSelectChange(responsable: IContactSociete | null): void {
+    this.selectedResponsable = responsable;
     this.editForm.patchValue({
-      responsableProjetId: user?.id ?? null,
-      responsableProjetUserLogin: user?.login ?? null,
+      responsableProjetId: responsable?.id !== undefined && responsable?.id !== null ? String(responsable.id) : null,
+      responsableProjetUserLogin: responsable?.matricule ?? null,
     });
     this.editForm.get('responsableProjetId')?.markAsDirty();
     this.editForm.get('responsableProjetId')?.markAsTouched();
+  }
+
+  compareResponsable = (a: IContactSociete | null, b: IContactSociete | null): boolean => (a && b ? a.id === b.id : a === b);
+
+  openResponsableModal(): void {
+    const modalRef = this.modalService.open(ContactSelectorModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'contact-selector-modal-window',
+    });
+
+    modalRef.componentInstance.roleCode = RESPONSABLE_ROLE_CODE;
+    modalRef.componentInstance.modalTitle = 'Sélectionner un responsable';
+
+    modalRef.result
+      .then((contact: IContactSociete) => {
+        if (contact) {
+          this.onResponsableSelectChange(contact);
+        }
+      })
+      .catch(() => {
+        // Fermeture du modal sans sélection
+      });
+  }
+
+  private loadResponsables(): void {
+    this.loadingResponsables = true;
+
+    this.bonCommandeService.findResponsablesByRole(RESPONSABLE_ROLE_CODE).subscribe({
+      next: res => {
+        this.responsables = res.body ?? [];
+        this.loadingResponsables = false;
+      },
+      error: () => {
+        this.responsables = [];
+        this.loadingResponsables = false;
+      },
+    });
+  }
+
+  private loadResponsableLabel(responsableId: number): void {
+    this.bonCommandeService.findResponsableById(responsableId).subscribe({
+      next: res => {
+        this.selectedResponsable = res.body ?? null;
+      },
+    });
   }
 
   // ── Client Demandeur → pré-remplit Client Finale par défaut (reste éditable) ──
@@ -141,6 +192,8 @@ export class AffaireUpdateComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadResponsables();
+
     // Setup debounced search for the main articles list
     this.articleSearchSubject.pipe(debounceTime(300), distinctUntilChanged()).subscribe(searchTerm => {
       this.articlesSearchTerm = searchTerm;
@@ -551,8 +604,9 @@ export class AffaireUpdateComponent implements OnInit {
 
     if (this.selectedResponsable) {
       this.editForm.patchValue({
-        responsableProjetId: this.selectedResponsable.id,
-        responsableProjetUserLogin: this.selectedResponsable.login,
+        responsableProjetId:
+          this.selectedResponsable.id !== undefined && this.selectedResponsable.id !== null ? String(this.selectedResponsable.id) : null,
+        responsableProjetUserLogin: this.selectedResponsable.matricule ?? null,
       });
     }
 
@@ -629,11 +683,11 @@ export class AffaireUpdateComponent implements OnInit {
       this.editForm.patchValue({ statut: StatutAffaire.Brouillon });
     }
 
-    if (affaire.responsableProjetId && affaire.responsableProjetUserLogin) {
-      this.selectedResponsable = {
-        id: affaire.responsableProjetId,
-        login: affaire.responsableProjetUserLogin,
-      };
+    if (affaire.responsableProjetId) {
+      const responsableId = Number(affaire.responsableProjetId);
+      if (!Number.isNaN(responsableId)) {
+        this.loadResponsableLabel(responsableId);
+      }
     }
 
     this.clientsSharedCollection = this.clientService.addClientToCollectionIfMissing<IClient>(this.clientsSharedCollection, affaire.client);
@@ -655,16 +709,6 @@ export class AffaireUpdateComponent implements OnInit {
       .subscribe((clients: IClient[]) => {
         this.clientsSharedCollection = clients;
         this.applyClientFromQueryParam();
-      });
-
-    this.userService
-      .queryManagers()
-      .pipe(map((res: HttpResponse<IUser[]>) => res.body ?? []))
-      .subscribe((users: IUser[]) => {
-        this.usersSharedCollection = users;
-        if (this.selectedResponsable && !this.usersSharedCollection.find(u => u.id === this.selectedResponsable?.id)) {
-          this.usersSharedCollection = [this.selectedResponsable, ...this.usersSharedCollection];
-        }
       });
 
     this.articleService

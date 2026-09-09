@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import dayjs from 'dayjs/esm';
@@ -74,6 +74,20 @@ export class BonCommandeService {
 
   delete(id: number): Observable<HttpResponse<{}>> {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
+  }
+
+  /**
+   * Récupère les bons de commande liés à une affaire donnée, filtrés optionnellement par statut.
+   */
+  findByAffaireId(affaireId: number, status?: string): Observable<HttpResponse<IBonCommande[]>> {
+    let params = new HttpParams();
+    if (status) {
+      params = params.set('status', status);
+    }
+
+    return this.http
+      .get<RestBonCommande[]>(`${this.resourceUrl}/by-affaire/${affaireId}`, { params, observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 
   /**
