@@ -76,6 +76,8 @@ import {
   faPaperclip,
   faEllipsisH,
   faBoxOpen,
+  faSlidersH,
+  faLayerGroup,
   // jhipster-needle-add-icon-import
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -157,5 +159,7 @@ export const fontAwesomeIcons = [
   faPaperclip,
   faEllipsisH,
   faBoxOpen,
+  faSlidersH,
+  faLayerGroup,
   // jhipster-needle-add-icon-import
 ];

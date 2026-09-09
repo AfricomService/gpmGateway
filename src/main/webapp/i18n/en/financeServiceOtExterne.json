@@ -2,7 +2,7 @@
   "gpmGatewayApp": {
     "financeServiceOtExterne": {
       "home": {
-        "title": "Ot Externes",
+        "title": "OtExternes",
         "refreshListLabel": "Refresh list",
         "createLabel": "Create a new Ot Externe",
         "createOrEditLabel": "Create or edit a Ot Externe",
@@ -16,9 +16,12 @@
       },
       "id": "ID",
       "reference": "Reference",
-      "statut": "Statut",
-      "affaireId": "Affaire Id",
+      "statut": "Status",
+      "affaireId": "Project",
       "clientId": "Client Id",
+      "lieu": "Location",
+      "responsableId": "Responsible",
+      "bonCommandeId": "Purchase Order",
       "createdAt": "Created At",
       "updatedAt": "Updated At",
       "createdBy": "Created By",
@@ -28,14 +31,30 @@
       "help": {
         "affaireId": "Cross-service FK → Affaire (projectService)",
         "clientId": "Cross-service FK → Client (projectService)"
+      },
+      "bonCommande": {
+        "selectBonCommande": "Select a purchase order"
+      },
+      "dateDebut": "OT Start Date",
+      "selectAffaire": "Select an affaire",
+      "selectClient": "Select a client",
+      "selectBonCommande": "Select a purchase order",
+      "modeleOt": "OT Model",
+      "selectModeleOt": "Select a model",
+      "modeModele": "Based on an OT model",
+      "modeLibre": "Free-form OT",
+      "section": {
+        "informationsGenerales": "General Information",
+        "modeCreation": "Creation Mode",
+        "modeleOtPhases": "OT Model and Phases"
       }
     }
   },
   "financeServiceApp": {
     "financeServiceOtExterne": {
-      "created": "A new Ot Externe is created with identifier {{ param }}",
-      "updated": "A Ot Externe is updated with identifier {{ param }}",
-      "deleted": "A Ot Externe is deleted with identifier {{ param }}"
+      "created": "A new Ot Externe has been created with identifier {{ param }}",
+      "updated": "A Ot Externe has been updated with identifier {{ param }}",
+      "deleted": "A Ot Externe has been deleted with identifier {{ param }}"
     }
   }
 }
