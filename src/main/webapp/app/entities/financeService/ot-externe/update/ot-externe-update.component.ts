@@ -21,12 +21,17 @@ import { IBonCommande } from 'app/entities/financeService/bon-commande/bon-comma
 
 import { AffaireSelectorModalComponent } from 'app/entities/financeService/bon-commande/affaire-selector-modal/affaire-selector-modal.component';
 import { SiteSelectorModalComponent } from 'app/entities/financeService/bon-commande/site-selector-modal/site-selector-modal.component';
+import { ContactSelectorModalComponent } from 'app/entities/financeService/bon-commande/contact-selector-modal/contact-selector-modal.component';
+import { IContactSociete } from 'app/entities/projectService/societe/contact-societe.model';
+import { OtExterneAutreResponsableService } from '../service/ot-externe-autre-responsable.service';
+import { forkJoin } from 'rxjs';
 
 type ModeCreation = 'MODELE' | 'LIBRE';
 type AccordionPanel = 'global' | 'mode' | 'modele' | 'client';
 
 const AFFAIRE_STATUT = 'ExecutionDesTravaux';
 const AFFAIRE_PAGE_SIZE = 15;
+const RESPONSABLE_ROLE_CODE = 'MANAGER';
 
 @Component({
   selector: 'jhi-ot-externe-update',
@@ -80,6 +85,16 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   clientSites: ISite[] = [];
   loadingClientSites = false;
 
+  // ================================
+  // Liste déroulante Responsable (contacts ayant le rôle MANAGER) — identique à bon-commande-update
+  // ================================
+  responsables: IContactSociete[] = [];
+  selectedResponsable: IContactSociete | null = null;
+  loadingResponsables = false;
+
+  // Autres Responsables (sélection multiple, persistée via OtExterneAutreResponsable)
+  selectedAutresResponsables: IContactSociete[] = [];
+
   constructor(
     protected otExterneService: OtExterneService,
     protected otExterneFormService: OtExterneFormService,
@@ -89,11 +104,13 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
     protected clientService: ClientService,
     protected siteService: SiteService,
     protected bonCommandeService: BonCommandeService,
+    protected otExterneAutreResponsableService: OtExterneAutreResponsableService,
     protected modalService: NgbModal,
     protected cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    this.loadResponsables();
     this.loadAffaires(''); // Pré-charge la liste des projets dès l'ouverture du formulaire
 
     this.activatedRoute.data.subscribe(({ otExterne }) => {
@@ -269,6 +286,8 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
       this.selectedClientInfo = null;
       this.selectedClientCommandeInfo = null;
       this.clientSites = [];
+      // Note : contrairement à bon-commande-update, on ne réinitialise pas responsableId
+      // ni selectedAutresResponsables ici, car ce ne sont pas des champs dépendants de l'affaire.
     }
   }
 
@@ -342,6 +361,116 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   }
 
   // ================================
+  // Liste déroulante Responsable
+  // ================================
+  private loadResponsables(): void {
+    this.loadingResponsables = true;
+
+    this.bonCommandeService.findResponsablesByRole(RESPONSABLE_ROLE_CODE).subscribe({
+      next: res => {
+        this.responsables = res.body ?? [];
+        this.loadingResponsables = false;
+      },
+      error: () => {
+        this.responsables = [];
+        this.loadingResponsables = false;
+      },
+    });
+  }
+
+  onResponsableSelectChange(responsable: IContactSociete | null): void {
+    this.editForm.patchValue({
+      responsableId: responsable?.id !== undefined && responsable?.id !== null ? String(responsable.id) : null,
+    });
+
+    this.selectedResponsable = responsable;
+  }
+
+  // ================================
+  // Autres Responsables (sélection multiple, persistée via OtExterneAutreResponsable)
+  // ================================
+  onAutreResponsableSelectChange(responsables: IContactSociete[] | null): void {
+    this.selectedAutresResponsables = responsables ?? [];
+  }
+
+  compareResponsable = (a: IContactSociete | null, b: IContactSociete | null): boolean => (a && b ? a.id === b.id : a === b);
+
+  private loadResponsableLabel(responsableId: number): void {
+    this.bonCommandeService.findResponsableById(responsableId).subscribe({
+      next: res => {
+        this.selectedResponsable = res.body ?? null;
+      },
+    });
+  }
+
+  private loadAutresResponsables(otExterneId: number): void {
+    this.otExterneAutreResponsableService.findByOtExterne(otExterneId).subscribe({
+      next: res => {
+        const links = res.body ?? [];
+        const contactIds = links.map(l => l.contactSocieteId).filter((id): id is number => id !== null && id !== undefined);
+
+        if (contactIds.length === 0) {
+          this.selectedAutresResponsables = [];
+          return;
+        }
+
+        forkJoin(contactIds.map(id => this.bonCommandeService.findResponsableById(id))).subscribe({
+          next: responses => {
+            this.selectedAutresResponsables = responses.map(r => r.body).filter((c): c is IContactSociete => c !== null);
+          },
+        });
+      },
+      error: () => {
+        this.selectedAutresResponsables = [];
+      },
+    });
+  }
+
+  openResponsableModal(): void {
+    const modalRef = this.modalService.open(ContactSelectorModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'contact-selector-modal-window',
+    });
+
+    modalRef.componentInstance.roleCode = RESPONSABLE_ROLE_CODE;
+    modalRef.componentInstance.modalTitle = 'Sélectionner un responsable';
+
+    modalRef.result
+      .then((contact: IContactSociete) => {
+        if (contact) {
+          this.onResponsableSelectChange(contact);
+        }
+      })
+      .catch(() => {
+        // Fermeture du modal sans sélection
+      });
+  }
+
+  openAutreResponsableModal(): void {
+    const modalRef = this.modalService.open(ContactSelectorModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'contact-selector-modal-window',
+    });
+
+    modalRef.componentInstance.roleCode = RESPONSABLE_ROLE_CODE;
+    modalRef.componentInstance.modalTitle = 'Sélectionner un autre responsable';
+    modalRef.componentInstance.multiple = true;
+    modalRef.componentInstance.initialSelection = this.selectedAutresResponsables;
+
+    modalRef.result
+      .then((contacts: IContactSociete[]) => {
+        this.selectedAutresResponsables = contacts ?? [];
+      })
+      .catch(() => {
+        // Fermeture du modal sans sélection
+      });
+  }
+
+  // ================================
   // Modal de sélection Affaire
   // ================================
   openAffaireModal(): void {
@@ -409,12 +538,19 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   }
 
   protected onSaveSuccess(otExterne?: IOtExterne | null): void {
-    if (otExterne?.id) {
-      // Redirection vers la page d'édition de l'OT nouvellement créé
-      this.router.navigate(['../', otExterne.id, 'edit'], { relativeTo: this.activatedRoute });
-    } else {
+    const otExterneId = otExterne?.id;
+
+    if (otExterneId === null || otExterneId === undefined) {
       this.previousState();
+      return;
     }
+
+    const contactSocieteIds = this.selectedAutresResponsables.map(c => c.id).filter((id): id is number => id !== null && id !== undefined);
+
+    this.otExterneAutreResponsableService.replaceForOtExterne(otExterneId, contactSocieteIds).subscribe({
+      next: () => this.router.navigate(['../', otExterneId, 'edit'], { relativeTo: this.activatedRoute }),
+      error: () => this.router.navigate(['../', otExterneId, 'edit'], { relativeTo: this.activatedRoute }),
+    });
   }
 
   protected onSaveError(): void {
@@ -461,6 +597,18 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
 
     if (clientId !== null && clientId !== undefined) {
       this.loadClientInfo(Number(clientId));
+    }
+
+    // Libellé du responsable pour affichage — le formulaire ne persiste que l'id
+    const responsableId = otExterne.responsableId;
+
+    if (responsableId !== null && responsableId !== undefined && responsableId !== '') {
+      this.loadResponsableLabel(Number(responsableId));
+    }
+
+    // Autres responsables (sélection multiple) — chargés via la table de liaison
+    if (otExterne.id !== null && otExterne.id !== undefined) {
+      this.loadAutresResponsables(otExterne.id);
     }
   }
 }

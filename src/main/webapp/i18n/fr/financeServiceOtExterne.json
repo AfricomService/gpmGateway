@@ -19,6 +19,8 @@
       "statut": "Statut",
       "affaireId": "Affaire Id",
       "clientId": "Client Id",
+      "lieu": "Lieu",
+      "responsableId": "Responsable",
       "bonCommandeId": "Bon de commande",
       "createdAt": "Created At",
       "updatedAt": "Updated At",

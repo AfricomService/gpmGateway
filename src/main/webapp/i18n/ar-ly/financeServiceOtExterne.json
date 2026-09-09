@@ -2,40 +2,59 @@
   "gpmGatewayApp": {
     "financeServiceOtExterne": {
       "home": {
-        "title": "Ot Externes",
-        "refreshListLabel": "Refresh list",
-        "createLabel": "Create a new Ot Externe",
-        "createOrEditLabel": "Create or edit a Ot Externe",
-        "notFound": "No Ot Externes found"
+        "title": "أوامر العمل الخارجية",
+        "refreshListLabel": "تحديث القائمة",
+        "createLabel": "إنشاء أمر عمل خارجي جديد",
+        "createOrEditLabel": "إنشاء أو تعديل أمر عمل خارجي",
+        "notFound": "لم يتم العثور على أي أمر عمل خارجي"
       },
       "delete": {
-        "question": "Are you sure you want to delete Ot Externe {{ id }}?"
+        "question": "هل أنت متأكد أنك تريد حذف أمر العمل الخارجي {{ id }}؟"
       },
       "detail": {
-        "title": "Ot Externe"
+        "title": "أمر عمل خارجي"
       },
-      "id": "ID",
-      "reference": "Reference",
-      "statut": "Statut",
-      "affaireId": "Affaire Id",
-      "clientId": "Client Id",
-      "createdAt": "Created At",
-      "updatedAt": "Updated At",
-      "createdBy": "Created By",
-      "createdByUserLogin": "Created By User Login",
-      "updatedBy": "Updated By",
-      "updatedByUserLogin": "Updated By User Login",
+      "id": "المعرف",
+      "reference": "المرجع",
+      "statut": "الحالة",
+      "affaireId": "معرف الصفقة",
+      "clientId": "معرف العميل",
+      "lieu": "الموقع",
+      "responsableId": "المسؤول",
+      "bonCommandeId": "أمر الشراء",
+      "createdAt": "تاريخ الإنشاء",
+      "updatedAt": "تاريخ التحديث",
+      "createdBy": "أنشئ من قبل",
+      "createdByUserLogin": "اسم مستخدم المنشئ",
+      "updatedBy": "حُدّث من قبل",
+      "updatedByUserLogin": "اسم مستخدم المحدّث",
       "help": {
-        "affaireId": "Cross-service FK → Affaire (projectService)",
-        "clientId": "Cross-service FK → Client (projectService)"
+        "affaireId": "مفتاح خارجي بين الخدمات → الصفقة (projectService)",
+        "clientId": "مفتاح خارجي بين الخدمات → العميل (projectService)"
+      },
+      "bonCommande": {
+        "selectBonCommande": "اختر أمر شراء"
+      },
+      "dateDebut": "تاريخ بداية أمر العمل",
+      "selectAffaire": "اختر صفقة",
+      "selectClient": "اختر عميلاً",
+      "selectBonCommande": "اختر أمر شراء",
+      "modeleOt": "نموذج أمر العمل",
+      "selectModeleOt": "اختر نموذجاً",
+      "modeModele": "بناءً على نموذج أمر عمل",
+      "modeLibre": "أمر عمل حر",
+      "section": {
+        "informationsGenerales": "معلومات عامة",
+        "modeCreation": "طريقة الإنشاء",
+        "modeleOtPhases": "نموذج أمر العمل والمراحل"
       }
     }
   },
   "financeServiceApp": {
     "financeServiceOtExterne": {
-      "created": "A new Ot Externe is created with identifier {{ param }}",
-      "updated": "A Ot Externe is updated with identifier {{ param }}",
-      "deleted": "A Ot Externe is deleted with identifier {{ param }}"
+      "created": "تم إنشاء أمر عمل خارجي جديد بالمعرف {{ param }}",
+      "updated": "تم تحديث أمر العمل الخارجي بالمعرف {{ param }}",
+      "deleted": "تم حذف أمر العمل الخارجي بالمعرف {{ param }}"
     }
   }
 }
