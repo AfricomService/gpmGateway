@@ -144,16 +144,6 @@
                 <div class="bc-actions">
                   <button
                     type="button"
-                    [routerLink]="['/bon-commande', bonCommande.id, 'view']"
-                    (click)="$event.stopPropagation()"
-                    class="btn-bc-icon btn-bc-view"
-                    title="Voir"
-                  >
-                    <fa-icon icon="eye"></fa-icon>
-                  </button>
-
-                  <button
-                    type="button"
                     (click)="delete(bonCommande); $event.stopPropagation()"
                     class="btn-bc-icon btn-bc-delete"
                     data-cy="entityDeleteButton"
@@ -177,16 +167,6 @@
         <div class="bc-card-item-header">
           <span class="bc-card-ref">{{ bonCommande.identifiantUnique || '#' + bonCommande.id }}</span>
           <div class="bc-actions">
-            <button
-              type="button"
-              [routerLink]="['/bon-commande', bonCommande.id, 'view']"
-              (click)="$event.stopPropagation()"
-              class="btn-bc-icon btn-bc-view"
-              title="Voir"
-            >
-              <fa-icon icon="eye"></fa-icon>
-            </button>
-
             <button
               type="button"
               (click)="delete(bonCommande); $event.stopPropagation()"
