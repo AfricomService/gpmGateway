@@ -14,6 +14,13 @@
       "detail": {
         "title": "Work Order"
       },
+      "section": {
+        "informationsGenerales": "Informations Générales",
+        "informationsClient": "Informations Client",
+        "equipes": "Equipes",
+        "options": "Options",
+        "remarque": "Remarque"
+      },
       "id": "ID",
       "clientId": "Client Id",
       "affaireId": "Affaire Id",

@@ -9,14 +9,22 @@ import { IWorkOrder } from '../work-order.model';
 import { WorkOrderService } from '../service/work-order.service';
 import { StatutWO } from 'app/entities/enumerations/statut-wo.model';
 
+type AccordionPanel = 'global' | 'client' | 'equipes' | 'options' | 'remarque';
+
 @Component({
   selector: 'jhi-work-order-update',
   templateUrl: './work-order-update.component.html',
+  styleUrls: ['./work-order-update.component.scss'],
 })
 export class WorkOrderUpdateComponent implements OnInit {
   isSaving = false;
   workOrder: IWorkOrder | null = null;
   statutWOValues = Object.keys(StatutWO);
+
+  // ================================
+  // Accordéon (état purement visuel — même pattern que ot-externe-update)
+  // ================================
+  openPanels: Set<AccordionPanel> = new Set(['global']);
 
   editForm: WorkOrderFormGroup = this.workOrderFormService.createWorkOrderFormGroup();
 
@@ -33,6 +41,21 @@ export class WorkOrderUpdateComponent implements OnInit {
         this.updateForm(workOrder);
       }
     });
+  }
+
+  // ================================
+  // Accordéon
+  // ================================
+  togglePanel(panel: AccordionPanel): void {
+    if (this.openPanels.has(panel)) {
+      this.openPanels.delete(panel);
+    } else {
+      this.openPanels.add(panel);
+    }
+  }
+
+  isPanelOpen(panel: AccordionPanel): boolean {
+    return this.openPanels.has(panel);
   }
 
   previousState(): void {

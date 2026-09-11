@@ -21,14 +21,12 @@ type WorkOrderFormGroupInput = IWorkOrder | PartialWithRequiredKeyOf<NewWorkOrde
  */
 type FormValueOf<T extends IWorkOrder | NewWorkOrder> = Omit<
   T,
-  'dateHeureDebutPrev' | 'dateHeureFinPrev' | 'dateHeureDebutReel' | 'dateHeureFinReel' | 'createdAt' | 'updatedAt'
+  'dateHeureDebutPrev' | 'dateHeureFinPrev' | 'dateHeureDebutReel' | 'dateHeureFinReel'
 > & {
   dateHeureDebutPrev?: string | null;
   dateHeureFinPrev?: string | null;
   dateHeureDebutReel?: string | null;
   dateHeureFinReel?: string | null;
-  createdAt?: string | null;
-  updatedAt?: string | null;
 };
 
 type WorkOrderFormRawValue = FormValueOf<IWorkOrder>;
@@ -37,15 +35,7 @@ type NewWorkOrderFormRawValue = FormValueOf<NewWorkOrder>;
 
 type WorkOrderFormDefaults = Pick<
   NewWorkOrder,
-  | 'id'
-  | 'dateHeureDebutPrev'
-  | 'dateHeureFinPrev'
-  | 'dateHeureDebutReel'
-  | 'dateHeureFinReel'
-  | 'missionDeNuit'
-  | 'hebergement'
-  | 'createdAt'
-  | 'updatedAt'
+  'id' | 'dateHeureDebutPrev' | 'dateHeureFinPrev' | 'dateHeureDebutReel' | 'dateHeureFinReel' | 'missionDeNuit' | 'hebergement'
 >;
 
 type WorkOrderFormGroupContent = {
@@ -69,12 +59,6 @@ type WorkOrderFormGroupContent = {
   numFicheIntervention: FormControl<WorkOrderFormRawValue['numFicheIntervention']>;
   statut: FormControl<WorkOrderFormRawValue['statut']>;
   materielUtilise: FormControl<WorkOrderFormRawValue['materielUtilise']>;
-  createdAt: FormControl<WorkOrderFormRawValue['createdAt']>;
-  updatedAt: FormControl<WorkOrderFormRawValue['updatedAt']>;
-  createdBy: FormControl<WorkOrderFormRawValue['createdBy']>;
-  createdByUserLogin: FormControl<WorkOrderFormRawValue['createdByUserLogin']>;
-  updatedBy: FormControl<WorkOrderFormRawValue['updatedBy']>;
-  updatedByUserLogin: FormControl<WorkOrderFormRawValue['updatedByUserLogin']>;
 };
 
 export type WorkOrderFormGroup = FormGroup<WorkOrderFormGroupContent>;
@@ -123,12 +107,6 @@ export class WorkOrderFormService {
         validators: [Validators.required],
       }),
       materielUtilise: new FormControl(workOrderRawValue.materielUtilise),
-      createdAt: new FormControl(workOrderRawValue.createdAt),
-      updatedAt: new FormControl(workOrderRawValue.updatedAt),
-      createdBy: new FormControl(workOrderRawValue.createdBy),
-      createdByUserLogin: new FormControl(workOrderRawValue.createdByUserLogin),
-      updatedBy: new FormControl(workOrderRawValue.updatedBy),
-      updatedByUserLogin: new FormControl(workOrderRawValue.updatedByUserLogin),
     });
   }
 
@@ -157,8 +135,6 @@ export class WorkOrderFormService {
       dateHeureFinReel: currentTime,
       missionDeNuit: false,
       hebergement: false,
-      createdAt: currentTime,
-      updatedAt: currentTime,
     };
   }
 
@@ -169,8 +145,6 @@ export class WorkOrderFormService {
       dateHeureFinPrev: dayjs(rawWorkOrder.dateHeureFinPrev, DATE_TIME_FORMAT),
       dateHeureDebutReel: dayjs(rawWorkOrder.dateHeureDebutReel, DATE_TIME_FORMAT),
       dateHeureFinReel: dayjs(rawWorkOrder.dateHeureFinReel, DATE_TIME_FORMAT),
-      createdAt: dayjs(rawWorkOrder.createdAt, DATE_TIME_FORMAT),
-      updatedAt: dayjs(rawWorkOrder.updatedAt, DATE_TIME_FORMAT),
     };
   }
 
@@ -183,8 +157,6 @@ export class WorkOrderFormService {
       dateHeureFinPrev: workOrder.dateHeureFinPrev ? workOrder.dateHeureFinPrev.format(DATE_TIME_FORMAT) : undefined,
       dateHeureDebutReel: workOrder.dateHeureDebutReel ? workOrder.dateHeureDebutReel.format(DATE_TIME_FORMAT) : undefined,
       dateHeureFinReel: workOrder.dateHeureFinReel ? workOrder.dateHeureFinReel.format(DATE_TIME_FORMAT) : undefined,
-      createdAt: workOrder.createdAt ? workOrder.createdAt.format(DATE_TIME_FORMAT) : undefined,
-      updatedAt: workOrder.updatedAt ? workOrder.updatedAt.format(DATE_TIME_FORMAT) : undefined,
     };
   }
 }

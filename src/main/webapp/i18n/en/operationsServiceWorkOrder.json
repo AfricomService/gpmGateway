@@ -2,7 +2,7 @@
   "gpmGatewayApp": {
     "operationsServiceWorkOrder": {
       "home": {
-        "title": "Work Orders",
+        "title": "WorkOrders",
         "refreshListLabel": "Refresh list",
         "createLabel": "Create a new Work Order",
         "createOrEditLabel": "Create or edit a Work Order",
@@ -13,6 +13,13 @@
       },
       "detail": {
         "title": "Work Order"
+      },
+      "section": {
+        "informationsGenerales": "General Information",
+        "informationsClient": "Client Information",
+        "equipes": "Teams",
+        "options": "Options",
+        "remarque": "Remark"
       },
       "id": "ID",
       "clientId": "Client Id",
@@ -51,9 +58,9 @@
   },
   "operationsServiceApp": {
     "operationsServiceWorkOrder": {
-      "created": "A new Work Order is created with identifier {{ param }}",
-      "updated": "A Work Order is updated with identifier {{ param }}",
-      "deleted": "A Work Order is deleted with identifier {{ param }}"
+      "created": "A new Work Order has been created with identifier {{ param }}",
+      "updated": "A Work Order with identifier {{ param }} has been updated",
+      "deleted": "A Work Order with identifier {{ param }} has been deleted"
     }
   }
 }
