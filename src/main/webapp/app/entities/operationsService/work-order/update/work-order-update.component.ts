@@ -16,14 +16,21 @@ import { ClientService } from 'app/entities/projectService/client/service/client
 import { IClient } from 'app/entities/projectService/client/client.model';
 import { ISite } from 'app/entities/projectService/site/site.model';
 import { SiteService } from 'app/entities/projectService/site/service/site.service';
+import { BonCommandeService } from 'app/entities/financeService/bon-commande/service/bon-commande.service';
+import { IContactSociete } from 'app/entities/projectService/societe/contact-societe.model';
+import { WorkOrderTechniciensService } from '../service/work-order-techniciens.service';
+import { forkJoin } from 'rxjs';
 
 import { AffaireSelectorModalComponent } from 'app/entities/financeService/bon-commande/affaire-selector-modal/affaire-selector-modal.component';
 import { SiteSelectorModalComponent } from 'app/entities/financeService/bon-commande/site-selector-modal/site-selector-modal.component';
+import { ContactSelectorModalComponent } from 'app/entities/financeService/bon-commande/contact-selector-modal/contact-selector-modal.component';
 
 type AccordionPanel = 'global' | 'client' | 'equipes' | 'options' | 'remarque';
 
 const AFFAIRE_STATUT = 'ExecutionDesTravaux';
 const AFFAIRE_PAGE_SIZE = 15;
+const RESPONSABLE_ROLE_CODE = 'MANAGER';
+const TECHNICIEN_ROLE_CODE = 'TECHNIQUE';
 
 @Component({
   selector: 'jhi-work-order-update',
@@ -73,6 +80,23 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   clientSites: ISite[] = [];
   loadingClientSites = false;
 
+  // ================================
+  // Liste déroulante Responsable / Coordinateur (contacts ayant le rôle MANAGER)
+  // — logique identique au champ Responsable de ot-externe-update, réutilisée pour les 2 champs
+  // ================================
+  responsables: IContactSociete[] = [];
+  selectedResponsable: IContactSociete | null = null;
+  selectedCoordinateur: IContactSociete | null = null;
+  loadingResponsables = false;
+
+  // ================================
+  // Techniciens (sélection multiple, persistée via WorkOrderTechniciens) — même logique
+  // que "Autre Responsable" dans ot-externe-update, avec le rôle TECHNIQUE au lieu de MANAGER
+  // ================================
+  techniciens: IContactSociete[] = [];
+  selectedTechniciens: IContactSociete[] = [];
+  loadingTechniciens = false;
+
   constructor(
     protected workOrderService: WorkOrderService,
     protected workOrderFormService: WorkOrderFormService,
@@ -80,11 +104,15 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     protected affaireService: AffaireService,
     protected clientService: ClientService,
     protected siteService: SiteService,
+    protected bonCommandeService: BonCommandeService,
+    protected workOrderTechniciensService: WorkOrderTechniciensService,
     protected modalService: NgbModal,
     protected cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    this.loadResponsables();
+    this.loadTechniciens();
     this.loadAffaires(''); // Pré-charge la liste des projets dès l'ouverture du formulaire
 
     this.activatedRoute.data.subscribe(({ workOrder }) => {
@@ -299,6 +327,169 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ================================
+  // Liste déroulante Responsable (contacts ayant le rôle MANAGER) — identique à ot-externe-update
+  // ================================
+  private loadResponsables(): void {
+    this.loadingResponsables = true;
+
+    this.bonCommandeService.findResponsablesByRole(RESPONSABLE_ROLE_CODE).subscribe({
+      next: res => {
+        this.responsables = res.body ?? [];
+        this.loadingResponsables = false;
+      },
+      error: () => {
+        this.responsables = [];
+        this.loadingResponsables = false;
+      },
+    });
+  }
+
+  onResponsableSelectChange(responsable: IContactSociete | null): void {
+    this.editForm.patchValue({
+      responsableId: responsable?.id ?? null,
+    });
+
+    this.selectedResponsable = responsable;
+  }
+
+  onCoordinateurSelectChange(coordinateur: IContactSociete | null): void {
+    this.editForm.patchValue({
+      coordinateur: coordinateur?.id ?? null,
+    });
+
+    this.selectedCoordinateur = coordinateur;
+  }
+
+  compareResponsable = (a: IContactSociete | null, b: IContactSociete | null): boolean => (a && b ? a.id === b.id : a === b);
+
+  private loadResponsableLabel(responsableId: number): void {
+    this.bonCommandeService.findResponsableById(responsableId).subscribe({
+      next: res => {
+        this.selectedResponsable = res.body ?? null;
+      },
+    });
+  }
+
+  private loadCoordinateurLabel(coordinateurId: number): void {
+    this.bonCommandeService.findResponsableById(coordinateurId).subscribe({
+      next: res => {
+        this.selectedCoordinateur = res.body ?? null;
+      },
+    });
+  }
+
+  // ================================
+  // Techniciens (sélection multiple, persistée via WorkOrderTechniciens)
+  // ================================
+  private loadTechniciens(): void {
+    this.loadingTechniciens = true;
+
+    this.bonCommandeService.findResponsablesByRole(TECHNICIEN_ROLE_CODE).subscribe({
+      next: res => {
+        this.techniciens = res.body ?? [];
+        this.loadingTechniciens = false;
+      },
+      error: () => {
+        this.techniciens = [];
+        this.loadingTechniciens = false;
+      },
+    });
+  }
+
+  onTechnicienSelectChange(techniciens: IContactSociete[] | null): void {
+    this.selectedTechniciens = techniciens ?? [];
+  }
+
+  private loadAutresTechniciens(workOrderId: number): void {
+    this.workOrderTechniciensService.findByWorkOrder(workOrderId).subscribe({
+      next: res => {
+        const links = res.body ?? [];
+        const contactIds = links.map(l => l.contactSocieteId).filter((id): id is number => id !== null && id !== undefined);
+
+        if (contactIds.length === 0) {
+          this.selectedTechniciens = [];
+          return;
+        }
+
+        forkJoin(contactIds.map(id => this.bonCommandeService.findResponsableById(id))).subscribe({
+          next: responses => {
+            this.selectedTechniciens = responses.map(r => r.body).filter((c): c is IContactSociete => c !== null);
+          },
+        });
+      },
+      error: () => {
+        this.selectedTechniciens = [];
+      },
+    });
+  }
+
+  openTechnicienModal(): void {
+    const modalRef = this.modalService.open(ContactSelectorModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'contact-selector-modal-window',
+    });
+
+    modalRef.componentInstance.roleCode = TECHNICIEN_ROLE_CODE;
+    modalRef.componentInstance.modalTitle = 'Sélectionner un ou plusieurs techniciens';
+    modalRef.componentInstance.multiple = true;
+    modalRef.componentInstance.initialSelection = this.selectedTechniciens;
+
+    modalRef.result
+      .then((contacts: IContactSociete[]) => {
+        this.selectedTechniciens = contacts ?? [];
+      })
+      .catch(() => {
+        // Fermeture du modal sans sélection
+      });
+  }
+
+  openResponsableModal(): void {
+    const modalRef = this.modalService.open(ContactSelectorModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'contact-selector-modal-window',
+    });
+
+    modalRef.componentInstance.roleCode = RESPONSABLE_ROLE_CODE;
+    modalRef.componentInstance.modalTitle = 'Sélectionner un responsable';
+
+    modalRef.result
+      .then((contact: IContactSociete) => {
+        if (contact) {
+          this.onResponsableSelectChange(contact);
+        }
+      })
+      .catch(() => {
+        // Fermeture du modal sans sélection
+      });
+  }
+
+  openCoordinateurModal(): void {
+    const modalRef = this.modalService.open(ContactSelectorModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'contact-selector-modal-window',
+    });
+
+    modalRef.componentInstance.roleCode = RESPONSABLE_ROLE_CODE;
+    modalRef.componentInstance.modalTitle = 'Sélectionner un coordinateur';
+
+    modalRef.result
+      .then((contact: IContactSociete) => {
+        if (contact) {
+          this.onCoordinateurSelectChange(contact);
+        }
+      })
+      .catch(() => {
+        // Fermeture du modal sans sélection
+      });
+  }
+
   openLieuModal(): void {
     const modalRef = this.modalService.open(SiteSelectorModalComponent, {
       size: 'lg',
@@ -371,13 +562,25 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
 
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IWorkOrder>>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
-      next: () => this.onSaveSuccess(),
+      next: response => this.onSaveSuccess(response.body),
       error: () => this.onSaveError(),
     });
   }
 
-  protected onSaveSuccess(): void {
-    this.previousState();
+  protected onSaveSuccess(workOrder?: IWorkOrder | null): void {
+    const workOrderId = workOrder?.id;
+
+    if (workOrderId === null || workOrderId === undefined) {
+      this.previousState();
+      return;
+    }
+
+    const contactSocieteIds = this.selectedTechniciens.map(c => c.id).filter((id): id is number => id !== null && id !== undefined);
+
+    this.workOrderTechniciensService.replaceForWorkOrder(workOrderId, contactSocieteIds).subscribe({
+      next: () => this.previousState(),
+      error: () => this.previousState(),
+    });
   }
 
   protected onSaveError(): void {
@@ -422,6 +625,24 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
 
     if (clientId !== null && clientId !== undefined) {
       this.loadClientInfo(Number(clientId));
+    }
+
+    // Libellés Responsable / Coordinateur pour affichage — le formulaire ne persiste que l'id
+    const responsableId = workOrder.responsableId;
+
+    if (responsableId !== null && responsableId !== undefined) {
+      this.loadResponsableLabel(Number(responsableId));
+    }
+
+    const coordinateurId = workOrder.coordinateur;
+
+    if (coordinateurId !== null && coordinateurId !== undefined) {
+      this.loadCoordinateurLabel(Number(coordinateurId));
+    }
+
+    // Techniciens (sélection multiple) — chargés via la table de liaison
+    if (workOrder.id !== null && workOrder.id !== undefined) {
+      this.loadAutresTechniciens(workOrder.id);
     }
   }
 }
