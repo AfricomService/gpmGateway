@@ -4,6 +4,7 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 import dayjs from 'dayjs/esm';
 import { DATE_TIME_FORMAT } from 'app/config/input.constants';
 import { IWorkOrder, NewWorkOrder } from '../work-order.model';
+import { StatutWO } from 'app/entities/enumerations/statut-wo.model';
 
 /**
  * A partial Type with required key is used as form input.
@@ -35,7 +36,7 @@ type NewWorkOrderFormRawValue = FormValueOf<NewWorkOrder>;
 
 type WorkOrderFormDefaults = Pick<
   NewWorkOrder,
-  'id' | 'dateHeureDebutPrev' | 'dateHeureFinPrev' | 'dateHeureDebutReel' | 'dateHeureFinReel' | 'missionDeNuit' | 'hebergement'
+  'id' | 'dateHeureDebutPrev' | 'dateHeureFinPrev' | 'dateHeureDebutReel' | 'dateHeureFinReel' | 'missionDeNuit' | 'hebergement' | 'statut'
 >;
 
 type WorkOrderFormGroupContent = {
@@ -59,6 +60,7 @@ type WorkOrderFormGroupContent = {
   numFicheIntervention: FormControl<WorkOrderFormRawValue['numFicheIntervention']>;
   statut: FormControl<WorkOrderFormRawValue['statut']>;
   materielUtilise: FormControl<WorkOrderFormRawValue['materielUtilise']>;
+  lieu: FormControl<WorkOrderFormRawValue['lieu']>;
 };
 
 export type WorkOrderFormGroup = FormGroup<WorkOrderFormGroupContent>;
@@ -107,6 +109,7 @@ export class WorkOrderFormService {
         validators: [Validators.required],
       }),
       materielUtilise: new FormControl(workOrderRawValue.materielUtilise),
+      lieu: new FormControl(workOrderRawValue.lieu),
     });
   }
 
@@ -125,16 +128,23 @@ export class WorkOrderFormService {
   }
 
   private getFormDefaults(): WorkOrderFormDefaults {
-    const currentTime = dayjs();
+    const today = dayjs();
+
+    // Heure de début par défaut : aujourd'hui 08:00 (modifiable par l'utilisateur)
+    const debutDefault = today.hour(8).minute(0).second(0).millisecond(0);
+
+    // Heure de fin par défaut : aujourd'hui 18:00 (modifiable par l'utilisateur)
+    const finDefault = today.hour(18).minute(0).second(0).millisecond(0);
 
     return {
       id: null,
-      dateHeureDebutPrev: currentTime,
-      dateHeureFinPrev: currentTime,
-      dateHeureDebutReel: currentTime,
-      dateHeureFinReel: currentTime,
+      dateHeureDebutPrev: debutDefault,
+      dateHeureFinPrev: finDefault,
+      dateHeureDebutReel: debutDefault,
+      dateHeureFinReel: finDefault,
       missionDeNuit: false,
       hebergement: false,
+      statut: StatutWO.Creation,
     };
   }
 

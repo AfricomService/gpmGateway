@@ -22,6 +22,7 @@ export interface IWorkOrder {
   numFicheIntervention?: string | null;
   statut?: StatutWO | null;
   materielUtilise?: string | null;
+  lieu?: string | null;
   createdAt?: dayjs.Dayjs | null;
   updatedAt?: dayjs.Dayjs | null;
   createdBy?: string | null;
