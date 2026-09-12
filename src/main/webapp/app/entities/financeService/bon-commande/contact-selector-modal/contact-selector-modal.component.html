@@ -24,6 +24,10 @@
 
   <div class="cs-loading" *ngIf="loading">Chargement...</div>
 
+  <div class="alert alert-danger py-2 px-3 mb-2" *ngIf="conflictMessage" role="alert">
+    <fa-icon icon="exclamation-triangle"></fa-icon>&nbsp;{{ conflictMessage }}
+  </div>
+
   <div class="cs-list" *ngIf="!loading">
     <button
       type="button"

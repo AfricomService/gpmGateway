@@ -398,7 +398,38 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   }
 
   onTechnicienSelectChange(techniciens: IContactSociete[] | null): void {
-    this.selectedTechniciens = techniciens ?? [];
+    const nouvelleListe = techniciens ?? [];
+    const ancienneListe = this.selectedTechniciens;
+    const ajouts = nouvelleListe.filter(t => !ancienneListe.some(a => a.id === t.id));
+
+    // On applique déjà la nouvelle liste (optimiste), on corrigera en cas de conflit
+    this.selectedTechniciens = nouvelleListe;
+
+    if (ajouts.length === 0) {
+      return;
+    }
+
+    const idsAjoutes = ajouts.map(t => t.id).filter((id): id is number => id !== null && id !== undefined);
+
+    this.workOrderTechniciensService.checkDisponibilite(idsAjoutes, this.workOrder?.id ?? null).subscribe({
+      next: res => {
+        const conflicts = res.body ?? [];
+        if (conflicts.length === 0) {
+          return;
+        }
+
+        const idsEnConflit = conflicts.map(c => c.contactSocieteId);
+        this.selectedTechniciens = this.selectedTechniciens.filter(t => !idsEnConflit.includes(t.id!));
+
+        const noms = ajouts
+          .filter(t => idsEnConflit.includes(t.id!))
+          .map(t => t.nomPrenom)
+          .join(', ');
+
+        // À remplacer par votre mécanisme d'alerte (jhiAlertService, toast, etc.)
+        window.alert(`Indisponible : ${noms} déjà affecté(s) à un work order en cours.`);
+      },
+    });
   }
 
   private loadAutresTechniciens(workOrderId: number): void {
@@ -436,14 +467,14 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     modalRef.componentInstance.modalTitle = 'Sélectionner un ou plusieurs techniciens';
     modalRef.componentInstance.multiple = true;
     modalRef.componentInstance.initialSelection = this.selectedTechniciens;
+    modalRef.componentInstance.checkDisponibilite = true;
+    modalRef.componentInstance.excludeWorkOrderId = this.workOrder?.id ?? null;
 
     modalRef.result
       .then((contacts: IContactSociete[]) => {
         this.selectedTechniciens = contacts ?? [];
       })
-      .catch(() => {
-        // Fermeture du modal sans sélection
-      });
+      .catch(() => {});
   }
 
   openResponsableModal(): void {
