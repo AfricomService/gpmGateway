@@ -321,6 +321,8 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       affaireId: affaire.id,
       clientId,
     });
+    this.editForm.get('affaireId')?.markAsDirty();
+    this.editForm.get('affaireId')?.markAsTouched();
 
     // Sélection affichée dans le ng-select
     this.selectedAffaire = affaire;
@@ -344,6 +346,8 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       this.selectAffaire(affaire);
     } else {
       this.editForm.patchValue({ affaireId: null, clientId: null, lieu: null });
+      this.editForm.get('affaireId')?.markAsDirty();
+      this.editForm.get('affaireId')?.markAsTouched();
       this.selectedAffaire = null;
       this.selectedAffaireCode = null;
       this.selectedClientInfo = null;
@@ -456,6 +460,8 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     this.editForm.patchValue({
       responsableId: responsable?.id !== undefined && responsable?.id !== null ? String(responsable.id) : null,
     });
+    this.editForm.get('responsableId')?.markAsDirty();
+    this.editForm.get('responsableId')?.markAsTouched();
 
     this.selectedResponsable = responsable;
   }

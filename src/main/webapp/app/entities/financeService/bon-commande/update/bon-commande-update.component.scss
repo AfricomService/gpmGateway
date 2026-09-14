@@ -165,6 +165,12 @@
     font-size: 0.85rem;
     color: var(--cp-text-muted);
     margin-bottom: 0.35rem;
+
+    .text-danger {
+      color: #e0524d;
+      font-weight: 700;
+      margin-left: 2px;
+    }
   }
 
   .form-control {

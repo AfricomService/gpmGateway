@@ -99,9 +99,19 @@ export class BonCommandeService {
 
   /**
    * Récupère les contacts ayant un rôle donné (ex: MANAGER), pour peupler la liste des responsables.
+   * @param roleCode le code du rôle (ex: MANAGER).
+   * @param societeId optionnel, filtre les responsables appartenant à cette société.
    */
-  findResponsablesByRole(roleCode: string): Observable<HttpResponse<IContactSociete[]>> {
-    return this.http.get<IContactSociete[]>(`${this.contactSocieteResourceUrl}/by-role/${roleCode}`, { observe: 'response' });
+  findResponsablesByRole(roleCode: string, societeId?: number | null): Observable<HttpResponse<IContactSociete[]>> {
+    let params = new HttpParams();
+    if (societeId !== null && societeId !== undefined) {
+      params = params.set('societeId', societeId.toString());
+    }
+
+    return this.http.get<IContactSociete[]>(`${this.contactSocieteResourceUrl}/by-role/${roleCode}`, {
+      params,
+      observe: 'response',
+    });
   }
 
   /**

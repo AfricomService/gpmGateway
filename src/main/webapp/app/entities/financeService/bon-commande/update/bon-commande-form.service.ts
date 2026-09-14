@@ -61,9 +61,13 @@ export class BonCommandeFormService {
         }
       ),
       clientId: new FormControl(bonCommandeRawValue.clientId),
-      affaireId: new FormControl(bonCommandeRawValue.affaireId),
+      affaireId: new FormControl(bonCommandeRawValue.affaireId, {
+        validators: [Validators.required],
+      }),
       lieu: new FormControl(bonCommandeRawValue.lieu),
-      responsableId: new FormControl(bonCommandeRawValue.responsableId),
+      responsableId: new FormControl(bonCommandeRawValue.responsableId, {
+        validators: [Validators.required],
+      }),
       referenceClient: new FormControl(bonCommandeRawValue.referenceClient),
       dateBonCommande: new FormControl(bonCommandeRawValue.dateBonCommande),
       montantTotal: new FormControl(bonCommandeRawValue.montantTotal),
