@@ -521,99 +521,156 @@
           </button>
 
           <div class="cu-accordion-body" *ngIf="isPanelOpen('options')">
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <div class="cu-checkbox-field">
-                  <label class="cu-switch">
-                    <input
-                      type="checkbox"
-                      name="missionDeNuit"
-                      id="field_missionDeNuit"
-                      data-cy="missionDeNuit"
-                      formControlName="missionDeNuit"
-                    />
-                    <span class="cu-switch-slider"></span>
-                  </label>
-                  <label
-                    class="form-label mb-0"
-                    jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.missionDeNuit"
-                    for="field_missionDeNuit"
-                    >Mission De Nuit</label
-                  >
-                </div>
-                <div
-                  *ngIf="
-                    editForm.get('missionDeNuit')!.invalid &&
-                    (editForm.get('missionDeNuit')!.dirty || editForm.get('missionDeNuit')!.touched)
-                  "
+            <!-- Mission de nuit -->
+            <div class="cu-option-row">
+              <div class="cu-option-left">
+                <label class="cu-switch">
+                  <input
+                    type="checkbox"
+                    name="missionDeNuit"
+                    id="field_missionDeNuit"
+                    data-cy="missionDeNuit"
+                    formControlName="missionDeNuit"
+                  />
+                  <span class="cu-switch-slider"></span>
+                </label>
+
+                <label
+                  class="cu-option-label"
+                  [class.cu-option-label-active]="editForm.get('missionDeNuit')?.value"
+                  jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.missionDeNuit"
+                  for="field_missionDeNuit"
                 >
-                  <small
-                    class="form-text text-danger"
-                    *ngIf="editForm.get('missionDeNuit')?.errors?.required"
-                    jhiTranslate="entity.validation.required"
-                  >
-                    Ce champ est obligatoire.
-                  </small>
-                </div>
+                  Mission De Nuit
+                </label>
               </div>
 
-              <div class="col-md-6 mb-3">
-                <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.nombreNuits" for="field_nombreNuits"
-                  >Nombre Nuits</label
+              <!-- Stepper : on le garde dans le DOM -->
+              <div class="cu-stepper" [hidden]="!editForm.get('missionDeNuit')?.value">
+                <button
+                  type="button"
+                  class="cu-stepper-btn"
+                  (click)="decrementNombreNuits()"
+                  [disabled]="(editForm.get('nombreNuits')?.value ?? 0) <= 0"
+                  aria-label="Diminuer le nombre de nuitées"
                 >
-                <input
-                  type="number"
-                  class="form-control cu-input"
-                  name="nombreNuits"
-                  id="field_nombreNuits"
-                  data-cy="nombreNuits"
-                  formControlName="nombreNuits"
-                />
+                  <fa-icon icon="minus"></fa-icon>
+                </button>
+
+                <span class="cu-stepper-value">
+                  {{ editForm.get('nombreNuits')?.value ?? 0 }}
+                  nuitée{{ (editForm.get('nombreNuits')?.value ?? 0) > 1 ? 's' : '' }}
+                </span>
+
+                <button type="button" class="cu-stepper-btn" (click)="incrementNombreNuits()" aria-label="Augmenter le nombre de nuitées">
+                  <fa-icon icon="plus"></fa-icon>
+                </button>
               </div>
+
+              <input type="hidden" formControlName="nombreNuits" data-cy="nombreNuits" />
             </div>
 
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <div class="cu-checkbox-field">
-                  <label class="cu-switch">
-                    <input type="checkbox" name="hebergement" id="field_hebergement" data-cy="hebergement" formControlName="hebergement" />
-                    <span class="cu-switch-slider"></span>
-                  </label>
-                  <label class="form-label mb-0" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.hebergement" for="field_hebergement"
-                    >Hebergement</label
-                  >
-                </div>
-                <div
-                  *ngIf="
-                    editForm.get('hebergement')!.invalid && (editForm.get('hebergement')!.dirty || editForm.get('hebergement')!.touched)
-                  "
+            <div
+              *ngIf="
+                editForm.get('missionDeNuit')!.invalid && (editForm.get('missionDeNuit')!.dirty || editForm.get('missionDeNuit')!.touched)
+              "
+            >
+              <small
+                class="form-text text-danger"
+                *ngIf="editForm.get('missionDeNuit')?.errors?.required"
+                jhiTranslate="entity.validation.required"
+              >
+                Ce champ est obligatoire.
+              </small>
+            </div>
+
+            <div
+              *ngIf="
+                editForm.get('missionDeNuit')!.invalid && (editForm.get('missionDeNuit')!.dirty || editForm.get('missionDeNuit')!.touched)
+              "
+            >
+              <small
+                class="form-text text-danger"
+                *ngIf="editForm.get('missionDeNuit')?.errors?.required"
+                jhiTranslate="entity.validation.required"
+              >
+                Ce champ est obligatoire.
+              </small>
+            </div>
+
+            <div class="cu-option-divider"></div>
+
+            <!-- Hébergement -->
+            <div class="cu-option-row">
+              <div class="cu-option-left">
+                <label class="cu-switch">
+                  <input type="checkbox" name="hebergement" id="field_hebergement" data-cy="hebergement" formControlName="hebergement" />
+
+                  <span class="cu-switch-slider"></span>
+                </label>
+
+                <label
+                  class="cu-option-label"
+                  [class.cu-option-label-active]="editForm.get('hebergement')?.value"
+                  jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.hebergement"
+                  for="field_hebergement"
                 >
-                  <small
-                    class="form-text text-danger"
-                    *ngIf="editForm.get('hebergement')?.errors?.required"
-                    jhiTranslate="entity.validation.required"
-                  >
-                    Ce champ est obligatoire.
-                  </small>
-                </div>
+                  Hebergement
+                </label>
               </div>
 
-              <div class="col-md-6 mb-3">
-                <label
-                  class="form-label"
-                  jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.nombreHebergements"
-                  for="field_nombreHebergements"
-                  >Nombre Hebergements</label
+              <!-- Stepper : on le garde dans le DOM -->
+              <div class="cu-stepper" [hidden]="!editForm.get('hebergement')?.value">
+                <button
+                  type="button"
+                  class="cu-stepper-btn"
+                  (click)="decrementNombreHebergements()"
+                  [disabled]="(editForm.get('nombreHebergements')?.value ?? 0) <= 0"
+                  aria-label="Diminuer le nombre d'hébergements"
                 >
-                <input
-                  type="number"
-                  class="form-control cu-input"
-                  name="nombreHebergements"
-                  id="field_nombreHebergements"
-                  data-cy="nombreHebergements"
-                  formControlName="nombreHebergements"
-                />
+                  <fa-icon icon="minus"></fa-icon>
+                </button>
+
+                <span class="cu-stepper-value">
+                  {{ editForm.get('nombreHebergements')?.value ?? 0 }}
+                  hébergement{{ (editForm.get('nombreHebergements')?.value ?? 0) > 1 ? 's' : '' }}
+                </span>
+
+                <button
+                  type="button"
+                  class="cu-stepper-btn"
+                  (click)="incrementNombreHebergements()"
+                  aria-label="Augmenter le nombre d'hébergements"
+                >
+                  <fa-icon icon="plus"></fa-icon>
+                </button>
               </div>
+
+              <input type="hidden" formControlName="nombreHebergements" data-cy="nombreHebergements" />
+            </div>
+
+            <div
+              *ngIf="editForm.get('hebergement')!.invalid && (editForm.get('hebergement')!.dirty || editForm.get('hebergement')!.touched)"
+            >
+              <small
+                class="form-text text-danger"
+                *ngIf="editForm.get('hebergement')?.errors?.required"
+                jhiTranslate="entity.validation.required"
+              >
+                Ce champ est obligatoire.
+              </small>
+            </div>
+
+            <div
+              *ngIf="editForm.get('hebergement')!.invalid && (editForm.get('hebergement')!.dirty || editForm.get('hebergement')!.touched)"
+            >
+              <small
+                class="form-text text-danger"
+                *ngIf="editForm.get('hebergement')?.errors?.required"
+                jhiTranslate="entity.validation.required"
+              >
+                Ce champ est obligatoire.
+              </small>
             </div>
 
             <div class="row">

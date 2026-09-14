@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -97,6 +97,12 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   selectedTechniciens: IContactSociete[] = [];
   loadingTechniciens = false;
 
+  // ================================
+  // Souscriptions Mission De Nuit / Hebergement (reset du compteur quand désactivé)
+  // ================================
+  private missionDeNuitSubscription?: Subscription;
+  private hebergementSubscription?: Subscription;
+
   constructor(
     protected workOrderService: WorkOrderService,
     protected workOrderFormService: WorkOrderFormService,
@@ -114,6 +120,25 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.loadResponsables();
     this.loadTechniciens();
     this.loadAffaires(''); // Pré-charge la liste des projets dès l'ouverture du formulaire
+
+    // On utilise valueChanges plutôt que (change) dans le template : cela garantit
+    // que la valeur du FormControl est déjà à jour au moment où ce code s'exécute,
+    // ce qui évite le décalage d'affichage observé avec (change).
+    this.missionDeNuitSubscription = this.editForm.get('missionDeNuit')?.valueChanges.subscribe(checked => {
+      if (!checked) {
+        this.editForm.get('nombreNuits')?.setValue(0, { emitEvent: false });
+      }
+
+      this.cdr.detectChanges();
+    });
+
+    this.hebergementSubscription = this.editForm.get('hebergement')?.valueChanges.subscribe(checked => {
+      if (!checked) {
+        this.editForm.get('nombreHebergements')?.setValue(0, { emitEvent: false });
+      }
+
+      this.cdr.detectChanges();
+    });
 
     this.activatedRoute.data.subscribe(({ workOrder }) => {
       this.workOrder = workOrder;
@@ -150,6 +175,8 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.affaireSearch$.complete();
+    this.missionDeNuitSubscription?.unsubscribe();
+    this.hebergementSubscription?.unsubscribe();
   }
 
   // ================================
@@ -369,6 +396,41 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
         this.selectedResponsable = res.body ?? null;
       },
     });
+  }
+
+  // ================================
+  // Steppers Mission De Nuit / Hebergement
+  // ================================
+  incrementNombreNuits(): void {
+    this.incrementCounter('nombreNuits');
+  }
+
+  decrementNombreNuits(): void {
+    this.decrementCounter('nombreNuits');
+  }
+
+  incrementNombreHebergements(): void {
+    this.incrementCounter('nombreHebergements');
+  }
+
+  decrementNombreHebergements(): void {
+    this.decrementCounter('nombreHebergements');
+  }
+
+  private incrementCounter(controlName: 'nombreNuits' | 'nombreHebergements'): void {
+    const control = this.editForm.get(controlName);
+    const current = control?.value ?? 0;
+    control?.setValue(current + 1);
+    control?.markAsDirty();
+  }
+
+  private decrementCounter(controlName: 'nombreNuits' | 'nombreHebergements'): void {
+    const control = this.editForm.get(controlName);
+    const current = control?.value ?? 0;
+    if (current > 0) {
+      control?.setValue(current - 1);
+      control?.markAsDirty();
+    }
   }
 
   private loadCoordinateurLabel(coordinateurId: number): void {
@@ -624,7 +686,12 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
 
   protected updateForm(workOrder: IWorkOrder): void {
     this.workOrder = workOrder;
+
     this.workOrderFormService.resetForm(this.editForm, workOrder);
+
+    // Force immédiatement Angular à mettre à jour l'affichage
+    // des switches et des steppers.
+    this.cdr.detectChanges();
 
     // ================================
     // Pré-remplissage Affaire + Information Client (mode édition)
@@ -658,7 +725,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       this.loadClientInfo(Number(clientId));
     }
 
-    // Libellés Responsable / Coordinateur pour affichage — le formulaire ne persiste que l'id
+    // Libellés Responsable / Coordinateur
     const responsableId = workOrder.responsableId;
 
     if (responsableId !== null && responsableId !== undefined) {
@@ -671,7 +738,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       this.loadCoordinateurLabel(Number(coordinateurId));
     }
 
-    // Techniciens (sélection multiple) — chargés via la table de liaison
+    // Techniciens
     if (workOrder.id !== null && workOrder.id !== undefined) {
       this.loadAutresTechniciens(workOrder.id);
     }
