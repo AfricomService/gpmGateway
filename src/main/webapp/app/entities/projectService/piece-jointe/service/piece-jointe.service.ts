@@ -82,6 +82,25 @@ export class PieceJointeService {
       .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 
+  /**
+   * Upload d'une pièce jointe liée à un OT externe — même logique que uploadPieceJointe (bon de commande).
+   */
+  uploadPieceJointeOtExterne(file: File, otExterneId: number, uniqueName: string): Observable<IPieceJointe> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('otExterneId', String(otExterneId));
+    formData.append('uniqueName', uniqueName);
+    return this.http
+      .post<RestPieceJointe>(`${this.resourceUrl}/upload-ot-externe`, formData)
+      .pipe(map(res => this.convertDateFromServer(res)));
+  }
+
+  findByOtExterne(otExterneId: number): Observable<EntityArrayResponseType> {
+    return this.http
+      .get<RestPieceJointe[]>(`${this.resourceUrl}/by-ot-externe/${otExterneId}`, { observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
   getFileUrl(id: number): string {
     return `${this.resourceUrl}/getFile?id=${id}`;
   }

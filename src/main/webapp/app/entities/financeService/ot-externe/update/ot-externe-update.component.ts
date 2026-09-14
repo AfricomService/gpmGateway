@@ -26,9 +26,23 @@ import { BonCommandeSelectorModalComponent } from '../bon-commande-selector-moda
 import { IContactSociete } from 'app/entities/projectService/societe/contact-societe.model';
 import { OtExterneAutreResponsableService } from '../service/ot-externe-autre-responsable.service';
 import { forkJoin } from 'rxjs';
+import { IPieceJointe } from 'app/entities/projectService/piece-jointe/piece-jointe.model';
+import { PieceJointeService } from 'app/entities/projectService/piece-jointe/service/piece-jointe.service';
+import { PjCareService, PjCareDriverInfo, ScanDriver, ScannedPage } from 'app/entities/projectService/piece-jointe/service/pjcare.service';
+import { ScanSettingsService } from 'app/entities/projectService/piece-jointe/service/scan-settings.service';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { saveAs } from 'file-saver';
+import dayjs from 'dayjs/esm';
 
 type ModeCreation = 'MODELE' | 'LIBRE';
-type AccordionPanel = 'global' | 'mode' | 'modele' | 'client';
+type AccordionPanel = 'global' | 'mode' | 'modele' | 'client' | 'piecesJointes';
+
+interface PendingPieceJointe {
+  tempId: string;
+  file: File;
+  displayName: string;
+  extension: string;
+}
 
 const AFFAIRE_STATUT = 'ExecutionDesTravaux';
 const AFFAIRE_PAGE_SIZE = 15;
@@ -97,6 +111,57 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   // Autres Responsables (sélection multiple, persistée via OtExterneAutreResponsable)
   selectedAutresResponsables: IContactSociete[] = [];
 
+  // ================================
+  // Pièces Jointes (upload manuel) — même logique que bon-commande-update
+  // ================================
+  pieceJointes: IPieceJointe[] = [];
+  loadingPieceJointes = false;
+  uploadingPieceJointe = false;
+
+  // Pièces jointes sélectionnées avant l'enregistrement de l'OT externe
+  // (mode création : pas encore de otExterne.id, donc pas d'upload possible tout de suite)
+  pendingPieceJointes: PendingPieceJointe[] = [];
+
+  // Aperçu inline pièce jointe
+  selectedPjForPreview: IPieceJointe | null = null;
+
+  // Renommer pièce jointe
+  showRenamePjModal = false;
+  pjToRename: IPieceJointe | null = null;
+  renamePjNewName = '';
+  renamePjError = '';
+  isRenamingPj = false;
+
+  // ================================
+  // Scan PjCare — même logique que bon-commande-update
+  // ================================
+  pjcareAvailable = false;
+  scanners: string[] = [];
+  selectedScanner = '';
+  scanFormat: 'jpg' | 'png' | 'pdf' | 'tiff' = 'pdf';
+  scanDpi = 150;
+  scanQuality = 75;
+  scanBitdepth: 'color' | 'gray' | 'bw' = 'color';
+  scanDuplex = false;
+  isScanning = false;
+  isMerging = false;
+  scanPreview: string | null = null;
+  scanError: string | null = null;
+  loadingScanners = false;
+  availableDrivers: PjCareDriverInfo[] = [];
+  selectedDriver: ScanDriver | '' = '';
+  loadingDrivers = false;
+  scanExcludeBlank = false;
+  scanBlankThreshold = 240;
+  scanCoverageThreshold = 5;
+  currentDocumentPages: ScannedPage[] = [];
+  private _pendingDriverFromCookie = '';
+
+  scanAccordionStates: { [key: string]: boolean } = {
+    scanSource: true,
+    scanParams: true,
+  };
+
   constructor(
     protected otExterneService: OtExterneService,
     protected otExterneFormService: OtExterneFormService,
@@ -107,6 +172,10 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
     protected siteService: SiteService,
     protected bonCommandeService: BonCommandeService,
     protected otExterneAutreResponsableService: OtExterneAutreResponsableService,
+    protected pieceJointeService: PieceJointeService,
+    protected pjCareService: PjCareService,
+    protected scanSettingsService: ScanSettingsService,
+    protected sanitizer: DomSanitizer,
     protected modalService: NgbModal,
     protected cdr: ChangeDetectorRef
   ) {}
@@ -276,6 +345,34 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
 
     this.loadClientInfo(clientId);
     this.loadClientCommandeInfo(affaire.clientCommande ?? null);
+    this.applyResponsableFromAffaire(affaire);
+  }
+
+  /**
+   * Pré-remplit le champ "Responsable" de l'OT externe avec le responsable
+   * projet déjà défini sur l'affaire sélectionnée (IAffaire.responsableProjetId),
+   * en le proposant comme valeur par défaut (l'utilisateur peut ensuite la changer).
+   */
+  private applyResponsableFromAffaire(affaire: IAffaire): void {
+    const responsableProjetId = (affaire as any).responsableProjetId;
+
+    if (responsableProjetId === null || responsableProjetId === undefined || responsableProjetId === '') {
+      return;
+    }
+
+    const parsedId = Number(responsableProjetId);
+    if (Number.isNaN(parsedId)) {
+      return;
+    }
+
+    this.bonCommandeService.findResponsableById(parsedId).subscribe({
+      next: res => {
+        const contact = res.body ?? null;
+        if (contact) {
+          this.onResponsableSelectChange(contact);
+        }
+      },
+    });
   }
 
   onAffaireSelectChange(affaire: IAffaire | null): void {
@@ -577,8 +674,35 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
     const contactSocieteIds = this.selectedAutresResponsables.map(c => c.id).filter((id): id is number => id !== null && id !== undefined);
 
     this.otExterneAutreResponsableService.replaceForOtExterne(otExterneId, contactSocieteIds).subscribe({
-      next: () => this.router.navigate(['../', otExterneId, 'edit'], { relativeTo: this.activatedRoute }),
-      error: () => this.router.navigate(['../', otExterneId, 'edit'], { relativeTo: this.activatedRoute }),
+      next: () => this.uploadPendingPieceJointesThenNavigate(otExterneId),
+      error: () => this.uploadPendingPieceJointesThenNavigate(otExterneId),
+    });
+  }
+
+  /**
+   * Envoie les pièces jointes mises en attente juste après le premier enregistrement
+   * de l'OT externe (qui vient de recevoir son id), puis redirige vers l'édition —
+   * même logique que uploadPendingPieceJointesThenRefresh dans bon-commande-update.
+   */
+  private uploadPendingPieceJointesThenNavigate(otExterneId: number): void {
+    if (this.pendingPieceJointes.length === 0) {
+      this.router.navigate(['../', otExterneId, 'edit'], { relativeTo: this.activatedRoute });
+      return;
+    }
+
+    const uploads = this.pendingPieceJointes.map(p =>
+      this.pieceJointeService.uploadPieceJointeOtExterne(p.file, otExterneId, this.generateRandomId(10))
+    );
+
+    forkJoin(uploads).subscribe({
+      next: () => {
+        this.pendingPieceJointes = [];
+        this.router.navigate(['../', otExterneId, 'edit'], { relativeTo: this.activatedRoute });
+      },
+      error: () => {
+        alert("Certaines pièces jointes n'ont pas pu être envoyées. Vous pouvez réessayer depuis l'accordéon Pièces Jointes.");
+        this.router.navigate(['../', otExterneId, 'edit'], { relativeTo: this.activatedRoute });
+      },
     });
   }
 
@@ -638,6 +762,7 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
     // Autres responsables (sélection multiple) — chargés via la table de liaison
     if (otExterne.id !== null && otExterne.id !== undefined) {
       this.loadAutresResponsables(otExterne.id);
+      this.loadPieceJointes(otExterne.id);
     }
 
     // Libellé du bon de commande déjà lié — affichage uniquement
@@ -650,5 +775,414 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
         },
       });
     }
+  }
+
+  // ================================
+  // Pièces Jointes — chargement, upload — même logique que bon-commande-update
+  // ================================
+  private loadPieceJointes(otExterneId: number): void {
+    this.loadingPieceJointes = true;
+    this.pieceJointeService.findByOtExterne(otExterneId).subscribe({
+      next: res => {
+        this.pieceJointes = res.body ?? [];
+        this.loadingPieceJointes = false;
+      },
+      error: () => {
+        this.pieceJointes = [];
+        this.loadingPieceJointes = false;
+      },
+    });
+  }
+
+  removePieceJointe(id: number): void {
+    this.pieceJointeService.delete(id).subscribe({
+      next: () => {
+        this.pieceJointes = this.pieceJointes.filter(pj => pj.id !== id);
+      },
+    });
+  }
+
+  getPieceJointeFileUrl(id: number): string {
+    return this.pieceJointeService.getFileUrl(id);
+  }
+
+  downloadPieceJointe(pj: IPieceJointe): void {
+    this.pieceJointeService.getFile(pj.id).subscribe({
+      next: (blob: Blob) => {
+        saveAs(blob, pj.nomFichier + '.' + pj.type);
+      },
+      error: err => {
+        console.error('Download failed', err);
+        alert('Échec du téléchargement du fichier');
+      },
+    });
+  }
+
+  openRenamePjModal(pj: IPieceJointe): void {
+    this.pjToRename = pj;
+    this.renamePjNewName = pj.nomFichier || '';
+    this.renamePjError = '';
+    this.showRenamePjModal = true;
+  }
+
+  closeRenamePjModal(): void {
+    if (this.isRenamingPj) {
+      return;
+    }
+    this.showRenamePjModal = false;
+    this.pjToRename = null;
+    this.renamePjNewName = '';
+    this.renamePjError = '';
+  }
+
+  confirmRenamePj(): void {
+    if (!this.pjToRename) {
+      return;
+    }
+
+    const trimmed = (this.renamePjNewName || '').trim();
+    if (!trimmed) {
+      this.renamePjError = 'Le nom ne peut pas être vide';
+      return;
+    }
+
+    this.isRenamingPj = true;
+    this.renamePjError = '';
+
+    this.pieceJointeService.renamePieceJointe(this.pjToRename.id, trimmed).subscribe({
+      next: () => {
+        this.isRenamingPj = false;
+        const idx = this.pieceJointes.findIndex(p => p.id === this.pjToRename!.id);
+        if (idx >= 0) {
+          this.pieceJointes[idx] = { ...this.pieceJointes[idx], nomFichier: trimmed };
+        }
+        if (this.selectedPjForPreview?.id === this.pjToRename!.id) {
+          this.selectedPjForPreview = { ...this.selectedPjForPreview, nomFichier: trimmed };
+        }
+        this.closeRenamePjModal();
+      },
+      error: err => {
+        this.isRenamingPj = false;
+        console.error('Erreur renommage PJ', err);
+        this.renamePjError = 'Erreur lors du renommage';
+      },
+    });
+  }
+
+  togglePjPreview(pj: IPieceJointe): void {
+    if (this.selectedPjForPreview && this.selectedPjForPreview.id === pj.id) {
+      this.selectedPjForPreview = null;
+    } else {
+      this.selectedPjForPreview = pj;
+    }
+  }
+
+  closePjPreview(): void {
+    this.selectedPjForPreview = null;
+  }
+
+  isImagePj(pj: IPieceJointe): boolean {
+    const t = (pj.type || '').toLowerCase();
+    return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(t);
+  }
+
+  isPdfPj(pj: IPieceJointe): boolean {
+    return (pj.type || '').toLowerCase() === 'pdf';
+  }
+
+  getSafePjUrl(id: number): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(this.getPieceJointeFileUrl(id));
+  }
+
+  private generateRandomId(length = 8): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
+  onFileSelected(event: any): void {
+    const file: File = event.target.files[0];
+    if (!file) {
+      return;
+    }
+    this.uploadFile(file);
+    event.target.value = '';
+  }
+
+  private uploadFile(file: File): void {
+    const otExterneId = this.otExterne?.id;
+
+    // OT externe pas encore enregistré : on met le fichier de côté,
+    // il sera réellement envoyé juste après le premier enregistrement (cf. onSaveSuccess).
+    if (otExterneId === null || otExterneId === undefined) {
+      this.stagePendingPieceJointe(file);
+      return;
+    }
+
+    const uniqueName = this.generateRandomId(10);
+    this.uploadingPieceJointe = true;
+
+    this.pieceJointeService.uploadPieceJointeOtExterne(file, otExterneId, uniqueName).subscribe({
+      next: pj => {
+        this.pieceJointes = [pj, ...this.pieceJointes];
+        this.uploadingPieceJointe = false;
+      },
+      error: () => {
+        this.uploadingPieceJointe = false;
+        alert('Échec du téléchargement du fichier');
+      },
+    });
+  }
+
+  private stagePendingPieceJointe(file: File): void {
+    const lastDot = file.name.lastIndexOf('.');
+    const displayName = lastDot > 0 ? file.name.substring(0, lastDot) : file.name;
+    const extension = lastDot > 0 ? file.name.substring(lastDot + 1) : '';
+
+    this.pendingPieceJointes = [{ tempId: this.generateRandomId(10), file, displayName, extension }, ...this.pendingPieceJointes];
+  }
+
+  removePendingPieceJointe(tempId: string): void {
+    this.pendingPieceJointes = this.pendingPieceJointes.filter(p => p.tempId !== tempId);
+  }
+
+  // ================================
+  // Scan PjCare — même logique que bon-commande-update
+  // ================================
+  openScanModal(content: any): void {
+    this.scanPreview = null;
+    this.scanError = null;
+    this.isMerging = false;
+    this.currentDocumentPages = [];
+
+    const hasSavedSettings = this.scanSettingsService.hasSettings();
+    this.scanAccordionStates['scanSource'] = !hasSavedSettings;
+    this.scanAccordionStates['scanParams'] = !hasSavedSettings;
+
+    this.loadScanSettings();
+    this.checkPjCare();
+    this.modalService.open(content, { size: 'lg', windowClass: 'scan-modal-window' });
+  }
+
+  private loadScanSettings(): void {
+    const s = this.scanSettingsService.load();
+    this.scanFormat = s.scanFormat;
+    this.scanDpi = s.scanDpi;
+    this.scanQuality = s.scanQuality;
+    this.scanBitdepth = s.scanBitdepth;
+    this.scanDuplex = s.scanDuplex;
+    this.scanExcludeBlank = s.scanExcludeBlank;
+    this.scanBlankThreshold = s.scanBlankThreshold;
+    this.scanCoverageThreshold = s.scanCoverageThreshold;
+    this._pendingDriverFromCookie = s.selectedDriver;
+  }
+
+  saveScanSettings(): void {
+    this.scanSettingsService.save({
+      scanFormat: this.scanFormat,
+      scanDpi: this.scanDpi,
+      scanQuality: this.scanQuality,
+      scanBitdepth: this.scanBitdepth,
+      scanDuplex: this.scanDuplex,
+      scanExcludeBlank: this.scanExcludeBlank,
+      scanBlankThreshold: this.scanBlankThreshold,
+      scanCoverageThreshold: this.scanCoverageThreshold,
+      selectedDriver: this.selectedDriver as string,
+    });
+  }
+
+  resetScanSettings(): void {
+    this.scanSettingsService.reset();
+    this.scanFormat = 'pdf';
+    this.scanDpi = 150;
+    this.scanQuality = 75;
+    this.scanBitdepth = 'color';
+    this.scanDuplex = false;
+    this.scanExcludeBlank = false;
+    this.scanBlankThreshold = 240;
+    this.scanCoverageThreshold = 5;
+  }
+
+  checkPjCare(): void {
+    this.loadingScanners = true;
+    this.loadingDrivers = true;
+
+    this.pjCareService.getHealth().subscribe({
+      next: res => {
+        if (res && res.status === 200) {
+          this.pjcareAvailable = true;
+          this.pjCareService.getDrivers().subscribe({
+            next: driverRes => {
+              this.availableDrivers = driverRes.drivers || [];
+              const defaultKey = res.defaultDriver || (this.availableDrivers[0]?.key ?? '');
+
+              const cookieDriver = this._pendingDriverFromCookie;
+              const cookieDriverExists = cookieDriver ? this.availableDrivers.some(d => d.key === cookieDriver) : false;
+
+              this.selectedDriver = (cookieDriverExists ? cookieDriver : defaultKey) as ScanDriver;
+              this._pendingDriverFromCookie = '';
+              this.loadingDrivers = false;
+              this.loadScannersForDriver(this.selectedDriver as ScanDriver);
+            },
+            error: () => {
+              this.availableDrivers = [];
+              this.loadingDrivers = false;
+              this.loadScannersForDriver(undefined);
+            },
+          });
+        } else {
+          this.pjcareAvailable = false;
+          this.loadingScanners = false;
+          this.loadingDrivers = false;
+        }
+      },
+      error: () => {
+        this.pjcareAvailable = false;
+        this.loadingScanners = false;
+        this.loadingDrivers = false;
+      },
+    });
+  }
+
+  loadScannersForDriver(driver?: ScanDriver): void {
+    this.loadingScanners = true;
+    this.scanners = [];
+    this.selectedScanner = '';
+
+    this.pjCareService.getScanners(driver).subscribe({
+      next: scanRes => {
+        this.scanners = scanRes.scanners || [];
+        if (this.scanners.length > 0) {
+          this.selectedScanner = this.scanners[0];
+        }
+        this.loadingScanners = false;
+      },
+      error: () => {
+        this.scanners = [];
+        this.loadingScanners = false;
+      },
+    });
+  }
+
+  onDriverChange(): void {
+    this.scanPreview = null;
+    this.scanError = null;
+    this.loadScannersForDriver((this.selectedDriver as ScanDriver) || undefined);
+  }
+
+  launchScan(): void {
+    this.isScanning = true;
+    this.scanError = null;
+    this.scanPreview = null;
+
+    this.saveScanSettings();
+
+    this.pjCareService
+      .scan({
+        source: this.selectedScanner,
+        driver: (this.selectedDriver as ScanDriver) || undefined,
+        format: this.scanFormat as any,
+        dpi: this.scanDpi,
+        jpegquality: this.scanQuality,
+        bitdepth: this.scanBitdepth,
+        duplex: this.scanDuplex,
+        name: 'ot-externe',
+        excludeBlank: this.scanExcludeBlank,
+        blankThreshold: this.scanBlankThreshold,
+        coverageThreshold: this.scanCoverageThreshold,
+      })
+      .subscribe({
+        next: result => {
+          this.isScanning = false;
+          if (result.status === 200) {
+            const preview = this.scanFormat !== 'pdf' ? `data:image/${this.scanFormat};base64,${result.data}` : null;
+            this.scanPreview = preview ?? 'pdf';
+
+            const page: ScannedPage = {
+              data: result.data,
+              format: result.format || this.scanFormat,
+              preview,
+              pageNumber: this.currentDocumentPages.length + 1,
+            };
+            this.currentDocumentPages.push(page);
+          } else {
+            this.scanError = result.error || 'Erreur inconnue';
+          }
+        },
+        error: () => {
+          this.isScanning = false;
+          this.scanError = 'PjCare inaccessible. Vérifiez que le service tourne.';
+        },
+      });
+  }
+
+  removePage(index: number): void {
+    this.currentDocumentPages.splice(index, 1);
+    this.currentDocumentPages.forEach((p, i) => (p.pageNumber = i + 1));
+    if (this.currentDocumentPages.length === 0) {
+      this.scanPreview = null;
+    }
+  }
+
+  attachScanResult(modal: any): void {
+    if (this.currentDocumentPages.length === 0) {
+      return;
+    }
+
+    // Remarque : si l'OT externe n'est pas encore enregistré, _attachRawResult()
+    // → uploadFile() met le scan en attente au lieu de l'envoyer immédiatement.
+
+    if (this.currentDocumentPages.length === 1) {
+      const p = this.currentDocumentPages[0];
+      this._attachRawResult(p.data, this.scanFormat, modal);
+      return;
+    }
+
+    this.isMerging = true;
+    this.scanError = null;
+
+    this.pjCareService
+      .mergePages({
+        pages: this.currentDocumentPages.map(p => ({ data: p.data, format: p.format })),
+        outputFormat: this.scanFormat as any,
+        jpegquality: this.scanQuality,
+        name: 'ot-externe',
+      })
+      .subscribe({
+        next: result => {
+          this.isMerging = false;
+          if (result.status === 200) {
+            this._attachRawResult(result.data, result.format, modal);
+          } else {
+            this.scanError = result.error || 'Erreur lors de la fusion des pages';
+          }
+        },
+        error: () => {
+          this.isMerging = false;
+          this.scanError = 'Erreur lors de la fusion des pages';
+        },
+      });
+  }
+
+  private _attachRawResult(base64: string, format: string, modal: any): void {
+    const mimeType = format === 'pdf' ? 'application/pdf' : `image/${format}`;
+    const byteString = atob(base64);
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    const blob = new Blob([ab], { type: mimeType });
+    const filename = `scan-${dayjs().format('YYYYMMDD-HHmmss')}.${format}`;
+    const file = new File([blob], filename, { type: mimeType });
+
+    this.uploadFile(file);
+
+    this.currentDocumentPages = [];
+    this.scanPreview = null;
+    modal.close();
   }
 }

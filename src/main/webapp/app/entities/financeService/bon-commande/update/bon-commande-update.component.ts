@@ -332,9 +332,37 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
     this.loadClientInfo(clientId);
     this.loadClientCommandeInfo(affaire.clientCommande ?? null);
+    this.applyResponsableFromAffaire(affaire);
 
     // Un nouveau projet a été choisi : la sélection précédente ne correspond plus à ce projet
     this.chosenArticles = [];
+  }
+
+  /**
+   * Pré-remplit le champ "Responsable" du bon de commande avec le responsable
+   * projet déjà défini sur l'affaire sélectionnée (IAffaire.responsableProjetId),
+   * en le proposant comme valeur par défaut (l'utilisateur peut ensuite la changer).
+   */
+  private applyResponsableFromAffaire(affaire: IAffaire): void {
+    const responsableProjetId = affaire.responsableProjetId;
+
+    if (responsableProjetId === null || responsableProjetId === undefined || responsableProjetId === '') {
+      return;
+    }
+
+    const parsedId = Number(responsableProjetId);
+    if (Number.isNaN(parsedId)) {
+      return;
+    }
+
+    this.bonCommandeService.findResponsableById(parsedId).subscribe({
+      next: res => {
+        const contact = res.body ?? null;
+        if (contact) {
+          this.onResponsableSelectChange(contact);
+        }
+      },
+    });
   }
 
   /**
