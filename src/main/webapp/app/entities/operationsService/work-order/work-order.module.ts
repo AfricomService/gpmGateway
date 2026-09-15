@@ -7,9 +7,10 @@ import { WorkOrderDetailComponent } from './detail/work-order-detail.component';
 import { WorkOrderUpdateComponent } from './update/work-order-update.component';
 import { WorkOrderDeleteDialogComponent } from './delete/work-order-delete-dialog.component';
 import { WorkOrderRoutingModule } from './route/work-order-routing.module';
+import { ProjectServicePieceJointeModule } from 'app/entities/projectService/piece-jointe/piece-jointe.module';
 
 @NgModule({
-  imports: [SharedModule, FormsModule, NgSelectModule, WorkOrderRoutingModule],
+  imports: [SharedModule, FormsModule, NgSelectModule, WorkOrderRoutingModule, ProjectServicePieceJointeModule],
   declarations: [WorkOrderComponent, WorkOrderDetailComponent, WorkOrderUpdateComponent, WorkOrderDeleteDialogComponent],
 })
 export class OperationsServiceWorkOrderModule {}

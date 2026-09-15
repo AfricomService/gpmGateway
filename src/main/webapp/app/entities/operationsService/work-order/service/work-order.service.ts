@@ -36,6 +36,8 @@ export type EntityArrayResponseType = HttpResponse<IWorkOrder[]>;
 export class WorkOrderService {
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/work-orders', 'operationsservice');
 
+  protected numsequentielleResourceUrl = this.applicationConfigService.getEndpointFor('api/numsequentielles', 'projectservice');
+
   constructor(protected http: HttpClient, protected applicationConfigService: ApplicationConfigService) {}
 
   create(workOrder: NewWorkOrder): Observable<EntityResponseType> {
@@ -74,6 +76,17 @@ export class WorkOrderService {
 
   delete(id: number): Observable<HttpResponse<{}>> {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
+  }
+
+  /**
+   * Génère et incrémente l'identifiant unique du work order (ex: WO-0001-26).
+   * L'endpoint renvoie du texte brut, d'où responseType: 'text'.
+   */
+  generateIdentifiantWorkOrder(): Observable<HttpResponse<string>> {
+    return this.http.post(`${this.numsequentielleResourceUrl}/generate-identifiant-work-order`, null, {
+      observe: 'response',
+      responseType: 'text',
+    });
   }
 
   getWorkOrderIdentifier(workOrder: Pick<IWorkOrder, 'id'>): number {

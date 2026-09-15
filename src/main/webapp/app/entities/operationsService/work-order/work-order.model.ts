@@ -23,8 +23,11 @@ export interface IWorkOrder {
   statut?: StatutWO | null;
   materielUtilise?: string | null;
   lieu?: string | null;
+  villeId?: number | null;
+  zoneId?: number | null;
   responsableId?: number | null;
   coordinateur?: number | null;
+  identifiantUnique?: string | null;
   createdAt?: dayjs.Dayjs | null;
   updatedAt?: dayjs.Dayjs | null;
   createdBy?: string | null;
