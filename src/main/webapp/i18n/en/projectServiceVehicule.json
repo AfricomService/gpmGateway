@@ -15,30 +15,31 @@
         "title": "Vehicule"
       },
       "id": "ID",
-      "marque": "Marque",
+      "marque": "Brand",
       "type": "Type",
-      "matricule": "Matricule",
-      "nbPlaces": "Nb Places",
-      "numCarteGrise": "Num Carte Grise",
-      "dateCirculation": "Date Circulation",
-      "typeCarburant": "Type Carburant",
-      "chargeFixe": "Charge Fixe",
-      "tauxConsommation": "Taux Consommation",
-      "statut": "Statut",
+      "matricule": "License Plate",
+      "nbPlaces": "Seats",
+      "numCarteGrise": "Registration Card Number",
+      "dateCirculation": "Circulation Date",
+      "typeCarburant": "Fuel Type",
+      "chargeFixe": "Fixed Charge",
+      "tauxConsommation": "Consumption Rate",
+      "statut": "Status",
+      "affectation": "Assignment",
       "createdAt": "Created At",
       "updatedAt": "Updated At",
       "createdBy": "Created By",
       "createdByUserLogin": "Created By User Login",
       "updatedBy": "Updated By",
       "updatedByUserLogin": "Updated By User Login",
-      "agence": "Agence"
+      "agence": "Agency"
     }
   },
   "projectServiceApp": {
     "projectServiceVehicule": {
-      "created": "A new Vehicule is created with identifier {{ param }}",
-      "updated": "A Vehicule is updated with identifier {{ param }}",
-      "deleted": "A Vehicule is deleted with identifier {{ param }}"
+      "created": "A new Vehicule has been created with identifier {{ param }}",
+      "updated": "The Vehicule with identifier {{ param }} has been updated",
+      "deleted": "The Vehicule with identifier {{ param }} has been deleted"
     }
   }
 }

@@ -54,6 +54,14 @@ export class NumsequentielleService {
     });
   }
 
+  previewFormat(format: string, codeNumSeq: string): Observable<HttpResponse<string>> {
+    const params = new URLSearchParams({ format, codeNumSeq }).toString();
+    return this.http.post<string>(`${this.resourceUrl}/preview-format?${params}`, null, {
+      observe: 'response',
+      responseType: 'text' as 'json',
+    });
+  }
+
   getNumsequentielleIdentifier(numsequentielle: Pick<INumsequentielle, 'id'>): number {
     return numsequentielle.id;
   }

@@ -1,5 +1,6 @@
 import dayjs from 'dayjs/esm';
 import { StatutVehicule } from 'app/entities/enumerations/statut-vehicule.model';
+import { IAgence } from 'app/entities/projectService/agence/agence.model';
 
 export interface IVehicule {
   id: number;
@@ -19,6 +20,7 @@ export interface IVehicule {
   createdByUserLogin?: string | null;
   updatedBy?: string | null;
   updatedByUserLogin?: string | null;
+  agence?: IAgence | null;
 }
 
 export type NewVehicule = Omit<IVehicule, 'id'> & { id: null };

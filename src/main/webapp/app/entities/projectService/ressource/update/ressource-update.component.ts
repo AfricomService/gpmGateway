@@ -10,6 +10,8 @@ import { RessourceService } from '../service/ressource.service';
 import { ITypeRessource } from 'app/entities/projectService/type-ressource/type-ressource.model';
 import { TypeRessourceService } from 'app/entities/projectService/type-ressource/service/type-ressource.service';
 import { IDetailRessource } from 'app/entities/projectService/detail-ressource/detail-ressource.model';
+import { IAgence } from 'app/entities/projectService/agence/agence.model';
+import { AgenceService } from 'app/entities/projectService/agence/service/agence.service';
 
 type AccordionSection = 'general' | 'detail' | 'maintenance';
 
@@ -30,6 +32,9 @@ export class RessourceUpdateComponent implements OnInit {
   // === Liste des types ressource (pour le select) ===
   typeRessources: ITypeRessource[] = [];
 
+  // === Liste des agences (pour le select) ===
+  agences: IAgence[] = [];
+
   // === Détails dynamiques (dépendent du Type Ressource sélectionné) ===
   detailRessourceFields: IDetailRessource[] = [];
   detailRessourceValues: { [code: string]: any } = {};
@@ -45,6 +50,7 @@ export class RessourceUpdateComponent implements OnInit {
     protected ressourceFormService: RessourceFormService,
     protected activatedRoute: ActivatedRoute,
     protected typeRessourceService: TypeRessourceService,
+    protected agenceService: AgenceService,
     protected router: Router
   ) {}
 
@@ -65,6 +71,12 @@ export class RessourceUpdateComponent implements OnInit {
         if (currentTypeId) {
           this.loadDetailRessourceFields(currentTypeId);
         }
+      },
+    });
+
+    this.agenceService.query().subscribe({
+      next: (res: HttpResponse<IAgence[]>) => {
+        this.agences = res.body ?? [];
       },
     });
   }

@@ -16,6 +16,10 @@ export class NumsequentielleUpdateComponent implements OnInit {
   isSaving = false;
   numsequentielle: INumsequentielle | null = null;
 
+  previewResult: string | null = null;
+  previewError: string | null = null;
+  isTestingFormat = false;
+
   editForm: NumsequentielleFormGroup = this.numsequentielleFormService.createNumsequentielleFormGroup();
 
   constructor(
@@ -35,6 +39,32 @@ export class NumsequentielleUpdateComponent implements OnInit {
 
   previousState(): void {
     window.history.back();
+  }
+
+  testerFormat(): void {
+    const format = this.editForm.get('format')?.value;
+    const codeNumSeq = this.editForm.get('codeNumSeq')?.value;
+
+    this.previewResult = null;
+    this.previewError = null;
+
+    if (!format || !codeNumSeq) {
+      this.previewError = 'Renseignez le Code Num Seq et le Format avant de tester.';
+      return;
+    }
+
+    this.isTestingFormat = true;
+
+    this.numsequentielleService.previewFormat(format, codeNumSeq).subscribe({
+      next: res => {
+        this.previewResult = res.body;
+        this.isTestingFormat = false;
+      },
+      error: () => {
+        this.previewError = 'Format invalide — vérifiez la syntaxe FreeMarker.';
+        this.isTestingFormat = false;
+      },
+    });
   }
 
   save(): void {

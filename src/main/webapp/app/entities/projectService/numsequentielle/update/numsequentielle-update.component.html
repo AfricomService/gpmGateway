@@ -47,7 +47,34 @@
 
         <div class="row mb-3">
           <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceNumsequentielle.format" for="field_format">Format</label>
-          <input type="text" class="form-control" name="format" id="field_format" data-cy="format" formControlName="format" />
+          <input
+            type="text"
+            class="form-control"
+            name="format"
+            id="field_format"
+            data-cy="format"
+            formControlName="format"
+            placeholder="Ex: PREFIX-numero-annee (voir l'aide ci-dessous)"
+          />
+          <small class="form-text text-muted">
+            Template FreeMarker optionnel. Laissez vide pour utiliser le format historique (<code>PREFIX-0001-26</code>). Variables
+            disponibles :
+            <code>prefix</code>, <code>numero</code> (brut), <code>annee</code> (2 chiffres), <code>anneeComplete</code> (4 chiffres),
+            <code>codeNumSeq</code>. Exemple :
+            <code>&#36;&#123;prefix&#125;-&#36;&#123;numero?string(&quot;00000&quot;)&#125;-&#36;&#123;annee&#125;</code> →
+            <code>WO-00012-26</code>
+          </small>
+          <button type="button" class="btn btn-outline-secondary btn-sm mt-2" [disabled]="isTestingFormat" (click)="testerFormat()">
+            <fa-icon icon="play" *ngIf="!isTestingFormat"></fa-icon>
+            <span class="spinner-border spinner-border-sm" *ngIf="isTestingFormat"></span>
+            &nbsp;Tester le format
+          </button>
+          <div *ngIf="previewResult" class="alert alert-success mt-2 mb-0 py-2">
+            Résultat : <strong>{{ previewResult }}</strong>
+          </div>
+          <div *ngIf="previewError" class="alert alert-danger mt-2 mb-0 py-2">
+            {{ previewError }}
+          </div>
         </div>
 
         <div class="row mb-3">

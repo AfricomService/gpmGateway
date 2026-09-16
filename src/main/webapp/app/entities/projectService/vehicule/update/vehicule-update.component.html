@@ -134,6 +134,7 @@
                     {{ 'gpmGatewayApp.StatutVehicule.' + statutVehicule | translate }}
                   </option>
                 </select>
+                <!-- NOUVEAU -->
                 <div *ngIf="editForm.get('statut')!.invalid && (editForm.get('statut')!.dirty || editForm.get('statut')!.touched)">
                   <small
                     class="form-text text-danger"
@@ -143,6 +144,25 @@
                     Ce champ est obligatoire.
                   </small>
                 </div>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold" for="field_agence">
+                  <span jhiTranslate="gpmGatewayApp.projectServiceVehicule.agence">Agence</span>
+                </label>
+                <select
+                  class="form-control"
+                  id="field_agence"
+                  data-cy="agence"
+                  name="agence"
+                  formControlName="agence"
+                  [compareWith]="compareAgence"
+                >
+                  <option [ngValue]="null"></option>
+                  <option [ngValue]="agenceOption" *ngFor="let agenceOption of agencesSharedCollection">
+                    {{ agenceOption.designation }}
+                  </option>
+                </select>
               </div>
             </div>
           </div>
