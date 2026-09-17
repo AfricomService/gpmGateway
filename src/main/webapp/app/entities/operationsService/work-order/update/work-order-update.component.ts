@@ -19,11 +19,15 @@ import { SiteService } from 'app/entities/projectService/site/service/site.servi
 import { BonCommandeService } from 'app/entities/financeService/bon-commande/service/bon-commande.service';
 import { IContactSociete } from 'app/entities/projectService/societe/contact-societe.model';
 import { WorkOrderTechniciensService } from '../service/work-order-techniciens.service';
+import { IVehicule } from 'app/entities/projectService/vehicule/vehicule.model';
+import { VehiculeService } from 'app/entities/projectService/vehicule/service/vehicule.service';
+import { WorkOrderVehiculeService } from '../service/work-order-vehicule.service';
 import { forkJoin } from 'rxjs';
 
 import { AffaireSelectorModalComponent } from 'app/entities/financeService/bon-commande/affaire-selector-modal/affaire-selector-modal.component';
 import { SiteSelectorModalComponent } from 'app/entities/financeService/bon-commande/site-selector-modal/site-selector-modal.component';
 import { ContactSelectorModalComponent } from 'app/entities/financeService/bon-commande/contact-selector-modal/contact-selector-modal.component';
+import { VehiculeSelectorModalComponent } from 'app/entities/operationsService/work-order/vehicule-selector-modal/vehicule-selector-modal.component';
 import { IPieceJointe } from 'app/entities/projectService/piece-jointe/piece-jointe.model';
 import { PieceJointeService } from 'app/entities/projectService/piece-jointe/service/piece-jointe.service';
 import { PjCareService, PjCareDriverInfo, ScanDriver, ScannedPage } from 'app/entities/projectService/piece-jointe/service/pjcare.service';
@@ -114,6 +118,15 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   private technicienErrorTimeoutId?: ReturnType<typeof setTimeout>;
 
   // ================================
+  // Véhicules (sélection multiple, persistée via WorkOrderVehicule) — même logique que les Techniciens
+  // ================================
+  vehicules: IVehicule[] = [];
+  selectedVehicules: IVehicule[] = [];
+  loadingVehicules = false;
+  vehiculeError = '';
+  private vehiculeErrorTimeoutId?: ReturnType<typeof setTimeout>;
+
+  // ================================
   // Souscriptions Mission De Nuit / Hebergement (reset du compteur quand désactivé)
   // ================================
   private missionDeNuitSubscription?: Subscription;
@@ -176,6 +189,8 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     protected siteService: SiteService,
     protected bonCommandeService: BonCommandeService,
     protected workOrderTechniciensService: WorkOrderTechniciensService,
+    protected vehiculeService: VehiculeService,
+    protected workOrderVehiculeService: WorkOrderVehiculeService,
     protected pieceJointeService: PieceJointeService,
     protected pjCareService: PjCareService,
     protected scanSettingsService: ScanSettingsService,
@@ -187,6 +202,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadResponsables();
     this.loadTechniciens();
+    this.loadVehicules();
     this.loadAffaires(''); // Pré-charge la liste des projets dès l'ouverture du formulaire
 
     // On utilise valueChanges plutôt que (change) dans le template : cela garantit
@@ -247,6 +263,9 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.hebergementSubscription?.unsubscribe();
     if (this.technicienErrorTimeoutId) {
       clearTimeout(this.technicienErrorTimeoutId);
+    }
+    if (this.vehiculeErrorTimeoutId) {
+      clearTimeout(this.vehiculeErrorTimeoutId);
     }
   }
 
@@ -490,6 +509,8 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
 
   compareResponsable = (a: IContactSociete | null, b: IContactSociete | null): boolean => (a && b ? a.id === b.id : a === b);
 
+  compareVehicule = (a: IVehicule | null, b: IVehicule | null): boolean => (a && b ? a.id === b.id : a === b);
+
   private loadResponsableLabel(responsableId: number): void {
     this.bonCommandeService.findResponsableById(responsableId).subscribe({
       next: res => {
@@ -656,6 +677,119 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       .catch(() => {});
   }
 
+  // ================================
+  // Véhicules (sélection multiple, persistée via WorkOrderVehicule) — même logique que les Techniciens
+  // ================================
+  private loadVehicules(): void {
+    this.loadingVehicules = true;
+
+    this.vehiculeService.query().subscribe({
+      next: res => {
+        this.vehicules = res.body ?? [];
+        this.loadingVehicules = false;
+      },
+      error: () => {
+        this.vehicules = [];
+        this.loadingVehicules = false;
+      },
+    });
+  }
+
+  onVehiculeSelectChange(vehicules: IVehicule[] | null): void {
+    const nouvelleListe = vehicules ?? [];
+    const ancienneListe = this.selectedVehicules;
+    const ajouts = nouvelleListe.filter(v => !ancienneListe.some(a => a.id === v.id));
+
+    this.selectedVehicules = nouvelleListe;
+
+    if (ajouts.length === 0) {
+      return;
+    }
+
+    const idsAjoutes = ajouts.map(v => v.id).filter((id): id is number => id !== null && id !== undefined);
+
+    this.workOrderVehiculeService.checkDisponibilite(idsAjoutes, this.workOrder?.id ?? null).subscribe({
+      next: res => {
+        const conflicts = res.body ?? [];
+        if (conflicts.length === 0) {
+          return;
+        }
+
+        const idsEnConflit = conflicts.map(c => c.vehiculeId);
+        this.selectedVehicules = this.selectedVehicules.filter(v => !idsEnConflit.includes(v.id!));
+
+        const messages = conflicts.map(conflict => {
+          const vehicule = ajouts.find(v => v.id === conflict.vehiculeId);
+          const label = vehicule ? `${vehicule.marque} ${vehicule.type} (${vehicule.matricule})` : 'Ce véhicule';
+          const dateFin = conflict.dateHeureFinPrev ? new Date(conflict.dateHeureFinPrev).toLocaleString() : '';
+
+          return `${label} est déjà affecté au work order ${
+            conflict.numFicheIntervention ?? conflict.workOrderId
+          } (mission en cours jusqu'au ${dateFin}).`;
+        });
+
+        this.showVehiculeError(messages.join('\n'));
+      },
+    });
+  }
+
+  private showVehiculeError(message: string): void {
+    this.vehiculeError = message;
+
+    if (this.vehiculeErrorTimeoutId) {
+      clearTimeout(this.vehiculeErrorTimeoutId);
+    }
+
+    this.vehiculeErrorTimeoutId = setTimeout(() => {
+      this.vehiculeError = '';
+      this.vehiculeErrorTimeoutId = undefined;
+    }, 4000);
+  }
+
+  private loadAutresVehicules(workOrderId: number): void {
+    this.workOrderVehiculeService.findByWorkOrder(workOrderId).subscribe({
+      next: res => {
+        const links = res.body ?? [];
+        const vehiculeIds = links.map(l => l.vehiculeId).filter((id): id is number => id !== null && id !== undefined);
+
+        if (vehiculeIds.length === 0) {
+          this.selectedVehicules = [];
+          return;
+        }
+
+        forkJoin(vehiculeIds.map(id => this.vehiculeService.find(id))).subscribe({
+          next: responses => {
+            this.selectedVehicules = responses.map(r => r.body).filter((v): v is IVehicule => v !== null);
+          },
+        });
+      },
+      error: () => {
+        this.selectedVehicules = [];
+      },
+    });
+  }
+
+  openVehiculeModal(): void {
+    const modalRef = this.modalService.open(VehiculeSelectorModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'vehicule-selector-modal-window',
+    });
+
+    modalRef.componentInstance.modalTitle = 'Sélectionner un ou plusieurs véhicules';
+    modalRef.componentInstance.multiple = true;
+    modalRef.componentInstance.initialSelection = this.selectedVehicules;
+    modalRef.componentInstance.checkDisponibilite = true;
+    modalRef.componentInstance.excludeWorkOrderId = this.workOrder?.id ?? null;
+
+    modalRef.result
+      .then((vehicules: IVehicule[]) => {
+        this.selectedVehicules = vehicules ?? [];
+      })
+      .catch(() => {});
+  }
+
   openResponsableModal(): void {
     const modalRef = this.modalService.open(ContactSelectorModalComponent, {
       size: 'lg',
@@ -795,13 +929,16 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     }
 
     const contactSocieteIds = this.selectedTechniciens.map(c => c.id).filter((id): id is number => id !== null && id !== undefined);
+    const vehiculeIds = this.selectedVehicules.map(v => v.id).filter((id): id is number => id !== null && id !== undefined);
 
-    this.workOrderTechniciensService.replaceForWorkOrder(workOrderId, contactSocieteIds).subscribe({
+    forkJoin([
+      this.workOrderTechniciensService.replaceForWorkOrder(workOrderId, contactSocieteIds),
+      this.workOrderVehiculeService.replaceForWorkOrder(workOrderId, vehiculeIds),
+    ]).subscribe({
       next: () => this.uploadPendingPieceJointesThenNavigate(workOrderId),
       error: () => this.uploadPendingPieceJointesThenNavigate(workOrderId),
     });
   }
-
   /**
    * Envoie les pièces jointes mises en attente juste après le premier enregistrement
    * du work order (qui vient de recevoir son id) — même logique que ot-externe-update.
@@ -890,9 +1027,10 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       this.loadCoordinateurLabel(Number(coordinateurId));
     }
 
-    // Techniciens
+    // Techniciens / Véhicules
     if (workOrder.id !== null && workOrder.id !== undefined) {
       this.loadAutresTechniciens(workOrder.id);
+      this.loadAutresVehicules(workOrder.id);
       this.loadPieceJointes(workOrder.id);
     }
   }

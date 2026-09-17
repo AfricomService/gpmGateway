@@ -286,6 +286,52 @@
                 />
               </div>
             </div>
+
+            <div class="row">
+              <div class="col-12 mb-3">
+                <label class="form-label" for="field_vehicules">Véhicules</label>
+
+                <div class="cu-affaire-selector">
+                  <ng-select
+                    id="field_vehicules"
+                    data-cy="vehicules"
+                    name="vehicules"
+                    class="custom-ng-select"
+                    [items]="vehicules"
+                    [compareWith]="compareVehicule"
+                    [searchable]="true"
+                    [clearable]="true"
+                    [multiple]="true"
+                    [closeOnSelect]="false"
+                    [loading]="loadingVehicules"
+                    placeholder="Rechercher un ou plusieurs véhicules..."
+                    notFoundText="Aucun véhicule trouvé"
+                    loadingText="Chargement..."
+                    [ngModel]="selectedVehicules"
+                    [ngModelOptions]="{ standalone: true }"
+                    (change)="onVehiculeSelectChange($event)"
+                  >
+                    <ng-template ng-label-tmp let-item="item"> {{ item.marque }} {{ item.type }} ({{ item.matricule }}) </ng-template>
+                    <ng-template ng-option-tmp let-item="item">
+                      <div>{{ item.marque }} {{ item.type }}</div>
+                      <small class="text-muted">{{ item.matricule }}</small>
+                    </ng-template>
+                  </ng-select>
+
+                  <button
+                    type="button"
+                    class="btn-cu-affaire-modal"
+                    title="Rechercher un véhicule"
+                    aria-label="Rechercher un véhicule"
+                    (click)="openVehiculeModal()"
+                  >
+                    <fa-icon icon="search"></fa-icon>
+                  </button>
+                </div>
+
+                <div *ngIf="vehiculeError" class="cu-technicien-error">{{ vehiculeError }}</div>
+              </div>
+            </div>
           </div>
         </div>
 
