@@ -110,6 +110,8 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   techniciens: IContactSociete[] = [];
   selectedTechniciens: IContactSociete[] = [];
   loadingTechniciens = false;
+  technicienError = '';
+  private technicienErrorTimeoutId?: ReturnType<typeof setTimeout>;
 
   // ================================
   // Souscriptions Mission De Nuit / Hebergement (reset du compteur quand désactivé)
@@ -243,6 +245,9 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.affaireSearch$.complete();
     this.missionDeNuitSubscription?.unsubscribe();
     this.hebergementSubscription?.unsubscribe();
+    if (this.technicienErrorTimeoutId) {
+      clearTimeout(this.technicienErrorTimeoutId);
+    }
   }
 
   // ================================
@@ -578,15 +583,32 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
         const idsEnConflit = conflicts.map(c => c.contactSocieteId);
         this.selectedTechniciens = this.selectedTechniciens.filter(t => !idsEnConflit.includes(t.id!));
 
-        const noms = ajouts
-          .filter(t => idsEnConflit.includes(t.id!))
-          .map(t => t.nomPrenom)
-          .join(', ');
+        const messages = conflicts.map(conflict => {
+          const technicien = ajouts.find(t => t.id === conflict.contactSocieteId);
+          const nom = technicien?.nomPrenom ?? 'Ce technicien';
+          const dateFin = conflict.dateHeureFinPrev ? new Date(conflict.dateHeureFinPrev).toLocaleString() : '';
 
-        // À remplacer par votre mécanisme d'alerte (jhiAlertService, toast, etc.)
-        window.alert(`Indisponible : ${noms} déjà affecté(s) à un work order en cours.`);
+          return `${nom} est déjà affecté au work order ${
+            conflict.numFicheIntervention ?? conflict.workOrderId
+          } (mission en cours jusqu'au ${dateFin}).`;
+        });
+
+        this.showTechnicienError(messages.join('\n'));
       },
     });
+  }
+
+  private showTechnicienError(message: string): void {
+    this.technicienError = message;
+
+    if (this.technicienErrorTimeoutId) {
+      clearTimeout(this.technicienErrorTimeoutId);
+    }
+
+    this.technicienErrorTimeoutId = setTimeout(() => {
+      this.technicienError = '';
+      this.technicienErrorTimeoutId = undefined;
+    }, 4000);
   }
 
   private loadAutresTechniciens(workOrderId: number): void {

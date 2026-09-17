@@ -560,6 +560,30 @@ textarea.cu-input {
   margin-bottom: 0.85rem;
 }
 
+/* ============ MESSAGE D'ERREUR TECHNICIEN (conflit de disponibilité) ============ */
+.cu-technicien-error {
+  color: #c0362c;
+  background: #fde2e1;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: pre-line;
+  animation: cu-technicien-error-fade 0.2s ease;
+}
+
+@keyframes cu-technicien-error-fade {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 // ============================================================
 // MODAL RENOMMER PJ
 // ============================================================
