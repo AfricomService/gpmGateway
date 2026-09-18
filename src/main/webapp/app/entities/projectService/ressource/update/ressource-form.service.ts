@@ -44,6 +44,7 @@ type RessourceFormGroupContent = {
   dateDerniereMaintenance: FormControl<RessourceFormRawValue['dateDerniereMaintenance']>;
   dateProchaineMaintenance: FormControl<RessourceFormRawValue['dateProchaineMaintenance']>;
   typeRessourceId: FormControl<RessourceFormRawValue['typeRessourceId']>;
+  agenceId: FormControl<RessourceFormRawValue['agenceId']>;
   statut: FormControl<RessourceFormRawValue['statut']>;
 };
 
@@ -72,6 +73,7 @@ export class RessourceFormService {
       dateDerniereMaintenance: new FormControl(ressourceRawValue.dateDerniereMaintenance),
       dateProchaineMaintenance: new FormControl(ressourceRawValue.dateProchaineMaintenance),
       typeRessourceId: new FormControl(ressourceRawValue.typeRessourceId),
+      agenceId: new FormControl(ressourceRawValue.agenceId),
       statut: new FormControl(ressourceRawValue.statut),
     });
   }

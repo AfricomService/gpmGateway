@@ -4,6 +4,7 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 import dayjs from 'dayjs/esm';
 import { DATE_TIME_FORMAT } from 'app/config/input.constants';
 import { IVehicule, NewVehicule } from '../vehicule.model';
+import { IAgence } from 'app/entities/projectService/agence/agence.model';
 
 /**
  * A partial Type with required key is used as form input.
@@ -48,6 +49,7 @@ type VehiculeFormGroupContent = {
   createdByUserLogin: FormControl<VehiculeFormRawValue['createdByUserLogin']>;
   updatedBy: FormControl<VehiculeFormRawValue['updatedBy']>;
   updatedByUserLogin: FormControl<VehiculeFormRawValue['updatedByUserLogin']>;
+  agence: FormControl<VehiculeFormRawValue['agence']>;
 };
 
 export type VehiculeFormGroup = FormGroup<VehiculeFormGroupContent>;
@@ -95,6 +97,7 @@ export class VehiculeFormService {
       createdByUserLogin: new FormControl(vehiculeRawValue.createdByUserLogin),
       updatedBy: new FormControl(vehiculeRawValue.updatedBy),
       updatedByUserLogin: new FormControl(vehiculeRawValue.updatedByUserLogin),
+      agence: new FormControl(vehiculeRawValue.agence),
     });
   }
 

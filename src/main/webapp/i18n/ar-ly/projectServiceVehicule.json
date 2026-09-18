@@ -2,43 +2,44 @@
   "gpmGatewayApp": {
     "projectServiceVehicule": {
       "home": {
-        "title": "Vehicules",
-        "refreshListLabel": "Refresh list",
-        "createLabel": "Create a new Vehicule",
-        "createOrEditLabel": "Create or edit a Vehicule",
-        "notFound": "No Vehicules found"
+        "title": "المركبات",
+        "refreshListLabel": "تحديث القائمة",
+        "createLabel": "إنشاء مركبة جديدة",
+        "createOrEditLabel": "إنشاء أو تعديل مركبة",
+        "notFound": "لم يتم العثور على أي مركبة"
       },
       "delete": {
-        "question": "Are you sure you want to delete Vehicule {{ id }}?"
+        "question": "هل أنت متأكد أنك تريد حذف المركبة {{ id }}؟"
       },
       "detail": {
-        "title": "Vehicule"
+        "title": "مركبة"
       },
-      "id": "ID",
-      "marque": "Marque",
-      "type": "Type",
-      "matricule": "Matricule",
-      "nbPlaces": "Nb Places",
-      "numCarteGrise": "Num Carte Grise",
-      "dateCirculation": "Date Circulation",
-      "typeCarburant": "Type Carburant",
-      "chargeFixe": "Charge Fixe",
-      "tauxConsommation": "Taux Consommation",
-      "statut": "Statut",
-      "createdAt": "Created At",
-      "updatedAt": "Updated At",
-      "createdBy": "Created By",
-      "createdByUserLogin": "Created By User Login",
-      "updatedBy": "Updated By",
-      "updatedByUserLogin": "Updated By User Login",
-      "agence": "Agence"
+      "id": "المعرف",
+      "marque": "الماركة",
+      "type": "النوع",
+      "matricule": "رقم التسجيل",
+      "nbPlaces": "عدد الأماكن",
+      "numCarteGrise": "رقم البطاقة الرمادية",
+      "dateCirculation": "تاريخ الدوران",
+      "typeCarburant": "نوع الوقود",
+      "chargeFixe": "الحمولة الثابتة",
+      "tauxConsommation": "معدل الاستهلاك",
+      "statut": "الحالة",
+      "affectation": "التخصيص",
+      "createdAt": "تاريخ الإنشاء",
+      "updatedAt": "تاريخ التحديث",
+      "createdBy": "أنشئ من قبل",
+      "createdByUserLogin": "معرف مستخدم المنشئ",
+      "updatedBy": "تم التحديث من قبل",
+      "updatedByUserLogin": "معرف مستخدم المحدّث",
+      "agence": "الوكالة"
     }
   },
   "projectServiceApp": {
     "projectServiceVehicule": {
-      "created": "A new Vehicule is created with identifier {{ param }}",
-      "updated": "A Vehicule is updated with identifier {{ param }}",
-      "deleted": "A Vehicule is deleted with identifier {{ param }}"
+      "created": "تم إنشاء مركبة جديدة بالمعرف {{ param }}",
+      "updated": "تم تحديث المركبة ذات المعرف {{ param }}",
+      "deleted": "تم حذف المركبة ذات المعرف {{ param }}"
     }
   }
 }

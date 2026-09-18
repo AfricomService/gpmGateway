@@ -75,7 +75,7 @@ export class BonCommandeComponent implements OnInit, OnDestroy {
   }
 
   onRowDoubleClick(bonCommande: IBonCommande): void {
-    this.router.navigate(['/bon-commande', bonCommande.id, 'edit']);
+    this.router.navigate(['/bon-commande', bonCommande.id, 'view']);
   }
 
   setViewMode(mode: 'grid' | 'list'): void {

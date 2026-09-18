@@ -8,6 +8,8 @@ import { VehiculeFormService, VehiculeFormGroup } from './vehicule-form.service'
 import { IVehicule } from '../vehicule.model';
 import { VehiculeService } from '../service/vehicule.service';
 import { StatutVehicule } from 'app/entities/enumerations/statut-vehicule.model';
+import { IAgence } from 'app/entities/projectService/agence/agence.model';
+import { AgenceService } from 'app/entities/projectService/agence/service/agence.service';
 
 type AccordionSection = 'general' | 'technique' | 'affectation';
 
@@ -21,6 +23,8 @@ export class VehiculeUpdateComponent implements OnInit {
   vehicule: IVehicule | null = null;
   statutVehiculeValues = Object.keys(StatutVehicule);
 
+  agencesSharedCollection: IAgence[] = [];
+
   editForm: VehiculeFormGroup = this.vehiculeFormService.createVehiculeFormGroup();
 
   // === Gestion de l'accordéon ===
@@ -29,8 +33,11 @@ export class VehiculeUpdateComponent implements OnInit {
   constructor(
     protected vehiculeService: VehiculeService,
     protected vehiculeFormService: VehiculeFormService,
+    protected agenceService: AgenceService,
     protected activatedRoute: ActivatedRoute
   ) {}
+
+  compareAgence = (o1: IAgence | null, o2: IAgence | null): boolean => this.agenceService.compareAgence(o1, o2);
 
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ vehicule }) => {
@@ -38,6 +45,8 @@ export class VehiculeUpdateComponent implements OnInit {
       if (vehicule) {
         this.updateForm(vehicule);
       }
+
+      this.loadRelationshipsOptions();
     });
   }
 
@@ -90,5 +99,18 @@ export class VehiculeUpdateComponent implements OnInit {
   protected updateForm(vehicule: IVehicule): void {
     this.vehicule = vehicule;
     this.vehiculeFormService.resetForm(this.editForm, vehicule);
+
+    this.agencesSharedCollection = this.agenceService.addAgenceToCollectionIfMissing<IAgence>(
+      this.agencesSharedCollection,
+      vehicule.agence
+    );
+  }
+
+  protected loadRelationshipsOptions(): void {
+    this.agenceService
+      .query()
+      .pipe(map((res: HttpResponse<IAgence[]>) => res.body ?? []))
+      .pipe(map((agences: IAgence[]) => this.agenceService.addAgenceToCollectionIfMissing<IAgence>(agences, this.vehicule?.agence)))
+      .subscribe((agences: IAgence[]) => (this.agencesSharedCollection = agences));
   }
 }

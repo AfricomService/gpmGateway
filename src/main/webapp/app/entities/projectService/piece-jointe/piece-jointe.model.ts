@@ -9,6 +9,7 @@ export interface IPieceJointe {
   dateUpload?: dayjs.Dayjs | null;
   workOrderId?: number | null;
   bonCommandeId?: number | null;
+  oTExterneId?: number | null;
   affaire?: Pick<IAffaire, 'id' | 'designationAffaire'> | null;
 }
 

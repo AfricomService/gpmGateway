@@ -5,6 +5,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { IContactSociete } from 'app/entities/projectService/societe/contact-societe.model';
 import { IRoleContactSociete } from 'app/entities/projectService/societe/role-contact-societe.model';
 import { BonCommandeService } from '../service/bon-commande.service';
+import { WorkOrderTechniciensService } from 'app/entities/operationsService/work-order/service/work-order-techniciens.service';
 
 @Component({
   selector: 'jhi-contact-selector-modal',
@@ -14,29 +15,37 @@ import { BonCommandeService } from '../service/bon-commande.service';
 export class ContactSelectorModalComponent implements OnInit {
   // Rôle à filtrer (ex: 'MANAGER') — fixé par le composant appelant, comme `statut` pour AffaireSelectorModalComponent.
   @Input() roleCode = 'MANAGER';
-
-  // Titre affiché dans l'en-tête — permet de réutiliser ce modal pour "Responsable" et "Autre Responsable".
   @Input() modalTitle = 'Sélectionner un contact';
-
-  // Active la sélection multiple (cases à cocher + bouton Valider) au lieu de la fermeture immédiate.
   @Input() multiple = false;
-
-  // Pré-sélection lors de l'ouverture (utile pour "Autre Responsable" en édition).
   @Input() initialSelection: IContactSociete[] = [];
+
+  // Active la vérification de disponibilité (à passer à true pour le rôle TECHNIQUE)
+  @Input() checkDisponibilite = false;
+
+  // Work order courant à exclure du contrôle (mode édition)
+  @Input() excludeWorkOrderId: number | null = null;
 
   contacts: IContactSociete[] = [];
   filteredContacts: IContactSociete[] = [];
   loading = false;
   searchTerm = '';
 
-  // Sélection courante en mode multiple
   selectedContacts: IContactSociete[] = [];
 
-  // Boutons de filtre par rôle (alimentés depuis la table role_contact_societe)
   roles: IRoleContactSociete[] = [];
   loadingRoles = false;
 
-  constructor(protected activeModal: NgbActiveModal, protected bonCommandeService: BonCommandeService) {}
+  // Id du contact en cours de vérification (pour désactiver/afficher un loader sur la ligne)
+  checkingContactId: number | null = null;
+
+  // Message d'erreur affiché si le technicien est indisponible
+  conflictMessage: string | null = null;
+
+  constructor(
+    protected activeModal: NgbActiveModal,
+    protected bonCommandeService: BonCommandeService,
+    protected workOrderTechniciensService: WorkOrderTechniciensService
+  ) {}
 
   ngOnInit(): void {
     this.selectedContacts = [...this.initialSelection];
@@ -65,7 +74,11 @@ export class ContactSelectorModalComponent implements OnInit {
 
   select(contact: IContactSociete): void {
     if (!this.multiple) {
-      this.activeModal.close(contact);
+      if (this.checkDisponibilite) {
+        this.verifyAndRun(contact, () => this.activeModal.close(contact));
+      } else {
+        this.activeModal.close(contact);
+      }
       return;
     }
 
@@ -73,11 +86,56 @@ export class ContactSelectorModalComponent implements OnInit {
   }
 
   toggleSelection(contact: IContactSociete): void {
+    // La désélection est toujours autorisée, sans vérification
     if (this.isSelected(contact)) {
       this.selectedContacts = this.selectedContacts.filter(c => c.id !== contact.id);
+      return;
+    }
+
+    if (this.checkDisponibilite) {
+      this.verifyAndRun(contact, () => {
+        this.selectedContacts = [...this.selectedContacts, contact];
+      });
     } else {
       this.selectedContacts = [...this.selectedContacts, contact];
     }
+  }
+
+  /**
+   * Vérifie la disponibilité d'un technicien avant de l'ajouter.
+   * En cas de conflit, l'ajout est annulé et un message d'erreur s'affiche.
+   */
+  private verifyAndRun(contact: IContactSociete, onAvailable: () => void): void {
+    if (contact.id === null || contact.id === undefined) {
+      onAvailable();
+      return;
+    }
+
+    this.conflictMessage = null;
+    this.checkingContactId = contact.id;
+
+    this.workOrderTechniciensService.checkDisponibilite([contact.id], this.excludeWorkOrderId).subscribe({
+      next: res => {
+        this.checkingContactId = null;
+        const conflicts = res.body ?? [];
+
+        if (conflicts.length === 0) {
+          onAvailable();
+          return;
+        }
+
+        const conflict = conflicts[0];
+        const dateFin = conflict.dateHeureFinPrev ? new Date(conflict.dateHeureFinPrev).toLocaleString() : '';
+
+        this.conflictMessage =
+          `${contact.nomPrenom ?? 'Ce technicien'} est déjà affecté au work order ` +
+          `${conflict.numFicheIntervention ?? conflict.workOrderId} (mission en cours jusqu'au ${dateFin}).`;
+      },
+      error: () => {
+        this.checkingContactId = null;
+        this.conflictMessage = 'Impossible de vérifier la disponibilité du technicien pour le moment.';
+      },
+    });
   }
 
   isSelected(contact: IContactSociete): boolean {
