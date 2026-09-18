@@ -725,6 +725,20 @@
       <div class="modal-body">
         <div class="row g-3">
           <div class="col-md-12">
+            <label class="form-label fw-bold">Société <span class="text-danger">*</span></label>
+            <select
+              class="form-control"
+              [(ngModel)]="newAgence.societe"
+              [ngModelOptions]="{ standalone: true }"
+              [compareWith]="compareSociete"
+            >
+              <option [ngValue]="null">-- Sélectionner une société --</option>
+              <option *ngFor="let societe of allSocietes" [ngValue]="{ id: societe.id, raisonSociale: societe.raisonSociale }">
+                {{ societe.raisonSociale }}
+              </option>
+            </select>
+          </div>
+          <div class="col-md-12">
             <label class="form-label fw-bold">Désignation</label>
             <input type="text" class="form-control" [(ngModel)]="newAgence.designation" [ngModelOptions]="{ standalone: true }" />
           </div>
@@ -746,7 +760,13 @@
         <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
         <button
           class="btn-cu-save-modal"
-          [disabled]="!newAgence.designation?.trim() || !newAgence.adresse?.trim() || !newAgence.ville?.trim() || !newAgence.pays?.trim()"
+          [disabled]="
+            !newAgence.designation?.trim() ||
+            !newAgence.adresse?.trim() ||
+            !newAgence.ville?.trim() ||
+            !newAgence.pays?.trim() ||
+            !newAgence.societe
+          "
           (click)="saveNewAgence(modal)"
         >
           Ajouter

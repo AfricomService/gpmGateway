@@ -75,11 +75,15 @@ export class OtExterneFormService {
       // sa valeur est désormais générée automatiquement (voir getFormDefaults).
       reference: new FormControl(otExterneRawValue.reference),
       statut: new FormControl(otExterneRawValue.statut),
-      affaireId: new FormControl(otExterneRawValue.affaireId),
+      affaireId: new FormControl(otExterneRawValue.affaireId, {
+        validators: [Validators.required],
+      }),
       clientId: new FormControl(otExterneRawValue.clientId),
       lieu: new FormControl(otExterneRawValue.lieu),
       dateDebut: new FormControl(otExterneRawValue.dateDebut),
-      responsableId: new FormControl(otExterneRawValue.responsableId),
+      responsableId: new FormControl(otExterneRawValue.responsableId, {
+        validators: [Validators.required],
+      }),
       bonCommandeId: new FormControl(otExterneRawValue.bonCommandeId),
       modeleOtId: new FormControl(otExterneRawValue.modeleOtId),
       createdAt: new FormControl(otExterneRawValue.createdAt),

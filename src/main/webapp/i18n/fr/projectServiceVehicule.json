@@ -25,6 +25,7 @@
       "chargeFixe": "Charge Fixe",
       "tauxConsommation": "Taux Consommation",
       "statut": "Statut",
+      "affectation": "Affectation",
       "createdAt": "Created At",
       "updatedAt": "Updated At",
       "createdBy": "Created By",

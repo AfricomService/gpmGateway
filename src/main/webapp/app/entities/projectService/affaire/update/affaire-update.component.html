@@ -199,13 +199,13 @@
                     [searchable]="true"
                     [clearable]="true"
                     [loading]="loadingResponsables"
-                    placeholder="Rechercher un responsable..."
+                    [placeholder]="editForm.get('societeId')?.value ? 'Rechercher un responsable...' : 'Sélectionnez d\'abord une société'"
                     notFoundText="Aucun responsable trouvé"
                     loadingText="Chargement..."
                     [ngModel]="selectedResponsable"
                     [ngModelOptions]="{ standalone: true }"
                     (change)="onResponsableSelectChange($event)"
-                    [readonly]="!isEditMode"
+                    [readonly]="!isEditMode || !editForm.get('societeId')?.value"
                   >
                     <ng-template ng-option-tmp let-item="item">
                       <div>{{ item.nomPrenom }}</div>
@@ -220,9 +220,14 @@
                     title="Rechercher un responsable"
                     aria-label="Rechercher un responsable"
                     (click)="openResponsableModal()"
+                    [disabled]="!editForm.get('societeId')?.value"
                   >
                     <fa-icon icon="search"></fa-icon>
                   </button>
+                </div>
+
+                <div *ngIf="isEditMode && !editForm.get('societeId')?.value">
+                  <small class="form-text text-muted"> Veuillez d'abord sélectionner une société principale. </small>
                 </div>
 
                 <div

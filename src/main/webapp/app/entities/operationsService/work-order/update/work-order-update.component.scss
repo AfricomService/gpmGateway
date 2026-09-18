@@ -13,7 +13,7 @@
   --cp-radius: 10px;
 }
 
-.cu-ot-externe-update {
+.cu-work-order-update {
   position: relative;
   display: flex;
   justify-content: center;
@@ -231,21 +231,59 @@
   }
 }
 
-/* ============ MODE DE CREATION ============ */
-.cu-mode-creation {
-  .cu-mode-btn {
-    border: 1px solid var(--cp-border);
-    background: #fff;
-    color: #374151;
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-weight: 500;
+textarea.cu-input {
+  resize: vertical;
+}
 
-    &.cu-mode-btn-active {
-      background: var(--cp-accent);
-      border-color: var(--cp-accent);
-      color: #fff;
+/* ============ CHECKBOX / SWITCH ============ */
+.cu-checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.35rem;
+}
+
+.cu-switch {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 24px;
+  flex-shrink: 0;
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+
+    &:checked + .cu-switch-slider {
+      background-color: var(--cp-accent);
     }
+
+    &:checked + .cu-switch-slider::before {
+      transform: translateX(18px);
+    }
+  }
+}
+
+.cu-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: var(--cp-border);
+  border-radius: 999px;
+  transition: background-color 0.2s ease;
+
+  &::before {
+    position: absolute;
+    content: '';
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
   }
 }
 /* ============ SELECT AFFAIRE + BOUTON MODAL ============ */
@@ -370,6 +408,95 @@
   }
 }
 
+/* ============ CHAMP CLIENT (lecture seule) ============ */
+.form-control[readonly] {
+  background: var(--cp-surface-hover);
+  color: var(--cp-text-muted);
+  cursor: default;
+}
+/* ============ OPTIONS : LIGNE TOGGLE + STEPPER ============ */
+.cu-option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0;
+  flex-wrap: wrap;
+}
+
+.cu-option-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cu-option-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--cp-text-muted);
+  margin-bottom: 0;
+  transition: color 0.2s ease;
+
+  &.cu-option-label-active {
+    color: var(--cp-text);
+  }
+}
+
+.cu-option-divider {
+  height: 1px;
+  background: var(--cp-border);
+  margin: 0.1rem 0;
+}
+
+.cu-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  min-height: 32px;
+  white-space: nowrap;
+}
+
+.cu-stepper-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  min-height: 32px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1;
+  color: var(--cp-text);
+  visibility: visible;
+  opacity: 1;
+}
+
+.cu-stepper-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface);
+  color: var(--cp-text-muted);
+  padding: 0;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--cp-accent-soft);
+    border-color: var(--cp-accent);
+    color: var(--cp-accent);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+}
 /* ============ LARGEUR DE LA FENÊTRE MODALE SCAN PJCARE (ng-bootstrap) ============ */
 ::ng-deep .scan-modal-window {
   .modal-dialog {
@@ -431,6 +558,30 @@
   justify-content: flex-end;
   gap: 0.5rem;
   margin-bottom: 0.85rem;
+}
+
+/* ============ MESSAGE D'ERREUR TECHNICIEN (conflit de disponibilité) ============ */
+.cu-technicien-error {
+  color: #c0362c;
+  background: #fde2e1;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: pre-line;
+  animation: cu-technicien-error-fade 0.2s ease;
+}
+
+@keyframes cu-technicien-error-fade {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 // ============================================================

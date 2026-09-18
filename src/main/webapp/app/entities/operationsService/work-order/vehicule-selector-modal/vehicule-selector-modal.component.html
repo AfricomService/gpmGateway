@@ -4,17 +4,11 @@
 </div>
 
 <div class="modal-body cs-modal-body">
-  <div class="cs-role-selector" *ngIf="!loadingRoles">
-    <button type="button" class="cs-role-btn" *ngFor="let role of roles" [class.active]="role.code === roleCode" (click)="selectRole(role)">
-      {{ role.label }}
-    </button>
-  </div>
-
   <div class="cs-search-bar">
     <input
       type="text"
       class="form-control cs-search-input"
-      placeholder="Rechercher un nom, un email ou un matricule..."
+      placeholder="Rechercher une marque, un type ou un matricule..."
       [ngModel]="searchTerm"
       (ngModelChange)="onSearchChange($event)"
       [ngModelOptions]="{ standalone: true }"
@@ -32,38 +26,45 @@
     <button
       type="button"
       class="cs-list-item"
-      [class.cs-list-item-selected]="multiple && isSelected(contact)"
-      *ngFor="let contact of filteredContacts"
-      (click)="select(contact)"
+      [class.cs-list-item-selected]="multiple && isSelected(vehicule)"
+      *ngFor="let vehicule of filteredVehicules"
+      (click)="select(vehicule)"
     >
       <input
         *ngIf="multiple"
         type="checkbox"
         class="cs-list-item-checkbox"
-        [checked]="isSelected(contact)"
-        [disabled]="checkingContactId === contact.id"
-        (click)="$event.preventDefault(); $event.stopPropagation(); toggleSelection(contact)"
+        [checked]="isSelected(vehicule)"
+        [disabled]="checkingVehiculeId === vehicule.id"
+        (click)="$event.preventDefault(); $event.stopPropagation(); toggleSelection(vehicule)"
       />
       <span
-        *ngIf="multiple && checkingContactId === contact.id"
+        *ngIf="multiple && checkingVehiculeId === vehicule.id"
         class="spinner-border spinner-border-sm cs-list-item-spinner"
         role="status"
         aria-hidden="true"
       ></span>
 
       <div class="cs-list-item-main">
-        <span class="cs-list-item-name">{{ contact.nomPrenom }}</span>
-        <small class="cs-list-item-email" *ngIf="contact.email">{{ contact.email }}</small>
+        <span class="cs-list-item-name">{{ vehicule.marque }} {{ vehicule.type }}</span>
+        <small class="cs-list-item-email" *ngIf="vehicule.typeCarburant">
+          {{ vehicule.typeCarburant }} · {{ vehicule.nbPlaces }} places
+        </small>
       </div>
-      <span class="cs-list-item-matricule" *ngIf="contact.matricule">{{ contact.matricule }}</span>
+      <span class="cs-list-item-matricule" *ngIf="vehicule.matricule">{{ vehicule.matricule }}</span>
     </button>
 
-    <div class="cs-empty" *ngIf="filteredContacts.length === 0">Aucun contact trouvé.</div>
+    <div class="cs-empty" *ngIf="!loading && societeId === null">
+      Veuillez d'abord sélectionner un projet (affaire) pour charger les véhicules de la société correspondante.
+    </div>
+    <div class="cs-empty" *ngIf="!loading && societeId !== null && filteredVehicules.length === 0">
+      Aucun véhicule trouvé pour cette société.
+    </div>
   </div>
 </div>
 
 <div class="modal-footer cs-modal-footer">
-  <span class="cs-selection-count" *ngIf="multiple">{{ selectedContacts.length }} sélectionné(s)</span>
+  <span class="cs-selection-count" *ngIf="multiple">{{ selectedVehicules.length }} sélectionné(s)</span>
 
   <button type="button" class="btn-cs-cancel" (click)="cancel()">
     <fa-icon icon="ban"></fa-icon>

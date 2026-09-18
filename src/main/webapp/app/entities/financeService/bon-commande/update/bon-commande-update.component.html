@@ -45,8 +45,9 @@
             <!-- ================================================= -->
             <div class="row">
               <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.financeServiceBonCommande.affaireId" for="field_affaireId">
-                  Projet
+                <label class="form-label fw-bold" for="field_affaireId">
+                  <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.affaireId">Projet</span>
+                  <span class="text-danger">*</span>
                 </label>
 
                 <!-- ID réel de l'affaire -->
@@ -88,6 +89,12 @@
                   >
                     <fa-icon icon="search"></fa-icon>
                   </button>
+                </div>
+
+                <div *ngIf="editForm.get('affaireId')!.invalid && (editForm.get('affaireId')!.dirty || editForm.get('affaireId')!.touched)">
+                  <small class="form-text text-danger" *ngIf="editForm.get('affaireId')?.errors?.required">
+                    Ce champ est obligatoire.
+                  </small>
                 </div>
               </div>
 
@@ -157,12 +164,9 @@
             <!-- ================================================= -->
             <div class="row">
               <div class="col-md-6 mb-3">
-                <label
-                  class="form-label fw-bold"
-                  jhiTranslate="gpmGatewayApp.financeServiceBonCommande.responsableId"
-                  for="field_responsableId"
-                >
-                  Responsable
+                <label class="form-label fw-bold" for="field_responsableId">
+                  <span jhiTranslate="gpmGatewayApp.financeServiceBonCommande.responsableId">Responsable</span>
+                  <span class="text-danger">*</span>
                 </label>
 
                 <!-- ID réel du responsable (contact ayant le rôle MANAGER) -->
@@ -202,6 +206,17 @@
                   >
                     <fa-icon icon="search"></fa-icon>
                   </button>
+                </div>
+
+                <div
+                  *ngIf="
+                    editForm.get('responsableId')!.invalid &&
+                    (editForm.get('responsableId')!.dirty || editForm.get('responsableId')!.touched)
+                  "
+                >
+                  <small class="form-text text-danger" *ngIf="editForm.get('responsableId')?.errors?.required">
+                    Ce champ est obligatoire.
+                  </small>
                 </div>
               </div>
 
@@ -652,11 +667,9 @@
                       <label class="cu-item-qte-label">Qté effectuée</label>
                       <input
                         type="number"
-                        min="0"
                         class="form-control form-control-sm cu-item-qte-input"
-                        [ngModel]="sel.qteEffectuee"
-                        [ngModelOptions]="{ standalone: true }"
-                        (ngModelChange)="onChosenArticleQteEffectueeChange(sel.article.id, $event)"
+                        [value]="sel.qteEffectuee ?? 0"
+                        readonly
                       />
                     </div>
 

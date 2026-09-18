@@ -15,9 +15,9 @@
 
   display: flex;
   gap: 1.5rem;
-  /* La navbar est en fixed-top (min-height: 72px) : on réserve l'espace
-     nécessaire pour que le header (titre + boutons) ne soit plus masqué. */
-  padding: 96px 1.5rem 1.5rem;
+  /* La breadcrumb au-dessus décale déjà le contenu sous la navbar fixe,
+     donc un padding-top classique suffit ici (aligné avec bon-commande). */
+  padding: 1.5rem 1.5rem 2rem;
   align-items: flex-start;
 }
 
@@ -30,7 +30,7 @@
   border-radius: 14px;
   padding: 1rem 0.75rem;
   position: sticky;
-  top: 96px;
+  top: 1.5rem;
 }
 
 .missions-sidebar-title {
@@ -591,7 +591,7 @@
 @media (max-width: 900px) {
   .missions-page {
     flex-direction: column;
-    padding: 88px 1rem 1rem;
+    padding: 1rem;
   }
 
   .missions-sidebar {

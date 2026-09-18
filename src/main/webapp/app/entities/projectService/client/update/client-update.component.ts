@@ -374,7 +374,8 @@ export class ClientUpdateComponent implements OnInit {
       !this.newAgence.designation?.trim() ||
       !this.newAgence.adresse?.trim() ||
       !this.newAgence.ville?.trim() ||
-      !this.newAgence.pays?.trim()
+      !this.newAgence.pays?.trim() ||
+      !this.newAgence.societe
     ) {
       return;
     }
@@ -386,6 +387,7 @@ export class ClientUpdateComponent implements OnInit {
       ville: this.newAgence.ville.trim(),
       pays: this.newAgence.pays.trim(),
       clientId: this.client.id,
+      societe: this.newAgence.societe,
     };
 
     this.agenceService.create(agenceToCreate).subscribe({
@@ -417,6 +419,8 @@ export class ClientUpdateComponent implements OnInit {
 
   compareVille = (o1: IVille | { id: number; nom: string } | null, o2: IVille | { id: number; nom: string } | null): boolean =>
     o1 && o2 ? o1.id === o2.id : o1 === o2;
+
+  compareSociete = (o1: Pick<ISociete, 'id'> | null, o2: Pick<ISociete, 'id'> | null): boolean => (o1 && o2 ? o1.id === o2.id : o1 === o2);
 
   saveSite(modal: any): void {
     const clientRef = this.client ? { id: this.client.id, raisonSociale: this.client.raisonSociale } : null;

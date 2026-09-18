@@ -14,12 +14,22 @@
       "detail": {
         "title": "Work Order"
       },
+      "section": {
+        "informationsGenerales": "Informations Générales",
+        "informationsClient": "Informations Client",
+        "equipes": "Equipes",
+        "options": "Options",
+        "remarque": "Remarque"
+      },
       "id": "ID",
       "clientId": "Client Id",
-      "affaireId": "Affaire Id",
+      "affaireId": "Projet",
+      "lieu": "Lieu",
       "demandeurContactId": "Demandeur Contact Id",
       "vehiculeId": "Vehicule Id",
       "otExterneId": "Ot Externe Id",
+      "responsableId": "Responsable",
+      "coordinateur": "Coordinateur",
       "valideurId": "Valideur Id",
       "valideurUserLogin": "Valideur User Login",
       "dateHeureDebutPrev": "Date Heure Debut Prev",

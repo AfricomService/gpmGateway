@@ -17,6 +17,7 @@ export interface IRessource {
   dateDerniereMaintenance?: dayjs.Dayjs | null;
   dateProchaineMaintenance?: dayjs.Dayjs | null;
   typeRessourceId?: number | null;
+  agenceId?: number | null;
   statut?: string | null;
   additionalInfo?: IRessourceAdditionalInfo[] | null;
 }

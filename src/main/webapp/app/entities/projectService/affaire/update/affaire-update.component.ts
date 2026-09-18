@@ -159,10 +159,10 @@ export class AffaireUpdateComponent implements OnInit {
       });
   }
 
-  private loadResponsables(): void {
+  private loadResponsables(societeId?: number | null | undefined): void {
     this.loadingResponsables = true;
 
-    this.bonCommandeService.findResponsablesByRole(RESPONSABLE_ROLE_CODE).subscribe({
+    this.bonCommandeService.findResponsablesByRole(RESPONSABLE_ROLE_CODE, societeId).subscribe({
       next: res => {
         this.responsables = res.body ?? [];
         this.loadingResponsables = false;
@@ -192,7 +192,13 @@ export class AffaireUpdateComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadResponsables();
+    // Charge la liste initiale des responsables (filtrée si une société est déjà présélectionnée dans le form)
+    this.loadResponsables(this.editForm.get('societeId')?.value);
+
+    // Recharge la liste des responsables à chaque changement de société principale
+    this.editForm.get('societeId')?.valueChanges.subscribe((societeId: number | null | undefined) => {
+      this.loadResponsables(societeId ?? null);
+    });
 
     // Setup debounced search for the main articles list
     this.articleSearchSubject.pipe(debounceTime(300), distinctUntilChanged()).subscribe(searchTerm => {
