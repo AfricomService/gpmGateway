@@ -22,6 +22,9 @@ export class VehiculeSelectorModalComponent implements OnInit {
   // Work order courant à exclure du contrôle (mode édition)
   @Input() excludeWorkOrderId: number | null = null;
 
+  // Société de l'affaire sélectionnée : les véhicules affichés sont restreints à cette société
+  @Input() societeId: number | null = null;
+
   vehicules: IVehicule[] = [];
   filteredVehicules: IVehicule[] = [];
   loading = false;
@@ -122,9 +125,16 @@ export class VehiculeSelectorModalComponent implements OnInit {
   }
 
   private loadVehicules(): void {
+    if (this.societeId === null || this.societeId === undefined) {
+      this.vehicules = [];
+      this.filteredVehicules = [];
+      this.loading = false;
+      return;
+    }
+
     this.loading = true;
 
-    this.vehiculeService.query().subscribe({
+    this.vehiculeService.queryBySociete(this.societeId).subscribe({
       next: (res: HttpResponse<IVehicule[]>) => {
         this.vehicules = res.body ?? [];
         this.applyFilter();

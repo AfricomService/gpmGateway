@@ -54,7 +54,12 @@
       <span class="cs-list-item-matricule" *ngIf="vehicule.matricule">{{ vehicule.matricule }}</span>
     </button>
 
-    <div class="cs-empty" *ngIf="filteredVehicules.length === 0">Aucun véhicule trouvé.</div>
+    <div class="cs-empty" *ngIf="!loading && societeId === null">
+      Veuillez d'abord sélectionner un projet (affaire) pour charger les véhicules de la société correspondante.
+    </div>
+    <div class="cs-empty" *ngIf="!loading && societeId !== null && filteredVehicules.length === 0">
+      Aucun véhicule trouvé pour cette société.
+    </div>
   </div>
 </div>
 

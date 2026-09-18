@@ -680,10 +680,16 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   // ================================
   // Véhicules (sélection multiple, persistée via WorkOrderVehicule) — même logique que les Techniciens
   // ================================
-  private loadVehicules(): void {
+  private loadVehicules(societeId?: number | null): void {
+    if (societeId === null || societeId === undefined) {
+      this.vehicules = [];
+      this.loadingVehicules = false;
+      return;
+    }
+
     this.loadingVehicules = true;
 
-    this.vehiculeService.query().subscribe({
+    this.vehiculeService.queryBySociete(societeId).subscribe({
       next: res => {
         this.vehicules = res.body ?? [];
         this.loadingVehicules = false;
@@ -694,7 +700,6 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       },
     });
   }
-
   onVehiculeSelectChange(vehicules: IVehicule[] | null): void {
     const nouvelleListe = vehicules ?? [];
     const ancienneListe = this.selectedVehicules;
@@ -770,6 +775,13 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   }
 
   openVehiculeModal(): void {
+    const societeId = (this.selectedAffaire as any)?.societeId ?? null;
+
+    if (societeId === null || societeId === undefined) {
+      this.showVehiculeError("Veuillez d'abord sélectionner un projet (affaire) avant de choisir un véhicule.");
+      return;
+    }
+
     const modalRef = this.modalService.open(VehiculeSelectorModalComponent, {
       size: 'lg',
       centered: true,
@@ -782,6 +794,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     modalRef.componentInstance.initialSelection = this.selectedVehicules;
     modalRef.componentInstance.checkDisponibilite = true;
     modalRef.componentInstance.excludeWorkOrderId = this.workOrder?.id ?? null;
+    modalRef.componentInstance.societeId = societeId;
 
     modalRef.result
       .then((vehicules: IVehicule[]) => {
