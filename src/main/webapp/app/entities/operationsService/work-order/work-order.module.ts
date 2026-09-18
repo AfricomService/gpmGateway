@@ -9,6 +9,7 @@ import { WorkOrderDeleteDialogComponent } from './delete/work-order-delete-dialo
 import { WorkOrderRoutingModule } from './route/work-order-routing.module';
 import { ProjectServicePieceJointeModule } from 'app/entities/projectService/piece-jointe/piece-jointe.module';
 import { VehiculeSelectorModalComponent } from './vehicule-selector-modal/vehicule-selector-modal.component';
+import { RessourceSelectorModalComponent } from './ressource-selector-modal/ressource-selector-modal.component';
 
 @NgModule({
   imports: [SharedModule, FormsModule, NgSelectModule, WorkOrderRoutingModule, ProjectServicePieceJointeModule],
@@ -18,6 +19,7 @@ import { VehiculeSelectorModalComponent } from './vehicule-selector-modal/vehicu
     WorkOrderUpdateComponent,
     WorkOrderDeleteDialogComponent,
     VehiculeSelectorModalComponent,
+    RessourceSelectorModalComponent,
   ],
 })
 export class OperationsServiceWorkOrderModule {}

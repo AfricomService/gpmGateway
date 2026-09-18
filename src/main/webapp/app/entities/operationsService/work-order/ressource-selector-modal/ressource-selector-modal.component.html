@@ -1,0 +1,78 @@
+<div class="modal-header cs-modal-header">
+  <h5 class="modal-title">{{ modalTitle }}</h5>
+  <button type="button" class="btn-close" aria-label="Fermer" (click)="cancel()"></button>
+</div>
+
+<div class="modal-body cs-modal-body">
+  <div class="cs-search-bar">
+    <input
+      type="text"
+      class="form-control cs-search-input"
+      placeholder="Rechercher un nom, un code ou une catégorie..."
+      [ngModel]="searchTerm"
+      (ngModelChange)="onSearchChange($event)"
+      [ngModelOptions]="{ standalone: true }"
+      autocomplete="off"
+    />
+  </div>
+
+  <div class="cs-loading" *ngIf="loading">Chargement...</div>
+
+  <div class="alert alert-danger py-2 px-3 mb-2" *ngIf="conflictMessage" role="alert">
+    <fa-icon icon="exclamation-triangle"></fa-icon>&nbsp;{{ conflictMessage }}
+  </div>
+
+  <div class="cs-list" *ngIf="!loading">
+    <button
+      type="button"
+      class="cs-list-item"
+      [class.cs-list-item-selected]="multiple && isSelected(ressource)"
+      *ngFor="let ressource of filteredRessources"
+      (click)="select(ressource)"
+    >
+      <input
+        *ngIf="multiple"
+        type="checkbox"
+        class="cs-list-item-checkbox"
+        [checked]="isSelected(ressource)"
+        [disabled]="checkingRessourceId === ressource.id"
+        (click)="$event.preventDefault(); $event.stopPropagation(); toggleSelection(ressource)"
+      />
+      <span
+        *ngIf="multiple && checkingRessourceId === ressource.id"
+        class="spinner-border spinner-border-sm cs-list-item-spinner"
+        role="status"
+        aria-hidden="true"
+      ></span>
+
+      <div class="cs-list-item-main">
+        <span class="cs-list-item-name">{{ ressource.nom }}</span>
+        <small class="cs-list-item-email" *ngIf="ressource.categorie"> {{ ressource.categorie }} </small>
+      </div>
+      <span class="cs-list-item-matricule" *ngIf="ressource.code">{{ ressource.code }}</span>
+    </button>
+
+    <div class="cs-empty" *ngIf="!loading && societeId === null">
+      Veuillez d'abord sélectionner un projet (affaire) pour charger les ressources de la société correspondante.
+    </div>
+    <div class="cs-empty" *ngIf="!loading && societeId !== null && filteredRessources.length === 0">
+      Aucune ressource trouvée pour cette société.
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer cs-modal-footer">
+  <span class="cs-selection-count" *ngIf="multiple">{{ selectedRessources.length }} sélectionné(s)</span>
+
+  <button type="button" class="btn-cs-cancel" (click)="cancel()">
+    <fa-icon icon="ban"></fa-icon>
+    &nbsp;
+    <span>Annuler</span>
+  </button>
+
+  <button type="button" class="btn-cs-confirm" *ngIf="multiple" (click)="confirm()">
+    <fa-icon icon="check"></fa-icon>
+    &nbsp;
+    <span>Valider</span>
+  </button>
+</div>
