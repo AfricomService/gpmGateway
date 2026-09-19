@@ -28,6 +28,10 @@ import { AffaireSelectorModalComponent } from 'app/entities/financeService/bon-c
 import { SiteSelectorModalComponent } from 'app/entities/financeService/bon-commande/site-selector-modal/site-selector-modal.component';
 import { ContactSelectorModalComponent } from 'app/entities/financeService/bon-commande/contact-selector-modal/contact-selector-modal.component';
 import { VehiculeSelectorModalComponent } from 'app/entities/operationsService/work-order/vehicule-selector-modal/vehicule-selector-modal.component';
+import { RessourceSelectorModalComponent } from 'app/entities/operationsService/work-order/ressource-selector-modal/ressource-selector-modal.component';
+import { IRessource } from 'app/entities/projectService/ressource/ressource.model';
+import { RessourceService } from 'app/entities/projectService/ressource/service/ressource.service';
+import { WorkOrderRessourceService } from '../service/work-order-ressource.service';
 import { IPieceJointe } from 'app/entities/projectService/piece-jointe/piece-jointe.model';
 import { PieceJointeService } from 'app/entities/projectService/piece-jointe/service/piece-jointe.service';
 import { PjCareService, PjCareDriverInfo, ScanDriver, ScannedPage } from 'app/entities/projectService/piece-jointe/service/pjcare.service';
@@ -98,6 +102,11 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   clientSites: ISite[] = [];
   loadingClientSites = false;
 
+  // Site actuellement sélectionné pour le champ "Lieu" — sert aussi à dériver
+  // automatiquement Ville et Zone (site -> zone -> ville), sans appel API supplémentaire
+  // car SiteDTO renvoie déjà ville {id, nom} et zoneNom/zoneId.
+  selectedSite: ISite | null = null;
+
   // ================================
   // Liste déroulante Responsable / Coordinateur (contacts ayant le rôle MANAGER)
   // — logique identique au champ Responsable de ot-externe-update, réutilisée pour les 2 champs
@@ -125,6 +134,15 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   loadingVehicules = false;
   vehiculeError = '';
   private vehiculeErrorTimeoutId?: ReturnType<typeof setTimeout>;
+
+  // ================================
+  // Ressources (sélection multiple, persistée via WorkOrderRessource) — même logique que les Véhicules
+  // ================================
+  ressources: IRessource[] = [];
+  selectedRessources: IRessource[] = [];
+  loadingRessources = false;
+  ressourceError = '';
+  private ressourceErrorTimeoutId?: ReturnType<typeof setTimeout>;
 
   // ================================
   // Souscriptions Mission De Nuit / Hebergement (reset du compteur quand désactivé)
@@ -191,6 +209,8 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     protected workOrderTechniciensService: WorkOrderTechniciensService,
     protected vehiculeService: VehiculeService,
     protected workOrderVehiculeService: WorkOrderVehiculeService,
+    protected ressourceService: RessourceService,
+    protected workOrderRessourceService: WorkOrderRessourceService,
     protected pieceJointeService: PieceJointeService,
     protected pjCareService: PjCareService,
     protected scanSettingsService: ScanSettingsService,
@@ -202,7 +222,6 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadResponsables();
     this.loadTechniciens();
-    this.loadVehicules();
     this.loadAffaires(''); // Pré-charge la liste des projets dès l'ouverture du formulaire
 
     // On utilise valueChanges plutôt que (change) dans le template : cela garantit
@@ -266,6 +285,9 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     }
     if (this.vehiculeErrorTimeoutId) {
       clearTimeout(this.vehiculeErrorTimeoutId);
+    }
+    if (this.ressourceErrorTimeoutId) {
+      clearTimeout(this.ressourceErrorTimeoutId);
     }
   }
 
@@ -350,18 +372,27 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   // ================================
   selectAffaire(affaire: IAffaire): void {
     const clientId = affaire.client?.id ?? null;
+    const societeId = (affaire as any).societeId ?? null;
 
     this.editForm.patchValue({
       affaireId: affaire.id,
       clientId,
+      lieu: null,
+      villeId: null,
+      zoneId: null,
     });
 
     this.selectedAffaire = affaire;
     this.selectedAffaireCode = affaire.identifiantUnique ?? null;
+    this.selectedSite = null;
 
     this.loadClientInfo(clientId);
     this.loadClientCommandeInfo(affaire.clientCommande ?? null);
     this.applyResponsableFromAffaire(affaire);
+
+    // Recharge les listes véhicules/ressources filtrées sur la société de l'affaire sélectionnée
+    this.loadVehicules(societeId);
+    this.loadRessources(societeId);
   }
 
   /**
@@ -395,12 +426,15 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     if (affaire) {
       this.selectAffaire(affaire);
     } else {
-      this.editForm.patchValue({ affaireId: null, clientId: null, lieu: null });
+      this.editForm.patchValue({ affaireId: null, clientId: null, lieu: null, villeId: null, zoneId: null });
       this.selectedAffaire = null;
       this.selectedAffaireCode = null;
       this.selectedClientInfo = null;
       this.selectedClientCommandeInfo = null;
+      this.selectedSite = null;
       this.clientSites = [];
+      this.vehicules = [];
+      this.ressources = [];
     }
   }
 
@@ -442,6 +476,12 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       next: res => {
         this.clientSites = res.body ?? [];
         this.loadingClientSites = false;
+
+        // Mode édition : le WorkOrder ne stocke que la désignation du lieu (pas l'id du site) ;
+        // on retrouve le site correspondant une fois la liste chargée, pour préremplir
+        // correctement le ng-select ainsi que l'affichage Ville/Zone.
+        const lieu = this.editForm.get('lieu')?.value;
+        this.selectedSite = lieu ? this.clientSites.find(s => s.designation === lieu) ?? null : null;
       },
       error: () => {
         this.clientSites = [];
@@ -510,6 +550,10 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   compareResponsable = (a: IContactSociete | null, b: IContactSociete | null): boolean => (a && b ? a.id === b.id : a === b);
 
   compareVehicule = (a: IVehicule | null, b: IVehicule | null): boolean => (a && b ? a.id === b.id : a === b);
+
+  compareRessource = (a: IRessource | null, b: IRessource | null): boolean => (a && b ? a.id === b.id : a === b);
+
+  compareSite = (a: ISite | null, b: ISite | null): boolean => (a && b ? a.id === b.id : a === b);
 
   private loadResponsableLabel(responsableId: number): void {
     this.bonCommandeService.findResponsableById(responsableId).subscribe({
@@ -700,6 +744,28 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       },
     });
   }
+
+  private loadRessources(societeId?: number | null): void {
+    if (societeId === null || societeId === undefined) {
+      this.ressources = [];
+      this.loadingRessources = false;
+      return;
+    }
+
+    this.loadingRessources = true;
+
+    this.ressourceService.queryBySociete(societeId).subscribe({
+      next: res => {
+        this.ressources = res.body ?? [];
+        this.loadingRessources = false;
+      },
+      error: () => {
+        this.ressources = [];
+        this.loadingRessources = false;
+      },
+    });
+  }
+
   onVehiculeSelectChange(vehicules: IVehicule[] | null): void {
     const nouvelleListe = vehicules ?? [];
     const ancienneListe = this.selectedVehicules;
@@ -803,6 +869,112 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       .catch(() => {});
   }
 
+  // ================================
+  // Ressources (sélection multiple, persistée via WorkOrderRessource) — même logique que les Véhicules
+  // ================================
+  onRessourceSelectChange(ressources: IRessource[] | null): void {
+    const nouvelleListe = ressources ?? [];
+    const ancienneListe = this.selectedRessources;
+    const ajouts = nouvelleListe.filter(r => !ancienneListe.some(a => a.id === r.id));
+
+    this.selectedRessources = nouvelleListe;
+
+    if (ajouts.length === 0) {
+      return;
+    }
+
+    const idsAjoutes = ajouts.map(r => r.id).filter((id): id is number => id !== null && id !== undefined);
+
+    this.workOrderRessourceService.checkDisponibilite(idsAjoutes, this.workOrder?.id ?? null).subscribe({
+      next: res => {
+        const conflicts = res.body ?? [];
+        if (conflicts.length === 0) {
+          return;
+        }
+
+        const idsEnConflit = conflicts.map(c => c.ressourceId);
+        this.selectedRessources = this.selectedRessources.filter(r => !idsEnConflit.includes(r.id!));
+
+        const messages = conflicts.map(conflict => {
+          const ressource = ajouts.find(r => r.id === conflict.ressourceId);
+          const label = ressource?.nom ?? 'Cette ressource';
+          const dateFin = conflict.dateHeureFinPrev ? new Date(conflict.dateHeureFinPrev).toLocaleString() : '';
+
+          return `${label} est déjà affectée au work order ${
+            conflict.numFicheIntervention ?? conflict.workOrderId
+          } (mission en cours jusqu'au ${dateFin}).`;
+        });
+
+        this.showRessourceError(messages.join('\n'));
+      },
+    });
+  }
+
+  private showRessourceError(message: string): void {
+    this.ressourceError = message;
+
+    if (this.ressourceErrorTimeoutId) {
+      clearTimeout(this.ressourceErrorTimeoutId);
+    }
+
+    this.ressourceErrorTimeoutId = setTimeout(() => {
+      this.ressourceError = '';
+      this.ressourceErrorTimeoutId = undefined;
+    }, 4000);
+  }
+
+  private loadAutresRessources(workOrderId: number): void {
+    this.workOrderRessourceService.findByWorkOrder(workOrderId).subscribe({
+      next: res => {
+        const links = res.body ?? [];
+        const ressourceIds = links.map(l => l.ressourceId).filter((id): id is number => id !== null && id !== undefined);
+
+        if (ressourceIds.length === 0) {
+          this.selectedRessources = [];
+          return;
+        }
+
+        forkJoin(ressourceIds.map(id => this.ressourceService.find(id))).subscribe({
+          next: responses => {
+            this.selectedRessources = responses.map(r => r.body).filter((r): r is IRessource => r !== null);
+          },
+        });
+      },
+      error: () => {
+        this.selectedRessources = [];
+      },
+    });
+  }
+
+  openRessourceModal(): void {
+    const societeId = (this.selectedAffaire as any)?.societeId ?? null;
+
+    if (societeId === null || societeId === undefined) {
+      this.showRessourceError("Veuillez d'abord sélectionner un projet (affaire) avant de choisir une ressource.");
+      return;
+    }
+
+    const modalRef = this.modalService.open(RessourceSelectorModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'ressource-selector-modal-window',
+    });
+
+    modalRef.componentInstance.modalTitle = 'Sélectionner une ou plusieurs ressources';
+    modalRef.componentInstance.multiple = true;
+    modalRef.componentInstance.initialSelection = this.selectedRessources;
+    modalRef.componentInstance.checkDisponibilite = true;
+    modalRef.componentInstance.excludeWorkOrderId = this.workOrder?.id ?? null;
+    modalRef.componentInstance.societeId = societeId;
+
+    modalRef.result
+      .then((ressources: IRessource[]) => {
+        this.selectedRessources = ressources ?? [];
+      })
+      .catch(() => {});
+  }
+
   openResponsableModal(): void {
     const modalRef = this.modalService.open(ContactSelectorModalComponent, {
       size: 'lg',
@@ -847,6 +1019,22 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Appelé lors de la sélection d'un site (lieu) dans le ng-select.
+   * Un site appartient à une seule zone, et une zone à une seule ville :
+   * on dérive donc automatiquement villeId/zoneId depuis le site sélectionné
+   * (le SiteDTO renvoyé par le backend inclut déjà ville{id,nom} et zoneId/zoneNom).
+   */
+  onLieuSelectChange(site: ISite | null): void {
+    this.selectedSite = site;
+
+    this.editForm.patchValue({
+      lieu: site?.designation ?? null,
+      villeId: site?.ville?.id ?? null,
+      zoneId: site?.zoneId ?? null,
+    });
+  }
+
   openLieuModal(): void {
     const modalRef = this.modalService.open(SiteSelectorModalComponent, {
       size: 'lg',
@@ -860,7 +1048,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     modalRef.result
       .then((site: ISite) => {
         if (site) {
-          this.editForm.patchValue({ lieu: site.designation });
+          this.onLieuSelectChange(site);
         }
       })
       .catch(() => {
@@ -943,10 +1131,12 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
 
     const contactSocieteIds = this.selectedTechniciens.map(c => c.id).filter((id): id is number => id !== null && id !== undefined);
     const vehiculeIds = this.selectedVehicules.map(v => v.id).filter((id): id is number => id !== null && id !== undefined);
+    const ressourceIds = this.selectedRessources.map(r => r.id).filter((id): id is number => id !== null && id !== undefined);
 
     forkJoin([
       this.workOrderTechniciensService.replaceForWorkOrder(workOrderId, contactSocieteIds),
       this.workOrderVehiculeService.replaceForWorkOrder(workOrderId, vehiculeIds),
+      this.workOrderRessourceService.replaceForWorkOrder(workOrderId, ressourceIds),
     ]).subscribe({
       next: () => this.uploadPendingPieceJointesThenNavigate(workOrderId),
       error: () => this.uploadPendingPieceJointesThenNavigate(workOrderId),
@@ -958,7 +1148,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
    */
   private uploadPendingPieceJointesThenNavigate(workOrderId: number): void {
     if (this.pendingPieceJointes.length === 0) {
-      this.previousState();
+      this.navigateToEditWorkOrder(workOrderId);
       return;
     }
 
@@ -969,13 +1159,22 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     forkJoin(uploads).subscribe({
       next: () => {
         this.pendingPieceJointes = [];
-        this.previousState();
+        this.navigateToEditWorkOrder(workOrderId);
       },
       error: () => {
         alert("Certaines pièces jointes n'ont pas pu être envoyées. Vous pouvez réessayer depuis l'accordéon Pièces Jointes.");
-        this.previousState();
+        this.navigateToEditWorkOrder(workOrderId);
       },
     });
+  }
+
+  /**
+   * Redirige vers l'interface d'édition du work order qui vient d'être enregistré
+   * (création ou mise à jour), au lieu de revenir à la liste comme le faisait
+   * previousState() auparavant.
+   */
+  private navigateToEditWorkOrder(workOrderId: number): void {
+    this.router.navigate([workOrderId, 'edit'], { relativeTo: this.activatedRoute.parent });
   }
 
   protected onSaveError(): void {
@@ -1016,6 +1215,10 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
             this.cdr.detectChanges();
 
             this.loadClientCommandeInfo(affaire.clientCommande ?? null);
+
+            const societeId = (affaire as any).societeId ?? null;
+            this.loadVehicules(societeId);
+            this.loadRessources(societeId);
           }
         },
       });
@@ -1040,10 +1243,11 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       this.loadCoordinateurLabel(Number(coordinateurId));
     }
 
-    // Techniciens / Véhicules
+    // Techniciens / Véhicules / Ressources
     if (workOrder.id !== null && workOrder.id !== undefined) {
       this.loadAutresTechniciens(workOrder.id);
       this.loadAutresVehicules(workOrder.id);
+      this.loadAutresRessources(workOrder.id);
       this.loadPieceJointes(workOrder.id);
     }
   }
