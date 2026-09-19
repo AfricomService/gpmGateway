@@ -41,6 +41,7 @@ type WorkOrderFormDefaults = Pick<
 
 type WorkOrderFormGroupContent = {
   id: FormControl<WorkOrderFormRawValue['id'] | NewWorkOrder['id']>;
+  identifiantUnique: FormControl<WorkOrderFormRawValue['identifiantUnique']>;
   clientId: FormControl<WorkOrderFormRawValue['clientId']>;
   affaireId: FormControl<WorkOrderFormRawValue['affaireId']>;
   demandeurContactId: FormControl<WorkOrderFormRawValue['demandeurContactId']>;
@@ -61,6 +62,8 @@ type WorkOrderFormGroupContent = {
   statut: FormControl<WorkOrderFormRawValue['statut']>;
   materielUtilise: FormControl<WorkOrderFormRawValue['materielUtilise']>;
   lieu: FormControl<WorkOrderFormRawValue['lieu']>;
+  villeId: FormControl<WorkOrderFormRawValue['villeId']>;
+  zoneId: FormControl<WorkOrderFormRawValue['zoneId']>;
   responsableId: FormControl<WorkOrderFormRawValue['responsableId']>;
   coordinateur: FormControl<WorkOrderFormRawValue['coordinateur']>;
 };
@@ -82,6 +85,7 @@ export class WorkOrderFormService {
           validators: [Validators.required],
         }
       ),
+      identifiantUnique: new FormControl({ value: workOrderRawValue.identifiantUnique, disabled: true }),
       clientId: new FormControl(workOrderRawValue.clientId),
       affaireId: new FormControl(workOrderRawValue.affaireId),
       demandeurContactId: new FormControl(workOrderRawValue.demandeurContactId),
@@ -112,6 +116,8 @@ export class WorkOrderFormService {
       }),
       materielUtilise: new FormControl(workOrderRawValue.materielUtilise),
       lieu: new FormControl(workOrderRawValue.lieu),
+      villeId: new FormControl(workOrderRawValue.villeId),
+      zoneId: new FormControl(workOrderRawValue.zoneId),
       responsableId: new FormControl(workOrderRawValue.responsableId),
       coordinateur: new FormControl(workOrderRawValue.coordinateur),
     });

@@ -100,7 +100,7 @@
 
     <!-- Vue grille (cartes) -->
     <div class="missions-grid" *ngIf="workOrders && workOrders.length > 0 && viewMode === 'grid'">
-      <div class="mission-card" *ngFor="let workOrder of workOrders; trackBy: trackId" [routerLink]="['/work-order', workOrder.id, 'view']">
+      <div class="mission-card" *ngFor="let workOrder of workOrders; trackBy: trackId" [routerLink]="['/work-order', workOrder.id, 'edit']">
         <div class="mission-card-header">
           <span class="mission-ref">#{{ workOrder.id }}</span>
           <span
@@ -152,7 +152,7 @@
           <tr
             *ngFor="let workOrder of workOrders; trackBy: trackId"
             data-cy="entityTable"
-            [routerLink]="['/work-order', workOrder.id, 'view']"
+            [routerLink]="['/work-order', workOrder.id, 'edit']"
           >
             <td>
               <span

@@ -42,6 +42,9 @@
           </button>
 
           <div class="cu-accordion-body" *ngIf="isPanelOpen('global')">
+            <!-- Identifiant unique généré côté serveur (WO-0001-26) — persisté mais non modifiable manuellement -->
+            <input type="hidden" formControlName="identifiantUnique" data-cy="identifiantUnique" />
+
             <div class="row">
               <div class="col-md-6 mb-3">
                 <label
@@ -130,6 +133,11 @@
               <div class="col-md-6 mb-3">
                 <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.lieu" for="field_lieu">Lieu</label>
 
+                <!-- Valeurs réelles persistées : désignation du lieu + ville/zone dérivées du site -->
+                <input type="hidden" formControlName="lieu" />
+                <input type="hidden" formControlName="villeId" data-cy="villeId" />
+                <input type="hidden" formControlName="zoneId" data-cy="zoneId" />
+
                 <div class="cu-affaire-selector">
                   <ng-select
                     id="field_lieu"
@@ -137,16 +145,18 @@
                     name="lieu"
                     class="custom-ng-select"
                     [items]="clientSites"
-                    bindLabel="designation"
-                    bindValue="designation"
+                    [compareWith]="compareSite"
                     [searchable]="true"
                     [clearable]="true"
                     [loading]="loadingClientSites"
-                    formControlName="lieu"
                     placeholder="Sélectionnez d'abord un projet"
                     notFoundText="Aucun site trouvé pour ce client"
                     loadingText="Chargement..."
+                    [ngModel]="selectedSite"
+                    [ngModelOptions]="{ standalone: true }"
+                    (change)="onLieuSelectChange($event)"
                   >
+                    <ng-template ng-label-tmp let-item="item"> {{ item.designation }} </ng-template>
                     <ng-template ng-option-tmp let-item="item">
                       <div>{{ item.designation }}</div>
                       <small class="text-muted" *ngIf="item.code">Code : {{ item.code }}</small>
@@ -166,8 +176,127 @@
               </div>
             </div>
 
+            <!-- VILLE / ZONE — dérivées automatiquement du site sélectionné (lecture seule) -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="field_ville">Ville</label>
+                <input
+                  type="text"
+                  class="form-control cu-input"
+                  id="field_ville"
+                  data-cy="ville"
+                  [value]="selectedSite?.ville?.nom ?? ''"
+                  placeholder="Déterminée automatiquement par le site"
+                  readonly
+                />
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="field_zone">Zone</label>
+                <input
+                  type="text"
+                  class="form-control cu-input"
+                  id="field_zone"
+                  data-cy="zone"
+                  [value]="selectedSite?.zoneNom ?? ''"
+                  placeholder="Déterminée automatiquement par le site"
+                  readonly
+                />
+              </div>
+            </div>
+
             <!-- Statut géré automatiquement (Creation à la création, puis transitions via workflow) -->
             <input type="hidden" formControlName="statut" data-cy="statut" />
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="field_vehicules">Véhicules</label>
+
+                <div class="cu-affaire-selector">
+                  <ng-select
+                    id="field_vehicules"
+                    data-cy="vehicules"
+                    name="vehicules"
+                    class="custom-ng-select"
+                    [items]="vehicules"
+                    [compareWith]="compareVehicule"
+                    [searchable]="true"
+                    [clearable]="true"
+                    [multiple]="true"
+                    [closeOnSelect]="false"
+                    [loading]="loadingVehicules"
+                    placeholder="Rechercher un ou plusieurs véhicules..."
+                    notFoundText="Aucun véhicule trouvé"
+                    loadingText="Chargement..."
+                    [ngModel]="selectedVehicules"
+                    [ngModelOptions]="{ standalone: true }"
+                    (change)="onVehiculeSelectChange($event)"
+                  >
+                    <ng-template ng-label-tmp let-item="item"> {{ item.marque }} {{ item.type }} ({{ item.matricule }}) </ng-template>
+                    <ng-template ng-option-tmp let-item="item">
+                      <div>{{ item.marque }} {{ item.type }}</div>
+                      <small class="text-muted">{{ item.matricule }}</small>
+                    </ng-template>
+                  </ng-select>
+
+                  <button
+                    type="button"
+                    class="btn-cu-affaire-modal"
+                    title="Rechercher un véhicule"
+                    aria-label="Rechercher un véhicule"
+                    (click)="openVehiculeModal()"
+                  >
+                    <fa-icon icon="search"></fa-icon>
+                  </button>
+                </div>
+
+                <div *ngIf="vehiculeError" class="cu-technicien-error">{{ vehiculeError }}</div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="field_ressources">Ressources</label>
+
+                <div class="cu-affaire-selector">
+                  <ng-select
+                    id="field_ressources"
+                    data-cy="ressources"
+                    name="ressources"
+                    class="custom-ng-select"
+                    [items]="ressources"
+                    [compareWith]="compareRessource"
+                    [searchable]="true"
+                    [clearable]="true"
+                    [multiple]="true"
+                    [closeOnSelect]="false"
+                    [loading]="loadingRessources"
+                    placeholder="Rechercher une ou plusieurs ressources..."
+                    notFoundText="Aucune ressource trouvée"
+                    loadingText="Chargement..."
+                    [ngModel]="selectedRessources"
+                    [ngModelOptions]="{ standalone: true }"
+                    (change)="onRessourceSelectChange($event)"
+                  >
+                    <ng-template ng-label-tmp let-item="item"> {{ item.nom }} </ng-template>
+                    <ng-template ng-option-tmp let-item="item">
+                      <div>{{ item.nom }}</div>
+                      <small class="text-muted" *ngIf="item.categorie">{{ item.categorie }}</small>
+                    </ng-template>
+                  </ng-select>
+
+                  <button
+                    type="button"
+                    class="btn-cu-affaire-modal"
+                    title="Rechercher une ressource"
+                    aria-label="Rechercher une ressource"
+                    (click)="openRessourceModal()"
+                  >
+                    <fa-icon icon="search"></fa-icon>
+                  </button>
+                </div>
+
+                <div *ngIf="ressourceError" class="cu-technicien-error">{{ ressourceError }}</div>
+              </div>
+            </div>
 
             <div class="row">
               <div class="col-md-6 mb-3">
@@ -246,90 +375,6 @@
                     Ce champ doit être une date et une heure.
                   </small>
                 </div>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label
-                  class="form-label"
-                  jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.dateHeureDebutReel"
-                  for="field_dateHeureDebutReel"
-                  >Date Heure Debut Reel</label
-                >
-                <input
-                  id="field_dateHeureDebutReel"
-                  data-cy="dateHeureDebutReel"
-                  type="datetime-local"
-                  class="form-control cu-input"
-                  name="dateHeureDebutReel"
-                  formControlName="dateHeureDebutReel"
-                  placeholder="YYYY-MM-DD HH:mm"
-                />
-              </div>
-
-              <div class="col-md-6 mb-3">
-                <label
-                  class="form-label"
-                  jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.dateHeureFinReel"
-                  for="field_dateHeureFinReel"
-                  >Date Heure Fin Reel</label
-                >
-                <input
-                  id="field_dateHeureFinReel"
-                  data-cy="dateHeureFinReel"
-                  type="datetime-local"
-                  class="form-control cu-input"
-                  name="dateHeureFinReel"
-                  formControlName="dateHeureFinReel"
-                  placeholder="YYYY-MM-DD HH:mm"
-                />
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-12 mb-3">
-                <label class="form-label" for="field_vehicules">Véhicules</label>
-
-                <div class="cu-affaire-selector">
-                  <ng-select
-                    id="field_vehicules"
-                    data-cy="vehicules"
-                    name="vehicules"
-                    class="custom-ng-select"
-                    [items]="vehicules"
-                    [compareWith]="compareVehicule"
-                    [searchable]="true"
-                    [clearable]="true"
-                    [multiple]="true"
-                    [closeOnSelect]="false"
-                    [loading]="loadingVehicules"
-                    placeholder="Rechercher un ou plusieurs véhicules..."
-                    notFoundText="Aucun véhicule trouvé"
-                    loadingText="Chargement..."
-                    [ngModel]="selectedVehicules"
-                    [ngModelOptions]="{ standalone: true }"
-                    (change)="onVehiculeSelectChange($event)"
-                  >
-                    <ng-template ng-label-tmp let-item="item"> {{ item.marque }} {{ item.type }} ({{ item.matricule }}) </ng-template>
-                    <ng-template ng-option-tmp let-item="item">
-                      <div>{{ item.marque }} {{ item.type }}</div>
-                      <small class="text-muted">{{ item.matricule }}</small>
-                    </ng-template>
-                  </ng-select>
-
-                  <button
-                    type="button"
-                    class="btn-cu-affaire-modal"
-                    title="Rechercher un véhicule"
-                    aria-label="Rechercher un véhicule"
-                    (click)="openVehiculeModal()"
-                  >
-                    <fa-icon icon="search"></fa-icon>
-                  </button>
-                </div>
-
-                <div *ngIf="vehiculeError" class="cu-technicien-error">{{ vehiculeError }}</div>
               </div>
             </div>
           </div>
@@ -725,29 +770,9 @@
                 Ce champ est obligatoire.
               </small>
             </div>
-
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label
-                  class="form-label"
-                  jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.materielUtilise"
-                  for="field_materielUtilise"
-                  >Materiel Utilise</label
-                >
-                <input
-                  type="text"
-                  class="form-control cu-input"
-                  name="materielUtilise"
-                  id="field_materielUtilise"
-                  data-cy="materielUtilise"
-                  formControlName="materielUtilise"
-                />
-              </div>
-            </div>
           </div>
         </div>
 
-        <!-- SECTION 5 : REMARQUE -->
         <!-- SECTION 5 : REMARQUE -->
         <div class="cu-accordion-item" [class.open]="isPanelOpen('remarque')">
           <button type="button" class="cu-accordion-header" (click)="togglePanel('remarque')">
