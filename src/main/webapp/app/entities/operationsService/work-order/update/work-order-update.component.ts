@@ -102,6 +102,11 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   clientSites: ISite[] = [];
   loadingClientSites = false;
 
+  // Site actuellement sélectionné pour le champ "Lieu" — sert aussi à dériver
+  // automatiquement Ville et Zone (site -> zone -> ville), sans appel API supplémentaire
+  // car SiteDTO renvoie déjà ville {id, nom} et zoneNom/zoneId.
+  selectedSite: ISite | null = null;
+
   // ================================
   // Liste déroulante Responsable / Coordinateur (contacts ayant le rôle MANAGER)
   // — logique identique au champ Responsable de ot-externe-update, réutilisée pour les 2 champs
@@ -372,10 +377,14 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.editForm.patchValue({
       affaireId: affaire.id,
       clientId,
+      lieu: null,
+      villeId: null,
+      zoneId: null,
     });
 
     this.selectedAffaire = affaire;
     this.selectedAffaireCode = affaire.identifiantUnique ?? null;
+    this.selectedSite = null;
 
     this.loadClientInfo(clientId);
     this.loadClientCommandeInfo(affaire.clientCommande ?? null);
@@ -417,11 +426,12 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     if (affaire) {
       this.selectAffaire(affaire);
     } else {
-      this.editForm.patchValue({ affaireId: null, clientId: null, lieu: null });
+      this.editForm.patchValue({ affaireId: null, clientId: null, lieu: null, villeId: null, zoneId: null });
       this.selectedAffaire = null;
       this.selectedAffaireCode = null;
       this.selectedClientInfo = null;
       this.selectedClientCommandeInfo = null;
+      this.selectedSite = null;
       this.clientSites = [];
       this.vehicules = [];
       this.ressources = [];
@@ -466,6 +476,12 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       next: res => {
         this.clientSites = res.body ?? [];
         this.loadingClientSites = false;
+
+        // Mode édition : le WorkOrder ne stocke que la désignation du lieu (pas l'id du site) ;
+        // on retrouve le site correspondant une fois la liste chargée, pour préremplir
+        // correctement le ng-select ainsi que l'affichage Ville/Zone.
+        const lieu = this.editForm.get('lieu')?.value;
+        this.selectedSite = lieu ? this.clientSites.find(s => s.designation === lieu) ?? null : null;
       },
       error: () => {
         this.clientSites = [];
@@ -536,6 +552,8 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   compareVehicule = (a: IVehicule | null, b: IVehicule | null): boolean => (a && b ? a.id === b.id : a === b);
 
   compareRessource = (a: IRessource | null, b: IRessource | null): boolean => (a && b ? a.id === b.id : a === b);
+
+  compareSite = (a: ISite | null, b: ISite | null): boolean => (a && b ? a.id === b.id : a === b);
 
   private loadResponsableLabel(responsableId: number): void {
     this.bonCommandeService.findResponsableById(responsableId).subscribe({
@@ -1001,6 +1019,22 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Appelé lors de la sélection d'un site (lieu) dans le ng-select.
+   * Un site appartient à une seule zone, et une zone à une seule ville :
+   * on dérive donc automatiquement villeId/zoneId depuis le site sélectionné
+   * (le SiteDTO renvoyé par le backend inclut déjà ville{id,nom} et zoneId/zoneNom).
+   */
+  onLieuSelectChange(site: ISite | null): void {
+    this.selectedSite = site;
+
+    this.editForm.patchValue({
+      lieu: site?.designation ?? null,
+      villeId: site?.ville?.id ?? null,
+      zoneId: site?.zoneId ?? null,
+    });
+  }
+
   openLieuModal(): void {
     const modalRef = this.modalService.open(SiteSelectorModalComponent, {
       size: 'lg',
@@ -1014,7 +1048,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     modalRef.result
       .then((site: ISite) => {
         if (site) {
-          this.editForm.patchValue({ lieu: site.designation });
+          this.onLieuSelectChange(site);
         }
       })
       .catch(() => {
@@ -1114,7 +1148,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
    */
   private uploadPendingPieceJointesThenNavigate(workOrderId: number): void {
     if (this.pendingPieceJointes.length === 0) {
-      this.previousState();
+      this.navigateToEditWorkOrder(workOrderId);
       return;
     }
 
@@ -1125,13 +1159,22 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     forkJoin(uploads).subscribe({
       next: () => {
         this.pendingPieceJointes = [];
-        this.previousState();
+        this.navigateToEditWorkOrder(workOrderId);
       },
       error: () => {
         alert("Certaines pièces jointes n'ont pas pu être envoyées. Vous pouvez réessayer depuis l'accordéon Pièces Jointes.");
-        this.previousState();
+        this.navigateToEditWorkOrder(workOrderId);
       },
     });
+  }
+
+  /**
+   * Redirige vers l'interface d'édition du work order qui vient d'être enregistré
+   * (création ou mise à jour), au lieu de revenir à la liste comme le faisait
+   * previousState() auparavant.
+   */
+  private navigateToEditWorkOrder(workOrderId: number): void {
+    this.router.navigate([workOrderId, 'edit'], { relativeTo: this.activatedRoute.parent });
   }
 
   protected onSaveError(): void {

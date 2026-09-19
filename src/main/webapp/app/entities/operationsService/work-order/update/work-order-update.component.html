@@ -42,6 +42,9 @@
           </button>
 
           <div class="cu-accordion-body" *ngIf="isPanelOpen('global')">
+            <!-- Identifiant unique généré côté serveur (WO-0001-26) — persisté mais non modifiable manuellement -->
+            <input type="hidden" formControlName="identifiantUnique" data-cy="identifiantUnique" />
+
             <div class="row">
               <div class="col-md-6 mb-3">
                 <label
@@ -130,6 +133,11 @@
               <div class="col-md-6 mb-3">
                 <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.lieu" for="field_lieu">Lieu</label>
 
+                <!-- Valeurs réelles persistées : désignation du lieu + ville/zone dérivées du site -->
+                <input type="hidden" formControlName="lieu" />
+                <input type="hidden" formControlName="villeId" data-cy="villeId" />
+                <input type="hidden" formControlName="zoneId" data-cy="zoneId" />
+
                 <div class="cu-affaire-selector">
                   <ng-select
                     id="field_lieu"
@@ -137,16 +145,18 @@
                     name="lieu"
                     class="custom-ng-select"
                     [items]="clientSites"
-                    bindLabel="designation"
-                    bindValue="designation"
+                    [compareWith]="compareSite"
                     [searchable]="true"
                     [clearable]="true"
                     [loading]="loadingClientSites"
-                    formControlName="lieu"
                     placeholder="Sélectionnez d'abord un projet"
                     notFoundText="Aucun site trouvé pour ce client"
                     loadingText="Chargement..."
+                    [ngModel]="selectedSite"
+                    [ngModelOptions]="{ standalone: true }"
+                    (change)="onLieuSelectChange($event)"
                   >
+                    <ng-template ng-label-tmp let-item="item"> {{ item.designation }} </ng-template>
                     <ng-template ng-option-tmp let-item="item">
                       <div>{{ item.designation }}</div>
                       <small class="text-muted" *ngIf="item.code">Code : {{ item.code }}</small>
@@ -163,6 +173,35 @@
                     <fa-icon icon="search"></fa-icon>
                   </button>
                 </div>
+              </div>
+            </div>
+
+            <!-- VILLE / ZONE — dérivées automatiquement du site sélectionné (lecture seule) -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="field_ville">Ville</label>
+                <input
+                  type="text"
+                  class="form-control cu-input"
+                  id="field_ville"
+                  data-cy="ville"
+                  [value]="selectedSite?.ville?.nom ?? ''"
+                  placeholder="Déterminée automatiquement par le site"
+                  readonly
+                />
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="field_zone">Zone</label>
+                <input
+                  type="text"
+                  class="form-control cu-input"
+                  id="field_zone"
+                  data-cy="zone"
+                  [value]="selectedSite?.zoneNom ?? ''"
+                  placeholder="Déterminée automatiquement par le site"
+                  readonly
+                />
               </div>
             </div>
 
