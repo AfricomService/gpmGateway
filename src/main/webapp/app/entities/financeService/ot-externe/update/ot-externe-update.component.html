@@ -411,21 +411,46 @@
           <div class="cu-accordion-body" *ngIf="isPanelOpen('modele')">
             <div class="row">
               <div class="col-md-6 mb-3">
-                <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.modeleOt" for="field_modeleOtId"
-                  >Modèle OT</label
-                >
+                <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.modeleOt" for="field_modeleOtId">
+                  Modèle OT
+                </label>
                 <select
                   class="form-control cu-input"
                   name="modeleOtId"
                   id="field_modeleOtId"
                   data-cy="modeleOtId"
                   formControlName="modeleOtId"
+                  (change)="onModeleOtSelectChange()"
                 >
-                  <option [ngValue]="null" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.selectModeleOt">
-                    Sélectionner un modèle
+                  <option [ngValue]="null">Sélectionner un modèle</option>
+
+                  <option *ngFor="let m of modeleOts" [ngValue]="m.id">
+                    {{ m.nom }}
                   </option>
-                  <!-- TODO : brancher sur ton ModeleOtService (liste des modèles OT + phases) -->
                 </select>
+                <small *ngIf="loadingModeleOts" class="text-muted">Chargement des modèles...</small>
+              </div>
+            </div>
+
+            <!-- Phases ordonnées du modèle sélectionné -->
+            <div class="row" *ngIf="editForm.get('modeleOtId')?.value">
+              <div class="col-12">
+                <label class="form-label fw-bold">Phases du modèle</label>
+
+                <div *ngIf="loadingModelePhases" class="cu-empty-panel">Chargement des phases...</div>
+
+                <div *ngIf="!loadingModelePhases && selectedModelePhases.length === 0" class="cu-empty-panel">
+                  Ce modèle ne contient aucune phase.
+                </div>
+
+                <ol *ngIf="!loadingModelePhases && selectedModelePhases.length > 0" class="cu-phase-list">
+                  <li *ngFor="let phase of selectedModelePhases">
+                    <strong>{{ phase.nom }}</strong>
+                    <span *ngIf="phase.duree"> — {{ phase.duree }} j</span>
+                    <span *ngIf="phase.bloquante" class="badge bg-danger ms-2">Bloquante</span>
+                    <p *ngIf="phase.description" class="text-muted mb-0" style="font-size: 12px">{{ phase.description }}</p>
+                  </li>
+                </ol>
               </div>
             </div>
           </div>

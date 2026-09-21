@@ -33,6 +33,9 @@ import { ScanSettingsService } from 'app/entities/projectService/piece-jointe/se
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { saveAs } from 'file-saver';
 import dayjs from 'dayjs/esm';
+import { ModelPhaseOTService } from '../../model-phase-ot/service/model-phase-ot.service';
+import { IModelPhaseOT } from '../../model-phase-ot/model-phase-ot.model';
+import { IPhaseOt } from '../../phase-ot/phase-ot.model';
 
 type ModeCreation = 'MODELE' | 'LIBRE';
 type AccordionPanel = 'global' | 'mode' | 'modele' | 'client' | 'piecesJointes';
@@ -69,7 +72,7 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   // ================================
   // Accordéon (état purement visuel — même pattern que bon-commande-update)
   // ================================
-  openPanels: Set<AccordionPanel> = new Set(['global', 'mode']);
+  openPanels: Set<AccordionPanel> = new Set(['global', 'mode', 'modele']);
 
   editForm: OtExterneFormGroup = this.otExterneFormService.createOtExterneFormGroup();
 
@@ -85,12 +88,12 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   affairePage = 0;
   affaireTotalItems = 0;
 
-  protected readonly affaireSearch$ = new Subject<string>();
+  modeleOts: IModelPhaseOT[] = [];
+  loadingModeleOts = false;
 
-  // ================================
-  // Information Client — alimentée automatiquement par l'affaire sélectionnée
-  // (identique à bon-commande-update : seul clientId est persisté)
-  // ================================
+  selectedModelePhases: IPhaseOt[] = [];
+  loadingModelePhases = false;
+
   selectedClientInfo: IClient | null = null;
   loadingClientInfo = false;
 
@@ -155,12 +158,20 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   scanBlankThreshold = 240;
   scanCoverageThreshold = 5;
   currentDocumentPages: ScannedPage[] = [];
-  private _pendingDriverFromCookie = '';
 
   scanAccordionStates: { [key: string]: boolean } = {
     scanSource: true,
     scanParams: true,
   };
+
+  protected readonly affaireSearch$ = new Subject<string>();
+
+  private _pendingDriverFromCookie = '';
+
+  // ================================
+  // Information Client — alimentée automatiquement par l'affaire sélectionnée
+  // (identique à bon-commande-update : seul clientId est persisté)
+  // ================================
 
   constructor(
     protected otExterneService: OtExterneService,
@@ -177,12 +188,14 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
     protected scanSettingsService: ScanSettingsService,
     protected sanitizer: DomSanitizer,
     protected modalService: NgbModal,
-    protected cdr: ChangeDetectorRef
+    protected cdr: ChangeDetectorRef,
+    protected modelPhaseOTService: ModelPhaseOTService
   ) {}
 
   ngOnInit(): void {
     this.loadResponsables();
     this.loadAffaires(''); // Pré-charge la liste des projets dès l'ouverture du formulaire
+    this.loadModeleOts(); // <-- add
 
     this.activatedRoute.data.subscribe(({ otExterne }) => {
       this.otExterne = otExterne;
@@ -215,6 +228,51 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
           this.affaireResults = [];
         },
       });
+  }
+
+  onModeleOtSelectChange(): void {
+    const id = this.editForm.get('modeleOtId')?.value ?? null;
+
+    this.editForm.get('modeleOtId')?.markAsDirty();
+    this.editForm.get('modeleOtId')?.markAsTouched();
+
+    this.loadModelePhases(id);
+  }
+
+  loadModeleOts(): void {
+    this.loadingModeleOts = true;
+
+    this.modelPhaseOTService.query({ size: 200 }).subscribe({
+      next: res => {
+        this.modeleOts = res.body ?? [];
+        this.loadingModeleOts = false;
+      },
+      error: () => {
+        this.modeleOts = [];
+        this.loadingModeleOts = false;
+      },
+    });
+  }
+
+  loadModelePhases(modeleOtId: number | null): void {
+    this.selectedModelePhases = [];
+
+    if (modeleOtId === null || modeleOtId === undefined) {
+      return;
+    }
+
+    this.loadingModelePhases = true;
+
+    this.modelPhaseOTService.findPhases(modeleOtId).subscribe({
+      next: res => {
+        this.selectedModelePhases = res.body ?? [];
+        this.loadingModelePhases = false;
+      },
+      error: () => {
+        this.selectedModelePhases = [];
+        this.loadingModelePhases = false;
+      },
+    });
   }
 
   ngOnDestroy(): void {
@@ -761,6 +819,7 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
 
     // Autres responsables (sélection multiple) — chargés via la table de liaison
     if (otExterne.id !== null && otExterne.id !== undefined) {
+      this.loadModelePhases(otExterne.modeleOtId!); // <-- add
       this.loadAutresResponsables(otExterne.id);
       this.loadPieceJointes(otExterne.id);
     }
