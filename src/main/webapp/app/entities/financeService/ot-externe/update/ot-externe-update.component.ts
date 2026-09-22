@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -36,6 +36,11 @@ import dayjs from 'dayjs/esm';
 import { ModelPhaseOTService } from '../../model-phase-ot/service/model-phase-ot.service';
 import { IModelPhaseOT } from '../../model-phase-ot/model-phase-ot.model';
 import { IPhaseOt } from '../../phase-ot/phase-ot.model';
+import { IArticle } from '../../../projectService/article/article.model';
+import { IOtArticles, NewOtArticles } from '../ot-articles.model';
+import { OtArticlesService } from '../ot-articles.service';
+import { ArticleService } from '../../../projectService/article/service/article.service';
+import { ArticleAffectationResult, ArticleSelectorModalComponent } from '../../../projectService/article/article-selector-modal.component';
 
 type ModeCreation = 'MODELE' | 'LIBRE';
 type AccordionPanel = 'global' | 'mode' | 'modele' | 'client' | 'piecesJointes';
@@ -52,6 +57,14 @@ const AFFAIRE_PAGE_SIZE = 15;
 const RESPONSABLE_ROLE_CODE = 'MANAGER';
 const BON_COMMANDE_STATUT = 'ACTIF';
 
+interface PendingOtArticle {
+  tempId: string;
+  phaseOtId: number;
+  article: IArticle;
+  prixPropose: number;
+  qteCommandee: number;
+}
+
 @Component({
   selector: 'jhi-ot-externe-update',
   templateUrl: './ot-externe-update.component.html',
@@ -60,6 +73,14 @@ const BON_COMMANDE_STATUT = 'ACTIF';
 export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   @ViewChild('clientDetailsModal') clientDetailsModal!: TemplateRef<any>;
   @ViewChild('clientCommandeDetailsModal') clientCommandeDetailsModal!: TemplateRef<any>;
+
+  allArticles: IArticle[] = [];
+  loadingArticles = false;
+
+  otArticlesByPhase: { [phaseOtId: number]: IOtArticles[] } = {};
+  loadingOtArticles = false;
+
+  pendingOtArticles: PendingOtArticle[] = [];
 
   isSaving = false;
   otExterne: IOtExterne | null = null;
@@ -189,13 +210,16 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
     protected sanitizer: DomSanitizer,
     protected modalService: NgbModal,
     protected cdr: ChangeDetectorRef,
-    protected modelPhaseOTService: ModelPhaseOTService
+    protected modelPhaseOTService: ModelPhaseOTService,
+    protected otArticlesService: OtArticlesService,
+    protected articleService: ArticleService
   ) {}
 
   ngOnInit(): void {
     this.loadResponsables();
     this.loadAffaires(''); // Pré-charge la liste des projets dès l'ouverture du formulaire
     this.loadModeleOts(); // <-- add
+    this.loadAllArticles(); // <-- add
 
     this.activatedRoute.data.subscribe(({ otExterne }) => {
       this.otExterne = otExterne;
@@ -228,6 +252,129 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
           this.affaireResults = [];
         },
       });
+  }
+
+  private handleArticleSelected(phase: IPhaseOt, result: ArticleAffectationResult): void {
+    const otExterneId = this.otExterne?.id;
+
+    if (otExterneId === null || otExterneId === undefined) {
+      this.pendingOtArticles = [
+        ...this.pendingOtArticles,
+        {
+          tempId: this.generateRandomId(10),
+          phaseOtId: phase.id,
+          article: result.article,
+          prixPropose: result.prixPropose,
+          qteCommandee: result.qteCommandee,
+        },
+      ];
+      return;
+    }
+
+    const payload: NewOtArticles = {
+      id: null,
+      otId: otExterneId,
+      articleId: result.article.id,
+      prixPropose: result.prixPropose,
+      qteCommandee: result.qteCommandee,
+      qteRealisee: null,
+      dateAffectation: dayjs(),
+      phaseOtId: phase.id,
+    };
+
+    this.otArticlesService.create(payload).subscribe({
+      next: res => {
+        const saved = res.body;
+        if (saved) {
+          const list = this.otArticlesByPhase[phase.id] ?? [];
+          this.otArticlesByPhase[phase.id] = [...list, saved];
+        }
+      },
+      error: () => {
+        alert("Échec de l'ajout de l'article.");
+      },
+    });
+  }
+
+  private loadAllArticles(): void {
+    this.loadingArticles = true;
+    this.articleService.query({ size: 1000 }).subscribe({
+      next: res => {
+        this.allArticles = res.body ?? [];
+        this.loadingArticles = false;
+      },
+      error: () => {
+        this.allArticles = [];
+        this.loadingArticles = false;
+      },
+    });
+  }
+
+  private loadOtArticles(otExterneId: number): void {
+    this.loadingOtArticles = true;
+
+    this.otArticlesService.findByOtId(otExterneId).subscribe({
+      next: res => {
+        const list = res.body ?? [];
+        const grouped: { [phaseOtId: number]: IOtArticles[] } = {};
+        list.forEach(oa => {
+          if (oa.phaseOtId !== null && oa.phaseOtId !== undefined) {
+            grouped[oa.phaseOtId] = grouped[oa.phaseOtId] ?? [];
+            grouped[oa.phaseOtId].push(oa);
+          }
+        });
+        this.otArticlesByPhase = grouped;
+        this.loadingOtArticles = false;
+      },
+      error: () => {
+        this.otArticlesByPhase = {};
+        this.loadingOtArticles = false;
+      },
+    });
+  }
+
+  getArticleById(articleId: number | null | undefined): IArticle | null {
+    if (articleId === null || articleId === undefined) {
+      return null;
+    }
+    return this.allArticles.find(a => a.id === articleId) ?? null;
+  }
+
+  openArticleModal(phase: IPhaseOt): void {
+    const modalRef = this.modalService.open(ArticleSelectorModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'article-selector-modal-window',
+    });
+
+    modalRef.componentInstance.modalTitle = `Ajouter un article — ${phase.nom ?? ''}`;
+
+    modalRef.result
+      .then((result: ArticleAffectationResult) => {
+        if (result) {
+          this.handleArticleSelected(phase, result);
+        }
+      })
+      .catch(() => {
+        // Fermeture du modal sans sélection
+      });
+  }
+
+  removePendingOtArticle(tempId: string): void {
+    this.pendingOtArticles = this.pendingOtArticles.filter(p => p.tempId !== tempId);
+  }
+
+  pendingOtArticlesForPhase(phaseOtId: number): PendingOtArticle[] {
+    return this.pendingOtArticles.filter(p => p.phaseOtId === phaseOtId);
+  }
+
+  removeOtArticle(phaseOtId: number, otArticleId: number): void {
+    this.otArticlesService.delete(otArticleId).subscribe({
+      next: () => {
+        this.otArticlesByPhase[phaseOtId] = (this.otArticlesByPhase[phaseOtId] ?? []).filter(a => a.id !== otArticleId);
+      },
+    });
   }
 
   onModeleOtSelectChange(): void {
@@ -743,23 +890,60 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
    * même logique que uploadPendingPieceJointesThenRefresh dans bon-commande-update.
    */
   private uploadPendingPieceJointesThenNavigate(otExterneId: number): void {
-    if (this.pendingPieceJointes.length === 0) {
-      this.router.navigate(['../', otExterneId, 'edit'], { relativeTo: this.activatedRoute });
-      return;
-    }
+    const uploadPJs$: Observable<unknown> =
+      this.pendingPieceJointes.length === 0
+        ? of(null)
+        : forkJoin(
+            this.pendingPieceJointes.map(p =>
+              this.pieceJointeService.uploadPieceJointeOtExterne(p.file, otExterneId, this.generateRandomId(10))
+            )
+          );
 
-    const uploads = this.pendingPieceJointes.map(p =>
-      this.pieceJointeService.uploadPieceJointeOtExterne(p.file, otExterneId, this.generateRandomId(10))
-    );
-
-    forkJoin(uploads).subscribe({
+    uploadPJs$.subscribe({
       next: () => {
         this.pendingPieceJointes = [];
-        this.router.navigate(['../', otExterneId, 'edit'], { relativeTo: this.activatedRoute });
+        this.persistPendingOtArticlesThenNavigate(otExterneId);
       },
       error: () => {
         alert("Certaines pièces jointes n'ont pas pu être envoyées. Vous pouvez réessayer depuis l'accordéon Pièces Jointes.");
-        this.router.navigate(['../', otExterneId, 'edit'], { relativeTo: this.activatedRoute });
+        this.persistPendingOtArticlesThenNavigate(otExterneId);
+      },
+    });
+  }
+
+  private persistPendingOtArticlesThenNavigate(otExterneId: number): void {
+    if (this.pendingOtArticles.length === 0) {
+      this.router.navigate(['../', otExterneId, 'edit'], {
+        relativeTo: this.activatedRoute,
+      });
+      return;
+    }
+
+    const creates = this.pendingOtArticles.map(p =>
+      this.otArticlesService.create({
+        id: null,
+        otId: otExterneId,
+        articleId: p.article.id,
+        prixPropose: p.prixPropose,
+        qteCommandee: p.qteCommandee,
+        qteRealisee: null,
+        dateAffectation: dayjs(),
+        phaseOtId: p.phaseOtId,
+      })
+    );
+
+    forkJoin(creates).subscribe({
+      next: () => {
+        this.pendingOtArticles = [];
+        this.router.navigate(['../', otExterneId, 'edit'], {
+          relativeTo: this.activatedRoute,
+        });
+      },
+      error: () => {
+        alert("Certains articles n'ont pas pu être associés. Vous pouvez réessayer depuis l'accordéon Modèle OT et phases.");
+        this.router.navigate(['../', otExterneId, 'edit'], {
+          relativeTo: this.activatedRoute,
+        });
       },
     });
   }
@@ -820,6 +1004,7 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
     // Autres responsables (sélection multiple) — chargés via la table de liaison
     if (otExterne.id !== null && otExterne.id !== undefined) {
       this.loadModelePhases(otExterne.modeleOtId!); // <-- add
+      this.loadOtArticles(otExterne.id); // <-- add
       this.loadAutresResponsables(otExterne.id);
       this.loadPieceJointes(otExterne.id);
     }

@@ -1,0 +1,53 @@
+<div class="modal-header">
+  <h5 class="modal-title">{{ modalTitle }}</h5>
+  <button type="button" class="btn-close" (click)="dismiss()"></button>
+</div>
+
+<div class="modal-body">
+  <input
+    type="text"
+    class="form-control mb-3"
+    placeholder="Rechercher un article (code ou désignation)..."
+    [(ngModel)]="searchTerm"
+    (ngModelChange)="onSearchInput()"
+  />
+
+  <div *ngIf="loading" class="text-center text-muted py-3">Chargement des articles...</div>
+  <div *ngIf="!loading && filteredArticles.length === 0" class="text-center text-muted py-3">Aucun article trouvé.</div>
+
+  <div
+    *ngIf="!loading && filteredArticles.length > 0"
+    style="max-height: 260px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px"
+  >
+    <div
+      *ngFor="let a of filteredArticles"
+      (click)="selectArticle(a)"
+      style="padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f1f5f9"
+      [style.background]="selectedArticle?.id === a.id ? '#eff6ff' : '#fff'"
+    >
+      <strong>{{ a.designation }}</strong>
+      <div class="text-muted" style="font-size: 12px">
+        Code : {{ a.code }}
+        <span *ngIf="a.prixUnitHT !== null && a.prixUnitHT !== undefined"> — PU HT : {{ a.prixUnitHT }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-3" *ngIf="selectedArticle">
+    <div class="col-md-6 mb-3">
+      <label class="form-label">Prix proposé</label>
+      <input type="number" class="form-control" [(ngModel)]="prixPropose" min="0" step="0.01" />
+    </div>
+    <div class="col-md-6 mb-3">
+      <label class="form-label">Quantité commandée</label>
+      <input type="number" class="form-control" [(ngModel)]="qteCommandee" min="1" step="1" />
+    </div>
+  </div>
+
+  <div *ngIf="submitError" class="text-danger" style="font-size: 13px">{{ submitError }}</div>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-light" (click)="dismiss()">Annuler</button>
+  <button type="button" class="btn btn-primary" [disabled]="!selectedArticle" (click)="confirm()">Ajouter</button>
+</div>
