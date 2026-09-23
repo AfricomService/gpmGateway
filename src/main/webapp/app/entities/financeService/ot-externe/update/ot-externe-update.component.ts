@@ -74,6 +74,9 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   @ViewChild('clientDetailsModal') clientDetailsModal!: TemplateRef<any>;
   @ViewChild('clientCommandeDetailsModal') clientCommandeDetailsModal!: TemplateRef<any>;
 
+  modeleOtLocked = false;
+  phasesArticlesEditMode = true; // true by default (creation mode = always editable)
+
   allArticles: IArticle[] = [];
   loadingArticles = false;
 
@@ -333,6 +336,14 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
     });
   }
 
+  isExistingOt(): boolean {
+    return this.otExterne?.id !== null && this.otExterne?.id !== undefined;
+  }
+
+  togglePhasesArticlesEditMode(): void {
+    this.phasesArticlesEditMode = !this.phasesArticlesEditMode;
+  }
+
   getArticleById(articleId: number | null | undefined): IArticle | null {
     if (articleId === null || articleId === undefined) {
       return null;
@@ -393,6 +404,16 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
       next: res => {
         this.modeleOts = res.body ?? [];
         this.loadingModeleOts = false;
+
+        // Le <select> natif ne re-sélectionne pas automatiquement une option
+        // ajoutée après que la valeur du FormControl ait déjà été écrite
+        // (cas fréquent : le resolver charge l'OT externe avant que cette
+        // liste de modèles n'ait fini de se charger). On réapplique donc
+        // explicitement la valeur ici pour forcer la ré-sélection visuelle.
+        const currentModeleOtId = this.otExterne?.modeleOtId ?? null;
+        if (currentModeleOtId !== null && currentModeleOtId !== undefined) {
+          this.editForm.get('modeleOtId')?.setValue(currentModeleOtId);
+        }
       },
       error: () => {
         this.modeleOts = [];
@@ -442,6 +463,9 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   }
 
   selectModeCreation(mode: ModeCreation): void {
+    if (this.modeleOtLocked) {
+      return; // le mode/modèle ne peut plus être changé une fois l'OT créé avec un modèle
+    }
     this.modeCreation = mode;
     if (mode === 'LIBRE') {
       this.editForm.patchValue({ modeleOtId: null });
@@ -1007,6 +1031,13 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
       this.loadOtArticles(otExterne.id); // <-- add
       this.loadAutresResponsables(otExterne.id);
       this.loadPieceJointes(otExterne.id);
+    }
+
+    // Verrouillage du modèle OT + passage en lecture seule pour phases/articles
+    if (otExterne.modeleOtId !== null && otExterne.modeleOtId !== undefined) {
+      this.modeleOtLocked = true;
+      this.editForm.get('modeleOtId')?.disable();
+      this.phasesArticlesEditMode = false; // lecture seule par défaut à l'ouverture
     }
 
     // Libellé du bon de commande déjà lié — affichage uniquement

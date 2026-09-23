@@ -389,6 +389,7 @@
                 type="button"
                 class="btn cu-mode-btn"
                 [class.cu-mode-btn-active]="modeCreation === 'LIBRE'"
+                [disabled]="modeleOtLocked"
                 (click)="selectModeCreation('LIBRE')"
                 data-cy="modeLibre"
               >
@@ -423,19 +424,32 @@
                   (change)="onModeleOtSelectChange()"
                 >
                   <option [ngValue]="null">Sélectionner un modèle</option>
-
-                  <option *ngFor="let m of modeleOts" [ngValue]="m.id">
-                    {{ m.nom }}
-                  </option>
+                  <option *ngFor="let m of modeleOts" [ngValue]="m.id">{{ m.nom }}</option>
                 </select>
                 <small *ngIf="loadingModeleOts" class="text-muted">Chargement des modèles...</small>
+                <small *ngIf="modeleOtLocked" class="text-muted d-block mt-1">
+                  🔒 Le modèle OT ne peut plus être modifié une fois l'OT externe créé.
+                </small>
               </div>
             </div>
 
             <!-- Phases ordonnées du modèle sélectionné -->
             <div class="row" *ngIf="editForm.get('modeleOtId')?.value">
               <div class="col-12">
-                <label class="form-label fw-bold">Phases du modèle</label>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px">
+                  <label class="form-label fw-bold mb-0">Phases du modèle</label>
+
+                  <button
+                    *ngIf="isExistingOt()"
+                    type="button"
+                    class="btn btn-sm"
+                    [class.btn-outline-primary]="!phasesArticlesEditMode"
+                    [class.btn-outline-success]="phasesArticlesEditMode"
+                    (click)="togglePhasesArticlesEditMode()"
+                  >
+                    {{ phasesArticlesEditMode ? '✅ Terminer la modification' : '✎ Modifier' }}
+                  </button>
+                </div>
 
                 <div *ngIf="loadingModelePhases" class="cu-empty-panel">Chargement des phases...</div>
 
@@ -452,7 +466,7 @@
                         <span *ngIf="phase.bloquante" class="badge bg-danger ms-2">Bloquante</span>
                         <p *ngIf="phase.description" class="text-muted mb-0" style="font-size: 12px">{{ phase.description }}</p>
                       </div>
-                      <button type="button" class="btn-cu-add" (click)="openArticleModal(phase)">
+                      <button *ngIf="phasesArticlesEditMode" type="button" class="btn-cu-add" (click)="openArticleModal(phase)">
                         <fa-icon icon="plus"></fa-icon>&nbsp;Ajouter Article
                       </button>
                     </div>
@@ -479,6 +493,7 @@
                           <span class="text-muted"> — Qté : {{ oa.qteCommandee }} — Prix : {{ oa.prixPropose }}</span>
                         </div>
                         <button
+                          *ngIf="phasesArticlesEditMode"
                           type="button"
                           (click)="removeOtArticle(phase.id, oa.id)"
                           title="Retirer"
@@ -522,6 +537,7 @@
                           <span class="text-muted"> — Qté : {{ p.qteCommandee }} — Prix : {{ p.prixPropose }}</span>
                         </div>
                         <button
+                          *ngIf="phasesArticlesEditMode"
                           type="button"
                           (click)="removePendingOtArticle(p.tempId)"
                           title="Retirer"
