@@ -442,12 +442,12 @@
                   <button
                     *ngIf="isExistingOt()"
                     type="button"
-                    class="btn btn-sm"
+                    class="btn-cu-enable-edit"
                     [class.btn-outline-primary]="!phasesArticlesEditMode"
                     [class.btn-outline-success]="phasesArticlesEditMode"
                     (click)="togglePhasesArticlesEditMode()"
                   >
-                    {{ phasesArticlesEditMode ? '✅ Terminer la modification' : '✎ Modifier' }}
+                    {{ phasesArticlesEditMode ? 'Terminer la modification' : 'Modifier' }}
                   </button>
                 </div>
 
