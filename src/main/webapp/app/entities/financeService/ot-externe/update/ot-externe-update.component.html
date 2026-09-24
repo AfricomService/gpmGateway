@@ -389,6 +389,7 @@
                 type="button"
                 class="btn cu-mode-btn"
                 [class.cu-mode-btn-active]="modeCreation === 'LIBRE'"
+                [disabled]="modeleOtLocked"
                 (click)="selectModeCreation('LIBRE')"
                 data-cy="modeLibre"
               >
@@ -411,21 +412,153 @@
           <div class="cu-accordion-body" *ngIf="isPanelOpen('modele')">
             <div class="row">
               <div class="col-md-6 mb-3">
-                <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.modeleOt" for="field_modeleOtId"
-                  >Modèle OT</label
-                >
+                <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.modeleOt" for="field_modeleOtId">
+                  Modèle OT
+                </label>
                 <select
                   class="form-control cu-input"
                   name="modeleOtId"
                   id="field_modeleOtId"
                   data-cy="modeleOtId"
                   formControlName="modeleOtId"
+                  (change)="onModeleOtSelectChange()"
                 >
-                  <option [ngValue]="null" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.selectModeleOt">
-                    Sélectionner un modèle
-                  </option>
-                  <!-- TODO : brancher sur ton ModeleOtService (liste des modèles OT + phases) -->
+                  <option [ngValue]="null">Sélectionner un modèle</option>
+                  <option *ngFor="let m of modeleOts" [ngValue]="m.id">{{ m.nom }}</option>
                 </select>
+                <small *ngIf="loadingModeleOts" class="text-muted">Chargement des modèles...</small>
+                <small *ngIf="modeleOtLocked" class="text-muted d-block mt-1">
+                  🔒 Le modèle OT ne peut plus être modifié une fois l'OT externe créé.
+                </small>
+              </div>
+            </div>
+
+            <!-- Phases ordonnées du modèle sélectionné -->
+            <div class="row" *ngIf="editForm.get('modeleOtId')?.value">
+              <div class="col-12">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px">
+                  <label class="form-label fw-bold mb-0">Phases du modèle</label>
+
+                  <button
+                    *ngIf="isExistingOt()"
+                    type="button"
+                    class="btn-cu-enable-edit"
+                    [class.btn-outline-primary]="!phasesArticlesEditMode"
+                    [class.btn-outline-success]="phasesArticlesEditMode"
+                    (click)="togglePhasesArticlesEditMode()"
+                  >
+                    {{ phasesArticlesEditMode ? 'Terminer la modification' : 'Modifier' }}
+                  </button>
+                </div>
+
+                <div *ngIf="loadingModelePhases" class="cu-empty-panel">Chargement des phases...</div>
+
+                <div *ngIf="!loadingModelePhases && selectedModelePhases.length === 0" class="cu-empty-panel">
+                  Ce modèle ne contient aucune phase.
+                </div>
+
+                <ol *ngIf="!loadingModelePhases && selectedModelePhases.length > 0" class="cu-phase-list">
+                  <li *ngFor="let phase of selectedModelePhases" style="margin-bottom: 14px">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+                      <div>
+                        <strong>{{ phase.nom }}</strong>
+                        <span *ngIf="phase.duree"> — {{ phase.duree }} j</span>
+                        <span *ngIf="phase.bloquante" class="badge bg-danger ms-2">Bloquante</span>
+                        <p *ngIf="phase.description" class="text-muted mb-0" style="font-size: 12px">{{ phase.description }}</p>
+                      </div>
+                      <button *ngIf="phasesArticlesEditMode" type="button" class="btn-cu-add" (click)="openArticleModal(phase)">
+                        <fa-icon icon="plus"></fa-icon>&nbsp;Ajouter Article
+                      </button>
+                    </div>
+
+                    <!-- Articles déjà persistés (mode édition) -->
+                    <div *ngIf="(otArticlesByPhase[phase.id] ?? []).length > 0" style="margin-top: 8px; padding-left: 8px">
+                      <div
+                        *ngFor="let oa of otArticlesByPhase[phase.id]"
+                        style="
+                          display: flex;
+                          align-items: center;
+                          justify-content: space-between;
+                          gap: 10px;
+                          padding: 6px 12px;
+                          border: 1px solid #e2e8f0;
+                          border-radius: 30px;
+                          background: #f8fafc;
+                          margin-bottom: 6px;
+                          font-size: 13px;
+                        "
+                      >
+                        <div>
+                          <strong>{{ getArticleById(oa.articleId)?.designation ?? 'Article #' + oa.articleId }}</strong>
+                          <span class="text-muted"> — Qté : {{ oa.qteCommandee }} — Prix : {{ oa.prixPropose }}</span>
+                        </div>
+                        <button
+                          *ngIf="phasesArticlesEditMode"
+                          type="button"
+                          (click)="removeOtArticle(phase.id, oa.id)"
+                          title="Retirer"
+                          style="
+                            width: 24px;
+                            height: 24px;
+                            border-radius: 50%;
+                            border: none;
+                            background: #fde8e8;
+                            color: #dc3545;
+                            cursor: pointer;
+                            font-size: 12px;
+                            font-weight: 700;
+                          "
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Articles en attente (mode création, avant le premier enregistrement) -->
+                    <div *ngIf="pendingOtArticlesForPhase(phase.id).length > 0" style="margin-top: 8px; padding-left: 8px">
+                      <div
+                        *ngFor="let p of pendingOtArticlesForPhase(phase.id)"
+                        style="
+                          display: flex;
+                          align-items: center;
+                          justify-content: space-between;
+                          gap: 10px;
+                          padding: 6px 12px;
+                          border: 1px dashed #f5822a;
+                          border-radius: 30px;
+                          background: #fff7ed;
+                          margin-bottom: 6px;
+                          font-size: 13px;
+                        "
+                      >
+                        <div>
+                          <span>⏳</span>
+                          <strong>{{ p.article.designation }}</strong>
+                          <span class="text-muted"> — Qté : {{ p.qteCommandee }} — Prix : {{ p.prixPropose }}</span>
+                        </div>
+                        <button
+                          *ngIf="phasesArticlesEditMode"
+                          type="button"
+                          (click)="removePendingOtArticle(p.tempId)"
+                          title="Retirer"
+                          style="
+                            width: 24px;
+                            height: 24px;
+                            border-radius: 50%;
+                            border: none;
+                            background: #fde8e8;
+                            color: #dc3545;
+                            cursor: pointer;
+                            font-size: 12px;
+                            font-weight: 700;
+                          "
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                </ol>
               </div>
             </div>
           </div>

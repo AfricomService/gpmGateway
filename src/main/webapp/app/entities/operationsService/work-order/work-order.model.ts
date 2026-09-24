@@ -25,6 +25,7 @@ export interface IWorkOrder {
   lieu?: string | null;
   villeId?: number | null;
   zoneId?: number | null;
+  siteId?: number | null;
   responsableId?: number | null;
   coordinateur?: number | null;
   identifiantUnique?: string | null;

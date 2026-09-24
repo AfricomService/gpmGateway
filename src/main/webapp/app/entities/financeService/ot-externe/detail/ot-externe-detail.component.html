@@ -1,80 +1,420 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
+<div class="cu-ot-externe-update">
+  <div class="cu-container">
     <div *ngIf="otExterne">
-      <h2 data-cy="otExterneDetailsHeading"><span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.detail.title">Ot Externe</span></h2>
-
-      <hr />
-
       <jhi-alert-error></jhi-alert-error>
-
       <jhi-alert></jhi-alert>
 
-      <dl class="row-md jh-entity-details">
-        <dt><span jhiTranslate="global.field.id">ID</span></dt>
-        <dd>
-          <span>{{ otExterne.id }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.reference">Reference</span></dt>
-        <dd>
-          <span>{{ otExterne.reference }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.statut">Statut</span></dt>
-        <dd>
-          <span jhiTranslate="{{ 'gpmGatewayApp.StatutOtExterne.' + otExterne.statut }}">{{ otExterne.statut }}</span>
-        </dd>
-        <dt>
-          <span
-            jhiTranslate="gpmGatewayApp.financeServiceOtExterne.affaireId"
-            [ngbTooltip]="'gpmGatewayApp.financeServiceOtExterne.help.affaireId' | translate"
-            >Affaire Id</span
-          >
-        </dt>
-        <dd>
-          <span>{{ otExterne.affaireId }}</span>
-        </dd>
-        <dt>
-          <span
-            jhiTranslate="gpmGatewayApp.financeServiceOtExterne.clientId"
-            [ngbTooltip]="'gpmGatewayApp.financeServiceOtExterne.help.clientId' | translate"
-            >Client Id</span
-          >
-        </dt>
-        <dd>
-          <span>{{ otExterne.clientId }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.createdAt">Created At</span></dt>
-        <dd>
-          <span>{{ otExterne.createdAt | formatMediumDatetime }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.updatedAt">Updated At</span></dt>
-        <dd>
-          <span>{{ otExterne.updatedAt | formatMediumDatetime }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.createdBy">Created By</span></dt>
-        <dd>
-          <span>{{ otExterne.createdBy }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.createdByUserLogin">Created By User Login</span></dt>
-        <dd>
-          <span>{{ otExterne.createdByUserLogin }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.updatedBy">Updated By</span></dt>
-        <dd>
-          <span>{{ otExterne.updatedBy }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.updatedByUserLogin">Updated By User Login</span></dt>
-        <dd>
-          <span>{{ otExterne.updatedByUserLogin }}</span>
-        </dd>
-      </dl>
+      <!-- ====================================================== -->
+      <!-- TOOLBAR -->
+      <!-- ====================================================== -->
+      <div class="cu-toolbar cu-toolbar-end">
+        <span class="cu-badge-id" *ngIf="otExterne.reference"> {{ otExterne.reference }} </span>
+      </div>
 
-      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
-        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
-      </button>
+      <!-- ====================================================== -->
+      <!-- ACCORDEON -->
+      <!-- ====================================================== -->
+      <div class="cu-accordion">
+        <!-- SECTION 1 : INFORMATIONS GENERALES -->
+        <div class="cu-accordion-item" [class.open]="isPanelOpen('global')">
+          <button type="button" class="cu-accordion-header" (click)="togglePanel('global')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="file-invoice" class="cu-accordion-icon"></fa-icon>
+              <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.section.informationsGenerales">Informations Générales</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
 
-      <button type="button" [routerLink]="['/ot-externe', otExterne.id, 'edit']" class="btn btn-primary">
-        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
-      </button>
+          <div class="cu-accordion-body" *ngIf="isPanelOpen('global')">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.affaireId">Affaire</label>
+                <input
+                  type="text"
+                  class="form-control cu-input"
+                  [value]="loadingAffaire ? 'Chargement...' : selectedAffaire?.designationAffaire ?? ''"
+                  readonly
+                />
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Code projet</label>
+                <input type="text" class="form-control cu-input" [value]="selectedAffaireCode ?? ''" readonly />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.lieu">Lieu</label>
+                <input type="text" class="form-control cu-input" [value]="otExterne.lieu ?? ''" readonly />
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.dateDebut">Date de début OT</label>
+                <input type="text" class="form-control cu-input" [value]="(otExterne.dateDebut | formatMediumDatetime) ?? ''" readonly />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.responsableId">Responsable</label>
+                <input
+                  type="text"
+                  class="form-control cu-input"
+                  [value]="loadingResponsable ? 'Chargement...' : selectedResponsable?.nomPrenom ?? ''"
+                  readonly
+                />
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Autre Responsable</label>
+                <input
+                  type="text"
+                  class="form-control cu-input"
+                  [value]="loadingAutresResponsables ? 'Chargement...' : getAutresResponsablesNames()"
+                  readonly
+                />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.bonCommandeId">Bon de commande</label>
+                <input
+                  type="text"
+                  class="form-control cu-input"
+                  [value]="selectedBonCommande?.identifiantUnique ?? (selectedBonCommande ? 'BC #' + selectedBonCommande?.id : '')"
+                  readonly
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION : INFORMATION CLIENT -->
+        <div class="cu-accordion-item" [class.open]="isPanelOpen('client')">
+          <button type="button" class="cu-accordion-header" (click)="togglePanel('client')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="building" class="cu-accordion-icon"></fa-icon>
+              <span>Information Client</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" [hidden]="!isPanelOpen('client')">
+            <div class="cu-client-columns">
+              <div class="cu-client-col">
+                <div class="cu-client-col-header">
+                  <div class="cu-client-col-title">Client Final</div>
+                </div>
+
+                <div class="cu-client-field">
+                  <label class="form-label fw-bold">Client</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [value]="loadingClientInfo ? 'Chargement...' : selectedClientInfo?.raisonSociale ?? ''"
+                    readonly
+                  />
+                </div>
+                <div class="cu-client-field">
+                  <label class="form-label">Matricule Fiscale</label>
+                  <input type="text" class="form-control" [value]="selectedClientInfo?.identifiantUnique ?? ''" readonly />
+                </div>
+                <div class="cu-client-field">
+                  <label class="form-label">Adresse</label>
+                  <input type="text" class="form-control" [value]="selectedClientInfo?.adresse ?? ''" readonly />
+                </div>
+                <div class="cu-client-field">
+                  <label class="form-label">Téléphone</label>
+                  <input type="text" class="form-control" [value]="selectedClientInfo?.telephone ?? ''" readonly />
+                </div>
+                <div class="cu-client-field">
+                  <label class="form-label">Email</label>
+                  <input type="text" class="form-control" [value]="selectedClientInfo?.email ?? ''" readonly />
+                </div>
+              </div>
+
+              <div class="cu-client-col">
+                <div class="cu-client-col-header">
+                  <div class="cu-client-col-title">Client Demandeur</div>
+                </div>
+
+                <div class="cu-client-field">
+                  <label class="form-label fw-bold">Client Demandeur</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [value]="loadingClientCommandeInfo ? 'Chargement...' : selectedClientCommandeInfo?.raisonSociale ?? ''"
+                    readonly
+                  />
+                </div>
+                <div class="cu-client-field">
+                  <label class="form-label">Matricule Fiscale</label>
+                  <input type="text" class="form-control" [value]="selectedClientCommandeInfo?.identifiantUnique ?? ''" readonly />
+                </div>
+                <div class="cu-client-field">
+                  <label class="form-label">Adresse</label>
+                  <input type="text" class="form-control" [value]="selectedClientCommandeInfo?.adresse ?? ''" readonly />
+                </div>
+                <div class="cu-client-field">
+                  <label class="form-label">Téléphone</label>
+                  <input type="text" class="form-control" [value]="selectedClientCommandeInfo?.telephone ?? ''" readonly />
+                </div>
+                <div class="cu-client-field">
+                  <label class="form-label">Email</label>
+                  <input type="text" class="form-control" [value]="selectedClientCommandeInfo?.email ?? ''" readonly />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2 : MODE DE CREATION -->
+        <div class="cu-accordion-item" [class.open]="isPanelOpen('mode')">
+          <button type="button" class="cu-accordion-header" (click)="togglePanel('mode')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="sliders-h" class="cu-accordion-icon"></fa-icon>
+              <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.section.modeCreation">Mode de création</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isPanelOpen('mode')">
+            <div class="cu-mode-creation d-flex align-items-center gap-2">
+              <span class="btn cu-mode-btn" [class.cu-mode-btn-active]="otExterne.modeleOtId"> Basé sur un modèle OT </span>
+              <span class="btn cu-mode-btn" [class.cu-mode-btn-active]="!otExterne.modeleOtId"> OT libre </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3 : MODELE OT ET PHASES -->
+        <div class="cu-accordion-item" [class.open]="isPanelOpen('modele')" *ngIf="otExterne.modeleOtId">
+          <button type="button" class="cu-accordion-header" (click)="togglePanel('modele')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="layer-group" class="cu-accordion-icon"></fa-icon>
+              <span jhiTranslate="gpmGatewayApp.financeServiceOtExterne.section.modeleOtPhases">Modèle OT et phases</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isPanelOpen('modele')">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.financeServiceOtExterne.modeleOt">Modèle OT</label>
+                <input
+                  type="text"
+                  class="form-control cu-input"
+                  [value]="loadingModeleOt ? 'Chargement...' : selectedModeleOt?.nom ?? ''"
+                  readonly
+                />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-12">
+                <label class="form-label fw-bold mb-2">Phases du modèle</label>
+
+                <div *ngIf="loadingModelePhases" class="cu-empty-panel">Chargement des phases...</div>
+
+                <div *ngIf="!loadingModelePhases && selectedModelePhases.length === 0" class="cu-empty-panel">
+                  Ce modèle ne contient aucune phase.
+                </div>
+
+                <ol *ngIf="!loadingModelePhases && selectedModelePhases.length > 0" class="cu-phase-list">
+                  <li *ngFor="let phase of selectedModelePhases" style="margin-bottom: 14px">
+                    <div>
+                      <strong>{{ phase.nom }}</strong>
+                      <span *ngIf="phase.duree"> — {{ phase.duree }} j</span>
+                      <span *ngIf="phase.bloquante" class="badge bg-danger ms-2">Bloquante</span>
+                      <p *ngIf="phase.description" class="text-muted mb-0" style="font-size: 12px">{{ phase.description }}</p>
+                    </div>
+
+                    <!-- Articles associés à cette phase (lecture uniquement) -->
+                    <div *ngIf="(otArticlesByPhase[phase.id] ?? []).length > 0" style="margin-top: 8px; padding-left: 8px">
+                      <div
+                        *ngFor="let oa of otArticlesByPhase[phase.id]"
+                        style="
+                          display: flex;
+                          align-items: center;
+                          gap: 10px;
+                          padding: 6px 12px;
+                          border: 1px solid #e2e8f0;
+                          border-radius: 30px;
+                          background: #f8fafc;
+                          margin-bottom: 6px;
+                          font-size: 13px;
+                        "
+                      >
+                        <div>
+                          <strong>{{ getArticleById(oa.articleId)?.designation ?? 'Article #' + oa.articleId }}</strong>
+                          <span class="text-muted"> — Qté commandée : {{ oa.qteCommandee }} — Prix proposé : {{ oa.prixPropose }}</span>
+                          <span class="text-muted" *ngIf="oa.qteRealisee !== null && oa.qteRealisee !== undefined">
+                            — Qté réalisée : {{ oa.qteRealisee }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      *ngIf="(otArticlesByPhase[phase.id] ?? []).length === 0"
+                      class="text-muted"
+                      style="font-size: 12px; padding-left: 8px; margin-top: 4px"
+                    >
+                      Aucun article associé à cette phase.
+                    </div>
+                  </li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 4 : PIECES JOINTES (lecture uniquement : aperçu + téléchargement) -->
+        <div class="cu-accordion-item" [class.open]="isPanelOpen('piecesJointes')">
+          <button type="button" class="cu-accordion-header" (click)="togglePanel('piecesJointes')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="paperclip" class="cu-accordion-icon"></fa-icon>
+              <span>Pièces Jointes</span>
+              <span class="cu-accordion-count" *ngIf="pieceJointes.length">{{ pieceJointes.length }}</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isPanelOpen('piecesJointes')">
+            <div *ngIf="loadingPieceJointes" class="cu-empty-panel">Chargement...</div>
+
+            <div *ngIf="!loadingPieceJointes && pieceJointes.length === 0" class="cu-empty-panel">Aucune pièce jointe pour le moment.</div>
+
+            <div
+              *ngIf="!loadingPieceJointes && pieceJointes.length > 0"
+              style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; align-items: stretch"
+            >
+              <div
+                *ngFor="let pj of pieceJointes"
+                style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                  gap: 12px;
+                  padding: 8px 14px;
+                  border: 1px solid #ddd;
+                  border-radius: 40px;
+                  background: #fafafa;
+                "
+                [style.border-color]="selectedPjForPreview?.id === pj.id ? '#f5822a' : '#ddd'"
+              >
+                <div
+                  (click)="togglePjPreview(pj)"
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    flex: 1;
+                    color: #212529;
+                    text-decoration: none;
+                    cursor: pointer;
+                  "
+                  title="{{ pj.nomFichier }}.{{ pj.type }}"
+                >
+                  <fa-icon icon="paperclip"></fa-icon>
+                  <strong style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ pj.nomFichier }}.{{ pj.type }}</strong>
+                </div>
+
+                <button
+                  type="button"
+                  (click)="downloadPieceJointe(pj)"
+                  title="Télécharger"
+                  style="
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 50%;
+                    border: none;
+                    background: transparent;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                    color: #495057;
+                    cursor: pointer;
+                  "
+                >
+                  <fa-icon icon="download"></fa-icon>
+                </button>
+              </div>
+            </div>
+
+            <div
+              *ngIf="selectedPjForPreview"
+              style="margin-top: 14px; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #fff"
+            >
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                  padding: 10px 16px;
+                  background: #f1f5f9;
+                  border-bottom: 1px solid #e2e8f0;
+                "
+              >
+                <strong style="font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">
+                  {{ selectedPjForPreview.nomFichier }}.{{ selectedPjForPreview.type }}
+                </strong>
+                <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0">
+                  <button
+                    type="button"
+                    (click)="downloadPieceJointe(selectedPjForPreview)"
+                    title="Télécharger"
+                    style="border: none; background: none; cursor: pointer; color: #495057; padding: 0"
+                  >
+                    <fa-icon icon="download"></fa-icon>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="closePjPreview()"
+                    style="border: none; background: none; cursor: pointer; font-size: 16px; color: #6c757d"
+                    title="Fermer l'aperçu"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              <div style="max-height: 700px; overflow: auto; background: #fafafa">
+                <jhi-file-preview
+                  [pjId]="selectedPjForPreview.id"
+                  [fileName]="selectedPjForPreview.nomFichier + '.' + selectedPjForPreview.type"
+                ></jhi-file-preview>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================== -->
+      <!-- FOOTER -->
+      <!-- ====================================================== -->
+      <div class="cu-toolbar cu-toolbar-bottom">
+        <div class="cu-toolbar-left">
+          <span class="cu-item-badge-id" *ngIf="otExterne.statut" [ngClass]="'cu-badge-' + (otExterne.statut | lowercase)">
+            {{ 'gpmGatewayApp.StatutOtExterne.' + otExterne.statut | translate }}
+          </span>
+        </div>
+
+        <div style="display: flex; gap: 8px">
+          <button type="button" class="btn-cu-cancel" (click)="previousState()">
+            <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+          </button>
+
+          <button type="button" [routerLink]="['/ot-externe', otExterne.id, 'edit']" class="btn btn-primary">
+            <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
