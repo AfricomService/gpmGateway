@@ -6,6 +6,7 @@ import { isPresent } from 'app/core/util/operators';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { IModelPhaseOT, NewModelPhaseOT } from '../model-phase-ot.model';
+import { IPhaseOt } from '../../phase-ot/phase-ot.model';
 
 export type PartialUpdateModelPhaseOT = Partial<IModelPhaseOT> & Pick<IModelPhaseOT, 'id'>;
 
@@ -75,5 +76,9 @@ export class ModelPhaseOTService {
       return [...modelPhaseOTSToAdd, ...modelPhaseOTCollection];
     }
     return modelPhaseOTCollection;
+  }
+
+  findPhases(modelPhaseOTId: number): Observable<HttpResponse<IPhaseOt[]>> {
+    return this.http.get<IPhaseOt[]>(`${this.resourceUrl}/${modelPhaseOTId}/phases`, { observe: 'response' });
   }
 }
