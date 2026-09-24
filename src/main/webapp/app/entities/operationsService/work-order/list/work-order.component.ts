@@ -1,7 +1,20 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { HttpHeaders } from '@angular/common/http';
 import { ActivatedRoute, Data, ParamMap, Router } from '@angular/router';
-import { combineLatest, filter, Observable, switchMap, tap } from 'rxjs';
+import {
+  catchError,
+  combineLatest,
+  debounceTime,
+  filter,
+  forkJoin,
+  map,
+  Observable,
+  of,
+  Subject,
+  Subscription,
+  switchMap,
+  tap,
+} from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { IWorkOrder } from '../work-order.model';
@@ -15,6 +28,10 @@ import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { StatutWO } from 'app/entities/enumerations/statut-wo.model';
 import { IClient } from 'app/entities/projectService/client/client.model';
 import { ClientService } from 'app/entities/projectService/client/service/client.service';
+import { IAffaire } from 'app/entities/projectService/affaire/affaire.model';
+import { AffaireService } from 'app/entities/projectService/affaire/service/affaire.service';
+import { IVehicule } from 'app/entities/projectService/vehicule/vehicule.model';
+import { VehiculeService } from 'app/entities/projectService/vehicule/service/vehicule.service';
 
 type MissionViewKey = 'ALL' | StatutWO;
 
@@ -30,7 +47,7 @@ interface MissionView {
   templateUrl: './work-order.component.html',
   styleUrls: ['./work-order.component.scss'],
 })
-export class WorkOrderComponent implements OnInit {
+export class WorkOrderComponent implements OnInit, OnDestroy {
   workOrders?: IWorkOrder[];
   isLoading = false;
 
@@ -42,14 +59,28 @@ export class WorkOrderComponent implements OnInit {
   page = 1;
 
   // --- Barre d'outils : recherche / filtres --------------------------
-  // NOTE: aucune API de recherche/filtre n'existe encore côté back-end.
-  // Ces champs sont câblés en ngModel uniquement ; les méthodes ci-dessous
-  // sont des emplacements (TODO) à brancher plus tard.
+  // Recherche : identifiant unique du WO ou affaire (désignation / identifiant / numéro).
+  // Les ids d'affaires correspondants sont résolus côté projectservice (debounce 400 ms).
   searchTerm = '';
+  private searchAffaireIds: number[] = [];
+  private readonly search$ = new Subject<string>();
+  private searchSubscription?: Subscription;
   selectedStatut: StatutWO | null = null;
   selectedClientId: number | null = null;
 
   clients: IClient[] = [];
+  filteredClients: IClient[] = [];
+  clientSearchTerm = '';
+  isClientDropdownOpen = false;
+  clientDropdownStyle: { [key: string]: string } = {};
+
+  @ViewChild('clientFilterTrigger') clientFilterTrigger?: ElementRef<HTMLButtonElement>;
+
+  // Caches "à la demande" : uniquement les affaires/véhicules référencés
+  // par la page de Work Orders actuellement affichée (évite de précharger
+  // toute la base comme pour les clients).
+  private affairesCache = new Map<number, IAffaire>();
+  private vehiculesCache = new Map<number, IVehicule>();
 
   viewMode: 'grid' | 'list' = 'grid';
 
@@ -67,6 +98,8 @@ export class WorkOrderComponent implements OnInit {
   constructor(
     protected workOrderService: WorkOrderService,
     protected clientService: ClientService,
+    protected affaireService: AffaireService,
+    protected vehiculeService: VehiculeService,
     protected activatedRoute: ActivatedRoute,
     public router: Router,
     protected modalService: NgbModal
@@ -77,12 +110,37 @@ export class WorkOrderComponent implements OnInit {
   ngOnInit(): void {
     this.load();
     this.loadClients();
+
+    this.searchSubscription = this.search$
+      .pipe(
+        debounceTime(400),
+        switchMap(term => {
+          const trimmed = term.trim();
+          if (!trimmed) {
+            return of<number[]>([]);
+          }
+          return this.affaireService.searchIds(trimmed).pipe(
+            map(res => res.body ?? []),
+            catchError(() => of<number[]>([]))
+          );
+        })
+      )
+      .subscribe(ids => {
+        this.searchAffaireIds = ids;
+        this.page = 1;
+        this.reload();
+      });
   }
 
+  ngOnDestroy(): void {
+    this.searchSubscription?.unsubscribe();
+    this.search$.complete();
+  }
   protected loadClients(): void {
     this.clientService.query({ size: 1000, sort: ['raisonSociale,asc'] }).subscribe({
       next: res => {
         this.clients = res.body ?? [];
+        this.filteredClients = this.clients;
       },
     });
   }
@@ -123,7 +181,19 @@ export class WorkOrderComponent implements OnInit {
   selectView(view: MissionView): void {
     this.activeView = view.key;
     this.selectedStatut = view.statut ?? null;
-    // TODO: quand l'API de recherche/filtre existera, relancer this.load() avec le filtre statut
+    this.page = 1;
+    this.reload();
+  }
+
+  /**
+   * Recharge les Work Orders avec l'état courant du composant (page, tri, filtre de statut),
+   * sans dépendre des query params de route — utilisé par les filtres de la barre latérale
+   * qui ne doivent pas déclencher de navigation.
+   */
+  private reload(): void {
+    this.queryBackend(this.page, this.predicate, this.ascending).subscribe({
+      next: (res: EntityArrayResponseType) => this.onResponseSuccess(res),
+    });
   }
 
   setViewMode(mode: 'grid' | 'list'): void {
@@ -131,24 +201,109 @@ export class WorkOrderComponent implements OnInit {
   }
 
   onSearchChange(): void {
-    // TODO: brancher sur une API de recherche côté back-end quand elle existera.
+    this.search$.next(this.searchTerm);
   }
 
-  onClientFilterChange(): void {
-    // TODO: brancher sur une API de filtre par client quand elle existera.
+  // --- Filtre client : dropdown recherchable ----------------------------
+  // Le panneau est positionné en `fixed` et calculé au moment de l'ouverture
+  // (et recalculé au scroll/resize) car un `position: absolute` classique
+  // déborde du viewport quand le bouton se trouve en bas de la fenêtre
+  // (ex. sidebar sticky avec beaucoup de contenu au-dessus).
+
+  toggleClientDropdown(): void {
+    this.isClientDropdownOpen = !this.isClientDropdownOpen;
+    if (this.isClientDropdownOpen) {
+      this.clientSearchTerm = '';
+      this.filteredClients = this.clients;
+      // setTimeout : on attend que le *ngIf ait inséré le bouton trigger
+      // (déjà présent) mais surtout pour laisser le layout se stabiliser
+      // avant de lire getBoundingClientRect().
+      setTimeout(() => this.positionClientDropdown());
+    }
+  }
+
+  closeClientDropdown(): void {
+    this.isClientDropdownOpen = false;
+  }
+
+  @HostListener('window:resize')
+  @HostListener('window:scroll', ['true'])
+  onWindowChangeForClientDropdown(): void {
+    if (this.isClientDropdownOpen) {
+      this.positionClientDropdown();
+    }
+  }
+
+  private positionClientDropdown(): void {
+    const triggerEl = this.clientFilterTrigger?.nativeElement;
+    if (!triggerEl) {
+      return;
+    }
+
+    const rect = triggerEl.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const margin = 12;
+    const preferredHeight = 320;
+
+    const spaceBelow = viewportHeight - rect.bottom - margin;
+    const spaceAbove = rect.top - margin;
+
+    if (spaceBelow >= 180 || spaceBelow >= spaceAbove) {
+      // Ouverture vers le bas (comportement par défaut)
+      this.clientDropdownStyle = {
+        position: 'fixed',
+        left: `${rect.left}px`,
+        width: `${rect.width}px`,
+        top: `${rect.bottom + 6}px`,
+        maxHeight: `${Math.max(120, Math.min(preferredHeight, spaceBelow))}px`,
+      };
+    } else {
+      // Pas assez de place en dessous : on ouvre vers le haut
+      this.clientDropdownStyle = {
+        position: 'fixed',
+        left: `${rect.left}px`,
+        width: `${rect.width}px`,
+        bottom: `${viewportHeight - rect.top + 6}px`,
+        maxHeight: `${Math.max(120, Math.min(preferredHeight, spaceAbove))}px`,
+      };
+    }
+  }
+
+  onClientSearchChange(): void {
+    const term = this.clientSearchTerm.trim().toLowerCase();
+    this.filteredClients = term ? this.clients.filter(c => (c.raisonSociale ?? '').toLowerCase().includes(term)) : this.clients;
+  }
+
+  selectClient(client: IClient | null): void {
+    this.selectedClientId = client?.id ?? null;
+    this.isClientDropdownOpen = false;
+    this.page = 1;
+    this.reload();
   }
 
   resetFilters(): void {
     this.searchTerm = '';
+    this.searchAffaireIds = [];
     this.selectedStatut = null;
     this.selectedClientId = null;
+    this.clientSearchTerm = '';
+    this.closeClientDropdown();
     this.activeView = 'ALL';
+    this.page = 1;
+    this.reload();
   }
 
   // --- Aide à l'affichage -------------------------------------------
 
   missionTitle(workOrder: IWorkOrder): string {
-    return workOrder.remarque || workOrder.numFicheIntervention || `Work Order #${workOrder.id}`;
+    return workOrder.remarque || workOrder.numFicheIntervention || workOrder.identifiantUnique || 'Mission sans titre';
+  }
+
+  /**
+   * Référence lisible affichée en en-tête de carte, à la place de l'id technique.
+   */
+  missionReference(workOrder: IWorkOrder): string {
+    return workOrder.identifiantUnique || workOrder.numFicheIntervention || 'Sans référence';
   }
 
   clientName(clientId?: number | null): string {
@@ -156,7 +311,23 @@ export class WorkOrderComponent implements OnInit {
       return '—';
     }
     const client = this.clients.find(c => c.id === clientId);
-    return client?.raisonSociale ?? `Client #${clientId}`;
+    return client?.raisonSociale ?? 'Chargement...';
+  }
+
+  affaireName(affaireId?: number | null): string {
+    if (!affaireId) {
+      return '—';
+    }
+    const affaire = this.affairesCache.get(affaireId);
+    return affaire?.designationAffaire ?? 'Chargement...';
+  }
+
+  vehiculeLabel(vehiculeId?: number | null): string {
+    if (!vehiculeId) {
+      return '—';
+    }
+    const vehicule = this.vehiculesCache.get(vehiculeId);
+    return vehicule ? `${vehicule.marque} ${vehicule.type} (${vehicule.matricule})` : 'Chargement...';
   }
 
   statutBadgeClass(statut?: StatutWO | null): string {
@@ -194,6 +365,57 @@ export class WorkOrderComponent implements OnInit {
     this.fillComponentAttributesFromResponseHeader(response.headers);
     const dataFromBody = this.fillComponentAttributesFromResponseBody(response.body);
     this.workOrders = dataFromBody;
+    this.loadReferencedLabels(dataFromBody);
+  }
+
+  /**
+   * Charge uniquement les Affaires / Véhicules référencés par les Work Orders
+   * de la page courante et pas déjà en cache, pour pouvoir afficher leur nom
+   * au lieu de leur ID technique.
+   */
+  private loadReferencedLabels(workOrders: IWorkOrder[]): void {
+    const affaireIds = this.collectMissingIds(
+      workOrders.map(wo => wo.affaireId),
+      this.affairesCache
+    );
+    const vehiculeIds = this.collectMissingIds(
+      workOrders.map(wo => wo.vehiculeId),
+      this.vehiculesCache
+    );
+
+    if (affaireIds.length > 0) {
+      forkJoin(affaireIds.map(id => this.affaireService.find(id))).subscribe({
+        next: responses => {
+          responses.forEach(res => {
+            if (res.body?.id !== undefined && res.body?.id !== null) {
+              this.affairesCache.set(res.body.id, res.body);
+            }
+          });
+        },
+      });
+    }
+
+    if (vehiculeIds.length > 0) {
+      forkJoin(vehiculeIds.map(id => this.vehiculeService.find(id))).subscribe({
+        next: responses => {
+          responses.forEach(res => {
+            if (res.body?.id !== undefined && res.body?.id !== null) {
+              this.vehiculesCache.set(res.body.id, res.body);
+            }
+          });
+        },
+      });
+    }
+  }
+
+  private collectMissingIds(ids: Array<number | null | undefined>, cache: Map<number, unknown>): number[] {
+    const uniqueIds = new Set<number>();
+    ids.forEach(id => {
+      if (id !== null && id !== undefined && !cache.has(id)) {
+        uniqueIds.add(id);
+      }
+    });
+    return Array.from(uniqueIds);
   }
 
   protected fillComponentAttributesFromResponseBody(data: IWorkOrder[] | null): IWorkOrder[] {
@@ -207,11 +429,29 @@ export class WorkOrderComponent implements OnInit {
   protected queryBackend(page?: number, predicate?: string, ascending?: boolean): Observable<EntityArrayResponseType> {
     this.isLoading = true;
     const pageToLoad: number = page ?? 1;
-    const queryObject = {
+    const queryObject: any = {
       page: pageToLoad - 1,
       size: this.itemsPerPage,
       sort: this.getSortQueryParam(predicate, ascending),
     };
+
+    if (this.selectedStatut) {
+      queryObject.statut = this.selectedStatut;
+    }
+
+    if (this.selectedClientId) {
+      queryObject.clientId = this.selectedClientId;
+    }
+
+    const term = this.searchTerm.trim();
+    if (term) {
+      queryObject.search = term;
+      // Envoyé en "1,2,3" : Spring convertit cette chaîne en List<Long>.
+      // Si aucune affaire ne correspond, la chaîne vide est ignorée par createRequestOption
+      // et le backend utilise la valeur sentinelle (seule la recherche par identifiant WO s'applique).
+      queryObject.affaireIds = this.searchAffaireIds.join(',');
+    }
+
     return this.workOrderService.query(queryObject).pipe(tap(() => (this.isLoading = false)));
   }
 

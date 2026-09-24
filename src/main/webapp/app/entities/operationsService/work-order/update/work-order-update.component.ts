@@ -380,6 +380,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       lieu: null,
       villeId: null,
       zoneId: null,
+      siteId: null,
     });
 
     this.selectedAffaire = affaire;
@@ -426,7 +427,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     if (affaire) {
       this.selectAffaire(affaire);
     } else {
-      this.editForm.patchValue({ affaireId: null, clientId: null, lieu: null, villeId: null, zoneId: null });
+      this.editForm.patchValue({ affaireId: null, clientId: null, lieu: null, villeId: null, zoneId: null, siteId: null });
       this.selectedAffaire = null;
       this.selectedAffaireCode = null;
       this.selectedClientInfo = null;
@@ -477,11 +478,30 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
         this.clientSites = res.body ?? [];
         this.loadingClientSites = false;
 
-        // Mode édition : le WorkOrder ne stocke que la désignation du lieu (pas l'id du site) ;
-        // on retrouve le site correspondant une fois la liste chargée, pour préremplir
-        // correctement le ng-select ainsi que l'affichage Ville/Zone.
+        // Mode édition : on retrouve le site par son id (siteId), fiable et stable.
+        // Filet de sécurité pour les WorkOrder enregistrés avant l'ajout de siteId :
+        // on retombe alors sur l'ancien matching par désignation.
+        const siteId = this.editForm.get('siteId')?.value;
         const lieu = this.editForm.get('lieu')?.value;
-        this.selectedSite = lieu ? this.clientSites.find(s => s.designation === lieu) ?? null : null;
+
+        this.selectedSite = siteId
+          ? this.clientSites.find(s => s.id === siteId) ?? null
+          : lieu
+          ? this.clientSites.find(s => s.designation === lieu) ?? null
+          : null;
+
+        if (siteId && !this.selectedSite) {
+          console.warn(`[WorkOrder][edit] Site id=${siteId} introuvable parmi les sites du client ${clientId}.`, this.clientSites);
+        }
+
+        if (lieu && !this.selectedSite) {
+          console.warn(
+            `[WorkOrder][edit] Aucun site trouvé pour lieu="${this.editForm.get('lieu')?.value}" parmi ${
+              this.clientSites.length
+            } site(s) du client ${clientId}.`,
+            this.clientSites
+          );
+        }
       },
       error: () => {
         this.clientSites = [];
@@ -1032,6 +1052,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       lieu: site?.designation ?? null,
       villeId: site?.ville?.id ?? null,
       zoneId: site?.zoneId ?? null,
+      siteId: site?.id ?? null,
     });
   }
 
@@ -1207,6 +1228,10 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
           if (affaire) {
             this.selectedAffaire = affaire;
             this.selectedAffaireCode = affaire.identifiantUnique ?? null;
+
+            if (!affaire.identifiantUnique) {
+              console.warn('[WorkOrder][edit] affaire.identifiantUnique manquant sur la réponse find(id).', affaire);
+            }
 
             if (!this.affaireResults.some(a => a.id === affaire.id)) {
               this.affaireResults = [affaire, ...this.affaireResults];

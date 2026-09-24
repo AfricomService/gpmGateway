@@ -121,6 +121,18 @@ export class AffaireService {
       .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 
+  /**
+   * GET /api/affaires/search-ids?search=...
+   * Retourne les ids des affaires dont la désignation, l'identifiant unique
+   * ou le numéro contient le terme recherché.
+   */
+  searchIds(search: string): Observable<HttpResponse<number[]>> {
+    return this.http.get<number[]>(`${this.resourceUrl}/search-ids`, {
+      params: { search },
+      observe: 'response',
+    });
+  }
+
   searchByClientId(clientId: number, designation: string): Observable<EntityArrayResponseType> {
     const options = createRequestOption({ designation });
     return this.http

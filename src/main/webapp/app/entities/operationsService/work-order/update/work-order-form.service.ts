@@ -64,6 +64,7 @@ type WorkOrderFormGroupContent = {
   lieu: FormControl<WorkOrderFormRawValue['lieu']>;
   villeId: FormControl<WorkOrderFormRawValue['villeId']>;
   zoneId: FormControl<WorkOrderFormRawValue['zoneId']>;
+  siteId: FormControl<WorkOrderFormRawValue['siteId']>;
   responsableId: FormControl<WorkOrderFormRawValue['responsableId']>;
   coordinateur: FormControl<WorkOrderFormRawValue['coordinateur']>;
 };
@@ -118,6 +119,7 @@ export class WorkOrderFormService {
       lieu: new FormControl(workOrderRawValue.lieu),
       villeId: new FormControl(workOrderRawValue.villeId),
       zoneId: new FormControl(workOrderRawValue.zoneId),
+      siteId: new FormControl(workOrderRawValue.siteId),
       responsableId: new FormControl(workOrderRawValue.responsableId),
       coordinateur: new FormControl(workOrderRawValue.coordinateur),
     });

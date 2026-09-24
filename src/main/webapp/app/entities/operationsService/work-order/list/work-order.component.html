@@ -24,19 +24,43 @@
     </nav>
 
     <div class="missions-sidebar-filters missions-sidebar-title-spaced">
-      <label class="missions-sidebar-title missions-sidebar-filter-label" for="client-filter-select">Client</label>
-      <div class="missions-sidebar-filter-wrapper">
-        <fa-icon icon="users" class="missions-sidebar-filter-icon"></fa-icon>
-        <select
-          id="client-filter-select"
-          class="missions-sidebar-filter"
-          [(ngModel)]="selectedClientId"
-          (ngModelChange)="onClientFilterChange()"
+      <label class="missions-sidebar-title missions-sidebar-filter-label">Client</label>
+      <div class="missions-client-filter">
+        <button
+          #clientFilterTrigger
+          type="button"
+          class="missions-sidebar-filter-wrapper missions-client-filter-trigger"
+          (click)="toggleClientDropdown()"
         >
-          <option [ngValue]="null">Tous les clients</option>
-          <option *ngFor="let client of clients" [ngValue]="client.id">{{ client.raisonSociale }}</option>
-        </select>
-        <fa-icon icon="chevron-down" class="missions-sidebar-filter-chevron"></fa-icon>
+          <fa-icon icon="users" class="missions-sidebar-filter-icon"></fa-icon>
+          <span class="missions-client-filter-value">{{ selectedClientId ? clientName(selectedClientId) : 'Tous les clients' }}</span>
+          <fa-icon icon="chevron-down" class="missions-sidebar-filter-chevron"></fa-icon>
+        </button>
+
+        <div class="missions-client-dropdown-backdrop" *ngIf="isClientDropdownOpen" (click)="closeClientDropdown()"></div>
+
+        <div class="missions-client-dropdown" *ngIf="isClientDropdownOpen" [ngStyle]="clientDropdownStyle">
+          <div class="missions-client-dropdown-search">
+            <fa-icon icon="search"></fa-icon>
+            <input
+              type="text"
+              placeholder="Rechercher un client..."
+              [(ngModel)]="clientSearchTerm"
+              (ngModelChange)="onClientSearchChange()"
+            />
+          </div>
+          <ul class="missions-client-dropdown-list">
+            <li>
+              <button type="button" [class.active]="selectedClientId === null" (click)="selectClient(null)">Tous les clients</button>
+            </li>
+            <li *ngFor="let client of filteredClients">
+              <button type="button" [class.active]="selectedClientId === client.id" (click)="selectClient(client)">
+                {{ client.raisonSociale }}
+              </button>
+            </li>
+            <li class="missions-client-dropdown-empty" *ngIf="filteredClients.length === 0">Aucun client trouvé</li>
+          </ul>
+        </div>
       </div>
     </div>
   </aside>
@@ -66,7 +90,7 @@
           <input
             type="text"
             class="form-control missions-search-input"
-            placeholder="Rechercher..."
+            placeholder="Rechercher par identifiant ou affaire..."
             [(ngModel)]="searchTerm"
             (ngModelChange)="onSearchChange()"
           />
@@ -102,7 +126,7 @@
     <div class="missions-grid" *ngIf="workOrders && workOrders.length > 0 && viewMode === 'grid'">
       <div class="mission-card" *ngFor="let workOrder of workOrders; trackBy: trackId" [routerLink]="['/work-order', workOrder.id, 'edit']">
         <div class="mission-card-header">
-          <span class="mission-ref">#{{ workOrder.id }}</span>
+          <span class="mission-ref">{{ missionReference(workOrder) }}</span>
           <span
             class="badge"
             [ngClass]="statutBadgeClass(workOrder.statut)"
@@ -116,14 +140,14 @@
         <h3 class="mission-title">{{ missionTitle(workOrder) }}</h3>
 
         <div class="mission-meta">
-          <span>Client #{{ workOrder.clientId }}</span>
+          <span>{{ clientName(workOrder.clientId) }}</span>
           <span class="mission-meta-sep">·</span>
-          <span>Affaire #{{ workOrder.affaireId }}</span>
+          <span>{{ affaireName(workOrder.affaireId) }}</span>
         </div>
 
         <div class="mission-card-footer">
           <span class="mission-date">{{ workOrder.dateHeureFinPrev | formatMediumDatetime }}</span>
-          <span class="mission-vehicule">Véhicule #{{ workOrder.vehiculeId }}</span>
+          <span class="mission-vehicule">{{ vehiculeLabel(workOrder.vehiculeId) }}</span>
         </div>
 
         <div class="mission-card-tags" *ngIf="workOrder.missionDeNuit">
@@ -140,12 +164,14 @@
       <table class="missions-table" aria-describedby="page-heading">
         <thead>
           <tr>
+            <th scope="col">Référence</th>
             <th scope="col">Statut</th>
             <th scope="col">Client</th>
             <th scope="col">Affaire</th>
             <th scope="col">Début prévu</th>
             <th scope="col">Fin prévue</th>
             <th scope="col">Véhicule</th>
+            <th scope="col">Nuit</th>
           </tr>
         </thead>
         <tbody>
@@ -154,6 +180,9 @@
             data-cy="entityTable"
             [routerLink]="['/work-order', workOrder.id, 'edit']"
           >
+            <td>
+              <span class="mission-ref">{{ missionReference(workOrder) }}</span>
+            </td>
             <td>
               <span
                 class="badge missions-table-badge"
@@ -165,10 +194,17 @@
               </span>
             </td>
             <td>{{ clientName(workOrder.clientId) }}</td>
-            <td>{{ workOrder.affaireId ? '#' + workOrder.affaireId : '—' }}</td>
+            <td>{{ affaireName(workOrder.affaireId) }}</td>
             <td>{{ workOrder.dateHeureDebutPrev | formatMediumDate }}</td>
             <td>{{ workOrder.dateHeureFinPrev | formatMediumDate }}</td>
-            <td>{{ workOrder.vehiculeId ? 'Véhicule #' + workOrder.vehiculeId : '—' }}</td>
+            <td>{{ vehiculeLabel(workOrder.vehiculeId) }}</td>
+            <td>
+              <span class="badge badge-night" *ngIf="workOrder.missionDeNuit">
+                <fa-icon icon="moon"></fa-icon>
+                Nuit{{ workOrder.nombreNuits ? ' · ' + workOrder.nombreNuits : '' }}
+              </span>
+              <span *ngIf="!workOrder.missionDeNuit">—</span>
+            </td>
           </tr>
         </tbody>
       </table>
