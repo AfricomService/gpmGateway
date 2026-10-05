@@ -30,6 +30,8 @@ import { SocieteService } from '../../societe/service/societe.service';
 import { ISociete } from '../../societe/societe.model';
 import { IAgence } from 'app/entities/projectService/agence/agence.model';
 import { Authority } from '../../../../config/authority.constants';
+import { AccountService } from '../../../../core/auth/account.service';
+import { inject } from '@angular/core/testing';
 
 type AccordionSection = 'general' | 'dates' | 'articles' | 'societes';
 
@@ -107,6 +109,8 @@ export class AffaireUpdateComponent implements OnInit {
 
   private articleSearchSubject = new Subject<string>();
 
+  // private accountService = inject(AccountService);
+
   constructor(
     protected affaireService: AffaireService,
     protected affaireFormService: AffaireFormService,
@@ -122,7 +126,8 @@ export class AffaireUpdateComponent implements OnInit {
     protected modalService: NgbModal,
     protected societeService: SocieteService,
     protected router: Router,
-    protected location: Location
+    protected location: Location,
+    protected accountService: AccountService
   ) {}
 
   onResponsableSelectChange(responsable: IContactSociete | null): void {
@@ -465,7 +470,7 @@ export class AffaireUpdateComponent implements OnInit {
   get availableTransitions(): { statut: StatutAffaire; label: string }[] {
     const current = this.editForm.get('statut')?.value as StatutAffaire;
 
-    const flow: Record<StatutAffaire, { statut: StatutAffaire; label: string }[]> = {
+    const flow: Record<StatutAffaire, { statut: StatutAffaire; label: string; requiredAuthority?: string }[]> = {
       [StatutAffaire.Brouillon]: [
         {
           statut: StatutAffaire.EtudeOpportunite,
@@ -506,11 +511,12 @@ export class AffaireUpdateComponent implements OnInit {
         {
           statut: StatutAffaire.ExecutionDesTravaux,
           label: "Revenir à l'exécution des travaux",
+          requiredAuthority: Authority.ACTIVATE_AFFAIRE,
         },
       ],
     };
 
-    return flow[current] ?? [];
+    return (flow[current] ?? []).filter(t => !t.requiredAuthority || this.accountService.hasAnyAuthority(t.requiredAuthority));
   }
 
   changeStatut(next: StatutAffaire): void {

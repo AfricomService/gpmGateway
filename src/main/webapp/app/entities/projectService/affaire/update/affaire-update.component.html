@@ -519,8 +519,6 @@
             <!--            <fa-icon icon="arrow-right" class="me-1"></fa-icon>-->
             {{ transition.label }}
           </button>
-
-          <h1 *jhiHasAnyAuthority="[Authority.ACTIVATE_AFFAIRE]">can activate</h1>
         </div>
 
         <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
