@@ -504,15 +504,28 @@
           <span class="cu-statut-display">
             <fa-icon icon="tag" class="cu-statut-icon"></fa-icon>
             <strong>Statut actuel :</strong>
-            <strong>{{ 'gpmGatewayApp.StatutAffaire.' + editForm.get('statut')?.value | translate }}</strong>
+            <strong>
+              {{ 'gpmGatewayApp.StatutAffaire.' + editForm.get('statut')?.value | translate }}
+            </strong>
           </span>
-          <button *ngIf="nextStatut" type="button" class="btn-cu-statut" (click)="changeStatut()" [disabled]="isChangingStatut">
-            <fa-icon icon="arrow-right" class="me-1"></fa-icon>
-            Passer vers {{ 'gpmGatewayApp.StatutAffaire.' + nextStatut | translate }}
+
+          <button
+            *ngFor="let transition of availableTransitions"
+            type="button"
+            class="btn-cu-statut"
+            (click)="changeStatut(transition.statut)"
+            [disabled]="isChangingStatut"
+          >
+            <!--            <fa-icon icon="arrow-right" class="me-1"></fa-icon>-->
+            {{ transition.label }}
           </button>
+
+          <h1 *jhiHasAnyAuthority="[Authority.ACTIVATE_AFFAIRE]">can activate</h1>
         </div>
+
         <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
-          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+          <fa-icon icon="ban"></fa-icon>&nbsp;
+          <span jhiTranslate="entity.action.cancel">Annuler</span>
         </button>
       </div>
     </form>

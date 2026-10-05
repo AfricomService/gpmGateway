@@ -462,14 +462,66 @@ export class AffaireUpdateComponent implements OnInit {
     return flow[current as string] ?? null;
   }
 
-  changeStatut(): void {
-    const next = this.nextStatut;
+  get availableTransitions(): { statut: StatutAffaire; label: string }[] {
+    const current = this.editForm.get('statut')?.value as StatutAffaire;
+
+    const flow: Record<StatutAffaire, { statut: StatutAffaire; label: string }[]> = {
+      [StatutAffaire.Brouillon]: [
+        {
+          statut: StatutAffaire.EtudeOpportunite,
+          label: "Passer à l'étude d'opportunité",
+        },
+        {
+          statut: StatutAffaire.ExecutionDesTravaux,
+          label: "Passer à l'exécution des travaux",
+        },
+      ],
+
+      [StatutAffaire.EtudeOpportunite]: [
+        {
+          statut: StatutAffaire.ExecutionDesTravaux,
+          label: "Passer à l'exécution des travaux",
+        },
+      ],
+
+      [StatutAffaire.ExecutionDesTravaux]: [
+        {
+          statut: StatutAffaire.ClotureProjet,
+          label: 'Clôturer le projet',
+        },
+        {
+          statut: StatutAffaire.EtudeOpportunite,
+          label: "Revenir à l'étude d'opportunité",
+        },
+      ],
+
+      [StatutAffaire.ClotureProjet]: [
+        {
+          statut: StatutAffaire.Fin,
+          label: 'Terminer le projet',
+        },
+      ],
+
+      [StatutAffaire.Fin]: [
+        {
+          statut: StatutAffaire.ExecutionDesTravaux,
+          label: "Revenir à l'exécution des travaux",
+        },
+      ],
+    };
+
+    return flow[current] ?? [];
+  }
+
+  changeStatut(next: StatutAffaire): void {
     const affaireId = this.editForm.get('id')?.value;
-    if (!next || !affaireId) {
+
+    if (!affaireId || !next) {
       return;
     }
 
     this.isChangingStatut = true;
+
     this.affaireService.changeStatut(affaireId, next).subscribe({
       next: () => {
         this.editForm.patchValue({ statut: next });
