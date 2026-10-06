@@ -31,7 +31,6 @@ import { ISociete } from '../../societe/societe.model';
 import { IAgence } from 'app/entities/projectService/agence/agence.model';
 import { Authority } from '../../../../config/authority.constants';
 import { AccountService } from '../../../../core/auth/account.service';
-import { inject } from '@angular/core/testing';
 
 type AccordionSection = 'general' | 'dates' | 'articles' | 'societes';
 
@@ -129,6 +128,21 @@ export class AffaireUpdateComponent implements OnInit {
     protected location: Location,
     protected accountService: AccountService
   ) {}
+
+  get canRead(): boolean {
+    return !this.isExisting || (this.affaire?.canRead ?? false);
+  }
+
+  // New affaire: the creator gets WRITE on save. Existing: use the flag from the backend.
+  get canWrite(): boolean {
+    return !this.isExisting || (this.affaire?.canWrite ?? false);
+  }
+
+  // Backend lets ADMIN / ACTIVATE_AFFAIRE change the statut even without WRITE
+  // (needed e.g. to reactivate an affaire in "Fin", where everyone is read-only).
+  get canChangeStatut(): boolean {
+    return this.canWrite || this.accountService.hasAnyAuthority([Authority.ADMIN, Authority.ACTIVATE_AFFAIRE]);
+  }
 
   onResponsableSelectChange(responsable: IContactSociete | null): void {
     this.selectedResponsable = responsable;
@@ -295,7 +309,7 @@ export class AffaireUpdateComponent implements OnInit {
   }
 
   removeArticle(article: IArticle): void {
-    if (!article.id) {
+    if (!article.id || !this.canWrite) {
       return;
     }
 
@@ -375,7 +389,7 @@ export class AffaireUpdateComponent implements OnInit {
   }
 
   submitArticleImport(): void {
-    if (!this.affaire?.id || !this.articleImportFile) {
+    if (!this.affaire?.id || !this.articleImportFile || !this.canWrite) {
       return;
     }
 
@@ -449,6 +463,9 @@ export class AffaireUpdateComponent implements OnInit {
   }
 
   toggleEditMode(): void {
+    if (!this.canWrite) {
+      return;
+    }
     this.isEditMode = !this.isEditMode;
   }
 
@@ -531,7 +548,23 @@ export class AffaireUpdateComponent implements OnInit {
     this.affaireService.changeStatut(affaireId, next).subscribe({
       next: () => {
         this.editForm.patchValue({ statut: next });
-        this.isChangingStatut = false;
+        // Refresh canRead/canWrite: the status change rewrote the ACLs
+        this.affaireService.find(affaireId).subscribe({
+          next: res => {
+            if (res.body) {
+              this.affaire = res.body;
+              // If WRITE was lost, leave edit mode
+              if (!this.canWrite) {
+                this.isEditMode = false;
+              }
+            }
+            this.isChangingStatut = false;
+          },
+          error: () => {
+            // find() returns 403 if READ was lost too: nothing sensible to show
+            this.isChangingStatut = false;
+          },
+        });
       },
       error: err => {
         console.error(err);

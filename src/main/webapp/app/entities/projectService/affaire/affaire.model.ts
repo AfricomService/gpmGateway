@@ -29,6 +29,8 @@ export interface IAffaire {
   societeId?: number | null;
   identifiantUnique?: string | null;
   clientCommande?: number | null;
+  canRead?: boolean;
+  canWrite?: boolean;
 }
 
 export type NewAffaire = Omit<IAffaire, 'id'> & { id: null };
