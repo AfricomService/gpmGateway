@@ -314,6 +314,20 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     this.bonCommandeService.changeStatut(bonCommandeId, next).subscribe({
       next: () => {
         this.editForm.patchValue({ status: next.toString() });
+
+        this.bonCommandeService.find(bonCommandeId).subscribe({
+          next: res => {
+            if (res.body) {
+              this.bonCommande = res.body;
+            }
+
+            this.isChangingStatut = false;
+          },
+          error: err => {
+            console.error(err);
+            this.isChangingStatut = false;
+          },
+        });
       },
       error: err => {
         console.error(err);
