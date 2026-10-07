@@ -141,6 +141,15 @@ export class BonCommandeService {
     return o1 && o2 ? this.getBonCommandeIdentifier(o1) === this.getBonCommandeIdentifier(o2) : o1 === o2;
   }
 
+  changeStatut(boncommandeId: number, statut: string): Observable<HttpResponse<void>> {
+    return this.http.patch<void>(`${this.resourceUrl}/${boncommandeId}/statut`, null, {
+      params: {
+        statut,
+      },
+      observe: 'response',
+    });
+  }
+
   addBonCommandeToCollectionIfMissing<Type extends Pick<IBonCommande, 'id'>>(
     bonCommandeCollection: Type[],
     ...bonCommandesToCheck: (Type | null | undefined)[]

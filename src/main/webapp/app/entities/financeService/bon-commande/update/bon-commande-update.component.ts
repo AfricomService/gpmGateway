@@ -32,6 +32,10 @@ import { PjCareService, PjCareDriverInfo, ScanDriver, ScannedPage } from 'app/en
 import { ScanSettingsService } from 'app/entities/projectService/piece-jointe/service/scan-settings.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { saveAs } from 'file-saver';
+import { StatutAffaire } from '../../../enumerations/statut-affaire.model';
+import { StatutCommande } from '../../../enumerations/statut-commande.model';
+import { AccountService } from '../../../../core/auth/account.service';
+import { Authority } from '../../../../config/authority.constants';
 
 type AccordionPanel = 'global' | 'client' | 'detailsCommande' | 'otAssocies' | 'articlesMissions' | 'piecesJointes';
 
@@ -71,6 +75,8 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   affaireResults: IAffaire[] = [];
   selectedAffaire: IAffaire | null = null; // Sélection courante liée au ng-select
   selectedAffaireCode: string | null = null; // Code projet (identifiantUnique) — affichage seul
+
+  isChangingStatut = false;
 
   selectedAutresResponsables: IContactSociete[] = []; // Sélection multiple, persistée via BonCommandeAutreResponsable
 
@@ -174,7 +180,8 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     protected pjCareService: PjCareService,
     protected scanSettingsService: ScanSettingsService,
     protected sanitizer: DomSanitizer,
-    protected cdr: ChangeDetectorRef
+    protected cdr: ChangeDetectorRef,
+    protected accountService: AccountService
   ) {}
   ngOnInit(): void {
     this.loadResponsables();
@@ -223,6 +230,96 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.affaireSearch$.complete();
+  }
+
+  get canRead(): boolean {
+    return !this.isExisting || (this.bonCommande?.canRead ?? false);
+  }
+
+  // New affaire: the creator gets WRITE on save. Existing: use the flag from the backend.
+  get canWrite(): boolean {
+    return !this.isExisting || (this.bonCommande?.canWrite ?? false);
+  }
+
+  // Backend lets ADMIN / ACTIVATE_AFFAIRE change the statut even without WRITE
+  // (needed e.g. to reactivate an affaire in "Fin", where everyone is read-only).
+  get canChangeStatut(): boolean {
+    return this.canWrite || this.accountService.hasAnyAuthority([Authority.ADMIN, Authority.CAN_ACTIVATE_BON_COMMANDE]);
+  }
+
+  get isExisting(): boolean {
+    return this.editForm.controls.id.value !== null;
+  }
+
+  get availableTransitions(): { statut: StatutCommande; label: string }[] {
+    const statutControl = this.editForm.get('status');
+
+    if (!statutControl) {
+      return [];
+    }
+
+    const current = statutControl.value as StatutCommande;
+
+    const flow: Record<StatutCommande, { statut: StatutCommande; label: string; requiredAuthority?: string }[]> = {
+      [StatutCommande.Brouillon]: [
+        {
+          statut: StatutCommande.ConfirmationCommande,
+          label: 'Confirmer le bon de commande',
+        },
+        {
+          statut: StatutCommande.ExecutionDesTravaux,
+          label: "Passer à l'exécution des travaux",
+        },
+      ],
+
+      [StatutCommande.ConfirmationCommande]: [
+        {
+          statut: StatutCommande.ExecutionDesTravaux,
+          label: "Passer à l'exécution des travaux",
+        },
+      ],
+
+      [StatutCommande.ExecutionDesTravaux]: [
+        {
+          statut: StatutCommande.Fin,
+          label: 'Clôturer le bon de commande',
+        },
+        {
+          statut: StatutCommande.ConfirmationCommande,
+          label: 'Revenir à la confirmation bon de commande',
+        },
+      ],
+
+      [StatutCommande.Fin]: [
+        {
+          statut: StatutCommande.ExecutionDesTravaux,
+          label: "Revenir à l'exécution des travaux",
+          requiredAuthority: Authority.CAN_ACTIVATE_BON_COMMANDE,
+        },
+      ],
+    };
+
+    return (flow[current] ?? []).filter(t => !t.requiredAuthority || this.accountService.hasAnyAuthority(t.requiredAuthority));
+  }
+
+  changeStatut(next: StatutCommande): void {
+    const bonCommandeId = this.editForm.get('id')?.value;
+
+    if (!bonCommandeId || !next) {
+      return;
+    }
+
+    this.isChangingStatut = true;
+
+    this.bonCommandeService.changeStatut(bonCommandeId, next).subscribe({
+      next: () => {
+        this.editForm.patchValue({ status: next.toString() });
+      },
+      error: err => {
+        console.error(err);
+        this.isChangingStatut = false;
+      },
+    });
   }
 
   // ================================

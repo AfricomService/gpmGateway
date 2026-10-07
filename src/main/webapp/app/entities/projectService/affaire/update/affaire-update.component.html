@@ -531,7 +531,7 @@
 
         <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
           <fa-icon icon="ban"></fa-icon>&nbsp;
-          <span jhiTranslate="entity.action.cancel">Annuler</span>
+          <span *ngIf="canWrite" jhiTranslate="entity.action.cancel">Annuler</span>
         </button>
       </div>
     </form>
