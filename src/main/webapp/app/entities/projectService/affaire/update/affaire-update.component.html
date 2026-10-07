@@ -43,7 +43,7 @@
 
         <!-- Bouton Enregistrer (mode édition) -->
         <button
-          *ngIf="isEditMode"
+          *ngIf="isEditMode && canWrite"
           type="button"
           id="save-entity-top"
           data-cy="entityCreateSaveButton"
@@ -56,7 +56,7 @@
         </button>
 
         <!-- Bouton Modifier (mode lecture sur fiche existante) -->
-        <button *ngIf="!isEditMode && isExisting" type="button" class="btn-cu-edit" (click)="toggleEditMode()" title="Modifier">
+        <button *ngIf="!isEditMode && isExisting && canWrite" type="button" class="btn-cu-edit" (click)="toggleEditMode()" title="Modifier">
           <fa-icon icon="pen"></fa-icon>&nbsp;<span>Modifier</span>
         </button>
       </div>
@@ -287,7 +287,12 @@
                     (keydown)="$event.preventDefault()"
                     [attr.disabled]="!isEditMode ? true : null"
                   />
-                  <button *ngIf="isEditMode" type="button" class="btn-cu-date-toggle" (click)="dateDebutDp.toggle()">
+                  <button
+                    *ngIf="isEditMode && canWrite"
+                    type="button"
+                    class="btn-cu-add"
+                    (click)="$event.stopPropagation(); openSocieteModal()"
+                  >
                     <fa-icon icon="calendar-alt"></fa-icon>
                   </button>
                 </div>
@@ -377,7 +382,7 @@
             </span>
             <span class="cu-accordion-header-right">
               <button
-                *ngIf="isEditMode && isExisting"
+                *ngIf="isEditMode && isExisting && canWrite"
                 type="button"
                 class="btn-cu-add me-2"
                 (click)="$event.stopPropagation(); openArticleImportModal()"
@@ -420,10 +425,12 @@
                     <div class="cu-item-info">
                       <div class="cu-item-title">
                         <strong>{{ article.code }} - ({{ article.codeClient }}) </strong> — {{ article.designation }}
-                        <span class="text-muted ms-2">(Prix HT: {{ article.prixUnitHT }} DT - Prix Achat: {{ article.prixAchat }} DT)</span>
+                        <span *jhiHasAnyAuthority="[Authority.CAN_SEE_PRICE]" class="text-muted ms-2"
+                          >(Prix HT: {{ article.prixUnitHT }} DT - Prix Achat: {{ article.prixAchat }} DT)</span
+                        >
                       </div>
                     </div>
-                    <button *ngIf="isEditMode" type="button" class="cu-item-remove" (click)="removeArticle(article)">
+                    <button *ngIf="isEditMode && canWrite" type="button" class="cu-item-remove" (click)="removeArticle(article)">
                       <fa-icon icon="times"></fa-icon>
                     </button>
                   </div>
@@ -504,58 +511,31 @@
           <span class="cu-statut-display">
             <fa-icon icon="tag" class="cu-statut-icon"></fa-icon>
             <strong>Statut actuel :</strong>
-            <strong>{{ 'gpmGatewayApp.StatutAffaire.' + editForm.get('statut')?.value | translate }}</strong>
+            <strong>
+              {{ 'gpmGatewayApp.StatutAffaire.' + editForm.get('statut')?.value | translate }}
+            </strong>
           </span>
-          <button *ngIf="nextStatut" type="button" class="btn-cu-statut" (click)="changeStatut()" [disabled]="isChangingStatut">
-            <fa-icon icon="arrow-right" class="me-1"></fa-icon>
-            Passer vers {{ 'gpmGatewayApp.StatutAffaire.' + nextStatut | translate }}
-          </button>
+
+          <ng-container *ngIf="canChangeStatut">
+            <button
+              *ngFor="let transition of availableTransitions"
+              type="button"
+              class="btn-cu-statut"
+              (click)="changeStatut(transition.statut)"
+              [disabled]="isChangingStatut"
+            >
+              {{ transition.label }}
+            </button>
+          </ng-container>
         </div>
+
         <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
-          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+          <fa-icon icon="ban"></fa-icon>&nbsp;
+          <span *ngIf="canWrite" jhiTranslate="entity.action.cancel">Annuler</span>
         </button>
       </div>
     </form>
   </div>
-
-  <!-- Modal: Article Selection -->
-  <!--  <ng-template #articleModal let-modal>-->
-  <!--    <div class="modal-header">-->
-  <!--      <h5 class="modal-title">Sélection des Articles</h5>-->
-  <!--      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>-->
-  <!--    </div>-->
-
-  <!--    <div class="modal-body">-->
-  <!--      <input-->
-  <!--        type="text"-->
-  <!--        class="form-control mb-3"-->
-  <!--        placeholder="Filtrer la liste des articles..."-->
-  <!--        [(ngModel)]="modalArticleSearchTerm"-->
-  <!--        [ngModelOptions]="{ standalone: true }"-->
-  <!--      />-->
-
-  <!--      <div style="max-height: 350px; overflow-y: auto">-->
-  <!--        <div *ngFor="let article of filteredModalArticles" class="form-check mb-3">-->
-  <!--          <input-->
-  <!--            type="checkbox"-->
-  <!--            class="form-check-input me-3"-->
-  <!--            style="width: 1.5rem; height: 1.5rem; cursor: pointer; margin-top: 0"-->
-  <!--            [id]="'modal_article_' + article.id"-->
-  <!--            [checked]="isTempArticleSelected(article)"-->
-  <!--            (change)="toggleTempArticleSelection(article)"-->
-  <!--          />-->
-  <!--          <label class="form-check-label" [for]="'modal_article_' + article.id">-->
-  <!--            <strong>{{ article.code }}</strong> - {{ article.designation }}-->
-  <!--          </label>-->
-  <!--        </div>-->
-  <!--      </div>-->
-  <!--    </div>-->
-
-  <!--    <div class="modal-footer">-->
-  <!--      <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>-->
-  <!--      <button class="btn btn-primary" (click)="confirmArticleSelection(modal)">Confirmer</button>-->
-  <!--    </div>-->
-  <!--  </ng-template>-->
 
   <!-- Modal: Import d'articles depuis Excel -->
   <ng-template #articleImportModal let-modal>

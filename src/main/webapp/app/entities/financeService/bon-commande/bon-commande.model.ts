@@ -14,6 +14,8 @@ export interface IBonCommande {
   montantMissionEffectue?: number | null;
   identifiantUnique?: string | null;
   status?: string | null;
+  canRead?: boolean;
+  canWrite?: boolean;
 }
 
 export type NewBonCommande = Omit<IBonCommande, 'id'> & { id: null };

@@ -30,6 +30,7 @@ import { SocieteService } from '../../societe/service/societe.service';
 import { ISociete } from '../../societe/societe.model';
 import { IAgence } from 'app/entities/projectService/agence/agence.model';
 import { Authority } from '../../../../config/authority.constants';
+import { AccountService } from '../../../../core/auth/account.service';
 
 type AccordionSection = 'general' | 'dates' | 'articles' | 'societes';
 
@@ -107,6 +108,8 @@ export class AffaireUpdateComponent implements OnInit {
 
   private articleSearchSubject = new Subject<string>();
 
+  // private accountService = inject(AccountService);
+
   constructor(
     protected affaireService: AffaireService,
     protected affaireFormService: AffaireFormService,
@@ -122,8 +125,24 @@ export class AffaireUpdateComponent implements OnInit {
     protected modalService: NgbModal,
     protected societeService: SocieteService,
     protected router: Router,
-    protected location: Location
+    protected location: Location,
+    protected accountService: AccountService
   ) {}
+
+  get canRead(): boolean {
+    return !this.isExisting || (this.affaire?.canRead ?? false);
+  }
+
+  // New affaire: the creator gets WRITE on save. Existing: use the flag from the backend.
+  get canWrite(): boolean {
+    return !this.isExisting || (this.affaire?.canWrite ?? false);
+  }
+
+  // Backend lets ADMIN / ACTIVATE_AFFAIRE change the statut even without WRITE
+  // (needed e.g. to reactivate an affaire in "Fin", where everyone is read-only).
+  get canChangeStatut(): boolean {
+    return this.canWrite || this.accountService.hasAnyAuthority([Authority.ADMIN, Authority.ACTIVATE_AFFAIRE]);
+  }
 
   onResponsableSelectChange(responsable: IContactSociete | null): void {
     this.selectedResponsable = responsable;
@@ -290,7 +309,7 @@ export class AffaireUpdateComponent implements OnInit {
   }
 
   removeArticle(article: IArticle): void {
-    if (!article.id) {
+    if (!article.id || !this.canWrite) {
       return;
     }
 
@@ -370,7 +389,7 @@ export class AffaireUpdateComponent implements OnInit {
   }
 
   submitArticleImport(): void {
-    if (!this.affaire?.id || !this.articleImportFile) {
+    if (!this.affaire?.id || !this.articleImportFile || !this.canWrite) {
       return;
     }
 
@@ -444,6 +463,9 @@ export class AffaireUpdateComponent implements OnInit {
   }
 
   toggleEditMode(): void {
+    if (!this.canWrite) {
+      return;
+    }
     this.isEditMode = !this.isEditMode;
   }
 
@@ -462,18 +484,87 @@ export class AffaireUpdateComponent implements OnInit {
     return flow[current as string] ?? null;
   }
 
-  changeStatut(): void {
-    const next = this.nextStatut;
+  get availableTransitions(): { statut: StatutAffaire; label: string }[] {
+    const current = this.editForm.get('statut')?.value as StatutAffaire;
+
+    const flow: Record<StatutAffaire, { statut: StatutAffaire; label: string; requiredAuthority?: string }[]> = {
+      [StatutAffaire.Brouillon]: [
+        {
+          statut: StatutAffaire.EtudeOpportunite,
+          label: "Passer à l'étude d'opportunité",
+        },
+        {
+          statut: StatutAffaire.ExecutionDesTravaux,
+          label: "Passer à l'exécution des travaux",
+        },
+      ],
+
+      [StatutAffaire.EtudeOpportunite]: [
+        {
+          statut: StatutAffaire.ExecutionDesTravaux,
+          label: "Passer à l'exécution des travaux",
+        },
+      ],
+
+      [StatutAffaire.ExecutionDesTravaux]: [
+        {
+          statut: StatutAffaire.ClotureProjet,
+          label: 'Clôturer le projet',
+        },
+        {
+          statut: StatutAffaire.EtudeOpportunite,
+          label: "Revenir à l'étude d'opportunité",
+        },
+      ],
+
+      [StatutAffaire.ClotureProjet]: [
+        {
+          statut: StatutAffaire.Fin,
+          label: 'Terminer le projet',
+        },
+      ],
+
+      [StatutAffaire.Fin]: [
+        {
+          statut: StatutAffaire.ExecutionDesTravaux,
+          label: "Revenir à l'exécution des travaux",
+          requiredAuthority: Authority.ACTIVATE_AFFAIRE,
+        },
+      ],
+    };
+
+    return (flow[current] ?? []).filter(t => !t.requiredAuthority || this.accountService.hasAnyAuthority(t.requiredAuthority));
+  }
+
+  changeStatut(next: StatutAffaire): void {
     const affaireId = this.editForm.get('id')?.value;
-    if (!next || !affaireId) {
+
+    if (!affaireId || !next) {
       return;
     }
 
     this.isChangingStatut = true;
+
     this.affaireService.changeStatut(affaireId, next).subscribe({
       next: () => {
         this.editForm.patchValue({ statut: next });
-        this.isChangingStatut = false;
+        // Refresh canRead/canWrite: the status change rewrote the ACLs
+        this.affaireService.find(affaireId).subscribe({
+          next: res => {
+            if (res.body) {
+              this.affaire = res.body;
+              // If WRITE was lost, leave edit mode
+              if (!this.canWrite) {
+                this.isEditMode = false;
+              }
+            }
+            this.isChangingStatut = false;
+          },
+          error: () => {
+            // find() returns 403 if READ was lost too: nothing sensible to show
+            this.isChangingStatut = false;
+          },
+        });
       },
       error: err => {
         console.error(err);

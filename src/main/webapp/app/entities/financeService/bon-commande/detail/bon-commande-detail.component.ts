@@ -17,6 +17,8 @@ import { ArticleService } from 'app/entities/projectService/article/service/arti
 import { IPieceJointe } from 'app/entities/projectService/piece-jointe/piece-jointe.model';
 import { PieceJointeService } from 'app/entities/projectService/piece-jointe/service/piece-jointe.service';
 import { saveAs } from 'file-saver';
+import { Authority } from '../../../../config/authority.constants';
+import { AccountService } from '../../../../core/auth/account.service';
 
 type AccordionPanel = 'global' | 'client' | 'detailsCommande' | 'otAssocies' | 'articlesMissions' | 'piecesJointes';
 
@@ -34,6 +36,19 @@ interface ArticleDisplay {
 })
 export class BonCommandeDetailComponent implements OnInit {
   bonCommande: IBonCommande | null = null;
+
+  get canRead(): boolean {
+    return this.bonCommande?.canRead ?? false;
+  }
+
+  // New affaire: the creator gets WRITE on save. Existing: use the flag from the backend.
+  get canWrite(): boolean {
+    return this.bonCommande?.canWrite ?? false;
+  }
+
+  get canChangeStatut(): boolean {
+    return this.canWrite || this.accountService.hasAnyAuthority([Authority.ADMIN, Authority.CAN_ACTIVATE_BON_COMMANDE]);
+  }
 
   // ================================
   // Accordéon
@@ -82,7 +97,8 @@ export class BonCommandeDetailComponent implements OnInit {
     protected bonCommandeAutreResponsableService: BonCommandeAutreResponsableService,
     protected bonCommandeArticlesService: BonCommandeArticlesService,
     protected articleService: ArticleService,
-    protected pieceJointeService: PieceJointeService
+    protected pieceJointeService: PieceJointeService,
+    protected accountService: AccountService
   ) {}
 
   ngOnInit(): void {
