@@ -41,6 +41,7 @@ type BonCommandeFormGroupContent = {
   montantCommande: FormControl<BonCommandeFormRawValue['montantCommande']>;
   montantConsomme: FormControl<BonCommandeFormRawValue['montantConsomme']>;
   montantMissionEffectue: FormControl<BonCommandeFormRawValue['montantMissionEffectue']>;
+  status: FormControl<BonCommandeFormRawValue['status']>;
 };
 
 export type BonCommandeFormGroup = FormGroup<BonCommandeFormGroupContent>;
@@ -74,6 +75,7 @@ export class BonCommandeFormService {
       montantCommande: new FormControl(bonCommandeRawValue.montantCommande),
       montantConsomme: new FormControl(bonCommandeRawValue.montantConsomme),
       montantMissionEffectue: new FormControl(bonCommandeRawValue.montantMissionEffectue),
+      status: new FormControl(bonCommandeRawValue.status),
     });
   }
 

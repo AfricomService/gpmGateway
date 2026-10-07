@@ -1748,19 +1748,33 @@
       <!-- ====================================================== -->
       <!-- FOOTER -->
       <!-- ====================================================== -->
+      <!-- Toolbar du bas : Statut + workflow + Annuler -->
       <div class="cu-toolbar cu-toolbar-bottom">
-        <div class="cu-toolbar-left">
-          <span class="cu-status-badge" *ngIf="bonCommande?.status">
-            {{ bonCommande?.status }}
+        <div class="cu-toolbar-bottom-left" *ngIf="isExisting">
+          <span class="cu-statut-display">
+            <!--            <fa-icon icon="tag" class="cu-statut-icon"></fa-icon>-->
+            <strong>Statut actuel :</strong>
+            <strong>
+              {{ editForm.get('status')?.value }}
+            </strong>
           </span>
+
+          <ng-container *ngIf="canChangeStatut">
+            <button
+              *ngFor="let transition of availableTransitions"
+              type="button"
+              class="btn-cu-statut"
+              (click)="changeStatut(transition.statut)"
+              [disabled]="isChangingStatut"
+            >
+              {{ transition.label }}
+            </button>
+          </ng-container>
         </div>
 
         <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
-          <fa-icon icon="ban"></fa-icon>
-
-          &nbsp;
-
-          <span jhiTranslate="entity.action.cancel"> Annuler </span>
+          <fa-icon icon="ban"></fa-icon>&nbsp;
+          <span *ngIf="canWrite" jhiTranslate="entity.action.cancel">Annuler</span>
         </button>
       </div>
     </form>

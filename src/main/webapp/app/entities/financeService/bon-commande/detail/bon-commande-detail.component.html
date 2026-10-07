@@ -10,7 +10,13 @@
       <div class="cu-toolbar cu-toolbar-end">
         <span class="cu-badge-id" *ngIf="bonCommande.identifiantUnique">{{ bonCommande.identifiantUnique }}</span>
 
-        <button type="button" class="btn-cu-edit" title="Modifier" [routerLink]="['/bon-commande', bonCommande.id, 'edit']">
+        <button
+          *ngIf="canWrite || canChangeStatut"
+          type="button"
+          class="btn-cu-edit"
+          title="Modifier"
+          [routerLink]="['/bon-commande', bonCommande.id, 'edit']"
+        >
           <fa-icon icon="pencil-alt"></fa-icon>
         </button>
       </div>
@@ -416,11 +422,15 @@
       <!-- FOOTER -->
       <!-- ====================================================== -->
       <div class="cu-toolbar cu-toolbar-bottom">
-        <div class="cu-toolbar-left"></div>
-
-        <button type="button" id="cancel-back" data-cy="entityDetailsBackButton" class="btn-cu-cancel" (click)="previousState()">
-          <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
-        </button>
+        <div class="cu-toolbar-bottom-left">
+          <span class="cu-statut-display">
+            <!--            <fa-icon icon="tag" class="cu-statut-icon"></fa-icon>-->
+            <strong>Statut actuel :</strong>
+            <strong>
+              {{ bonCommande.status }}
+            </strong>
+          </span>
+        </div>
       </div>
     </ng-container>
   </div>
