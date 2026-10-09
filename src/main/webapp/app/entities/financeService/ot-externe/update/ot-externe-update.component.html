@@ -4,12 +4,14 @@
       <jhi-alert-error></jhi-alert-error>
 
       <!-- ====================================================== -->
-      <!-- TOOLBAR -->
+      <!-- TOOLBAR : Référence + Enregistrer / Modifier -->
       <!-- ====================================================== -->
       <div class="cu-toolbar cu-toolbar-end">
         <span class="cu-badge-id" *ngIf="otExterne?.reference"> {{ otExterne?.reference }} </span>
 
+        <!-- Bouton Enregistrer (mode édition) -->
         <button
+          *ngIf="isEditMode && canWrite"
           type="submit"
           id="save-entity"
           data-cy="entityCreateSaveButton"
@@ -18,6 +20,11 @@
           class="btn-cu-save"
         >
           <fa-icon icon="save"></fa-icon>
+        </button>
+
+        <!-- Bouton Modifier (mode lecture sur fiche existante) -->
+        <button *ngIf="!isEditMode && isExisting && canWrite" type="button" class="btn-cu-edit" (click)="toggleEditMode()" title="Modifier">
+          <fa-icon icon="pen"></fa-icon>&nbsp;<span>Modifier</span>
         </button>
       </div>
 
@@ -55,7 +62,7 @@
                     [items]="affaireResults"
                     [compareWith]="compareAffaire"
                     [searchable]="true"
-                    [clearable]="true"
+                    [clearable]="isEditMode"
                     [loading]="loadingAffaires"
                     [typeahead]="affaireSearch$"
                     (scrollToEnd)="onAffaireScrollToEnd()"
@@ -65,6 +72,7 @@
                     [ngModel]="selectedAffaire"
                     [ngModelOptions]="{ standalone: true }"
                     (change)="onAffaireSelectChange($event)"
+                    [readonly]="!isEditMode"
                   >
                     <ng-template ng-label-tmp let-item="item"> {{ item.designationAffaire }} (N° {{ item.numAffaire }}) </ng-template>
                     <ng-template ng-option-tmp let-item="item">
@@ -74,6 +82,7 @@
                   </ng-select>
 
                   <button
+                    *ngIf="isEditMode"
                     type="button"
                     class="btn-cu-affaire-modal"
                     title="Rechercher un projet"
@@ -121,12 +130,13 @@
                     bindLabel="designation"
                     bindValue="designation"
                     [searchable]="true"
-                    [clearable]="true"
+                    [clearable]="isEditMode"
                     [loading]="loadingClientSites"
                     formControlName="lieu"
                     placeholder="Sélectionnez d'abord un projet"
                     notFoundText="Aucun site trouvé pour ce client"
                     loadingText="Chargement..."
+                    [readonly]="!isEditMode"
                   >
                     <ng-template ng-option-tmp let-item="item">
                       <div>{{ item.designation }}</div>
@@ -135,6 +145,7 @@
                   </ng-select>
 
                   <button
+                    *ngIf="isEditMode"
                     type="button"
                     class="btn-cu-affaire-modal"
                     title="Rechercher un lieu"
@@ -157,6 +168,7 @@
                   id="field_dateDebut"
                   data-cy="dateDebut"
                   formControlName="dateDebut"
+                  [attr.disabled]="!isEditMode ? true : null"
                 />
               </div>
             </div>
@@ -182,7 +194,7 @@
                     bindLabel="nomPrenom"
                     [compareWith]="compareResponsable"
                     [searchable]="true"
-                    [clearable]="true"
+                    [clearable]="isEditMode"
                     [loading]="loadingResponsables"
                     placeholder="Rechercher un responsable..."
                     notFoundText="Aucun responsable trouvé"
@@ -190,6 +202,7 @@
                     [ngModel]="selectedResponsable"
                     [ngModelOptions]="{ standalone: true }"
                     (change)="onResponsableSelectChange($event)"
+                    [readonly]="!isEditMode"
                   >
                     <ng-template ng-option-tmp let-item="item">
                       <div>{{ item.nomPrenom }}</div>
@@ -198,6 +211,7 @@
                   </ng-select>
 
                   <button
+                    *ngIf="isEditMode"
                     type="button"
                     class="btn-cu-affaire-modal"
                     title="Rechercher un responsable"
@@ -233,7 +247,7 @@
                     bindLabel="nomPrenom"
                     [compareWith]="compareResponsable"
                     [searchable]="true"
-                    [clearable]="true"
+                    [clearable]="isEditMode"
                     [multiple]="true"
                     [closeOnSelect]="false"
                     [loading]="loadingResponsables"
@@ -243,6 +257,7 @@
                     [ngModel]="selectedAutresResponsables"
                     [ngModelOptions]="{ standalone: true }"
                     (change)="onAutreResponsableSelectChange($event)"
+                    [readonly]="!isEditMode"
                   >
                     <ng-template ng-option-tmp let-item="item">
                       <div>{{ item.nomPrenom }}</div>
@@ -251,6 +266,7 @@
                   </ng-select>
 
                   <button
+                    *ngIf="isEditMode"
                     type="button"
                     class="btn-cu-affaire-modal"
                     title="Rechercher un autre responsable"
@@ -284,6 +300,7 @@
                   />
 
                   <button
+                    *ngIf="isEditMode"
                     type="button"
                     class="btn-cu-affaire-modal"
                     title="Rechercher un bon de commande"
@@ -379,6 +396,7 @@
                 type="button"
                 class="btn cu-mode-btn"
                 [class.cu-mode-btn-active]="modeCreation === 'MODELE'"
+                [disabled]="!isEditMode"
                 (click)="selectModeCreation('MODELE')"
                 data-cy="modeModele"
               >
@@ -389,7 +407,7 @@
                 type="button"
                 class="btn cu-mode-btn"
                 [class.cu-mode-btn-active]="modeCreation === 'LIBRE'"
-                [disabled]="modeleOtLocked"
+                [disabled]="modeleOtLocked || !isEditMode"
                 (click)="selectModeCreation('LIBRE')"
                 data-cy="modeLibre"
               >
@@ -422,6 +440,7 @@
                   data-cy="modeleOtId"
                   formControlName="modeleOtId"
                   (change)="onModeleOtSelectChange()"
+                  [attr.disabled]="!isEditMode ? true : null"
                 >
                   <option [ngValue]="null">Sélectionner un modèle</option>
                   <option *ngFor="let m of modeleOts" [ngValue]="m.id">{{ m.nom }}</option>
@@ -440,7 +459,7 @@
                   <label class="form-label fw-bold mb-0">Phases du modèle</label>
 
                   <button
-                    *ngIf="isExistingOt()"
+                    *ngIf="isExistingOt() && isEditMode && canWrite"
                     type="button"
                     class="btn-cu-enable-edit"
                     [class.btn-outline-primary]="!phasesArticlesEditMode"
@@ -466,7 +485,7 @@
                         <span *ngIf="phase.bloquante" class="badge bg-danger ms-2">Bloquante</span>
                         <p *ngIf="phase.description" class="text-muted mb-0" style="font-size: 12px">{{ phase.description }}</p>
                       </div>
-                      <button *ngIf="phasesArticlesEditMode" type="button" class="btn-cu-add" (click)="openArticleModal(phase)">
+                      <button *ngIf="canEditPhasesArticles" type="button" class="btn-cu-add" (click)="openArticleModal(phase)">
                         <fa-icon icon="plus"></fa-icon>&nbsp;Ajouter Article
                       </button>
                     </div>
@@ -493,7 +512,7 @@
                           <span class="text-muted"> — Qté : {{ oa.qteCommandee }} — Prix : {{ oa.prixPropose }}</span>
                         </div>
                         <button
-                          *ngIf="phasesArticlesEditMode"
+                          *ngIf="canEditPhasesArticles"
                           type="button"
                           (click)="removeOtArticle(phase.id, oa.id)"
                           title="Retirer"
@@ -534,10 +553,10 @@
                         <div>
                           <span>⏳</span>
                           <strong>{{ p.article.designation }}</strong>
-                          <span class="text-muted"> — Qté : {{ p.qteCommandee }} — Prix : {{ p.prixPropose }}</span>
+                          <span class="text-muted"> — Qté : {{ p.qteCommandee }} — Prix : {{ p.article.prixAchat }}</span>
                         </div>
                         <button
-                          *ngIf="phasesArticlesEditMode"
+                          *ngIf="canEditPhasesArticles"
                           type="button"
                           (click)="removePendingOtArticle(p.tempId)"
                           title="Retirer"
@@ -576,7 +595,7 @@
           </button>
 
           <div class="cu-accordion-body" *ngIf="isPanelOpen('piecesJointes')">
-            <div class="cu-detail-toolbar">
+            <div class="cu-detail-toolbar" *ngIf="isEditMode && canWrite">
               <button type="button" class="btn-cu-add" (click)="fileInput.click()" [disabled]="uploadingPieceJointe">
                 <fa-icon icon="plus"></fa-icon>&nbsp;Ajouter
               </button>
@@ -629,6 +648,7 @@
                   >
                 </div>
                 <button
+                  *ngIf="isEditMode && canWrite"
                   type="button"
                   (click)="removePendingPieceJointe(pending.tempId)"
                   title="Retirer"
@@ -698,6 +718,7 @@
                 </div>
 
                 <button
+                  *ngIf="isEditMode && canWrite"
                   type="button"
                   (click)="openRenamePjModal(pj)"
                   title="Renommer"
@@ -740,6 +761,7 @@
                 </button>
 
                 <button
+                  *ngIf="isEditMode && canWrite"
                   type="button"
                   (click)="removePieceJointe(pj.id)"
                   style="
@@ -813,6 +835,38 @@
           </div>
         </div>
       </div>
+
+      <!-- MODAL : Confirmation du changement de statut -->
+      <ng-template #statutConfirmModal let-modal>
+        <div class="modal-header">
+          <h5 class="modal-title"><fa-icon icon="tag"></fa-icon>&nbsp;Confirmer le changement de statut</h5>
+          <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-2">
+            Statut actuel :
+            <strong style="font-weight: 700">{{ editForm.get('statut')?.value }}</strong>
+          </p>
+          <p class="mb-3">
+            Nouveau statut :
+            <strong style="font-weight: 700" *ngIf="pendingTransition">{{ pendingTransition.statut }}</strong>
+          </p>
+          <div style="font-weight: 700" class="alert alert-info mb-0">
+            Voulez-vous vraiment effectuer cette action : <strong>{{ pendingTransition?.label }}</strong> ?
+            <br />
+            <small>Les modifications en cours seront enregistrées et vous serez redirigé vers la liste des OT externes.</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss()" [disabled]="isChangingStatut">
+            <fa-icon icon="times"></fa-icon>&nbsp;Annuler
+          </button>
+          <button type="button" class="btn btn-primary" (click)="modal.close(true)" [disabled]="isChangingStatut">
+            <span *ngIf="isChangingStatut" class="spinner-border spinner-border-sm me-1"></span>
+            <fa-icon *ngIf="!isChangingStatut" icon="check"></fa-icon>&nbsp;Confirmer
+          </button>
+        </div>
+      </ng-template>
 
       <!-- MODAL : Détails Client Final -->
       <ng-template #clientDetailsModal let-modal>
@@ -1660,7 +1714,7 @@
       </div>
 
       <!-- ====================================================== -->
-      <!-- FOOTER -->
+      <!-- FOOTER : Statut + workflow + Annuler -->
       <!-- ====================================================== -->
       <div class="cu-toolbar cu-toolbar-bottom">
         <div class="cu-toolbar-left">
@@ -1669,14 +1723,26 @@
             *ngIf="editForm.controls.statut.value"
             [ngClass]="'cu-badge-' + (editForm.controls.statut.value | lowercase)"
           >
-            {{ 'gpmGatewayApp.StatutOtExterne.' + editForm.controls.statut.value | translate }}
+            {{ editForm.controls.statut.value }}
           </span>
+
+          <ng-container *ngIf="isExisting && canChangeStatut">
+            <button
+              *ngFor="let transition of availableTransitions; trackBy: trackByTransition"
+              type="button"
+              class="btn-cu-statut"
+              (click)="askStatutChange(transition)"
+              [disabled]="isChangingStatut"
+            >
+              {{ transition.label }}
+            </button>
+          </ng-container>
         </div>
 
         <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
           <fa-icon icon="ban"></fa-icon>
           &nbsp;
-          <span jhiTranslate="entity.action.cancel">Annuler</span>
+          <span *ngIf="canWrite">Annuler</span>
         </button>
       </div>
     </form>

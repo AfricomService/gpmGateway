@@ -5,6 +5,7 @@ import { Location } from '@angular/common';
 import { Observable, Subject } from 'rxjs';
 import { finalize, map, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import * as XLSX from 'xlsx';
 
 import { AffaireFormService, AffaireFormGroup } from './affaire-form.service';
 import { IAffaire } from '../affaire.model';
@@ -34,7 +35,20 @@ import { AccountService } from '../../../../core/auth/account.service';
 
 type AccordionSection = 'general' | 'dates' | 'articles' | 'societes';
 
+interface IStatutTransition {
+  statut: StatutAffaire;
+  label: string;
+  requiredAuthority?: string;
+}
+
 const RESPONSABLE_ROLE_CODE = 'MANAGER';
+
+// Route de la liste des affaires (redirection après changement de statut)
+const AFFAIRES_LIST_URL = '/affaire';
+
+// Nom du fichier de résultats d'import
+const IMPORT_RESULTS_FILENAME = 'import_results.xlsx';
+const IMPORT_RESULT_COLUMN_HEADER = 'Résultat import';
 
 @Component({
   selector: 'jhi-affaire-update',
@@ -46,6 +60,7 @@ export class AffaireUpdateComponent implements OnInit {
   @ViewChild('articleImportModal') articleImportModal!: TemplateRef<any>;
   @ViewChild('matriceModal') matriceModal!: TemplateRef<any>;
   @ViewChild('societeModal') societeModal!: TemplateRef<any>;
+  @ViewChild('statutConfirmModal') statutConfirmModal!: TemplateRef<any>;
 
   isSaving = false;
   affaire: IAffaire | null = null;
@@ -56,6 +71,9 @@ export class AffaireUpdateComponent implements OnInit {
   // Accordion management
   openSections: Set<AccordionSection> = new Set(['general', 'dates']);
   isChangingStatut = false;
+
+  // ── Confirmation changement de statut ───────────────────────────
+  pendingTransition: IStatutTransition | null = null;
 
   clientsSharedCollection: IClient[] = [];
   responsables: IContactSociete[] = [];
@@ -82,6 +100,8 @@ export class AffaireUpdateComponent implements OnInit {
   articleImportInProgress = false;
   articleImportResult: IArticleImportResult | null = null;
   articleImportDragOver = false;
+  articleImportResultBlob: Blob | null = null;
+  importResultsFileError: string | null = null;
 
   selectedMatrices: IMatriceFacturation[] = [];
   allVilles: IVille[] = [];
@@ -107,8 +127,6 @@ export class AffaireUpdateComponent implements OnInit {
   private successMessageTimeout: ReturnType<typeof setTimeout> | null = null;
 
   private articleSearchSubject = new Subject<string>();
-
-  // private accountService = inject(AccountService);
 
   constructor(
     protected affaireService: AffaireService,
@@ -379,13 +397,15 @@ export class AffaireUpdateComponent implements OnInit {
   openArticleImportModal(): void {
     this.articleImportFile = null;
     this.articleImportResult = null;
+    this.articleImportResultBlob = null;
+    this.importResultsFileError = null;
     this.modalService.open(this.articleImportModal, { size: 'lg', backdrop: 'static', centered: true });
   }
 
   onArticleImportFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.articleImportFile = input.files && input.files.length > 0 ? input.files[0] : null;
-    this.articleImportResult = null;
+    this.resetImportResults();
   }
 
   submitArticleImport(): void {
@@ -393,12 +413,21 @@ export class AffaireUpdateComponent implements OnInit {
       return;
     }
 
+    const uploadedFile = this.articleImportFile;
+
     this.articleImportInProgress = true;
-    this.articleImportService.importArticles(this.affaire.id, this.articleImportFile).subscribe({
+    this.resetImportResults();
+
+    this.articleImportService.importArticles(this.affaire.id, uploadedFile).subscribe({
       next: response => {
         this.articleImportResult = response.body;
         this.articleImportInProgress = false;
         this.loadArticlesByAffaire();
+
+        if (response.body) {
+          // Génération du fichier "import results" à partir du fichier d'origine
+          this.generateImportResultsFile(uploadedFile, response.body);
+        }
       },
       error: () => {
         this.articleImportInProgress = false;
@@ -440,13 +469,168 @@ export class AffaireUpdateComponent implements OnInit {
     const files = event.dataTransfer?.files;
     if (files && files.length > 0) {
       this.articleImportFile = files[0];
-      this.articleImportResult = null;
+      this.resetImportResults();
     }
   }
 
   removeArticleImportFile(): void {
     this.articleImportFile = null;
+    this.resetImportResults();
+  }
+
+  private resetImportResults(): void {
     this.articleImportResult = null;
+    this.articleImportResultBlob = null;
+    this.importResultsFileError = null;
+  }
+
+  /**
+   * Télécharge le fichier "import results" généré après l'import.
+   */
+  downloadImportResults(): void {
+    if (!this.articleImportResultBlob) {
+      return;
+    }
+    const url = window.URL.createObjectURL(this.articleImportResultBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = IMPORT_RESULTS_FILENAME;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+  /**
+   * Reprend le fichier Excel importé et ajoute, à la fin de chaque ligne,
+   * une colonne "Résultat import" :
+   *   - "Importé avec succès"
+   *   - "Non importé : <raison>"
+   */
+  private async generateImportResultsFile(file: File, result: IArticleImportResult): Promise<void> {
+    try {
+      const buffer = await file.arrayBuffer();
+      const workbook = XLSX.read(buffer, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+
+      if (!sheet || !sheet['!ref']) {
+        this.importResultsFileError = 'Impossible de générer le fichier de résultats : feuille Excel vide.';
+        return;
+      }
+
+      const range = XLSX.utils.decode_range(sheet['!ref']);
+      const resultCol = range.e.c + 1;
+
+      const { rowStatuses, generalErrors } = this.buildRowStatuses(result);
+
+      // Compte des lignes de données non vides (hors en-tête)
+      const dataRows: number[] = [];
+      for (let r = range.s.r + 1; r <= range.e.r; r++) {
+        if (this.isRowNotEmpty(sheet, r, range.s.c, range.e.c)) {
+          dataRows.push(r);
+        }
+      }
+
+      // Cas où rien n'a été importé et aucune erreur n'est rattachée à une ligne :
+      // on considère que tout le fichier a été rejeté.
+      const nothingImportedGlobally = result.successCount === 0 && rowStatuses.size === 0 && !result.rowResults?.length;
+
+      // En-tête de la nouvelle colonne
+      sheet[XLSX.utils.encode_cell({ r: range.s.r, c: resultCol })] = { t: 's', v: IMPORT_RESULT_COLUMN_HEADER };
+
+      for (const r of dataRows) {
+        const excelRowNumber = r + 1; // numéro de ligne tel qu'affiché dans Excel
+        let message: string;
+
+        if (nothingImportedGlobally) {
+          const reason = generalErrors.length > 0 ? generalErrors.join(' | ') : 'raison non précisée';
+          message = `Non importé : ${reason}`;
+        } else {
+          const rowError = rowStatuses.get(excelRowNumber);
+          message = rowError === undefined ? 'Importé avec succès' : `Non importé : ${rowError}`;
+        }
+
+        sheet[XLSX.utils.encode_cell({ r, c: resultCol })] = { t: 's', v: message };
+      }
+
+      // Étendre la plage de la feuille et élargir la colonne
+      range.e.c = resultCol;
+      sheet['!ref'] = XLSX.utils.encode_range(range);
+      const cols = sheet['!cols'] ?? [];
+      cols[resultCol] = { wch: 60 };
+      sheet['!cols'] = cols;
+
+      // Feuille complémentaire pour les erreurs non rattachables à une ligne
+      if (!nothingImportedGlobally && generalErrors.length > 0) {
+        const errorsSheet = XLSX.utils.aoa_to_sheet([['Erreurs générales'], ...generalErrors.map(e => [e])]);
+        errorsSheet['!cols'] = [{ wch: 100 }];
+        XLSX.utils.book_append_sheet(workbook, errorsSheet, 'Erreurs générales');
+      }
+
+      const output = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      this.articleImportResultBlob = new Blob([output], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      this.importResultsFileError = null;
+    } catch (e) {
+      console.error('Failed to generate import results file', e);
+      this.articleImportResultBlob = null;
+      this.importResultsFileError = 'Impossible de générer le fichier de résultats.';
+    }
+  }
+
+  private isRowNotEmpty(sheet: XLSX.WorkSheet, row: number, startCol: number, endCol: number): boolean {
+    for (let c = startCol; c <= endCol; c++) {
+      const cell = sheet[XLSX.utils.encode_cell({ r: row, c })];
+      if (cell && cell.v !== undefined && cell.v !== null && String(cell.v).trim() !== '') {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Associe chaque ligne Excel en échec à son message.
+   * 1) Utilise result.rowResults si le backend le fournit.
+   * 2) Sinon, extrait le numéro de ligne depuis les messages d'erreur
+   *    (ex : "Ligne 5 : code article introuvable").
+   * Les erreurs sans numéro de ligne sont retournées dans generalErrors.
+   */
+  private buildRowStatuses(result: IArticleImportResult): { rowStatuses: Map<number, string>; generalErrors: string[] } {
+    const rowStatuses = new Map<number, string>();
+    const generalErrors: string[] = [];
+
+    if (result.rowResults && result.rowResults.length > 0) {
+      for (const rr of result.rowResults) {
+        if (!rr.success) {
+          rowStatuses.set(rr.row, rr.message ?? 'raison non précisée');
+        }
+      }
+      (result.errors ?? []).forEach(e => {
+        if (!this.extractRowNumber(e)) {
+          generalErrors.push(e);
+        }
+      });
+      return { rowStatuses, generalErrors };
+    }
+
+    for (const err of result.errors ?? []) {
+      const rowNumber = this.extractRowNumber(err);
+      if (rowNumber !== null) {
+        const cleaned = err.replace(/^\s*(?:ligne|line|row)\s*:?\s*\d+\s*[:\-–—]?\s*/i, '').trim();
+        const previous = rowStatuses.get(rowNumber);
+        const text = cleaned || err;
+        rowStatuses.set(rowNumber, previous ? `${previous} | ${text}` : text);
+      } else {
+        generalErrors.push(err);
+      }
+    }
+
+    return { rowStatuses, generalErrors };
+  }
+
+  private extractRowNumber(message: string): number | null {
+    const match = /(?:ligne|line|row)\s*:?\s*(\d+)/i.exec(message);
+    return match ? Number(match[1]) : null;
   }
 
   // ── Accordion, Mode & Form standard logic ──────────────────────
@@ -484,10 +668,10 @@ export class AffaireUpdateComponent implements OnInit {
     return flow[current as string] ?? null;
   }
 
-  get availableTransitions(): { statut: StatutAffaire; label: string }[] {
+  get availableTransitions(): IStatutTransition[] {
     const current = this.editForm.get('statut')?.value as StatutAffaire;
 
-    const flow: Record<StatutAffaire, { statut: StatutAffaire; label: string; requiredAuthority?: string }[]> = {
+    const flow: Record<StatutAffaire, IStatutTransition[]> = {
       [StatutAffaire.Brouillon]: [
         {
           statut: StatutAffaire.EtudeOpportunite,
@@ -536,7 +720,45 @@ export class AffaireUpdateComponent implements OnInit {
     return (flow[current] ?? []).filter(t => !t.requiredAuthority || this.accountService.hasAnyAuthority(t.requiredAuthority));
   }
 
-  changeStatut(next: StatutAffaire): void {
+  // ── Changement de statut avec confirmation ──────────────────────
+  /**
+   * Ouvre la modale de confirmation. L'appel API n'est déclenché
+   * qu'après clic sur "Confirmer".
+   */
+  askStatutChange(transition: IStatutTransition): void {
+    if (this.isChangingStatut) {
+      return;
+    }
+
+    this.pendingTransition = transition;
+
+    const modalRef = this.modalService.open(this.statutConfirmModal, {
+      size: 'md',
+      backdrop: 'static',
+      centered: true,
+    });
+
+    modalRef.result
+      .then(confirmed => {
+        if (confirmed && this.pendingTransition) {
+          this.confirmStatutChange(modalRef, this.pendingTransition.statut);
+        }
+      })
+      .catch(() => {
+        // Modale fermée / annulée : on ne fait rien
+      })
+      .finally(() => {
+        if (!this.isChangingStatut) {
+          this.pendingTransition = null;
+        }
+      });
+  }
+
+  /**
+   * Enregistre d'abord les modifications en cours (si formulaire modifié et valide),
+   * change ensuite le statut puis redirige vers la liste des affaires.
+   */
+  private confirmStatutChange(_modalRef: unknown, next: StatutAffaire): void {
     const affaireId = this.editForm.get('id')?.value;
 
     if (!affaireId || !next) {
@@ -545,30 +767,52 @@ export class AffaireUpdateComponent implements OnInit {
 
     this.isChangingStatut = true;
 
+    const shouldSaveFirst = this.isEditMode && this.canWrite && this.editForm.dirty && this.editForm.valid;
+
+    if (shouldSaveFirst) {
+      if (this.selectedResponsable) {
+        this.editForm.patchValue({
+          responsableProjetId:
+            this.selectedResponsable.id !== undefined && this.selectedResponsable.id !== null ? String(this.selectedResponsable.id) : null,
+          responsableProjetUserLogin: this.selectedResponsable.matricule ?? null,
+        });
+      }
+
+      const affaire = this.affaireFormService.getAffaire(this.editForm);
+
+      // Narrow IAffaire | NewAffaire -> IAffaire (an existing affaire always has an id)
+      if (affaire.id === null) {
+        this.isChangingStatut = false;
+        this.pendingTransition = null;
+        return;
+      }
+
+      this.affaireService.update(affaire).subscribe({
+        next: () => this.applyStatutChangeAndClose(affaireId, next),
+        error: err => {
+          console.error(err);
+          this.isChangingStatut = false;
+          this.pendingTransition = null;
+        },
+      });
+    } else {
+      this.applyStatutChangeAndClose(affaireId, next);
+    }
+  }
+
+  private applyStatutChangeAndClose(affaireId: number, next: StatutAffaire): void {
     this.affaireService.changeStatut(affaireId, next).subscribe({
       next: () => {
         this.editForm.patchValue({ statut: next });
-        // Refresh canRead/canWrite: the status change rewrote the ACLs
-        this.affaireService.find(affaireId).subscribe({
-          next: res => {
-            if (res.body) {
-              this.affaire = res.body;
-              // If WRITE was lost, leave edit mode
-              if (!this.canWrite) {
-                this.isEditMode = false;
-              }
-            }
-            this.isChangingStatut = false;
-          },
-          error: () => {
-            // find() returns 403 if READ was lost too: nothing sensible to show
-            this.isChangingStatut = false;
-          },
-        });
+        this.isChangingStatut = false;
+        this.pendingTransition = null;
+        // Save & close : retour à la liste des affaires
+        this.router.navigate([AFFAIRES_LIST_URL]);
       },
       error: err => {
         console.error(err);
         this.isChangingStatut = false;
+        this.pendingTransition = null;
       },
     });
   }

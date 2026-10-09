@@ -1764,7 +1764,7 @@
               *ngFor="let transition of availableTransitions"
               type="button"
               class="btn-cu-statut"
-              (click)="changeStatut(transition.statut)"
+              (click)="askStatutChange(transition)"
               [disabled]="isChangingStatut"
             >
               {{ transition.label }}
@@ -1777,6 +1777,40 @@
           <span *ngIf="canWrite" jhiTranslate="entity.action.cancel">Annuler</span>
         </button>
       </div>
+      <!-- ====================================================== -->
+      <!-- MODAL : Confirmation du changement de statut -->
+      <!-- ====================================================== -->
+      <ng-template #statutConfirmModal let-modal>
+        <div class="modal-header">
+          <h5 class="modal-title"><fa-icon icon="tag"></fa-icon>&nbsp;Confirmer le changement de statut</h5>
+          <button type="button" class="btn-close" (click)="modal.dismiss()" [disabled]="isChangingStatut"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-2">
+            Statut actuel :
+            <strong style="font-weight: 700">{{ editForm.get('status')?.value }}</strong>
+          </p>
+          <p class="mb-3">
+            Nouveau statut :
+            <strong style="font-weight: 700" *ngIf="pendingTransition">{{ pendingTransition.statut }}</strong>
+          </p>
+          <div style="font-weight: 700" class="alert alert-info mb-0">
+            <!--            <fa-icon icon="exclamation-triangle" class="me-2"></fa-icon>-->
+            Voulez-vous vraiment effectuer cette action : <strong>{{ pendingTransition?.label }}</strong> ?
+            <br />
+            <small>Les modifications en cours seront enregistrées et vous serez redirigé vers la liste des bons de commande.</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss()" [disabled]="isChangingStatut">
+            <fa-icon icon="times"></fa-icon>&nbsp;Annuler
+          </button>
+          <button type="button" class="btn btn-primary" (click)="modal.close(true)" [disabled]="isChangingStatut">
+            <span *ngIf="isChangingStatut" class="spinner-border spinner-border-sm me-1"></span>
+            <fa-icon *ngIf="!isChangingStatut" icon="check"></fa-icon>&nbsp;Confirmer
+          </button>
+        </div>
+      </ng-template>
     </form>
   </div>
 </div>

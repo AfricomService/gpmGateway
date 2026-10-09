@@ -37,6 +37,8 @@ import { StatutCommande } from '../../../enumerations/statut-commande.model';
 import { AccountService } from '../../../../core/auth/account.service';
 import { Authority } from '../../../../config/authority.constants';
 
+import { Router } from '@angular/router';
+
 type AccordionPanel = 'global' | 'client' | 'detailsCommande' | 'otAssocies' | 'articlesMissions' | 'piecesJointes';
 
 interface PendingPieceJointe {
@@ -50,6 +52,15 @@ const AFFAIRE_STATUT = 'ExecutionDesTravaux';
 const AFFAIRE_PAGE_SIZE = 15;
 const RESPONSABLE_ROLE_CODE = 'MANAGER';
 
+// Route de la liste des bons de commande (redirection après changement de statut)
+const BON_COMMANDES_LIST_URL = '/bon-commande';
+
+interface IStatutTransition {
+  statut: StatutCommande;
+  label: string;
+  requiredAuthority?: string;
+}
+
 @Component({
   selector: 'jhi-bon-commande-update',
   templateUrl: './bon-commande-update.component.html',
@@ -58,6 +69,8 @@ const RESPONSABLE_ROLE_CODE = 'MANAGER';
 export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   @ViewChild('clientDetailsModal') clientDetailsModal!: TemplateRef<any>;
   @ViewChild('clientCommandeDetailsModal') clientCommandeDetailsModal!: TemplateRef<any>;
+
+  @ViewChild('statutConfirmModal') statutConfirmModal!: TemplateRef<any>;
 
   isSaving = false;
   bonCommande: IBonCommande | null = null;
@@ -77,6 +90,8 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   selectedAffaireCode: string | null = null; // Code projet (identifiantUnique) — affichage seul
 
   isChangingStatut = false;
+
+  pendingTransition: IStatutTransition | null = null;
 
   selectedAutresResponsables: IContactSociete[] = []; // Sélection multiple, persistée via BonCommandeAutreResponsable
 
@@ -181,7 +196,8 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     protected scanSettingsService: ScanSettingsService,
     protected sanitizer: DomSanitizer,
     protected cdr: ChangeDetectorRef,
-    protected accountService: AccountService
+    protected accountService: AccountService,
+    protected router: Router
   ) {}
   ngOnInit(): void {
     this.loadResponsables();
@@ -251,7 +267,7 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     return this.editForm.controls.id.value !== null;
   }
 
-  get availableTransitions(): { statut: StatutCommande; label: string }[] {
+  get availableTransitions(): IStatutTransition[] {
     const statutControl = this.editForm.get('status');
 
     if (!statutControl) {
@@ -260,7 +276,7 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
     const current = statutControl.value as StatutCommande;
 
-    const flow: Record<StatutCommande, { statut: StatutCommande; label: string; requiredAuthority?: string }[]> = {
+    const flow: Record<StatutCommande, IStatutTransition[]> = {
       [StatutCommande.Brouillon]: [
         {
           statut: StatutCommande.ConfirmationCommande,
@@ -302,7 +318,45 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     return (flow[current] ?? []).filter(t => !t.requiredAuthority || this.accountService.hasAnyAuthority(t.requiredAuthority));
   }
 
-  changeStatut(next: StatutCommande): void {
+  // ── Changement de statut avec confirmation ──────────────────────
+  /**
+   * Ouvre la modale de confirmation. L'appel API n'est déclenché
+   * qu'après clic sur "Confirmer".
+   */
+  askStatutChange(transition: IStatutTransition): void {
+    if (this.isChangingStatut) {
+      return;
+    }
+
+    this.pendingTransition = transition;
+
+    const modalRef = this.modalService.open(this.statutConfirmModal, {
+      size: 'md',
+      backdrop: 'static',
+      centered: true,
+    });
+
+    modalRef.result
+      .then(confirmed => {
+        if (confirmed && this.pendingTransition) {
+          this.confirmStatutChange(this.pendingTransition.statut, modalRef);
+        }
+      })
+      .catch(() => {
+        // Modale annulée : on ne fait rien
+      })
+      .finally(() => {
+        if (!this.isChangingStatut) {
+          this.pendingTransition = null;
+        }
+      });
+  }
+
+  /**
+   * Enregistre d'abord les modifications en cours (si le formulaire est valide),
+   * change ensuite le statut puis redirige vers la liste des bons de commande.
+   */
+  private confirmStatutChange(next: StatutCommande, _modalRef: unknown): void {
     const bonCommandeId = this.editForm.get('id')?.value;
 
     if (!bonCommandeId || !next) {
@@ -311,31 +365,56 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
     this.isChangingStatut = true;
 
-    this.bonCommandeService.changeStatut(bonCommandeId, next).subscribe({
+    const shouldSaveFirst = this.canWrite && this.editForm.valid;
+
+    if (!shouldSaveFirst) {
+      this.applyStatutChangeAndClose(bonCommandeId, next);
+      return;
+    }
+
+    const bonCommande = this.bonCommandeFormService.getBonCommande(this.editForm);
+
+    // Narrow IBonCommande | NewBonCommande -> IBonCommande (a bon de commande existant a toujours un id)
+    if (bonCommande.id === null) {
+      this.isChangingStatut = false;
+      this.pendingTransition = null;
+      return;
+    }
+
+    const contactSocieteIds = this.selectedAutresResponsables.map(c => c.id).filter((id): id is number => id !== null && id !== undefined);
+
+    this.bonCommandeService.partialUpdate(bonCommande).subscribe({
       next: () => {
-        this.editForm.patchValue({ status: next.toString() });
-
-        this.bonCommandeService.find(bonCommandeId).subscribe({
-          next: res => {
-            if (res.body) {
-              this.bonCommande = res.body;
-            }
-
-            this.isChangingStatut = false;
-          },
-          error: err => {
-            console.error(err);
-            this.isChangingStatut = false;
-          },
+        // Les "autres responsables" ne passent pas par le formulaire : on les enregistre aussi
+        this.bonCommandeAutreResponsableService.replaceForBonCommande(bonCommandeId, contactSocieteIds).subscribe({
+          next: () => this.applyStatutChangeAndClose(bonCommandeId, next),
+          error: () => this.applyStatutChangeAndClose(bonCommandeId, next),
         });
       },
       error: err => {
         console.error(err);
         this.isChangingStatut = false;
+        this.pendingTransition = null;
       },
     });
   }
 
+  private applyStatutChangeAndClose(bonCommandeId: number, next: StatutCommande): void {
+    this.bonCommandeService.changeStatut(bonCommandeId, next).subscribe({
+      next: () => {
+        this.editForm.patchValue({ status: next.toString() });
+        this.isChangingStatut = false;
+        this.pendingTransition = null;
+        // Save & close : retour à la liste des bons de commande
+        this.router.navigate([BON_COMMANDES_LIST_URL]);
+      },
+      error: err => {
+        console.error(err);
+        this.isChangingStatut = false;
+        this.pendingTransition = null;
+      },
+    });
+  }
   // ================================
   // Accordéon
   // ================================

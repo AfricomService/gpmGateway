@@ -121,6 +121,49 @@
   }
 }
 
+.btn-cu-edit {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 0.9rem;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  background: var(--cp-accent-soft);
+  color: var(--cp-accent);
+  font-weight: 700;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    background: var(--cp-accent);
+    color: #ffffff;
+    box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
+  }
+}
+
+.btn-cu-statut {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--cp-accent);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
+  transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+
+  &:hover {
+    background: var(--cp-accent-hover);
+    box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.7);
+    transform: translateY(-1px);
+  }
+}
+
 .btn-cu-enable-edit {
   display: flex;
   align-items: center;

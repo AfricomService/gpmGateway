@@ -42,6 +42,10 @@ import { OtArticlesService } from '../ot-articles.service';
 import { ArticleService } from '../../../projectService/article/service/article.service';
 import { ArticleAffectationResult, ArticleSelectorModalComponent } from '../../../projectService/article/article-selector-modal.component';
 
+// ── NEW : droits + statut ─────────────────────────────────────────
+import { Authority } from 'app/config/authority.constants';
+import { AccountService } from 'app/core/auth/account.service';
+
 type ModeCreation = 'MODELE' | 'LIBRE';
 type AccordionPanel = 'global' | 'mode' | 'modele' | 'client' | 'piecesJointes';
 
@@ -52,16 +56,26 @@ interface PendingPieceJointe {
   extension: string;
 }
 
+// ── NEW : transition de statut ────────────────────────────────────
+interface IStatutTransition {
+  statut: StatutOtExterne;
+  label: string;
+  requiredAuthority?: string;
+}
+
 const AFFAIRE_STATUT = 'ExecutionDesTravaux';
 const AFFAIRE_PAGE_SIZE = 15;
 const RESPONSABLE_ROLE_CODE = 'MANAGER';
 const BON_COMMANDE_STATUT = 'ACTIF';
 
+// ── NEW : route de la liste des OT externes (redirection après changement de statut) ──
+// ⚠️ À vérifier : doit correspondre à la route de la liste dans ton routing.
+const OT_EXTERNES_LIST_URL = '/ot-externe';
+
 interface PendingOtArticle {
   tempId: string;
   phaseOtId: number;
   article: IArticle;
-  prixPropose: number;
   qteCommandee: number;
 }
 
@@ -73,6 +87,12 @@ interface PendingOtArticle {
 export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   @ViewChild('clientDetailsModal') clientDetailsModal!: TemplateRef<any>;
   @ViewChild('clientCommandeDetailsModal') clientCommandeDetailsModal!: TemplateRef<any>;
+  @ViewChild('statutConfirmModal') statutConfirmModal!: TemplateRef<any>; // NEW
+
+  // ── NEW : mode lecture / édition + changement de statut ─────────
+  isEditMode = false;
+  isChangingStatut = false;
+  pendingTransition: IStatutTransition | null = null;
 
   modeleOtLocked = false;
   phasesArticlesEditMode = true; // true by default (creation mode = always editable)
@@ -215,8 +235,44 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
     protected cdr: ChangeDetectorRef,
     protected modelPhaseOTService: ModelPhaseOTService,
     protected otArticlesService: OtArticlesService,
-    protected articleService: ArticleService
+    protected articleService: ArticleService,
+    protected accountService: AccountService // NEW
   ) {}
+
+  // ================================
+  // NEW : Droits (canRead / canWrite / canChangeStatut)
+  // ================================
+  get isExisting(): boolean {
+    const id = this.editForm.controls.id.value;
+    return id !== null && id !== undefined;
+  }
+
+  get canRead(): boolean {
+    return !this.isExisting || (this.otExterne?.canRead ?? false);
+  }
+
+  // Nouvel OT : le créateur obtient WRITE à l'enregistrement. OT existant : flag renvoyé par le backend.
+  get canWrite(): boolean {
+    return !this.isExisting || (this.otExterne?.canWrite ?? false);
+  }
+
+  // Le backend autorise ADMIN / ACTIVATE_AFFAIRE à changer le statut même sans WRITE
+  // (ex : réactiver un OT en "Fin", où tout le monde est en lecture seule).
+  get canChangeStatut(): boolean {
+    return this.canWrite || this.accountService.hasAnyAuthority([Authority.ADMIN, Authority.CAN_ACTIVATE_OT_EXTERNE]);
+  }
+
+  // Phases / articles : modifiables seulement en mode édition + droit d'écriture + bascule "Modifier" activée
+  get canEditPhasesArticles(): boolean {
+    return this.isEditMode && this.canWrite && this.phasesArticlesEditMode;
+  }
+
+  toggleEditMode(): void {
+    if (!this.canWrite) {
+      return;
+    }
+    this.isEditMode = !this.isEditMode;
+  }
 
   ngOnInit(): void {
     this.loadResponsables();
@@ -228,6 +284,9 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
       this.otExterne = otExterne;
       if (otExterne) {
         this.updateForm(otExterne);
+      } else {
+        // NOUVEL OT : mode édition immédiat
+        this.isEditMode = true;
       }
     });
 
@@ -257,7 +316,146 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
       });
   }
 
+  // ================================
+  // NEW : Changement de statut avec confirmation
+  // ================================
+  trackByTransition = (_index: number, transition: IStatutTransition): string => transition.statut;
+
+  get availableTransitions(): IStatutTransition[] {
+    const current = this.editForm.get('statut')?.value as StatutOtExterne;
+
+    const flow: Record<StatutOtExterne, IStatutTransition[]> = {
+      [StatutOtExterne.Brouillon]: [
+        {
+          statut: StatutOtExterne.ExecutionDesTravaux,
+          label: "Passer à l'exécution des travaux",
+        },
+      ],
+
+      [StatutOtExterne.ExecutionDesTravaux]: [
+        {
+          statut: StatutOtExterne.Fin,
+          label: "Terminer l'OT",
+        },
+      ],
+
+      [StatutOtExterne.Fin]: [
+        {
+          statut: StatutOtExterne.ExecutionDesTravaux,
+          label: "Revenir à l'exécution des travaux",
+          // ⚠️ Remplace par l'autorité propre aux OT externes si elle existe
+          requiredAuthority: Authority.ACTIVATE_AFFAIRE,
+        },
+      ],
+    };
+
+    return (flow[current] ?? []).filter(t => !t.requiredAuthority || this.accountService.hasAnyAuthority(t.requiredAuthority));
+  }
+
+  /**
+   * Ouvre la modale de confirmation. L'appel API n'est déclenché
+   * qu'après clic sur "Confirmer".
+   */
+  askStatutChange(transition: IStatutTransition): void {
+    if (this.isChangingStatut) {
+      return;
+    }
+
+    this.pendingTransition = transition;
+
+    const modalRef = this.modalService.open(this.statutConfirmModal, {
+      size: 'md',
+      backdrop: 'static',
+      centered: true,
+    });
+
+    modalRef.result
+      .then(confirmed => {
+        if (confirmed && this.pendingTransition) {
+          this.confirmStatutChange(this.pendingTransition.statut);
+        }
+      })
+      .catch(() => {
+        // Modale fermée / annulée : on ne fait rien
+      })
+      .finally(() => {
+        if (!this.isChangingStatut) {
+          this.pendingTransition = null;
+        }
+      });
+  }
+
+  /**
+   * Enregistre d'abord les modifications en cours (si formulaire modifié et valide),
+   * change ensuite le statut puis redirige vers la liste des OT externes.
+   */
+  private confirmStatutChange(next: StatutOtExterne): void {
+    const otExterneId = this.editForm.get('id')?.value as number | null | undefined;
+
+    if (otExterneId === null || otExterneId === undefined || !next) {
+      return;
+    }
+
+    this.isChangingStatut = true;
+
+    const shouldSaveFirst = this.isEditMode && this.canWrite && this.editForm.dirty && this.editForm.valid;
+
+    if (!shouldSaveFirst) {
+      this.applyStatutChangeAndClose(otExterneId, next);
+      return;
+    }
+
+    const otExterne = this.otExterneFormService.getOtExterne(this.editForm);
+
+    // Narrow IOtExterne | NewOtExterne -> IOtExterne (un OT existant a toujours un id)
+    if (otExterne.id === null) {
+      this.isChangingStatut = false;
+      this.pendingTransition = null;
+      return;
+    }
+
+    this.otExterneService.update(otExterne).subscribe({
+      next: () => {
+        // Les "autres responsables" sont persistés via une table de liaison : on les enregistre aussi
+        const contactSocieteIds = this.selectedAutresResponsables
+          .map(c => c.id)
+          .filter((id): id is number => id !== null && id !== undefined);
+
+        this.otExterneAutreResponsableService.replaceForOtExterne(otExterneId, contactSocieteIds).subscribe({
+          next: () => this.applyStatutChangeAndClose(otExterneId, next),
+          error: () => this.applyStatutChangeAndClose(otExterneId, next),
+        });
+      },
+      error: err => {
+        console.error(err);
+        this.isChangingStatut = false;
+        this.pendingTransition = null;
+      },
+    });
+  }
+
+  private applyStatutChangeAndClose(otExterneId: number, next: StatutOtExterne): void {
+    this.otExterneService.changeStatut(otExterneId, next).subscribe({
+      next: () => {
+        this.editForm.patchValue({ statut: next });
+        this.isChangingStatut = false;
+        this.pendingTransition = null;
+        // Save & close : retour à la liste des OT externes
+        this.router.navigate([OT_EXTERNES_LIST_URL]);
+      },
+      error: err => {
+        console.error(err);
+        this.isChangingStatut = false;
+        this.pendingTransition = null;
+      },
+    });
+  }
+
   private handleArticleSelected(phase: IPhaseOt, result: ArticleAffectationResult): void {
+    if (!this.canWrite) {
+      return;
+    }
+
     const otExterneId = this.otExterne?.id;
 
     if (otExterneId === null || otExterneId === undefined) {
@@ -267,7 +465,6 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
           tempId: this.generateRandomId(10),
           phaseOtId: phase.id,
           article: result.article,
-          prixPropose: result.prixPropose,
           qteCommandee: result.qteCommandee,
         },
       ];
@@ -278,7 +475,6 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
       id: null,
       otId: otExterneId,
       articleId: result.article.id,
-      prixPropose: result.prixPropose,
       qteCommandee: result.qteCommandee,
       qteRealisee: null,
       dateAffectation: dayjs(),
@@ -341,6 +537,9 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   }
 
   togglePhasesArticlesEditMode(): void {
+    if (!this.canWrite) {
+      return;
+    }
     this.phasesArticlesEditMode = !this.phasesArticlesEditMode;
   }
 
@@ -352,6 +551,10 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   }
 
   openArticleModal(phase: IPhaseOt): void {
+    if (!this.canWrite) {
+      return;
+    }
+
     const modalRef = this.modalService.open(ArticleSelectorModalComponent, {
       size: 'lg',
       centered: true,
@@ -381,6 +584,10 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   }
 
   removeOtArticle(phaseOtId: number, otArticleId: number): void {
+    if (!this.canWrite) {
+      return;
+    }
+
     this.otArticlesService.delete(otArticleId).subscribe({
       next: () => {
         this.otArticlesByPhase[phaseOtId] = (this.otArticlesByPhase[phaseOtId] ?? []).filter(a => a.id !== otArticleId);
@@ -463,8 +670,8 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   }
 
   selectModeCreation(mode: ModeCreation): void {
-    if (this.modeleOtLocked) {
-      return; // le mode/modèle ne peut plus être changé une fois l'OT créé avec un modèle
+    if (this.modeleOtLocked || !this.isEditMode) {
+      return; // le mode/modèle ne peut plus être changé une fois l'OT créé avec un modèle (ou en lecture seule)
     }
     this.modeCreation = mode;
     if (mode === 'LIBRE') {
@@ -477,6 +684,10 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   }
 
   save(): void {
+    if (!this.canWrite) {
+      return;
+    }
+
     this.isSaving = true;
     const otExterne = this.otExterneFormService.getOtExterne(this.editForm);
 
@@ -725,6 +936,9 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   // ================================
   onAutreResponsableSelectChange(responsables: IContactSociete[] | null): void {
     this.selectedAutresResponsables = responsables ?? [];
+    // Le champ est hors FormGroup (ngModel standalone) : on marque le formulaire comme modifié
+    // pour que "save first" lors d'un changement de statut prenne en compte ce changement.
+    this.editForm.markAsDirty();
   }
 
   compareResponsable = (a: IContactSociete | null, b: IContactSociete | null): boolean => (a && b ? a.id === b.id : a === b);
@@ -798,6 +1012,7 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
     modalRef.result
       .then((contacts: IContactSociete[]) => {
         this.selectedAutresResponsables = contacts ?? [];
+        this.editForm.markAsDirty();
       })
       .catch(() => {
         // Fermeture du modal sans sélection
@@ -842,6 +1057,7 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
       .then((site: ISite) => {
         if (site) {
           this.editForm.patchValue({ lieu: site.designation });
+          this.editForm.get('lieu')?.markAsDirty();
         }
       })
       .catch(() => {
@@ -867,6 +1083,7 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
         if (bonCommande) {
           this.selectedBonCommande = bonCommande;
           this.editForm.patchValue({ bonCommandeId: bonCommande.id });
+          this.editForm.get('bonCommandeId')?.markAsDirty();
         }
       })
       .catch(() => {
@@ -898,6 +1115,13 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
     if (otExterneId === null || otExterneId === undefined) {
       this.previousState();
       return;
+    }
+
+    // Retour en mode lecture après enregistrement (comme affaire-update)
+    this.isEditMode = false;
+    this.editForm.markAsPristine();
+    if (this.isExistingOt()) {
+      this.phasesArticlesEditMode = false;
     }
 
     const contactSocieteIds = this.selectedAutresResponsables.map(c => c.id).filter((id): id is number => id !== null && id !== undefined);
@@ -948,7 +1172,6 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
         id: null,
         otId: otExterneId,
         articleId: p.article.id,
-        prixPropose: p.prixPropose,
         qteCommandee: p.qteCommandee,
         qteRealisee: null,
         dateAffectation: dayjs(),
@@ -982,6 +1205,8 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
 
   protected updateForm(otExterne: IOtExterne): void {
     this.otExterne = otExterne;
+    // Fiche existante : lecture seule par défaut. Nouvelle fiche : édition immédiate.
+    this.isEditMode = !otExterne.id;
     this.otExterneFormService.resetForm(this.editForm, otExterne);
     // Si l'OT a déjà un modèle associé (via un futur champ modeleOtId), on force le mode "MODELE"
     this.modeCreation = (otExterne as any).modeleOtId ? 'MODELE' : this.modeCreation;
@@ -1070,6 +1295,10 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   }
 
   removePieceJointe(id: number): void {
+    if (!this.canWrite) {
+      return;
+    }
+
     this.pieceJointeService.delete(id).subscribe({
       next: () => {
         this.pieceJointes = this.pieceJointes.filter(pj => pj.id !== id);
@@ -1094,6 +1323,9 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   }
 
   openRenamePjModal(pj: IPieceJointe): void {
+    if (!this.canWrite) {
+      return;
+    }
     this.pjToRename = pj;
     this.renamePjNewName = pj.nomFichier || '';
     this.renamePjError = '';
@@ -1111,7 +1343,7 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   }
 
   confirmRenamePj(): void {
-    if (!this.pjToRename) {
+    if (!this.pjToRename || !this.canWrite) {
       return;
     }
 
@@ -1188,6 +1420,10 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   }
 
   private uploadFile(file: File): void {
+    if (!this.canWrite) {
+      return;
+    }
+
     const otExterneId = this.otExterne?.id;
 
     // OT externe pas encore enregistré : on met le fichier de côté,
@@ -1228,6 +1464,10 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   // Scan PjCare — même logique que bon-commande-update
   // ================================
   openScanModal(content: any): void {
+    if (!this.canWrite) {
+      return;
+    }
+
     this.scanPreview = null;
     this.scanError = null;
     this.isMerging = false;
