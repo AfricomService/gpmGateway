@@ -5,7 +5,7 @@ import { ArticleService } from 'app/entities/projectService/article/service/arti
 
 export interface ArticleAffectationResult {
   article: IArticle;
-  prixPropose: number;
+  // prixPropose: number;
   qteCommandee: number;
 }
 
@@ -22,7 +22,7 @@ export class ArticleSelectorModalComponent implements OnInit {
   searchTerm = '';
 
   selectedArticle: IArticle | null = null;
-  prixPropose: number | null = null;
+  // prixPropose: number | null = null;
   qteCommandee: number | null = null;
 
   submitError = '';
@@ -58,9 +58,9 @@ export class ArticleSelectorModalComponent implements OnInit {
 
   selectArticle(article: IArticle): void {
     this.selectedArticle = article;
-    if ((this.prixPropose === null || this.prixPropose === undefined) && article.prixUnitHT !== null && article.prixUnitHT !== undefined) {
-      this.prixPropose = article.prixUnitHT;
-    }
+    // if ((this.prixPropose === null || this.prixPropose === undefined) && article.prixUnitHT !== null && article.prixUnitHT !== undefined) {
+    //   this.prixPropose = article.prixUnitHT;
+    // }
   }
 
   confirm(): void {
@@ -70,10 +70,10 @@ export class ArticleSelectorModalComponent implements OnInit {
       this.submitError = 'Veuillez sélectionner un article.';
       return;
     }
-    if (this.prixPropose === null || this.prixPropose === undefined || this.prixPropose < 0) {
-      this.submitError = 'Veuillez saisir un prix proposé valide.';
-      return;
-    }
+    // if (this.prixPropose === null || this.prixPropose === undefined || this.prixPropose < 0) {
+    //   this.submitError = 'Veuillez saisir un prix proposé valide.';
+    //   return;
+    // }
     if (this.qteCommandee === null || this.qteCommandee === undefined || this.qteCommandee <= 0) {
       this.submitError = 'Veuillez saisir une quantité commandée valide.';
       return;
@@ -81,7 +81,7 @@ export class ArticleSelectorModalComponent implements OnInit {
 
     const result: ArticleAffectationResult = {
       article: this.selectedArticle,
-      prixPropose: this.prixPropose,
+      // prixPropose: this.prixPropose,
       qteCommandee: this.qteCommandee,
     };
     this.activeModal.close(result);

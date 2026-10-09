@@ -1,9 +1,7 @@
 export enum StatutOtExterne {
-  Creation = 'Creation',
+  Brouillon = 'Brouillon',
 
-  EnCours = 'EnCours',
-
-  Paiement = 'Paiement',
+  ExecutionDesTravaux = 'ExecutionDesTravaux',
 
   Fin = 'Fin',
 }
