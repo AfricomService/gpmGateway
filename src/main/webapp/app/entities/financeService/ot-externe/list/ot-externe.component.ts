@@ -223,15 +223,15 @@ export class OtExterneComponent implements OnInit {
   }
 
   get creationCount(): number {
-    return this.otExternes?.filter(ot => ot.statut === 'Creation').length ?? 0;
+    return this.otExternes?.filter(ot => ot.statut === 'Brouillon').length ?? 0;
   }
 
   get enCoursCount(): number {
-    return this.otExternes?.filter(ot => ot.statut === 'EnCours').length ?? 0;
+    return this.otExternes?.filter(ot => ot.statut === 'ExecutionDesTravaux').length ?? 0;
   }
 
   get paiementCount(): number {
-    return this.otExternes?.filter(ot => ot.statut === 'Paiement').length ?? 0;
+    return this.otExternes?.filter(ot => ot.statut === 'ExecutionDesTravaux').length ?? 0;
   }
 
   get finCount(): number {

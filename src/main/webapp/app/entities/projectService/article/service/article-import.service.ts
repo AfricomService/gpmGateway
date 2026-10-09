@@ -9,6 +9,18 @@ export interface IArticleImportResult {
   errors: string[];
 }
 
+export interface IArticleImportRowResult {
+  row: number; // Excel row number (header = 1)
+  success: boolean;
+  message?: string;
+}
+
+export interface IArticleImportResult {
+  successCount: number;
+  errors: string[];
+  rowResults?: IArticleImportRowResult[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class ArticleImportService {
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/articles/import', 'projectservice');

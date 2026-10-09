@@ -18,6 +18,8 @@ export interface IOtExterne {
   createdByUserLogin?: string | null;
   updatedBy?: string | null;
   updatedByUserLogin?: string | null;
+  canRead?: boolean;
+  canWrite?: boolean;
 }
 
 export type NewOtExterne = Omit<IOtExterne, 'id'> & { id: null };

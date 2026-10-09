@@ -114,6 +114,15 @@ export class OtExterneService {
     return otExterneCollection;
   }
 
+  changeStatut(otexterneId: number, statut: string): Observable<HttpResponse<void>> {
+    return this.http.patch<void>(`${this.resourceUrl}/${otexterneId}/statut`, null, {
+      params: {
+        statut,
+      },
+      observe: 'response',
+    });
+  }
+
   protected convertDateFromClient<T extends IOtExterne | NewOtExterne | PartialUpdateOtExterne>(otExterne: T): RestOf<T> {
     return {
       ...otExterne,
