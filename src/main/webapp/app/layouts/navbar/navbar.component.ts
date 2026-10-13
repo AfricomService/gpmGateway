@@ -63,6 +63,11 @@ export class NavbarComponent implements OnInit {
     });
   }
 
+  get displayName(): string {
+    const fullName = [this.account?.firstName, this.account?.lastName].filter(Boolean).join(' ').trim();
+    return fullName || this.account?.login || '';
+  }
+
   changeLanguage(languageKey: string): void {
     this.sessionStorageService.store('locale', languageKey);
     this.translateService.use(languageKey);

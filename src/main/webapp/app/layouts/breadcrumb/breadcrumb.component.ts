@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { ActivatedRoute, Data, NavigationEnd, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -53,9 +53,18 @@ export class BreadcrumbComponent implements OnInit, OnDestroy {
       const isTransientPage = routeUrl === 'new' || routeUrl.endsWith('/edit') || routeUrl.endsWith('/view');
 
       if (routeUrl && isTransientPage) {
-        // Page "Nouveau" / "Modifier" / "Détail" : pas de miette dédiée,
-        // la miette précédente redevient donc la dernière et doit rester cliquable.
-        this.hideCurrentCrumb = true;
+        // Page "Détail" / "Modifier" : on affiche l'identifiantUnique de l'entité
+        // chargée par le resolver (ex: AF260004).
+        const identifiantUnique = this.extractIdentifiantUnique(child.snapshot.data);
+        if (identifiantUnique) {
+          breadcrumbs.push({ label: identifiantUnique, url: nextUrl });
+          // La miette de l'entité devient la dernière : en gras et non cliquable.
+          this.hideCurrentCrumb = false;
+        } else {
+          // Page "Nouveau" (ou entité sans identifiantUnique) : pas de miette dédiée,
+          // la miette précédente redevient donc la dernière et doit rester cliquable.
+          this.hideCurrentCrumb = true;
+        }
       } else if (routeUrl) {
         // Cette route consomme un vrai segment d'URL (ex: 'agence') -> elle mérite sa propre miette
         const label = pageTitleKey ? this.translateService.instant(pageTitleKey) : routeUrl;
@@ -70,6 +79,22 @@ export class BreadcrumbComponent implements OnInit, OnDestroy {
       this.buildBreadcrumbs(child, nextUrl, breadcrumbs, depth + 1);
     }
     return breadcrumbs;
+  }
+
+  /**
+   * Cherche dans les données de la route l'entité chargée par le resolver
+   * (ex: data['affaire']) et retourne son identifiantUnique.
+   */
+  private extractIdentifiantUnique(data: Data | undefined): string | null {
+    if (!data) {
+      return null;
+    }
+    for (const value of Object.values(data)) {
+      if (value && typeof value === 'object' && typeof value.identifiantUnique === 'string' && value.identifiantUnique) {
+        return value.identifiantUnique;
+      }
+    }
+    return null;
   }
 
   private cleanLabel(raw: string): string {

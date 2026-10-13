@@ -214,7 +214,7 @@ Shared modern entity list layout (ressources pages)
 
 .entity-modern-container {
   //padding-top: 4em;
-  min-height: 100vh;
+  min-height: calc(100vh - 50px);
 }
 
 .entity-modern-header {
@@ -412,4 +412,57 @@ Shared entity detail layout (client-like)
 .entity-detail-page .btn {
   min-width: 90px;
 }
+
+/* ==========================================================================
+Layout : la navbar reste fixe, seul le contenu défile
+(la scrollbar s'arrête sous la navbar)
+========================================================================== */
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  padding-top: 0 !important;
+}
+
+.app-scroll {
+  position: fixed;
+  top: 50px; /* = --nav-height dans navbar.component.scss */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Mobile : la navbar est un peu plus haute */
+@media (max-width: 991.98px) {
+  .app-scroll {
+    top: 56px;
+  }
+}
+
+.app-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #c9cfda transparent;
+}
+
+.app-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.app-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.app-scroll::-webkit-scrollbar-thumb {
+  background: #c9cfda;
+  border-radius: 8px;
+  border: 2px solid #ffffff;
+}
+
+.app-scroll::-webkit-scrollbar-thumb:hover {
+  background: #aab2c0;
+}
+
 /* jhipster-needle-scss-add-main JHipster will add new css style */
