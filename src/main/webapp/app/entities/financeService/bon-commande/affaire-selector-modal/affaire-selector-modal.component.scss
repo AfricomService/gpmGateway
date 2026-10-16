@@ -1,12 +1,12 @@
 .affaire-modal {
-  --am-accent: #f5822a;
-  --am-accent-hover: #ff9a4d;
-  --am-accent-soft: rgba(245, 130, 42, 0.1);
+  --am-accent: #2f6fed;
+  --am-accent-hover: #4f86f2;
+  --am-accent-soft: rgba(47, 111, 237, 0.1);
   --am-text: #1a2233;
-  --am-text-muted: #8a93a3;
-  --am-border: #e7e9ee;
+  --am-text-muted: #5b6475;
+  --am-border: #e9ecf2;
   --am-surface: #ffffff;
-  --am-surface-hover: #f8f9fb;
+  --am-surface-hover: #f4f6fa;
 
   display: flex;
   flex-direction: column;
@@ -184,7 +184,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: var(--am-text);
+    background: var(--am-accent);
     color: #ffffff;
     font-size: 0.75rem;
     font-weight: 700;

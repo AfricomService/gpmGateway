@@ -1,59 +1,69 @@
 <div class="ressources-shell">
   <aside class="ressources-sidebar" [class.is-collapsed]="isSidebarCollapsed" aria-label="Menu Ressources">
-    <div class="ressources-header">
-      <h6 class="ressources-title" *ngIf="!isSidebarCollapsed">Ressources</h6>
-      <button
-        type="button"
-        class="btn btn-sm btn-outline-secondary sidebar-toggle"
-        (click)="toggleSidebar()"
-        [attr.aria-label]="isSidebarCollapsed ? 'Agrandir la barre laterale' : 'Reduire la barre laterale'"
-      >
-        <fa-icon icon="bars"></fa-icon>
-      </button>
-    </div>
-
-    <nav class="nav flex-column">
-      <ng-container *ngFor="let item of navItems">
-        <!-- item simple (feuille) -->
-
-        <a
-          *ngIf="!item.children"
-          class="nav-link"
-          [routerLink]="[item.route]"
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: true }"
+    <div class="ressources-sidebar-inner">
+      <div class="ressources-toolbar">
+        <button
+          type="button"
+          class="sidebar-toggle"
+          (click)="toggleSidebar()"
+          [attr.aria-label]="isSidebarCollapsed ? 'Agrandir la barre latérale' : 'Réduire la barre latérale'"
+          [attr.aria-expanded]="!isSidebarCollapsed"
         >
-          <fa-icon [icon]="item.icon" class="me-2"></fa-icon>
-          <span *ngIf="!isSidebarCollapsed">{{ item.label }}</span>
-        </a>
+          <fa-icon [icon]="isSidebarCollapsed ? 'chevron-right' : 'chevron-left'"></fa-icon>
+        </button>
+      </div>
 
-        <!-- item groupe (avec sous-liste) -->
-        <ng-container *ngIf="item.children">
-          <button type="button" class="nav-link nav-link-group" (click)="toggleGroup(item)">
-            <fa-icon [icon]="item.icon" class="me-2"></fa-icon>
+      <h6 class="ressources-title" *ngIf="!isSidebarCollapsed">Ressources</h6>
+
+      <nav class="nav flex-column">
+        <ng-container *ngFor="let item of navItems">
+          <!-- item simple (feuille) -->
+          <a
+            *ngIf="!item.children"
+            class="nav-link"
+            [routerLink]="[item.route]"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            [attr.title]="isSidebarCollapsed ? item.label : null"
+          >
+            <fa-icon [icon]="item.icon"></fa-icon>
             <span *ngIf="!isSidebarCollapsed">{{ item.label }}</span>
-            <fa-icon
-              *ngIf="!isSidebarCollapsed"
-              icon="chevron-down"
-              class="ms-auto chevron"
-              [class.rotated]="expandedGroup === item.label"
-            ></fa-icon>
-          </button>
+          </a>
 
-          <div class="nav-sublist" *ngIf="expandedGroup === item.label && !isSidebarCollapsed">
-            <a
-              *ngFor="let child of item.children"
-              class="nav-link nav-link-child"
-              [routerLink]="[child.route]"
-              routerLinkActive="active"
-              [routerLinkActiveOptions]="{ exact: false }"
+          <!-- item groupe (avec sous-liste) -->
+          <ng-container *ngIf="item.children">
+            <button
+              type="button"
+              class="nav-link nav-link-group"
+              (click)="toggleGroup(item)"
+              [attr.title]="isSidebarCollapsed ? item.label : null"
+              [attr.aria-expanded]="expandedGroup === item.label"
             >
-              <span>{{ child.label }}</span>
-            </a>
-          </div>
+              <fa-icon [icon]="item.icon"></fa-icon>
+              <span *ngIf="!isSidebarCollapsed">{{ item.label }}</span>
+              <fa-icon
+                *ngIf="!isSidebarCollapsed"
+                icon="chevron-down"
+                class="chevron"
+                [class.rotated]="expandedGroup === item.label"
+              ></fa-icon>
+            </button>
+
+            <div class="ressources-subnav" *ngIf="expandedGroup === item.label && !isSidebarCollapsed">
+              <a
+                *ngFor="let child of item.children"
+                class="nav-link nav-link-child"
+                [routerLink]="[child.route]"
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: false }"
+              >
+                <span>{{ child.label }}</span>
+              </a>
+            </div>
+          </ng-container>
         </ng-container>
-      </ng-container>
-    </nav>
+      </nav>
+    </div>
   </aside>
 
   <section class="ressources-content">

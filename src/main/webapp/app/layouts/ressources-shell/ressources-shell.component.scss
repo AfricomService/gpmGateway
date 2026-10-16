@@ -1,116 +1,159 @@
 .ressources-shell {
-  --rsb-accent: #f5822a;
-  --rsb-accent-hover: #ff9a4d;
-  --rsb-accent-soft: rgba(245, 130, 42, 0.12);
+  --rsb-accent: #2f6fed;
+  --rsb-accent-soft: rgba(47, 111, 237, 0.1);
   --rsb-text: #1a2233;
-  --rsb-text-muted: #8a93a3;
-  --rsb-border: #e7e9ee;
-  --rsb-surface: #ffffff;
-  --rsb-surface-hover: #f2f4f8;
+  --rsb-text-nav: #3b4456;
+  --rsb-text-muted: #7a8396;
+  --rsb-border: #e9ecf2;
+  --rsb-guide: #d3d9e6;
+  --rsb-surface: #f8f9fc;
+  --rsb-surface-hover: #eef1f7;
 
-  padding-top: 88px; // remplace le 20px — réserve l'espace pour la navbar fixed-top (72px + marge)
+  /* Le breadcrumb est déjà rendu par MainComponent : plus de réserve pour la navbar */
+  padding-top: 0;
   display: flex;
-  gap: 1rem;
+  gap: 0;
   min-height: calc(100vh - 180px);
-  padding-right: 0.5em;
+  padding-right: 0;
   padding-left: 0 !important;
-  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
+/* ---------- Sidebar (collée à gauche, pleine hauteur) ---------- */
 .ressources-sidebar {
-  width: 220px;
+  width: 240px;
   flex-shrink: 0;
   background: var(--rsb-surface);
   border-right: 1px solid var(--rsb-border);
-  padding: 1rem 0.75rem;
+  align-self: stretch;
   transition: width 0.25s ease;
 }
 
-.ressources-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
+/* le contenu reste visible au scroll, le fond gris s'étire sur toute la hauteur */
+.ressources-sidebar-inner {
+  position: sticky;
+  top: 70px;
+  padding: 0.75rem 0.75rem 1rem;
 }
 
-.ressources-title {
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: var(--rsb-text);
-  margin-bottom: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+/* ---------- Bouton réduire / agrandir ---------- */
+.ressources-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
 }
 
 .sidebar-toggle {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--rsb-border);
+  border: none;
   border-radius: 8px;
-  background: var(--rsb-surface);
+  background: transparent;
   color: var(--rsb-text-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;
 
   &:hover {
     background: var(--rsb-surface-hover);
     color: var(--rsb-text);
   }
-}
 
-.ressources-sidebar .nav-link {
-  color: var(--rsb-text-muted);
-  border-radius: 10px;
-  margin-bottom: 0.3rem;
-  padding: 0.6rem 0.75rem;
-  display: flex;
-  align-items: center;
-  font-weight: 500;
-  font-size: 0.92rem;
-  transition: background 0.2s ease, color 0.2s ease;
-  width: 100%;
-  background: none;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-
-  fa-icon {
-    width: 18px;
-    text-align: center;
+  &:focus-visible {
+    outline: 2px solid var(--rsb-accent);
+    outline-offset: 1px;
   }
 }
 
-// bouton "groupe" (Paramètre ressources)
-.nav-link-group {
-  justify-content: flex-start;
+/* ---------- Label de section ---------- */
+.ressources-title {
+  margin: 0 0 0.5rem;
+  padding: 0 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rsb-text-muted);
+}
 
-  .chevron {
-    transition: transform 0.2s ease;
-    margin-left: auto;
+/* ---------- Items ---------- */
+.ressources-sidebar .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  margin-bottom: 0.2rem;
+  padding: 0.6rem 0.75rem;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  color: var(--rsb-text-nav);
+  font-size: 0.92rem;
+  font-weight: 500;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+
+  fa-icon {
+    width: 20px;
+    text-align: center;
+    font-size: 1rem;
     color: var(--rsb-text-muted);
+    transition: color 0.2s ease;
+  }
+
+  /* chevron des groupes */
+  .chevron {
+    width: auto;
+    margin-left: auto;
+    font-size: 0.7rem;
+    transition: transform 0.2s ease, color 0.2s ease;
 
     &.rotated {
       transform: rotate(180deg);
       color: var(--rsb-accent);
     }
   }
+
+  &:hover {
+    background: var(--rsb-surface-hover);
+    color: var(--rsb-text);
+
+    fa-icon {
+      color: var(--rsb-text-nav);
+    }
+  }
+
+  &.active {
+    background: var(--rsb-accent-soft);
+    color: var(--rsb-accent);
+    font-weight: 600;
+
+    fa-icon {
+      color: var(--rsb-accent);
+    }
+  }
 }
 
-// sous-liste (Detail Ressource, etc.)
-.nav-sublist {
+/* ---------- Sous-liste (Detail Ressource, Type Ressource) ----------
+   - le trait vertical est aligné sous l'icône du parent
+   - le texte des sous-liens est légèrement en retrait du libellé du parent */
+.ressources-sidebar .ressources-subnav {
   display: flex;
   flex-direction: column;
-  padding-left: 1.75rem;
-  margin-bottom: 0.3rem;
-  border-left: 2px solid var(--rsb-border);
+  margin: 0.1rem 0 0.5rem 1.3rem;
+  padding-left: 0;
+  border-left: 2px solid var(--rsb-guide);
 
   .nav-link-child {
-    font-size: 0.85rem;
-    padding: 0.45rem 0.6rem;
-    margin-bottom: 0.15rem;
+    margin-bottom: 0.1rem;
+    padding: 0.45rem 0.65rem 0.45rem 1.6rem;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.87rem;
     color: var(--rsb-text-muted);
 
     &:hover {
@@ -126,11 +169,12 @@
   }
 }
 
+/* ---------- Mode réduit ---------- */
 .ressources-sidebar.is-collapsed {
   width: 72px;
 }
 
-.ressources-sidebar.is-collapsed .ressources-header {
+.ressources-sidebar.is-collapsed .ressources-toolbar {
   justify-content: center;
 }
 
@@ -140,45 +184,32 @@
   padding-right: 0.5rem;
 }
 
-.ressources-sidebar.is-collapsed .nav-link fa-icon {
-  margin-right: 0 !important;
-}
-
-.ressources-sidebar.is-collapsed .nav-sublist {
+.ressources-sidebar.is-collapsed .ressources-subnav {
   display: none; // pas de sous-liste visible en mode réduit
 }
 
-.ressources-sidebar .nav-link:hover {
-  background: var(--rsb-surface-hover);
-  color: var(--rsb-text);
-}
-
-.ressources-sidebar .nav-link.active {
-  background: var(--rsb-accent-soft);
-  color: var(--rsb-accent);
-  font-weight: 600;
-}
-
+/* ---------- Contenu ---------- */
 .ressources-content {
   min-width: 0;
   flex: 1;
 }
 
+/* ---------- Mobile / tablette ---------- */
 @media (max-width: 991.98px) {
   .ressources-shell {
     flex-direction: column;
   }
 
-  .ressources-sidebar {
-    width: 100%;
-    border-right: 0;
-    border-bottom: 1px solid var(--rsb-border);
-    padding-right: 0;
-    padding-bottom: 0.75rem;
-  }
-
+  .ressources-sidebar,
   .ressources-sidebar.is-collapsed {
     width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--rsb-border);
+  }
+
+  .ressources-sidebar-inner {
+    position: static;
+    padding-bottom: 0.75rem;
   }
 
   .ressources-sidebar .nav {
@@ -191,9 +222,8 @@
     margin-bottom: 0;
   }
 
-  .nav-sublist {
+  .ressources-sidebar .ressources-subnav {
     grid-column: 1 / -1;
-    border-left: none;
-    padding-left: 0.5rem;
+    margin-left: 1rem;
   }
 }

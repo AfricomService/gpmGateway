@@ -36,10 +36,19 @@ import { StatutAffaire } from '../../../enumerations/statut-affaire.model';
 import { StatutCommande } from '../../../enumerations/statut-commande.model';
 import { AccountService } from '../../../../core/auth/account.service';
 import { Authority } from '../../../../config/authority.constants';
+import { StatusStep } from 'app/shared/status-stepper/status-stepper.component';
+import { StatusStepperService } from 'app/shared/status-stepper/status-stepper.service';
 
 import { Router } from '@angular/router';
 
 type AccordionPanel = 'global' | 'client' | 'detailsCommande' | 'otAssocies' | 'articlesMissions' | 'piecesJointes';
+
+const BON_COMMANDE_STEPS: StatusStep[] = [
+  { key: 'Brouillon', label: 'Brouillon' },
+  { key: 'ConfirmationCommande', label: 'Confirmation commande' },
+  { key: 'ExecutionDesTravaux', label: 'Exécution des travaux' },
+  { key: 'Fin', label: 'Fin' },
+];
 
 interface PendingPieceJointe {
   tempId: string;
@@ -197,9 +206,15 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     protected sanitizer: DomSanitizer,
     protected cdr: ChangeDetectorRef,
     protected accountService: AccountService,
-    protected router: Router
+    protected router: Router,
+    protected stepperService: StatusStepperService
   ) {}
+
   ngOnInit(): void {
+    // Cycle de vie affiché sous le breadcrumb (rendu par MainComponent)
+    this.stepperService.show(this.statutSteps, this.currentStatut);
+    this.editForm.get('status')?.valueChanges.subscribe(() => this.stepperService.show(this.statutSteps, this.currentStatut));
+
     this.loadResponsables();
     this.loadAffaires(''); // Pré-charge la liste des projets dès l'ouverture du formulaire
 
@@ -246,6 +261,7 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.affaireSearch$.complete();
+    this.stepperService.clear(); // le stepper disparaît en quittant la page
   }
 
   get canRead(): boolean {
@@ -265,6 +281,13 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
   get isExisting(): boolean {
     return this.editForm.controls.id.value !== null;
+  }
+
+  readonly statutSteps: StatusStep[] = BON_COMMANDE_STEPS;
+
+  // En création, le statut n'existe pas encore : le backend le fixe à "Brouillon" au save()
+  get currentStatut(): string {
+    return (this.editForm.get('status')?.value as string | null) ?? 'Brouillon';
   }
 
   get availableTransitions(): IStatutTransition[] {

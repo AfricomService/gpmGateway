@@ -80,6 +80,9 @@ import {
   faLayerGroup,
   faCommentAlt,
   faMinus,
+  faUserShield,
+  faFile,
+  faCubes,
   // jhipster-needle-add-icon-import
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -165,5 +168,8 @@ export const fontAwesomeIcons = [
   faLayerGroup,
   faCommentAlt,
   faMinus,
+  faUserShield,
+  faFile,
+  faCubes,
   // jhipster-needle-add-icon-import
 ];

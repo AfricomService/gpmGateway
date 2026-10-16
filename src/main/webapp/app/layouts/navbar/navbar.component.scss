@@ -3,38 +3,45 @@
 @import '~bootstrap/scss/variables';
 
 /* ==========================================================================
-Design tokens — thème clair "GPM style"
+Design tokens — navbar claire, style "moderne épuré" (accent bleu)
 ========================================================================== */
 
 .navbar {
   --nav-bg: #ffffff;
-  --nav-accent: #f5822a;
-  --nav-accent-hover: #ff9a4d;
-  --nav-accent-soft: rgba(245, 130, 42, 0.12);
-  --nav-icon: #57606f;
+  --nav-accent: #2f6fed;
+  --nav-accent-hover: #4f86f2;
+  --nav-accent-soft: rgba(47, 111, 237, 0.1);
+  --nav-icon: #5b6475;
   --nav-icon-active: #1a2233;
   --nav-text: #1a2233;
   --nav-text-muted: #8a93a3;
-  --nav-divider: #e7e9ee;
-  --nav-surface-hover: #f2f4f8;
+  --nav-divider: #e9ecf2;
+  --nav-surface-hover: #f4f6fa;
   --nav-danger: #e0524d;
 
+  /* Réglages rapides */
+  --nav-height: 50px;
+  --nav-item-height: 34px;
+  --nav-side-padding: clamp(1rem, 5vw, 6rem);
+
   background: var(--nav-bg) !important;
-  padding: 0 1.5rem;
-  min-height: 72px;
-  box-shadow: 0 1px 0 var(--nav-divider), 0 6px 20px -14px rgba(20, 30, 50, 0.25);
+  padding: 0 !important;
+  min-height: var(--nav-height);
+  /* !important : la classe .shadow-sm de Bootstrap impose sa propre ombre */
+  box-shadow: 0 1px 0 var(--nav-divider), 0 6px 16px -12px rgba(20, 30, 50, 0.18) !important;
   border: none;
 
   .container-fluid {
-    padding: 0;
+    padding: 0 var(--nav-side-padding) !important;
     display: flex;
     align-items: center;
+    max-width: 100%;
   }
 
   .navbar-layout {
     align-items: center;
     width: 100%;
-    min-height: 72px;
+    min-height: var(--nav-height);
   }
 
   @media (min-width: 992px) {
@@ -50,19 +57,16 @@ Design tokens — thème clair "GPM style"
   .navbar-brand.logo {
     display: flex;
     align-items: center;
+    margin-left: 0;
+    padding: 0;
 
     img {
       width: 90px !important;
-      transition: opacity 0.2s ease;
-    }
-
-    &:hover img {
-      opacity: 0.85;
     }
   }
 
   /* ===========================
-     CENTER MENU (icônes + hover expand)
+     CENTER MENU
      =========================== */
 
   .navbar-center {
@@ -70,7 +74,7 @@ Design tokens — thème clair "GPM style"
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.4rem;
+    gap: 0.5rem;
     flex-wrap: nowrap;
   }
 
@@ -83,34 +87,40 @@ Design tokens — thème clair "GPM style"
   .navbar-center .nav-link {
     position: relative;
     width: auto;
-    height: 42px;
-    padding: 0 16px;
+    height: var(--nav-item-height);
+    padding: 0 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    font-size: 1.05rem;
+    gap: 9px;
+    font-size: 1rem;
     color: var(--nav-icon);
     border-radius: 10px;
     border: none;
     background: transparent;
     white-space: nowrap;
     cursor: pointer;
-    transition: background 0.3s ease, color 0.3s ease, transform 0.25s ease, box-shadow 0.3s ease;
+    transition: none;
 
     fa-icon {
       margin-right: 0;
       flex-shrink: 0;
-      font-size: 1rem;
+      font-size: 0.95rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
     }
 
-    /* Libellé toujours visible */
     .nav-label {
       max-width: none;
       opacity: 1;
       margin-left: 0;
-      font-size: 0.82rem;
-      font-weight: 600;
+      font-size: 0.85rem;
+      font-weight: 700;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
       overflow: visible;
       white-space: nowrap;
     }
@@ -119,26 +129,16 @@ Design tokens — thème clair "GPM style"
     &:focus-visible {
       background: var(--nav-surface-hover);
       color: var(--nav-icon-active);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 18px -10px rgba(20, 30, 50, 0.35);
-      z-index: 2;
+      transform: none;
+      box-shadow: none;
     }
 
     &:active {
-      transform: translateY(-1px);
+      transform: none;
     }
   }
 
-  .navbar-center .nav-link.nav-icon-only {
-    width: 42px;
-    padding: 0;
-    gap: 0;
-
-    .nav-label {
-      display: none;
-    }
-  }
-
+  /* Onglet actif : fond bleu clair + texte bleu */
   .navbar-center .nav-item.active > .nav-link,
   .navbar-center .nav-item.active .nav-link {
     background: var(--nav-accent-soft);
@@ -146,15 +146,19 @@ Design tokens — thème clair "GPM style"
   }
 
   /* ===========================
-     BOUTON "NOUVEAU" (+) — dans le flux du menu central
+     BOUTON "NOUVEAU" (+)
      =========================== */
 
   .navbar-center .nav-link.btn-new-entity {
+    width: var(--nav-item-height);
+    padding: 0;
+    gap: 0;
     background: var(--nav-accent);
     color: #ffffff;
-    box-shadow: 0 6px 14px -6px rgba(245, 130, 42, 0.55);
+    box-shadow: none;
 
     .nav-label {
+      display: none;
       color: #ffffff;
     }
 
@@ -162,7 +166,7 @@ Design tokens — thème clair "GPM style"
     &:focus-visible {
       background: var(--nav-accent-hover);
       color: #ffffff;
-      box-shadow: 0 10px 20px -8px rgba(245, 130, 42, 0.65);
+      box-shadow: none;
     }
   }
 
@@ -175,19 +179,27 @@ Design tokens — thème clair "GPM style"
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 1.1rem;
+    gap: 0.5rem;
   }
 
   .navbar-right .nav-link {
-    width: 42px;
-    height: 42px;
+    width: var(--nav-item-height);
+    height: var(--nav-item-height);
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--nav-icon);
     border-radius: 10px;
-    transition: background 0.35s ease, color 0.35s ease;
+    transition: none;
+
+    fa-icon {
+      font-size: 1rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
 
     &:hover {
       background: var(--nav-surface-hover);
@@ -200,11 +212,9 @@ Design tokens — thème clair "GPM style"
     color: var(--nav-accent);
   }
 
+  /* Pas de séparateur vertical dans ce style */
   .nav-divider {
-    width: 1px;
-    align-self: stretch;
-    margin: 10px 0.5rem;
-    background: var(--nav-divider);
+    display: none;
   }
 
   /* ===========================
@@ -213,7 +223,7 @@ Design tokens — thème clair "GPM style"
 
   a.nav-link {
     font-weight: 500;
-    transition: all 0.35s ease;
+    transition: none;
   }
 
   /* ===========================
@@ -294,7 +304,9 @@ Design tokens — thème clair "GPM style"
   #account-menu-desktop {
     height: auto;
     width: auto;
-    padding: 0.2rem 0.5rem;
+    margin-left: 0.5rem;
+    padding: 0.15rem 0.75rem 0.15rem 0.3rem;
+    gap: 0.6rem;
     border-radius: 12px;
 
     &:hover {
@@ -302,40 +314,42 @@ Design tokens — thème clair "GPM style"
     }
 
     img.avatar-img {
-      width: 38px;
-      height: 38px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       object-fit: cover;
       border: 2px solid var(--nav-accent-soft);
     }
 
     .avatar-fallback {
-      width: 38px;
-      height: 38px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: var(--nav-text);
-      color: #ffffff;
-      font-size: 1rem;
+      background: var(--nav-accent-soft);
+      color: var(--nav-accent);
+      font-size: 0.85rem;
       flex-shrink: 0;
     }
 
     .avatar-label {
-      margin-top: 2px;
-      font-size: 0.72rem;
-      font-weight: 500;
-      color: var(--nav-text-muted);
-      text-transform: lowercase;
+      margin: 0;
+      font-size: 0.85rem;
+      line-height: 1.2;
+      font-weight: 600;
+      color: var(--nav-text);
+      text-transform: none;
+      white-space: nowrap;
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     &:hover .avatar-fallback {
       background: var(--nav-accent);
-    }
-
-    &:hover .avatar-label {
-      color: var(--nav-text);
+      color: #ffffff;
     }
   }
 
@@ -373,21 +387,67 @@ Design tokens — thème clair "GPM style"
     outline-offset: 2px;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .nav-link,
-    .btn-new-entity {
-      transition: none !important;
+  /* Aucune animation / transition dans la navbar */
+  .nav-link,
+  .btn-new-entity,
+  .dropdown-item,
+  .navbar-toggler,
+  .navbar-collapse {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ==========================================================================
+Écrans intermédiaires (992px – 1279px) : menu plus compact pour éviter le débordement
+========================================================================== */
+
+@media (min-width: 992px) and (max-width: 1279.98px) {
+  .navbar {
+    --nav-side-padding: 1rem;
+
+    .navbar-center {
+      gap: 0.15rem;
+    }
+
+    .navbar-center .nav-link {
+      padding: 0 10px;
+      gap: 7px;
+
+      .nav-label {
+        font-size: 0.8rem;
+      }
+    }
+
+    /* "Accueil" repasse en icône seule */
+    .navbar-center .nav-link.nav-icon-only:not(.btn-new-entity) {
+      width: var(--nav-item-height);
+      padding: 0;
+      gap: 0;
+
+      .nav-label {
+        display: none;
+      }
+    }
+
+    .navbar-right {
+      gap: 0.25rem;
     }
   }
 }
 
 /* ==========================================================================
-Responsive
+Responsive mobile
 ========================================================================== */
 
 @media (max-width: 991.98px) {
   .navbar {
-    padding: 0.5rem 1rem;
+    padding: 0.4rem 0 !important;
+    min-height: 56px;
+  }
+
+  .navbar .navbar-layout {
+    min-height: 0;
   }
 
   .navbar .navbar-center {
@@ -415,7 +475,7 @@ Responsive
     }
   }
 
-  /* Sur mobile, les libellés sont toujours visibles (pas d'effet hover) */
+  /* Sur mobile, les libellés sont toujours visibles */
   .navbar .navbar-center .nav-label {
     max-width: none !important;
     opacity: 1 !important;
@@ -426,7 +486,7 @@ Responsive
     justify-content: flex-start !important;
   }
 
-  /* === Ligne du bas : Admin / Langue / Compte, alignés horizontalement === */
+  /* Ligne du bas : Admin / Langue / Compte, alignés horizontalement */
   .navbar .navbar-right {
     width: 100%;
     flex-direction: row !important;
@@ -450,24 +510,23 @@ Responsive
     border-radius: 50% !important;
   }
 
-  .navbar .nav-divider {
-    display: none;
-  }
-
   #account-menu-desktop {
     width: auto !important;
+    height: auto !important;
+    margin-left: 0 !important;
     flex-direction: row !important;
     align-items: center;
-    padding: 0.4rem 0.6rem !important;
+    padding: 0.4rem 0.75rem 0.4rem 0.4rem !important;
+    border-radius: 12px !important;
 
     .avatar-label {
-      margin-top: 0;
-      margin-left: 0.5rem;
-      max-width: 80px;
+      margin: 0;
+      max-width: 160px;
       overflow: hidden;
       text-overflow: ellipsis;
     }
   }
+
   .navbar .navbar-center .nav-link.nav-icon-only {
     width: 100% !important;
     padding: 0.75rem 0.5rem !important;
@@ -494,7 +553,7 @@ Logo
 }
 
 /* ==========================================================================
-Modal "Créer un nouvel élément" — thème orange + grille de tuiles
+Modal "Créer un nouvel élément" — thème bleu + grille de tuiles
 (rendu hors du <nav> par ng-bootstrap, d'où le ::ng-deep)
 ========================================================================== */
 
@@ -512,8 +571,8 @@ Modal "Créer un nouvel élément" — thème orange + grille de tuiles
 
   .entity-modal-header {
     padding: 1rem 1.2rem;
-    border-bottom: 1px solid #f0d9c8;
-    background: linear-gradient(135deg, #fff7f0 0%, #ffffff 60%);
+    border-bottom: 1px solid #dbe6fb;
+    background: linear-gradient(135deg, #f0f5ff 0%, #ffffff 60%);
 
     .modal-title {
       font-weight: 700;
@@ -523,16 +582,16 @@ Modal "Créer un nouvel élément" — thème orange + grille de tuiles
 
     .btn-close {
       opacity: 0.55;
-      transition: opacity 0.18s ease, transform 0.18s ease;
+      transition: none;
 
       &:hover {
         opacity: 1;
-        transform: rotate(90deg);
+        transform: none;
       }
 
       &:focus {
         box-shadow: none;
-        outline: 2px solid #f5822a;
+        outline: 2px solid #2f6fed;
         outline-offset: 2px;
       }
     }
@@ -562,24 +621,24 @@ Modal "Créer un nouvel élément" — thème orange + grille de tuiles
     border-radius: 12px;
     background: #ffffff;
     cursor: pointer;
-    transition: border-color 0.4s ease, background 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
+    transition: none;
 
     &:hover,
     &:focus-visible {
-      border-color: #f5822a;
-      background: rgba(245, 130, 42, 0.06);
-      transform: translateY(-4px);
-      box-shadow: 0 12px 24px -14px rgba(245, 130, 42, 0.45);
+      border-color: #2f6fed;
+      background: rgba(47, 111, 237, 0.06);
+      transform: none;
+      box-shadow: none;
       outline: none;
 
       .entity-tile-icon {
-        background: #f5822a;
+        background: #2f6fed;
         color: #ffffff;
       }
     }
 
     &:active {
-      transform: translateY(-1px);
+      transform: none;
     }
   }
 
@@ -590,10 +649,10 @@ Modal "Créer un nouvel élément" — thème orange + grille de tuiles
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: rgba(245, 130, 42, 0.12);
-    color: #f5822a;
+    background: rgba(47, 111, 237, 0.1);
+    color: #2f6fed;
     font-size: 1.05rem;
-    transition: background 0.2s ease, color 0.2s ease;
+    transition: none;
   }
 
   .entity-tile-label {

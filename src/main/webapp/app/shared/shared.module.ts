@@ -13,6 +13,7 @@ import { SortByDirective } from './sort/sort-by.directive';
 import { SortDirective } from './sort/sort.directive';
 import { ItemCountComponent } from './pagination/item-count.component';
 import { FilterComponent } from './filter/filter.component';
+import { StatusStepperComponent } from './status-stepper/status-stepper.component';
 
 @NgModule({
   imports: [SharedLibsModule],
@@ -29,6 +30,7 @@ import { FilterComponent } from './filter/filter.component';
     SortDirective,
     ItemCountComponent,
     FilterComponent,
+    StatusStepperComponent,
   ],
   exports: [
     SharedLibsModule,
@@ -44,6 +46,7 @@ import { FilterComponent } from './filter/filter.component';
     SortDirective,
     ItemCountComponent,
     FilterComponent,
+    StatusStepperComponent,
   ],
 })
 export class SharedModule {}

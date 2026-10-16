@@ -4,12 +4,22 @@
   <router-outlet name="navbar"></router-outlet>
 </div>
 
-<jhi-breadcrumb></jhi-breadcrumb>
+<div class="app-scroll">
+  <div class="app-page-header">
+    <jhi-breadcrumb></jhi-breadcrumb>
 
-<div class="container-fluid">
-  <div class="card jh-card">
-    <router-outlet></router-outlet>
+    <jhi-status-stepper
+      *ngIf="stepperService.state$ | async as stepper"
+      [steps]="stepper.steps"
+      [current]="stepper.current"
+    ></jhi-status-stepper>
   </div>
 
-  <jhi-footer></jhi-footer>
+  <div class="container-fluid">
+    <div class="card jh-card">
+      <router-outlet></router-outlet>
+    </div>
+
+    <jhi-footer></jhi-footer>
+  </div>
 </div>

@@ -1,36 +1,37 @@
 .missions-page {
-  --mp-accent: #f5822a;
-  --mp-accent-hover: #ff9a4d;
-  --mp-accent-soft: rgba(245, 130, 42, 0.12);
+  --mp-accent: #2f6fed;
+  --mp-accent-hover: #4f86f2;
+  --mp-accent-soft: rgba(47, 111, 237, 0.1);
   --mp-text: #1a2233;
-  --mp-text-muted: #8a93a3;
-  --mp-border: #e7e9ee;
+  --mp-text-muted: #5b6475;
+  --mp-border: #e9ecf2;
   --mp-surface: #ffffff;
-  --mp-surface-hover: #f2f4f8;
+  --mp-surface-hover: #f4f6fa;
   --mp-success: #1f9d55;
   --mp-success-soft: rgba(31, 157, 85, 0.12);
   --mp-info: #7c5cff;
   --mp-danger: #e0524d;
   --mp-danger-soft: rgba(224, 82, 77, 0.12);
+  --mp-warning: #d97706;
+  --mp-warning-soft: rgba(217, 119, 6, 0.12);
 
   display: flex;
-  gap: 1.5rem;
-  /* La breadcrumb au-dessus décale déjà le contenu sous la navbar fixe,
-     donc un padding-top classique suffit ici (aligné avec bon-commande). */
-  padding: 1.5rem 1.5rem 2rem;
+  gap: 1rem;
+  /* Le breadcrumb est déjà rendu par MainComponent : même padding que la liste des projets */
+  padding: 0.75rem 1rem 1rem;
   align-items: flex-start;
 }
 
 /* ============ SIDEBAR ============ */
 .missions-sidebar {
-  width: 220px;
+  width: 210px;
   flex-shrink: 0;
   background: var(--mp-surface);
   border: 1px solid var(--mp-border);
   border-radius: 14px;
-  padding: 1rem 0.75rem;
+  padding: 0.75rem 0.6rem;
   position: sticky;
-  top: 1.5rem;
+  top: 70px;
 }
 
 .missions-sidebar-title {
@@ -39,12 +40,12 @@
   letter-spacing: 0.06em;
   color: var(--mp-text-muted);
   text-transform: uppercase;
-  padding: 0 0.5rem 0.75rem;
+  padding: 0 0.5rem 0.5rem;
 }
 
 .missions-sidebar-title-spaced {
-  padding-top: 1rem;
-  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  margin-top: 0.35rem;
   border-top: 1px solid var(--mp-border);
 }
 
@@ -56,7 +57,7 @@
 }
 
 .missions-sidebar-filter-label {
-  padding: 0 0.15rem 0.75rem;
+  padding: 0 0.15rem 0.5rem;
 }
 
 .missions-sidebar-filter-wrapper {
@@ -64,7 +65,7 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  height: 42px;
+  height: 40px;
   border-radius: 9px;
   border: 1px solid var(--mp-border);
   background: var(--mp-surface);
@@ -237,7 +238,7 @@
 .missions-views {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.15rem;
 }
 
 .missions-view-item {
@@ -246,7 +247,7 @@
   gap: 0.65rem;
   border: none;
   background: transparent;
-  padding: 0.6rem 0.65rem;
+  padding: 0.5rem 0.65rem;
   border-radius: 9px;
   font-size: 0.9rem;
   font-weight: 500;
@@ -285,10 +286,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.75rem;
 
   h2 {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     font-weight: 700;
     color: var(--mp-text);
     margin: 0;
@@ -322,7 +323,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.6rem 1.1rem;
+  padding: 0.55rem 1.1rem;
   border-radius: 10px;
   border: none;
   background: var(--mp-accent) !important;
@@ -330,7 +331,7 @@
   color: #ffffff !important;
   font-weight: 600;
   font-size: 0.92rem;
-  box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.55);
+  box-shadow: 0 8px 18px -8px rgba(47, 111, 237, 0.55);
   transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 
   fa-icon,
@@ -340,7 +341,7 @@
 
   &:hover {
     background: var(--mp-accent-hover) !important;
-    box-shadow: 0 10px 22px -8px rgba(245, 130, 42, 0.7);
+    box-shadow: 0 10px 22px -8px rgba(47, 111, 237, 0.7);
     transform: translateY(-1px);
     color: #ffffff !important;
   }
@@ -357,11 +358,11 @@
   background: var(--mp-surface);
   border: 1px solid var(--mp-border);
   border-radius: 14px;
-  padding: 1rem;
-  margin-bottom: 1.25rem;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 0.85rem;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 0.6rem;
 }
 
 .missions-toolbar-row {
@@ -377,7 +378,7 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  height: 42px;
+  height: 40px;
   border-radius: 10px;
   border: 1px solid var(--mp-border);
   background: var(--mp-surface);
@@ -413,8 +414,8 @@
 }
 
 .missions-reset {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
   border: 1px solid var(--mp-border);
   background: var(--mp-surface);
@@ -455,7 +456,7 @@
 
   button {
     width: 40px;
-    height: 40px;
+    height: 38px;
     border: none;
     background: var(--mp-surface);
     color: var(--mp-text-muted);
@@ -479,7 +480,8 @@
 .missions-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1rem;
+  gap: 0.85rem;
+  margin-bottom: 0.75rem;
 }
 
 .mission-card {
@@ -487,13 +489,13 @@
   background: var(--mp-surface);
   border: 1px solid var(--mp-border);
   border-radius: 14px;
-  padding: 1.1rem 1.2rem;
+  padding: 0.9rem 1.1rem;
   cursor: pointer;
   transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 
   &:hover {
     border-color: var(--mp-accent);
-    box-shadow: 0 12px 26px -16px rgba(245, 130, 42, 0.4);
+    box-shadow: 0 12px 26px -16px rgba(47, 111, 237, 0.4);
     transform: translateY(-2px);
   }
 }
@@ -502,7 +504,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
 }
 
 .mission-ref {
@@ -515,7 +517,7 @@
   font-size: 1rem;
   font-weight: 600;
   color: var(--mp-text);
-  margin: 0.15rem 0 0.35rem;
+  margin: 0.1rem 0 0.25rem;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -525,9 +527,9 @@
 .mission-meta {
   font-size: 0.85rem;
   color: var(--mp-text-muted);
-  padding-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
   border-bottom: 1px dashed var(--mp-border);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 
   .mission-meta-sep {
     margin: 0 0.35rem;
@@ -545,7 +547,7 @@
 /* Le badge "Nuit" fait maintenant partie du flux normal de la carte
    (plus de position: absolute), donc il ne chevauche plus le texte. */
 .mission-card-tags {
-  margin-top: 0.75rem;
+  margin-top: 0.5rem;
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
@@ -574,9 +576,10 @@
   color: var(--mp-info);
 }
 
+/* "warning" = statut en cours : reste orange/ambre (couleur sémantique) */
 .badge-warning {
-  background: var(--mp-accent-soft);
-  color: var(--mp-accent);
+  background: var(--mp-warning-soft);
+  color: var(--mp-warning);
 }
 
 .badge-danger {
@@ -600,6 +603,7 @@
   border: 1px solid var(--mp-border);
   border-radius: 14px;
   overflow: hidden;
+  margin-bottom: 0.75rem;
 }
 
 .missions-table {
@@ -611,7 +615,7 @@
 
     th {
       text-align: left;
-      padding: 0.85rem 1.2rem;
+      padding: 0.7rem 1.1rem;
       font-size: 0.78rem;
       font-weight: 700;
       color: var(--mp-text-muted);
@@ -637,7 +641,7 @@
     }
 
     td {
-      padding: 0.9rem 1.2rem;
+      padding: 0.7rem 1.1rem;
       font-size: 0.9rem;
       color: var(--mp-text);
       white-space: nowrap;
@@ -652,11 +656,12 @@
   border-radius: 20px;
 }
 
-/* ============ PAGINATION ORANGE ============ */
+/* ============ PAGINATION BLEUE ============ */
 ::ng-deep {
   .missions-content ngb-pagination {
     .pagination {
       gap: 0.35rem;
+      margin-bottom: 0;
     }
 
     .page-item {
@@ -681,11 +686,11 @@
       &.active .page-link {
         background: var(--mp-accent) !important;
         color: #ffffff !important;
-        box-shadow: 0 4px 10px -4px rgba(245, 130, 42, 0.5);
+        box-shadow: 0 4px 10px -4px rgba(47, 111, 237, 0.5);
       }
 
       &.disabled .page-link {
-        color: var(--mp-border);
+        color: #c4cad6;
         background: transparent;
       }
     }
@@ -696,7 +701,7 @@
 @media (max-width: 900px) {
   .missions-page {
     flex-direction: column;
-    padding: 1rem;
+    padding: 0.6rem 0.75rem 1rem;
   }
 
   .missions-sidebar {

@@ -8,7 +8,7 @@ interface RessourceNavChildItem {
 
 interface RessourceNavItem {
   label: string;
-  route?: string; // optionnel maintenant : un item avec enfants n'a pas de route propre
+  route?: string; // optionnel : un item avec enfants n'a pas de route propre
   icon: IconProp;
   children?: RessourceNavChildItem[];
 }
@@ -23,7 +23,7 @@ export class RessourcesShellComponent {
 
   navItems: RessourceNavItem[] = [
     { label: 'Vehicules', route: 'vehicules', icon: ['fas', 'truck'] },
-    { label: 'Autres ressources', route: 'ressources', icon: ['fas', 'wrench'] },
+    { label: 'Autres ressources', route: 'ressources', icon: ['fas', 'cubes'] },
     {
       label: 'Paramètre ressources',
       icon: ['fas', 'cog'],
