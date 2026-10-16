@@ -15,6 +15,9 @@ export interface Breadcrumb {
   styleUrls: ['./breadcrumb.component.scss'],
 })
 export class BreadcrumbComponent implements OnInit, OnDestroy {
+  /** Libellé affiché dans le fil d'Ariane sur les pages de création (route "new"). */
+  private static readonly CREATION_LABEL = 'Création';
+
   /**
    * Champs testés dans l'ordre pour trouver le libellé de l'entité.
    * Le premier champ renseigné (chaîne non vide) est utilisé.
@@ -64,8 +67,12 @@ export class BreadcrumbComponent implements OnInit, OnDestroy {
           breadcrumbs.push({ label: entityLabel, url: nextUrl });
           // La miette de l'entité devient la dernière : en gras et non cliquable.
           this.hideCurrentCrumb = false;
+        } else if (routeUrl === 'new') {
+          // Page de création : miette standard "Création", dernière donc en gras et non cliquable.
+          breadcrumbs.push({ label: BreadcrumbComponent.CREATION_LABEL, url: nextUrl });
+          this.hideCurrentCrumb = false;
         } else {
-          // Page "Nouveau" (ou entité sans identifiantUnique) : pas de miette dédiée,
+          // Page sans libellé exploitable (ex. "view" sans identifiantUnique) : pas de miette dédiée,
           // la miette précédente redevient donc la dernière et doit rester cliquable.
           this.hideCurrentCrumb = true;
         }

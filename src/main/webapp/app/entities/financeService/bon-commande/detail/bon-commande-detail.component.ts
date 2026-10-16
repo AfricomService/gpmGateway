@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
@@ -19,8 +19,17 @@ import { PieceJointeService } from 'app/entities/projectService/piece-jointe/ser
 import { saveAs } from 'file-saver';
 import { Authority } from '../../../../config/authority.constants';
 import { AccountService } from '../../../../core/auth/account.service';
+import { StatusStep } from 'app/shared/status-stepper/status-stepper.component';
+import { StatusStepperService } from 'app/shared/status-stepper/status-stepper.service';
 
 type AccordionPanel = 'global' | 'client' | 'detailsCommande' | 'otAssocies' | 'articlesMissions' | 'piecesJointes';
+
+const BON_COMMANDE_STEPS: StatusStep[] = [
+  { key: 'Brouillon', label: 'Brouillon' },
+  { key: 'ConfirmationCommande', label: 'Confirmation commande' },
+  { key: 'ExecutionDesTravaux', label: 'Exécution des travaux' },
+  { key: 'Fin', label: 'Fin' },
+];
 
 /** Article affiché en lecture seule dans l'accordéon "Détails Commande". */
 interface ArticleDisplay {
@@ -34,8 +43,10 @@ interface ArticleDisplay {
   templateUrl: './bon-commande-detail.component.html',
   styleUrls: ['./bon-commande-detail.component.scss'],
 })
-export class BonCommandeDetailComponent implements OnInit {
+export class BonCommandeDetailComponent implements OnInit, OnDestroy {
   bonCommande: IBonCommande | null = null;
+
+  readonly statutSteps: StatusStep[] = BON_COMMANDE_STEPS;
 
   get canRead(): boolean {
     return this.bonCommande?.canRead ?? false;
@@ -98,7 +109,8 @@ export class BonCommandeDetailComponent implements OnInit {
     protected bonCommandeArticlesService: BonCommandeArticlesService,
     protected articleService: ArticleService,
     protected pieceJointeService: PieceJointeService,
-    protected accountService: AccountService
+    protected accountService: AccountService,
+    protected stepperService: StatusStepperService
   ) {}
 
   ngOnInit(): void {
@@ -106,9 +118,15 @@ export class BonCommandeDetailComponent implements OnInit {
       this.bonCommande = bonCommande;
 
       if (bonCommande) {
+        // Cycle de vie affiché sous le breadcrumb (rendu par MainComponent)
+        this.stepperService.show(this.statutSteps, bonCommande.status ?? null);
         this.loadRelatedData(bonCommande);
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.stepperService.clear(); // le stepper disparaît en quittant la page
   }
 
   // ================================

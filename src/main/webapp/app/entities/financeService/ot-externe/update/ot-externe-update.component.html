@@ -543,9 +543,9 @@
                           justify-content: space-between;
                           gap: 10px;
                           padding: 6px 12px;
-                          border: 1px dashed #f5822a;
+                          border: 1px dashed #2f6fed;
                           border-radius: 30px;
-                          background: #fff7ed;
+                          background: #eef4ff;
                           margin-bottom: 6px;
                           font-size: 13px;
                         "
@@ -625,9 +625,9 @@
                   justify-content: space-between;
                   gap: 12px;
                   padding: 8px 14px;
-                  border: 1px dashed #f5822a;
+                  border: 1px dashed #2f6fed;
                   border-radius: 40px;
-                  background: #fff7ed;
+                  background: #eef4ff;
                 "
                 title="{{ pending.displayName }}.{{ pending.extension }}"
               >
@@ -695,7 +695,7 @@
                   border-radius: 40px;
                   background: #fafafa;
                 "
-                [style.border-color]="selectedPjForPreview?.id === pj.id ? '#f5822a' : '#ddd'"
+                [style.border-color]="selectedPjForPreview?.id === pj.id ? '#2f6fed' : '#ddd'"
               >
                 <div
                   (click)="togglePjPreview(pj)"
