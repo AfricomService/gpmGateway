@@ -1,15 +1,15 @@
 @use 'sass:color';
 
 :host {
-  --cp-accent: #f5822a;
-  --cp-accent-hover: #ff9a4d;
-  --cp-accent-light: #fdece0;
-  --cp-accent-soft: rgba(245, 130, 42, 0.12);
+  --cp-accent: #2f6fed;
+  --cp-accent-hover: #4f86f2;
+  --cp-accent-light: #e8f0fe;
+  --cp-accent-soft: rgba(47, 111, 237, 0.1);
   --cp-text: #1a2233;
-  --cp-text-muted: #6b7280;
-  --cp-border: #e5e7eb;
+  --cp-text-muted: #5b6475;
+  --cp-border: #e9ecf2;
   --cp-surface: #ffffff;
-  --cp-surface-hover: #f2f4f8;
+  --cp-surface-hover: #f4f6fa;
   --cp-radius: 10px;
 }
 
@@ -18,13 +18,13 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 1.5rem 1.5rem 2rem;
+  padding: 0.5rem 1rem 1rem;
 }
 
 .cu-container {
   position: relative;
   width: 100%;
-  max-width: 1200px;
+  max-width: 100%;
 }
 
 /* ============ TOOLBAR ============ */
@@ -37,8 +37,8 @@
   background: var(--cp-surface-hover);
   border: 1px solid var(--cp-border);
   border-radius: 12px;
-  padding: 0.45rem 1rem;
-  margin-bottom: 1rem;
+  padding: 0.3rem 0.75rem;
+  margin-bottom: 0.6rem;
   box-shadow: 0 4px 14px -10px rgba(26, 34, 51, 0.15);
 }
 
@@ -54,7 +54,8 @@
 
 .cu-toolbar-bottom {
   justify-content: space-between;
-  padding: 0.3rem 0.75rem;
+  padding: 0.25rem 0.75rem;
+  margin-bottom: 0;
 }
 
 .cu-badge-id {
@@ -104,12 +105,12 @@
   background: var(--cp-accent);
   color: #ffffff;
   font-size: 0.85rem;
-  box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
+  box-shadow: 0 6px 14px -8px rgba(47, 111, 237, 0.55);
   transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 
   &:hover:not(:disabled) {
-    background: color.adjust(#f5822a, $lightness: -8%);
-    box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.7);
+    background: color.adjust(#2f6fed, $lightness: -8%);
+    box-shadow: 0 8px 18px -8px rgba(47, 111, 237, 0.7);
     transform: translateY(-1px);
   }
 
@@ -145,8 +146,8 @@
 .cu-accordion {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  margin-bottom: 1.5rem;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
 }
 
 .cu-accordion-item {
@@ -158,7 +159,7 @@
 
   &.open {
     border-color: var(--cp-accent);
-    box-shadow: 0 10px 24px -18px rgba(245, 130, 42, 0.5);
+    box-shadow: 0 10px 24px -18px rgba(47, 111, 237, 0.5);
   }
 }
 
@@ -170,7 +171,7 @@
   gap: 0.75rem;
   border: none;
   background: var(--cp-surface);
-  padding: 1rem 1.25rem;
+  padding: 0.65rem 1rem;
   cursor: pointer;
   transition: background 0.2s ease;
 
@@ -211,13 +212,23 @@
 }
 
 .cu-accordion-body {
-  padding: 1.25rem;
+  padding: 0.85rem 1rem;
   border-top: 1px dashed var(--cp-border);
 
   .form-label {
     font-size: 0.85rem;
     color: var(--cp-text-muted);
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.2rem;
+  }
+
+  /* Espace entre les lignes de champs : remplace le mb-3 (1rem) du HTML.
+     !important nécessaire car Bootstrap déclare .mb-3 avec !important. */
+  .row {
+    --bs-gutter-x: 1rem;
+  }
+
+  .row > [class*='col-'].mb-3 {
+    margin-bottom: 0.6rem !important;
   }
 }
 
@@ -269,7 +280,7 @@ textarea.cu-input {
   position: absolute;
   cursor: pointer;
   inset: 0;
-  background-color: var(--cp-border);
+  background-color: #d5d9e2;
   border-radius: 999px;
   transition: background-color 0.2s ease;
 
@@ -286,6 +297,7 @@ textarea.cu-input {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
   }
 }
+
 /* ============ SELECT AFFAIRE + BOUTON MODAL ============ */
 .cu-affaire-selector {
   display: flex;
@@ -381,7 +393,7 @@ textarea.cu-input {
 }
 
 .cu-client-field {
-  margin-bottom: 0.85rem;
+  margin-bottom: 0.6rem;
 
   &:last-child {
     margin-bottom: 0;
@@ -414,13 +426,14 @@ textarea.cu-input {
   color: var(--cp-text-muted);
   cursor: default;
 }
+
 /* ============ OPTIONS : LIGNE TOGGLE + STEPPER ============ */
 .cu-option-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.85rem 0;
+  padding: 0.45rem 0;
   flex-wrap: wrap;
 }
 
@@ -497,6 +510,7 @@ textarea.cu-input {
     cursor: default;
   }
 }
+
 /* ============ LARGEUR DE LA FENÊTRE MODALE SCAN PJCARE (ng-bootstrap) ============ */
 ::ng-deep .scan-modal-window {
   .modal-dialog {
@@ -515,7 +529,7 @@ textarea.cu-input {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2.5rem 1rem;
+  padding: 1.1rem 1rem;
   text-align: center;
   color: var(--cp-text-muted);
   font-size: 0.9rem;
@@ -557,7 +571,7 @@ textarea.cu-input {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
-  margin-bottom: 0.85rem;
+  margin-bottom: 0.6rem;
 }
 
 /* ============ MESSAGE D'ERREUR TECHNICIEN (conflit de disponibilité) ============ */

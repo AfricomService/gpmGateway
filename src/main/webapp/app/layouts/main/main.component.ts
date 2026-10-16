@@ -6,6 +6,7 @@ import dayjs from 'dayjs/esm';
 
 import { AccountService } from 'app/core/auth/account.service';
 import { FindLanguageFromKeyPipe } from 'app/shared/language/find-language-from-key.pipe';
+import { StatusStepperService } from 'app/shared/status-stepper/status-stepper.service';
 
 @Component({
   selector: 'jhi-main',
@@ -20,6 +21,7 @@ export class MainComponent implements OnInit {
     private router: Router,
     private findLanguageFromKeyPipe: FindLanguageFromKeyPipe,
     private translateService: TranslateService,
+    public stepperService: StatusStepperService,
     rootRenderer: RendererFactory2
   ) {
     this.renderer = rootRenderer.createRenderer(document.querySelector('html'), null);

@@ -1,8 +1,8 @@
-// ===== Palette (orange app) =====
-$orange-primary: #f97316;
-$orange-dark: #ea580c;
-$orange-light: #fff7ed;
-$orange-border: #fed7aa;
+// ===== Palette (bleu app) =====
+$blue-primary: #2f6fed;
+$blue-dark: #1d4ed8;
+$blue-light: #eef4ff;
+$blue-border: #b6cdfa;
 
 $text-dark: #1f2937;
 $text-muted: #6b7280;
@@ -15,13 +15,13 @@ $bg-card: #ffffff;
 // sous la navbar, quel que soit le layout parent.
 :host {
   display: block;
-  margin-top: 70px; // ajustez cette valeur à la hauteur réelle de votre navbar (ex: 60px, 64px...)
+  margin-top: 0.5rem; // la navbar et le breadcrumb sont déjà gérés par le layout principal
 }
 
 .ot-externe-layout {
   display: flex;
   align-items: flex-start;
-  gap: 20px;
+  gap: 14px;
 }
 
 // ===== Sidebar =====
@@ -30,9 +30,9 @@ $bg-card: #ffffff;
   background: $bg-card;
   border: 1px solid $border-light;
   border-radius: 12px;
-  padding: 12px;
+  padding: 8px;
   position: sticky;
-  top: 82px; // navbar height (70px) + petite marge
+  top: 70px; // hauteur de la navbar + petite marge
   transition: flex-basis 0.2s ease;
 }
 
@@ -44,7 +44,7 @@ $bg-card: #ffffff;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 8px 14px;
+  padding: 4px 8px 8px;
 }
 
 .sidebar-title {
@@ -70,7 +70,7 @@ $bg-card: #ffffff;
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .sidebar-item {
@@ -80,7 +80,7 @@ $bg-card: #ffffff;
   width: 100%;
   border: none;
   background: transparent;
-  padding: 10px 10px;
+  padding: 7px 10px;
   border-radius: 8px;
   color: $text-dark;
   font-size: 0.9rem;
@@ -92,16 +92,16 @@ $bg-card: #ffffff;
   }
 
   &:hover {
-    background: $orange-light;
+    background: $blue-light;
   }
 
   &.active {
-    background: $orange-light;
-    color: $orange-dark;
+    background: $blue-light;
+    color: $blue-dark;
     font-weight: 600;
 
     fa-icon {
-      color: $orange-primary;
+      color: $blue-primary;
     }
   }
 }
@@ -116,30 +116,30 @@ $bg-card: #ffffff;
 }
 
 .sidebar-item.active .sidebar-item-count {
-  color: $orange-dark;
+  color: $blue-dark;
 }
 
 // ===== Contenu principal =====
 .ot-externe-page {
   flex: 1;
   min-width: 0;
-  padding: 4px 0;
+  padding: 0;
 }
 
 // ===== Cartes statistiques =====
 .stats-row {
   display: flex;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 10px;
+  margin-bottom: 14px;
   flex-wrap: wrap;
 }
 
 .stat-card {
-  flex: 1 1 200px;
+  flex: 1 1 180px;
   background: $bg-card;
   border: 1px solid $border-light;
   border-radius: 12px;
-  padding: 18px 20px;
+  padding: 10px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -149,34 +149,34 @@ $bg-card: #ffffff;
 .stat-info {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
 }
 
 .stat-label {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: $text-muted;
   font-weight: 500;
 }
 
 .stat-value {
-  font-size: 1.6rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: $text-dark;
 }
 
 .stat-icon {
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .stat-icon-primary {
-  background: $orange-light;
-  color: $orange-primary;
+  background: $blue-light;
+  color: $blue-primary;
 }
 
 .stat-icon-neutral {
@@ -200,12 +200,13 @@ $bg-card: #ffffff;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 10px;
 
   h2 {
     margin: 0;
     font-weight: 700;
+    font-size: 1.4rem;
     color: $text-dark;
   }
 }
@@ -220,7 +221,7 @@ $bg-card: #ffffff;
   border: 1px solid $border-light;
   color: $text-dark;
   border-radius: 8px;
-  padding: 8px 14px;
+  padding: 6px 12px;
   font-weight: 500;
 
   &:hover {
@@ -229,16 +230,18 @@ $bg-card: #ffffff;
 }
 
 .btn-primary-orange {
-  background: $orange-primary;
-  border: 1px solid $orange-primary;
+  /* Nom de classe conservé (utilisé dans le HTML), couleur passée au bleu */
+  background: $blue-primary;
+  border: 1px solid $blue-primary;
   color: #fff;
   border-radius: 8px;
-  padding: 8px 16px;
+  padding: 6px 14px;
   font-weight: 600;
 
   &:hover {
-    background: $orange-dark;
-    border-color: $orange-dark;
+    background: $blue-dark;
+    border-color: $blue-dark;
+    color: #fff;
   }
 }
 
@@ -250,12 +253,12 @@ $bg-card: #ffffff;
   background: #fff;
   border: 1px solid $border-light;
   border-radius: 10px;
-  padding: 10px 14px;
-  margin-bottom: 18px;
+  padding: 6px 12px;
+  margin-bottom: 10px;
 
   &:focus-within {
-    border-color: $orange-primary;
-    box-shadow: 0 0 0 3px rgba($orange-primary, 0.12);
+    border-color: $blue-primary;
+    box-shadow: 0 0 0 3px rgba($blue-primary, 0.12);
   }
 }
 
@@ -311,6 +314,7 @@ $bg-card: #ffffff;
     font-size: 0.85rem;
     border-bottom: 1px solid $border-light;
     white-space: nowrap;
+    padding: 0.5rem 0.75rem;
   }
 
   tbody td {
@@ -318,6 +322,7 @@ $bg-card: #ffffff;
     font-size: 0.92rem;
     color: $text-dark;
     border-bottom: 1px solid $border-light;
+    padding: 0.4rem 0.75rem;
   }
 
   tbody tr:last-child td {
@@ -325,11 +330,11 @@ $bg-card: #ffffff;
   }
 
   tbody tr:hover {
-    background: $orange-light;
+    background: $blue-light;
   }
 
   .cell-reference a {
-    color: $orange-dark;
+    color: $blue-dark;
     font-weight: 600;
     text-decoration: none;
 
@@ -346,7 +351,7 @@ $bg-card: #ffffff;
 // ===== Badges statut =====
 .badge-statut {
   display: inline-block;
-  padding: 4px 12px;
+  padding: 3px 12px;
   border-radius: 999px;
   font-size: 0.78rem;
   font-weight: 600;
@@ -358,9 +363,10 @@ $bg-card: #ffffff;
   color: #1d4ed8;
 }
 
+// "En cours" reste orange : couleur de statut (avertissement), pas couleur de l'app
 .badge-en-cours {
   background: #ffedd5;
-  color: $orange-dark;
+  color: #c2410c;
 }
 
 .badge-paiement {
@@ -382,7 +388,7 @@ $bg-card: #ffffff;
 .btn-icon {
   border-radius: 6px;
   font-size: 0.8rem;
-  padding: 6px 10px;
+  padding: 4px 10px;
   border: 1px solid transparent;
 
   fa-icon {
@@ -390,13 +396,14 @@ $bg-card: #ffffff;
   }
 }
 
+// "Voir" passe en neutre : sinon il serait identique à "Editer" (bleu)
 .btn-view {
-  background: $orange-light;
-  color: $orange-dark;
-  border-color: $orange-border;
+  background: #f1f5f9;
+  color: #334155;
+  border-color: #cbd5e1;
 
   &:hover {
-    background: $orange-border;
+    background: #e2e8f0;
   }
 }
 
@@ -421,8 +428,8 @@ $bg-card: #ffffff;
 }
 
 .sidebar-navigation {
-  margin-top: 12px;
-  padding-top: 12px;
+  margin-top: 8px;
+  padding-top: 8px;
   border-top: 1px solid #e9ecef;
 }
 
@@ -457,7 +464,7 @@ $bg-card: #ffffff;
 
 .sidebar-subitem {
   display: block;
-  padding: 8px 12px;
+  padding: 6px 12px;
   color: #6c757d;
   text-decoration: none;
   font-size: 0.9rem;
@@ -471,9 +478,9 @@ $bg-card: #ffffff;
 }
 
 .sidebar-subitem.active {
-  color: #f57c00;
+  color: $blue-primary;
   font-weight: 600;
-  background-color: #fff3e6;
+  background-color: $blue-light;
 }
 
 // ===== Responsive =====

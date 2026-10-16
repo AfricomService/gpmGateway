@@ -9,6 +9,8 @@ import { OtExterneFormService, OtExterneFormGroup } from './ot-externe-form.serv
 import { IOtExterne } from '../ot-externe.model';
 import { OtExterneService } from '../service/ot-externe.service';
 import { StatutOtExterne } from 'app/entities/enumerations/statut-ot-externe.model';
+import { StatusStep } from 'app/shared/status-stepper/status-stepper.component';
+import { StatusStepperService } from 'app/shared/status-stepper/status-stepper.service';
 
 import { AffaireService } from 'app/entities/projectService/affaire/service/affaire.service';
 import { IAffaire } from 'app/entities/projectService/affaire/affaire.model';
@@ -108,6 +110,17 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   isSaving = false;
   otExterne: IOtExterne | null = null;
   statutOtExterneValues = Object.keys(StatutOtExterne);
+
+  // Cycle de vie affiché dans le stepper (ordre = ordre du workflow)
+  readonly statutSteps: StatusStep[] = [
+    { key: StatutOtExterne.Brouillon, label: 'Brouillon' },
+    { key: StatutOtExterne.ExecutionDesTravaux, label: 'Exécution des travaux' },
+    { key: StatutOtExterne.Fin, label: 'Fin' },
+  ];
+
+  get currentStatut(): string {
+    return (this.editForm.get('statut')?.value as string | null) ?? StatutOtExterne.Brouillon;
+  }
 
   selectedBonCommande: IBonCommande | null = null;
 
@@ -236,7 +249,8 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
     protected modelPhaseOTService: ModelPhaseOTService,
     protected otArticlesService: OtArticlesService,
     protected articleService: ArticleService,
-    protected accountService: AccountService // NEW
+    protected accountService: AccountService,
+    protected stepperService: StatusStepperService
   ) {}
 
   // ================================
@@ -275,6 +289,10 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Cycle de vie affiché sous le breadcrumb (rendu par MainComponent)
+    this.stepperService.show(this.statutSteps, this.currentStatut);
+    this.editForm.get('statut')?.valueChanges.subscribe(() => this.stepperService.show(this.statutSteps, this.currentStatut));
+
     this.loadResponsables();
     this.loadAffaires(''); // Pré-charge la liste des projets dès l'ouverture du formulaire
     this.loadModeleOts(); // <-- add
@@ -652,6 +670,7 @@ export class OtExterneUpdateComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.affaireSearch$.complete();
+    this.stepperService.clear(); // le stepper disparaît en quittant la page
   }
 
   // ================================
