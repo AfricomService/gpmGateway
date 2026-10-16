@@ -465,4 +465,20 @@ body {
   background: #aab2c0;
 }
 
+/* ==========================================================================
+En-tête de page (breadcrumb + stepper) : aligné sur le logo de la navbar
+========================================================================== */
+.app-page-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 0 1.5rem 0 5.5rem; // 5.5rem = début du logo, à ajuster si besoin
+  background: #f9fafb;
+  border-bottom: 1px solid #e7e9ee;
+}
+
+// Pas de bande vide (ni de trait) quand il n'y a ni breadcrumb ni stepper
+.app-page-header:not(:has(.breadcrumb-bar)):not(:has(.status-stepper)) {
+  display: none;
+}
 /* jhipster-needle-scss-add-main JHipster will add new css style */

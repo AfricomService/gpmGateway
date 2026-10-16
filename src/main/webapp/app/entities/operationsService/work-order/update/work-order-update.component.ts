@@ -9,6 +9,8 @@ import { WorkOrderFormService, WorkOrderFormGroup } from './work-order-form.serv
 import { IWorkOrder } from '../work-order.model';
 import { WorkOrderService } from '../service/work-order.service';
 import { StatutWO } from 'app/entities/enumerations/statut-wo.model';
+import { StatusStep } from 'app/shared/status-stepper/status-stepper.component';
+import { StatusStepperService } from 'app/shared/status-stepper/status-stepper.service';
 
 import { AffaireService } from 'app/entities/projectService/affaire/service/affaire.service';
 import { IAffaire } from 'app/entities/projectService/affaire/affaire.model';
@@ -66,6 +68,20 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   isSaving = false;
   workOrder: IWorkOrder | null = null;
   statutWOValues = Object.keys(StatutWO);
+
+  // Cycle de vie affiché dans le stepper (ordre = ordre du workflow)
+  readonly statutSteps: StatusStep[] = [
+    { key: StatutWO.Creation, label: 'Création' },
+    { key: StatutWO.ExecutionTravaux, label: 'Exécution travaux' },
+    { key: StatutWO.VerificationWO, label: 'Vérification WO' },
+    { key: StatutWO.ValidationTechnique, label: 'Validation technique' },
+    { key: StatutWO.ValidationRessources, label: 'Validation ressources' },
+    { key: StatutWO.Fin, label: 'Fin' },
+  ];
+
+  get currentStatut(): string {
+    return (this.editForm.get('statut')?.value as string | null | undefined) ?? StatutWO.Creation;
+  }
 
   // ================================
   // Accordéon (état purement visuel — même pattern que ot-externe-update)
@@ -216,10 +232,15 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     protected scanSettingsService: ScanSettingsService,
     protected sanitizer: DomSanitizer,
     protected modalService: NgbModal,
-    protected cdr: ChangeDetectorRef
+    protected cdr: ChangeDetectorRef,
+    protected stepperService: StatusStepperService
   ) {}
 
   ngOnInit(): void {
+    // Cycle de vie affiché sous le breadcrumb (rendu par MainComponent)
+    this.stepperService.show(this.statutSteps, this.currentStatut);
+    this.editForm.get('statut')?.valueChanges.subscribe(() => this.stepperService.show(this.statutSteps, this.currentStatut));
+
     this.loadResponsables();
     this.loadTechniciens();
     this.loadAffaires(''); // Pré-charge la liste des projets dès l'ouverture du formulaire
@@ -278,6 +299,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.affaireSearch$.complete();
+    this.stepperService.clear(); // le stepper disparaît en quittant la page
     this.missionDeNuitSubscription?.unsubscribe();
     this.hebergementSubscription?.unsubscribe();
     if (this.technicienErrorTimeoutId) {
@@ -1210,6 +1232,9 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.workOrder = workOrder;
 
     this.workOrderFormService.resetForm(this.editForm, workOrder);
+
+    // Synchronise le stepper de statut avec le WorkOrder chargé
+    this.stepperService.show(this.statutSteps, this.currentStatut);
 
     // Force immédiatement Angular à mettre à jour l'affichage
     // des switches et des steppers.

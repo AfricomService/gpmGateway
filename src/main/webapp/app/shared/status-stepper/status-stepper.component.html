@@ -1,0 +1,13 @@
+<div class="status-stepper" *ngIf="steps.length > 0">
+  <ng-container *ngFor="let step of steps; let i = index; let last = last; trackBy: trackByKey">
+    <div class="step" [ngClass]="'step-' + stateOf(i)">
+      <span class="step-circle">
+        <fa-icon *ngIf="stateOf(i) === 'done'" icon="check"></fa-icon>
+        <ng-container *ngIf="stateOf(i) !== 'done'">{{ i + 1 }}</ng-container>
+      </span>
+      <span class="step-label">{{ step.label }}</span>
+    </div>
+
+    <span *ngIf="!last" class="step-line" [class.step-line-done]="i < currentIndex"></span>
+  </ng-container>
+</div>

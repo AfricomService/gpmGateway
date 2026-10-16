@@ -1,12 +1,12 @@
 .affaire-update-page {
-  --cp-accent: #f5822a;
-  --cp-accent-hover: #ff9a4d;
-  --cp-accent-soft: rgba(245, 130, 42, 0.12);
+  --cp-accent: #2f6fed;
+  --cp-accent-hover: #4f86f2;
+  --cp-accent-soft: rgba(47, 111, 237, 0.1);
   --cp-text: #1a2233;
-  --cp-text-muted: #8a93a3;
-  --cp-border: #e7e9ee;
+  --cp-text-muted: #5b6475;
+  --cp-border: #e9ecf2;
   --cp-surface: #ffffff;
-  --cp-surface-hover: #f2f4f8;
+  --cp-surface-hover: #f4f6fa;
   --cp-danger: #e0524d;
   --cp-danger-soft: rgba(224, 82, 77, 0.12);
 
@@ -15,7 +15,7 @@
   justify-content: center;
   align-items: flex-start;
   gap: 16px;
-  //padding: 96px 1.5rem 2rem;
+  padding: 0.5rem 1rem 1rem;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
   color: var(--cp-text);
 }
@@ -23,7 +23,7 @@
 .cu-container {
   position: relative;
   width: 100%;
-  max-width: 1100px;
+  max-width: 100%;
 }
 
 /* ============ TOOLBAR ============ */
@@ -36,8 +36,8 @@
   background: var(--cp-surface-hover);
   border: 1px solid var(--cp-border);
   border-radius: 12px;
-  padding: 0.45rem 1rem;
-  margin-bottom: 1rem;
+  padding: 0.3rem 0.75rem;
+  margin-bottom: 0.6rem;
   box-shadow: 0 4px 14px -10px rgba(26, 34, 51, 0.15);
 }
 
@@ -149,12 +149,12 @@
   background: var(--cp-accent);
   color: #ffffff;
   font-size: 0.85rem;
-  box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
+  box-shadow: 0 6px 14px -8px rgba(47, 111, 237, 0.55);
   transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 
   &:hover:not(:disabled) {
     background: var(--cp-accent-hover);
-    box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.7);
+    box-shadow: 0 8px 18px -8px rgba(47, 111, 237, 0.7);
     transform: translateY(-1px);
   }
 
@@ -170,8 +170,8 @@
 .cu-accordion {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  margin-bottom: 1.5rem;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
 }
 
 .cu-accordion-item {
@@ -183,7 +183,7 @@
 
   &.open {
     border-color: var(--cp-accent);
-    box-shadow: 0 10px 24px -18px rgba(245, 130, 42, 0.5);
+    box-shadow: 0 10px 24px -18px rgba(47, 111, 237, 0.5);
   }
 }
 
@@ -195,7 +195,8 @@
   gap: 0.75rem;
   border: none;
   background: var(--cp-surface);
-  padding: 1rem 1.25rem;
+  padding: 0.65rem 1rem;
+  border-radius: 14px;
   cursor: pointer;
   transition: background 0.2s ease;
 
@@ -273,25 +274,35 @@
 }
 
 .cu-accordion-body {
-  padding: 1.25rem;
+  padding: 0.85rem 1rem;
   border-top: 1px dashed var(--cp-border);
 
   .form-label {
     font-size: 0.85rem;
     color: var(--cp-text-muted);
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.2rem;
   }
 
   .form-control {
     border-radius: 10px;
     border: 1px solid var(--cp-border);
-    padding: 0.55rem 0.85rem;
+    padding: 0.5rem 0.85rem;
     font-size: 0.9rem;
 
     &:focus {
       border-color: var(--cp-accent);
       box-shadow: 0 0 0 3px var(--cp-accent-soft);
     }
+  }
+
+  /* Espace entre les lignes de champs : remplace le mb-3 (1rem) du HTML.
+     !important nécessaire car Bootstrap déclare .mb-3 avec !important. */
+  .row {
+    --bs-gutter-x: 1rem;
+  }
+
+  .row > [class*='col-'].mb-3 {
+    margin-bottom: 0.6rem !important;
   }
 }
 
@@ -300,8 +311,8 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
-  min-height: 42px;
-  padding: 0.5rem 0.65rem;
+  min-height: 40px;
+  padding: 0.4rem 0.65rem;
   border: 1px solid var(--cp-border);
   border-radius: 10px;
   background: var(--cp-surface-hover);
@@ -310,7 +321,7 @@
 .cu-agence-chip {
   display: inline-flex;
   align-items: center;
-  padding: 0.35rem 0.75rem;
+  padding: 0.3rem 0.75rem;
   border-radius: 999px;
   background: var(--cp-accent-soft);
   color: var(--cp-accent);
@@ -353,7 +364,7 @@
 .cu-item-list {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.5rem;
   max-height: 600px;
 }
 
@@ -365,7 +376,7 @@
   background: var(--cp-surface-hover);
   border: 1px solid var(--cp-border);
   border-radius: 10px;
-  padding: 0.75rem 1rem;
+  padding: 0.6rem 1rem;
 }
 
 .cu-item-avatar {
@@ -453,7 +464,7 @@
 
 .cu-empty {
   text-align: center;
-  padding: 1.5rem 0;
+  padding: 1rem 0;
   color: var(--cp-text-muted);
   font-size: 0.88rem;
 }
@@ -481,13 +492,14 @@
 
 .cu-toolbar-bottom {
   justify-content: space-between;
-  padding: 0.3rem 0.75rem;
+  padding: 0.25rem 0.75rem;
+  margin-bottom: 0;
 }
 
 /* ============ RESPONSIVE ============ */
 @media (max-width: 768px) {
   .affaire-update-page {
-    padding: 88px 1rem 1.5rem;
+    padding: 0.5rem 0.75rem 1rem;
   }
 
   .cu-toolbar {
@@ -519,7 +531,7 @@
   &:hover {
     background: var(--cp-accent);
     color: #ffffff;
-    box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
+    box-shadow: 0 6px 14px -8px rgba(47, 111, 237, 0.55);
   }
 }
 
@@ -587,7 +599,7 @@ input[ngbDatepicker] {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.4rem 0.75rem;
+  padding: 0.35rem 0.75rem;
   border-radius: 8px;
   background: var(--cp-accent-soft);
   color: var(--cp-text);
@@ -606,7 +618,7 @@ input[ngbDatepicker] {
 .btn-cu-statut {
   display: inline-flex;
   align-items: center;
-  padding: 0.45rem 0.9rem;
+  padding: 0.4rem 0.9rem;
   border-radius: 8px;
   border: none;
   background: var(--cp-accent);
@@ -614,12 +626,12 @@ input[ngbDatepicker] {
   font-weight: 600;
   font-size: 0.82rem;
   white-space: nowrap;
-  box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
+  box-shadow: 0 6px 14px -8px rgba(47, 111, 237, 0.55);
   transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 
   &:hover {
     background: var(--cp-accent-hover);
-    box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.7);
+    box-shadow: 0 8px 18px -8px rgba(47, 111, 237, 0.7);
     transform: translateY(-1px);
   }
 }
@@ -713,12 +725,12 @@ input[ngbDatepicker] {
   font-weight: 600;
   font-size: 0.85rem;
   white-space: nowrap;
-  box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
+  box-shadow: 0 6px 14px -8px rgba(47, 111, 237, 0.55);
   transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 
   &:hover:not(:disabled) {
     background: var(--cp-accent-hover);
-    box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.7);
+    box-shadow: 0 8px 18px -8px rgba(47, 111, 237, 0.7);
     transform: translateY(-1px);
   }
 
@@ -747,12 +759,16 @@ input[ngbDatepicker] {
   padding: 3rem 0;
 }
 
-.text-orange {
-  color: #ff6b00 !important;
+/* Spinner de chargement : conservé sous l'ancien nom pour ne pas toucher au HTML */
+.text-orange,
+.text-accent {
+  color: #2f6fed !important;
 }
 
-/* Modern Orange ngb-pagination */
-::ng-deep .modern-orange-pagination {
+/* ngb-pagination : ancienne classe "modern-orange-pagination" conservée dans le HTML,
+   redéfinie ici en bleu (ciblée aussi sous le nom "modern-blue-pagination"). */
+::ng-deep .modern-orange-pagination,
+::ng-deep .modern-blue-pagination {
   .pagination {
     margin-bottom: 0;
     gap: 6px; /* Spacing between page numbers */
@@ -760,9 +776,9 @@ input[ngbDatepicker] {
 
   .page-item {
     .page-link {
-      border: 1px solid #e9ecef;
+      border: 1px solid #e9ecf2;
       border-radius: 8px !important; /* Soft pill-shaped buttons */
-      color: #495057;
+      color: #5b6475;
       font-weight: 500;
       font-size: 0.875rem;
       padding: 6px 12px;
@@ -771,31 +787,31 @@ input[ngbDatepicker] {
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 
       &:hover {
-        color: #ff6b00;
-        background-color: #fff6f0;
-        border-color: #ffc299;
+        color: #2f6fed;
+        background-color: rgba(47, 111, 237, 0.08);
+        border-color: #9db9f5;
         transform: translateY(-1px);
       }
 
       &:focus {
-        box-shadow: 0 0 0 0.2rem rgba(255, 107, 0, 0.2);
+        box-shadow: 0 0 0 0.2rem rgba(47, 111, 237, 0.2);
       }
     }
 
     /* Active Page Style */
     &.active .page-link {
-      background-color: #ff6b00 !important;
-      border-color: #ff6b00 !important;
+      background-color: #2f6fed !important;
+      border-color: #2f6fed !important;
       color: #ffffff !important;
       font-weight: 600;
-      box-shadow: 0 3px 8px rgba(255, 107, 0, 0.35);
+      box-shadow: 0 3px 8px rgba(47, 111, 237, 0.35);
     }
 
     /* Disabled Arrow Buttons */
     &.disabled .page-link {
-      color: #ced4da;
-      background-color: #f8f9fa;
-      border-color: #f1f3f5;
+      color: #c4cad6;
+      background-color: #f4f6fa;
+      border-color: #eef0f5;
       box-shadow: none;
     }
   }

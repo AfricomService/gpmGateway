@@ -5,7 +5,15 @@
 </div>
 
 <div class="app-scroll">
-  <jhi-breadcrumb></jhi-breadcrumb>
+  <div class="app-page-header">
+    <jhi-breadcrumb></jhi-breadcrumb>
+
+    <jhi-status-stepper
+      *ngIf="stepperService.state$ | async as stepper"
+      [steps]="stepper.steps"
+      [current]="stepper.current"
+    ></jhi-status-stepper>
+  </div>
 
   <div class="container-fluid">
     <div class="card jh-card">

@@ -1,6 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Data, NavigationEnd, Router } from '@angular/router';
-import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
@@ -16,16 +15,25 @@ export interface Breadcrumb {
   styleUrls: ['./breadcrumb.component.scss'],
 })
 export class BreadcrumbComponent implements OnInit, OnDestroy {
+  /**
+   * Champs testés dans l'ordre pour trouver le libellé de l'entité.
+   * Le premier champ renseigné (chaîne non vide) est utilisé.
+   */
+  private static readonly LABEL_FIELDS = [
+    'identifiantUnique',
+    'reference',
+    'designation',
+    'raisonSociale',
+    'nom',
+    'matricule',
+    'numFacture',
+  ];
+
   breadcrumbs: Breadcrumb[] = [];
   hideCurrentCrumb = false;
   private routerSubscription?: Subscription;
 
-  constructor(
-    private router: Router,
-    private activatedRoute: ActivatedRoute,
-    private translateService: TranslateService,
-    private location: Location
-  ) {}
+  constructor(private router: Router, private activatedRoute: ActivatedRoute, private translateService: TranslateService) {}
 
   ngOnInit(): void {
     this.hideCurrentCrumb = false;
@@ -40,10 +48,6 @@ export class BreadcrumbComponent implements OnInit, OnDestroy {
     this.routerSubscription?.unsubscribe();
   }
 
-  goBack(): void {
-    this.location.back();
-  }
-
   private buildBreadcrumbs(route: ActivatedRoute, url = '', breadcrumbs: Breadcrumb[] = [], depth = 0): Breadcrumb[] {
     for (const child of route.children) {
       const routeUrl = child.snapshot.url.map(segment => segment.path).join('/');
@@ -53,11 +57,11 @@ export class BreadcrumbComponent implements OnInit, OnDestroy {
       const isTransientPage = routeUrl === 'new' || routeUrl.endsWith('/edit') || routeUrl.endsWith('/view');
 
       if (routeUrl && isTransientPage) {
-        // Page "Détail" / "Modifier" : on affiche l'identifiantUnique de l'entité
-        // chargée par le resolver (ex: AF260004).
-        const identifiantUnique = this.extractIdentifiantUnique(child.snapshot.data);
-        if (identifiantUnique) {
-          breadcrumbs.push({ label: identifiantUnique, url: nextUrl });
+        // Page "Détail" / "Modifier" : on affiche le libellé de l'entité chargée
+        // par le resolver (identifiantUnique > reference > designation > raisonSociale > nom).
+        const entityLabel = this.extractEntityLabel(child.snapshot.data);
+        if (entityLabel) {
+          breadcrumbs.push({ label: entityLabel, url: nextUrl });
           // La miette de l'entité devient la dernière : en gras et non cliquable.
           this.hideCurrentCrumb = false;
         } else {
@@ -83,15 +87,22 @@ export class BreadcrumbComponent implements OnInit, OnDestroy {
 
   /**
    * Cherche dans les données de la route l'entité chargée par le resolver
-   * (ex: data['affaire']) et retourne son identifiantUnique.
+   * (ex: data['affaire'], data['otExterne']) et retourne son libellé :
+   * identifiantUnique, sinon reference, sinon designation, sinon raisonSociale, sinon nom.
    */
-  private extractIdentifiantUnique(data: Data | undefined): string | null {
+  private extractEntityLabel(data: Data | undefined): string | null {
     if (!data) {
       return null;
     }
     for (const value of Object.values(data)) {
-      if (value && typeof value === 'object' && typeof value.identifiantUnique === 'string' && value.identifiantUnique) {
-        return value.identifiantUnique;
+      if (value && typeof value === 'object') {
+        const entity = value as Record<string, unknown>;
+        for (const field of BreadcrumbComponent.LABEL_FIELDS) {
+          const candidate = entity[field];
+          if (typeof candidate === 'string' && candidate.trim()) {
+            return candidate;
+          }
+        }
       }
     }
     return null;

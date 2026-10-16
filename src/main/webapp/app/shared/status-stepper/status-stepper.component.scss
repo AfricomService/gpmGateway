@@ -1,0 +1,78 @@
+:host {
+  display: block;
+}
+
+.status-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0 0 0.5rem;
+  overflow-x: auto;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+.step-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.step-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.step-done {
+  .step-circle {
+    background: #dcfce7;
+    color: #16a34a;
+  }
+  .step-label {
+    color: #15803d;
+  }
+}
+
+.step-active {
+  .step-circle {
+    background: #f59e0b;
+    color: #ffffff;
+  }
+  .step-label {
+    color: #1a2233;
+  }
+}
+
+.step-todo {
+  .step-circle {
+    background: #eef0f4;
+    color: #9ca3af;
+  }
+  .step-label {
+    color: #6b7280;
+    font-weight: 500;
+  }
+}
+
+.step-line {
+  width: 28px;
+  height: 2px;
+  background: #e5e7eb;
+  flex-shrink: 0;
+
+  &.step-line-done {
+    background: #22c55e;
+  }
+}

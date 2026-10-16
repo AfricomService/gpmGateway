@@ -1,12 +1,12 @@
 :host {
-  --cs-accent: #f5822a;
-  --cs-accent-hover: #ff9a4d;
-  --cs-accent-soft: rgba(245, 130, 42, 0.12);
+  --cs-accent: #2f6fed;
+  --cs-accent-hover: #4f86f2;
+  --cs-accent-soft: rgba(47, 111, 237, 0.1);
   --cs-text: #1a2233;
-  --cs-text-muted: #8a93a3;
-  --cs-border: #e7e9ee;
+  --cs-text-muted: #5b6475;
+  --cs-border: #e9ecf2;
   --cs-surface: #ffffff;
-  --cs-surface-hover: #f2f4f8;
+  --cs-surface-hover: #f4f6fa;
 
   display: block;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
@@ -193,10 +193,12 @@
   color: #ffffff;
   font-weight: 600;
   font-size: 0.8rem;
-  transition: background 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 6px 14px -8px rgba(47, 111, 237, 0.55);
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
     background: var(--cs-accent-hover);
+    box-shadow: 0 8px 18px -8px rgba(47, 111, 237, 0.7);
     transform: translateY(-1px);
   }
 }

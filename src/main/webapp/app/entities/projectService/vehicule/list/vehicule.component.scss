@@ -1,12 +1,12 @@
 .vehicules-page {
-  --vp-accent: #f5822a;
-  --vp-accent-hover: #ff9a4d;
-  --vp-accent-soft: rgba(245, 130, 42, 0.12);
+  --vp-accent: #2f6fed;
+  --vp-accent-hover: #4f86f2;
+  --vp-accent-soft: rgba(47, 111, 237, 0.1);
   --vp-text: #1a2233;
-  --vp-text-muted: #8a93a3;
-  --vp-border: #e7e9ee;
+  --vp-text-muted: #5b6475;
+  --vp-border: #e9ecf2;
   --vp-surface: #ffffff;
-  --vp-surface-hover: #f2f4f8;
+  --vp-surface-hover: #f4f6fa;
   --vp-success: #1f9d55;
   --vp-success-soft: rgba(31, 157, 85, 0.12);
   --vp-info: #7c5cff;
@@ -15,11 +15,10 @@
   --vp-danger-soft: rgba(224, 82, 77, 0.12);
 
   display: flex;
-  /* La navbar est en fixed-top (min-height: 72px) : on réserve l'espace
-     nécessaire pour que le header (titre + boutons) ne soit plus masqué. */
-  padding: 24px 1.5rem 1.5rem;
+  gap: 1rem;
+  /* Le breadcrumb est déjà rendu par MainComponent : même padding que la page Missions */
+  padding: 0.75rem 1rem 1rem;
   align-items: flex-start;
-  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
 /* ============ CONTENU ============ */
@@ -32,10 +31,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.75rem;
 
   h2 {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     font-weight: 700;
     color: var(--vp-text);
     margin: 0;
@@ -49,8 +48,8 @@
 }
 
 .btn-vehicule-refresh {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
   border: 1px solid var(--vp-border);
   background: var(--vp-surface);
@@ -75,7 +74,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.6rem 1.1rem;
+  padding: 0.55rem 1.1rem;
   border-radius: 10px;
   border: none;
   background: var(--vp-accent) !important;
@@ -83,7 +82,7 @@
   color: #ffffff !important;
   font-weight: 600;
   font-size: 0.92rem;
-  box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.55);
+  box-shadow: 0 8px 18px -8px rgba(47, 111, 237, 0.55);
   transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 
   fa-icon,
@@ -93,8 +92,14 @@
 
   &:hover {
     background: var(--vp-accent-hover) !important;
-    box-shadow: 0 10px 22px -8px rgba(245, 130, 42, 0.7);
+    box-shadow: 0 10px 22px -8px rgba(47, 111, 237, 0.7);
     transform: translateY(-1px);
+    color: #ffffff !important;
+  }
+
+  &:disabled {
+    opacity: 1 !important;
+    background: var(--vp-accent) !important;
     color: #ffffff !important;
   }
 }
@@ -104,11 +109,11 @@
   background: var(--vp-surface);
   border: 1px solid var(--vp-border);
   border-radius: 14px;
-  padding: 1rem;
-  margin-bottom: 1.25rem;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 0.85rem;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 0.6rem;
 }
 
 .vehicules-toolbar-row {
@@ -124,7 +129,7 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  height: 42px;
+  height: 40px;
   border-radius: 10px;
   border: 1px solid var(--vp-border);
   background: var(--vp-surface);
@@ -183,7 +188,7 @@
 
   button {
     width: 40px;
-    height: 40px;
+    height: 38px;
     border: none;
     background: var(--vp-surface);
     color: var(--vp-text-muted);
@@ -207,7 +212,8 @@
 .vehicules-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1rem;
+  gap: 0.85rem;
+  margin-bottom: 0.75rem;
 }
 
 .vehicule-card {
@@ -215,7 +221,7 @@
   background: var(--vp-surface);
   border: 1px solid var(--vp-border);
   border-radius: 14px;
-  padding: 1.1rem 1.2rem;
+  padding: 0.9rem 1.1rem;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -224,7 +230,7 @@
 
   &:hover {
     border-color: var(--vp-accent);
-    box-shadow: 0 12px 26px -16px rgba(245, 130, 42, 0.4);
+    box-shadow: 0 12px 26px -16px rgba(47, 111, 237, 0.4);
     transform: translateY(-2px);
   }
 }
@@ -233,7 +239,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
 }
 
 .vehicule-ref {
@@ -258,7 +264,7 @@
   font-size: 1rem;
   font-weight: 600;
   color: var(--vp-text);
-  margin: 0.15rem 0 0.6rem;
+  margin: 0.1rem 0 0.35rem;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -270,10 +276,10 @@
   color: var(--vp-text-muted);
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding-bottom: 0.75rem;
+  gap: 4px;
+  padding-bottom: 0.5rem;
   border-bottom: 1px dashed var(--vp-border);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 
   div {
     display: flex;
@@ -315,6 +321,7 @@
   &.btn-delete {
     background: var(--vp-danger-soft);
     color: var(--vp-danger);
+
     &:hover {
       background: var(--vp-danger);
       color: #ffffff;
@@ -328,6 +335,7 @@
   border: 1px solid var(--vp-border);
   border-radius: 14px;
   overflow: hidden;
+  margin-bottom: 0.75rem;
 }
 
 .vehicules-table {
@@ -339,7 +347,7 @@
 
     th {
       text-align: left;
-      padding: 0.85rem 1.2rem;
+      padding: 0.7rem 1.1rem;
       font-size: 0.78rem;
       font-weight: 700;
       color: var(--vp-text-muted);
@@ -366,7 +374,7 @@
     }
 
     td {
-      padding: 0.9rem 1.2rem;
+      padding: 0.7rem 1.1rem;
       font-size: 0.9rem;
       color: var(--vp-text);
       white-space: nowrap;
@@ -374,11 +382,12 @@
   }
 }
 
-/* ============ PAGINATION ORANGE ============ */
+/* ============ PAGINATION BLEUE ============ */
 ::ng-deep {
   .vehicules-content ngb-pagination {
     .pagination {
       gap: 0.35rem;
+      margin-bottom: 0;
     }
 
     .page-item {
@@ -403,11 +412,11 @@
       &.active .page-link {
         background: var(--vp-accent) !important;
         color: #ffffff !important;
-        box-shadow: 0 4px 10px -4px rgba(245, 130, 42, 0.5);
+        box-shadow: 0 4px 10px -4px rgba(47, 111, 237, 0.5);
       }
 
       &.disabled .page-link {
-        color: var(--vp-border);
+        color: #c4cad6;
         background: transparent;
       }
     }
@@ -416,8 +425,9 @@
 
 /* ============ RESPONSIVE ============ */
 @media (max-width: 900px) {
-  .agences-page {
-    padding: 20px 1rem 1rem;
+  .vehicules-page {
+    flex-direction: column;
+    padding: 0.6rem 0.75rem 1rem;
   }
 
   .vehicules-toolbar-right {

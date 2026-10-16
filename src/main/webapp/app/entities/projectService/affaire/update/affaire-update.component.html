@@ -405,7 +405,7 @@
             <div class="articles-content-wrapper">
               <!-- Spinner Overlay -->
               <div *ngIf="isLoadingArticles" class="articles-spinner-overlay">
-                <div class="spinner-border text-orange" role="status">
+                <div class="spinner-border text-accent" role="status">
                   <span class="visually-hidden">Chargement...</span>
                 </div>
               </div>
@@ -436,7 +436,7 @@
                       Total: <strong class="text-dark">{{ articlesTotalItems }}</strong> article(s)
                     </span>
                     <ngb-pagination
-                      class="modern-orange-pagination"
+                      class="modern-blue-pagination"
                       [collectionSize]="articlesTotalItems"
                       [(page)]="articlesPage"
                       [pageSize]="articlesItemsPerPage"

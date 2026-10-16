@@ -1,41 +1,19 @@
+:host {
+  display: block;
+}
+
 .breadcrumb-bar {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 1.5rem;
-  background: #f9fafb;
-  border-bottom: 1px solid #e7e9ee;
-  margin-top: 0;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.breadcrumb-back {
-  border: none;
-  background: transparent;
-  color: #57606f;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-
-  &:hover {
-    background: #f2f4f8;
-    color: #1a2233;
-  }
+  padding: 0.5rem 0 0.6rem; // 0.6rem en bas = espacement avec le stepper
 }
 
 .breadcrumb-trail {
   display: flex;
-  gap: 0.75rem; // augmente ou diminue selon le rendu souhaité
   list-style: none;
   margin: 0;
   padding: 0;
-  font-size: 0.85rem;
+  font-size: 0.95rem; // avant : 0.8rem
 }
 
 .breadcrumb-item {
@@ -47,22 +25,22 @@
     color: #57606f;
     text-decoration: none;
     &:hover {
-      color: #2563eb; // bleu au survol (remplace l'orange #f5822a)
+      color: #2563eb;
     }
   }
 
-  // Séparateur « > » entre les miettes (remplace le « / » de Bootstrap)
+  // Séparateur « > » entre les miettes
   & + & {
-    padding-left: 0; // neutralise le padding ajouté par Bootstrap
+    padding-left: 0;
 
     &::before {
       content: '>';
       float: none;
       display: inline-block;
-      margin: 0 0.65rem; // même espace de chaque côté du chevron
+      margin: 0 0.5rem;
       padding: 0;
       color: #8a93a3;
-      font-weight: 400; // évite que le « > » passe en gras sur la miette active
+      font-weight: 400;
     }
   }
 

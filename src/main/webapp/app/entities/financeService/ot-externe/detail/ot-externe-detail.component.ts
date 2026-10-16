@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -26,6 +26,9 @@ import { IOtArticles } from '../ot-articles.model';
 import { OtArticlesService } from '../ot-articles.service';
 import { ArticleService } from '../../../projectService/article/service/article.service';
 
+import { StatusStep } from 'app/shared/status-stepper/status-stepper.component';
+import { StatusStepperService } from 'app/shared/status-stepper/status-stepper.service';
+
 type AccordionPanel = 'global' | 'mode' | 'modele' | 'client' | 'piecesJointes';
 
 @Component({
@@ -33,9 +36,19 @@ type AccordionPanel = 'global' | 'mode' | 'modele' | 'client' | 'piecesJointes';
   templateUrl: './ot-externe-detail.component.html',
   styleUrls: ['../update/ot-externe-update.component.scss'],
 })
-export class OtExterneDetailComponent implements OnInit {
+export class OtExterneDetailComponent implements OnInit, OnDestroy {
   otExterne: IOtExterne | null = null;
   statutOtExterneValues = Object.keys(StatutOtExterne);
+
+  readonly statutSteps: StatusStep[] = [
+    { key: StatutOtExterne.Brouillon, label: 'Brouillon' },
+    { key: StatutOtExterne.ExecutionDesTravaux, label: 'Exécution des travaux' },
+    { key: StatutOtExterne.Fin, label: 'Fin' },
+  ];
+
+  get currentStatut(): string {
+    return this.otExterne?.statut ?? StatutOtExterne.Brouillon;
+  }
 
   // ================================
   // Accordéon (état purement visuel — même pattern que ot-externe-update)
@@ -108,7 +121,8 @@ export class OtExterneDetailComponent implements OnInit {
     protected sanitizer: DomSanitizer,
     protected modelPhaseOTService: ModelPhaseOTService,
     protected otArticlesService: OtArticlesService,
-    protected articleService: ArticleService
+    protected articleService: ArticleService,
+    protected stepperService: StatusStepperService
   ) {}
 
   ngOnInit(): void {
@@ -117,9 +131,14 @@ export class OtExterneDetailComponent implements OnInit {
     this.activatedRoute.data.subscribe(({ otExterne }) => {
       this.otExterne = otExterne;
       if (otExterne) {
+        this.stepperService.show(this.statutSteps, this.currentStatut);
         this.loadDetails(otExterne);
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.stepperService.clear();
   }
 
   // ================================
