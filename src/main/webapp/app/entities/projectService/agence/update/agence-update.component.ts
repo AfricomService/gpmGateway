@@ -9,6 +9,8 @@ import { IAgence } from '../agence.model';
 import { AgenceService } from '../service/agence.service';
 import { ISociete } from 'app/entities/projectService/societe/societe.model';
 import { SocieteService } from 'app/entities/projectService/societe/service/societe.service';
+import { IVille } from 'app/entities/projectService/ville/ville.model'; // Update path if needed
+import { VilleService } from 'app/entities/projectService/ville/service/ville.service'; // Update path if needed
 
 @Component({
   selector: 'jhi-agence-update',
@@ -19,6 +21,7 @@ export class AgenceUpdateComponent implements OnInit {
   agence: IAgence | null = null;
 
   societesSharedCollection: ISociete[] = [];
+  villesSharedCollection: IVille[] = [];
 
   editForm: AgenceFormGroup = this.agenceFormService.createAgenceFormGroup();
 
@@ -26,12 +29,16 @@ export class AgenceUpdateComponent implements OnInit {
     protected agenceService: AgenceService,
     protected agenceFormService: AgenceFormService,
     protected societeService: SocieteService,
+    protected villeService: VilleService,
     protected activatedRoute: ActivatedRoute
   ) {}
 
   compareSociete = (o1: ISociete | null, o2: ISociete | null): boolean => this.societeService.compareSociete(o1, o2);
 
   ngOnInit(): void {
+    // Default pays to "TUNISIE" on init if not already set
+    this.editForm.patchValue({ pays: 'TUNISIE' });
+
     this.activatedRoute.data.subscribe(({ agence }) => {
       this.agence = agence;
       if (agence) {
@@ -79,6 +86,11 @@ export class AgenceUpdateComponent implements OnInit {
     this.agence = agence;
     this.agenceFormService.resetForm(this.editForm, agence);
 
+    // Ensure pays stays default if empty
+    if (!this.editForm.get('pays')?.value) {
+      this.editForm.patchValue({ pays: 'TUNISIE' });
+    }
+
     this.societesSharedCollection = this.societeService.addSocieteToCollectionIfMissing<ISociete>(
       this.societesSharedCollection,
       agence.societe
@@ -91,5 +103,10 @@ export class AgenceUpdateComponent implements OnInit {
       .pipe(map((res: HttpResponse<ISociete[]>) => res.body ?? []))
       .pipe(map((societes: ISociete[]) => this.societeService.addSocieteToCollectionIfMissing<ISociete>(societes, this.agence?.societe)))
       .subscribe((societes: ISociete[]) => (this.societesSharedCollection = societes));
+
+    this.villeService
+      .query()
+      .pipe(map((res: HttpResponse<IVille[]>) => res.body ?? []))
+      .subscribe((villes: IVille[]) => (this.villesSharedCollection = villes));
   }
 }

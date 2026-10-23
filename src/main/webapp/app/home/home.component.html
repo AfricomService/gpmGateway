@@ -7,7 +7,9 @@
     <h1 class="welcome-title">Bienvenue</h1>
     <p class="welcome-subtitle">Connectez-vous pour accéder à votre espace.</p>
 
-    <button class="btn btn-primary login-btn" (click)="login()">Connecter</button>
+    <div *ngIf="isDev && !account">
+      <button type="button" class="btn btn-primary" (click)="login()">Connecter</button>
+    </div>
   </div>
 </div>
 

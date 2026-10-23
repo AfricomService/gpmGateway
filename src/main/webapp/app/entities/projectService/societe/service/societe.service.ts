@@ -14,6 +14,8 @@ import { IUserAuthSociete } from '../user-auth-societe.model';
 import { IAssignRole } from '../assign-role.model';
 import { IContactSociete } from '../contact-societe.model';
 
+import { IAgence } from 'app/entities/projectService/agence/agence.model'; // adjust path if needed
+
 export type PartialUpdateSociete = Partial<ISociete> & Pick<ISociete, 'id'>;
 
 type RestOf<T extends ISociete | NewSociete> = Omit<T, 'createdAt' | 'updatedAt'> & {
@@ -43,6 +45,13 @@ export class SocieteService {
   protected resourceUrlOrga = this.applicationConfigService.getEndpointFor('api', 'orgacare');
 
   constructor(protected http: HttpClient, protected applicationConfigService: ApplicationConfigService) {}
+
+  queryAgencesBySocieteId(societeId: number): Observable<HttpResponse<IAgence[]>> {
+    return this.http.get<IAgence[]>(this.applicationConfigService.getEndpointFor('api/agences/by-societe-id', 'projectservice'), {
+      params: { societeId: societeId.toString() },
+      observe: 'response',
+    });
+  }
 
   createContact(contactSociete: IContactSociete): Observable<HttpResponse<IContactSociete>> {
     return this.http.post<IContactSociete>(this.resourceUrlContactSoc, contactSociete, { observe: 'response' });

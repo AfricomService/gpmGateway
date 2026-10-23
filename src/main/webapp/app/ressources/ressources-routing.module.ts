@@ -28,6 +28,10 @@ const routes: Routes = [
         loadChildren: () => import('app/entities/projectService/agence/agence.module').then(m => m.ProjectServiceAgenceModule),
       },
       {
+        path: 'villes',
+        loadChildren: () => import('app/entities/projectService/ville/ville.module').then(m => m.ProjectServiceVilleModule),
+      },
+      {
         path: 'sites',
         loadChildren: () => import('app/entities/projectService/site/site.module').then(m => m.ProjectServiceSiteModule),
       },

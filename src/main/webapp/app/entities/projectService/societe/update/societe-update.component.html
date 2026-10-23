@@ -244,6 +244,55 @@
           </div>
         </div>
 
+        <!-- Agences Associées (uniquement en édition) -->
+        <div class="cu-accordion-item" [class.open]="isSectionOpen('agences')" *ngIf="societe?.id">
+          <button type="button" class="cu-accordion-header" (click)="toggleSection('agences')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="building" class="cu-accordion-icon"></fa-icon>
+              <span>Agences Associées</span>
+              <span class="cu-accordion-count" *ngIf="agencesAssociees.length">{{ agencesAssociees.length }}</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isSectionOpen('agences')">
+            <div class="mb-3">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Rechercher par désignation, identifiant ou ville..."
+                [ngModel]="agencesSearchTerm"
+                [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="onAgencesSearchChange($event)"
+              />
+            </div>
+
+            <div *ngIf="filteredAgencesAssociees.length > 0; else noAgences" class="cu-item-list">
+              <div class="cu-item-card" *ngFor="let agence of filteredAgencesAssociees">
+                <div class="cu-item-avatar"><fa-icon icon="building"></fa-icon></div>
+                <div class="cu-item-info">
+                  <div class="cu-item-title-row">
+                    <div class="cu-item-title">{{ agence.designation }}</div>
+                    <span class="cu-item-badge-id" *ngIf="agence.identifiantUnique">{{ agence.identifiantUnique }}</span>
+                  </div>
+                  <div class="cu-item-sub">{{ agence.adresse }}</div>
+                  <div class="cu-item-sub">
+                    {{ agence.ville }}<span *ngIf="agence.pays">, {{ agence.pays }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <ng-template #noAgences>
+              <div class="cu-empty" *ngIf="!isLoadingAgences">
+                <fa-icon icon="info-circle"></fa-icon>&nbsp;Aucune agence associée à cette société
+              </div>
+              <div class="cu-empty" *ngIf="isLoadingAgences">
+                <span class="spinner-border spinner-border-sm me-2"></span>Chargement des agences...
+              </div>
+            </ng-template>
+          </div>
+        </div>
+
         <!-- Contacts Associés (uniquement en édition, pas en création) -->
         <div class="cu-accordion-item" [class.open]="isSectionOpen('contacts')" *ngIf="societe?.id">
           <button type="button" class="cu-accordion-header" (click)="toggleSection('contacts')">
@@ -294,6 +343,50 @@
                   </div>
 
                   <div class="cu-item-sub mt-2">
+                    <div
+                      class="d-flex align-items-center flex-wrap gap-1 mb-2"
+                      *ngIf="getAgenceOfContact(contact) as agence; else assignAgenceBlock"
+                    >
+                      <strong>Agence :</strong>
+                      <span class="badge bg-primary d-flex align-items-center me-1">
+                        <span style="font-weight: 700; text-transform: uppercase">{{ agence.designation }}</span>
+                        <button
+                          type="button"
+                          class="btn-close btn-close-sm ms-2"
+                          style="font-size: 0.55rem; color: white"
+                          title="Retirer l'agence"
+                          [disabled]="isAssigningAgenceContactId === contact.id"
+                          (click)="removeAgence(contact)"
+                        ></button>
+                      </span>
+                    </div>
+
+                    <ng-template #assignAgenceBlock>
+                      <div class="d-flex align-items-center gap-2 mb-2" *ngIf="agencesAssociees.length">
+                        <select
+                          class="form-select form-select-sm"
+                          style="width: 220px"
+                          [(ngModel)]="selectedAgences[contact.id!]"
+                          [ngModelOptions]="{ standalone: true }"
+                        >
+                          <option [ngValue]="undefined">Affecter une agence...</option>
+                          <option *ngFor="let agence of agencesAssociees" [ngValue]="agence.id">{{ agence.designation }}</option>
+                        </select>
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-primary"
+                          [disabled]="!selectedAgences[contact.id!] || isAssigningAgenceContactId === contact.id"
+                          (click)="assignAgence(contact)"
+                        >
+                          <span *ngIf="isAssigningAgenceContactId === contact.id" class="spinner-border spinner-border-sm"></span>
+                          <fa-icon *ngIf="isAssigningAgenceContactId !== contact.id" icon="check"></fa-icon>
+                          Affecter
+                        </button>
+                      </div>
+                    </ng-template>
+                  </div>
+
+                  <div class="cu-item-sub mt-2">
                     <!-- Roles exist -->
                     <div class="d-flex align-items-center flex-wrap gap-1 mb-2" *ngIf="hasRole(contact.id!)">
                       <strong>Rôles :</strong>
@@ -302,7 +395,7 @@
                         <button
                           type="button"
                           class="btn-close btn-close-white btn-close-sm ms-2"
-                          style="font-size: 0.55rem"
+                          style="font-size: 0.55rem; color: white"
                           title="Retirer ce rôle"
                           (click)="removeRole(contact.id!, role.id!)"
                         ></button>
@@ -696,6 +789,34 @@
             Numéro de téléphone invalide (8 à 15 chiffres, espaces, tirets ou + autorisés).
           </small>
         </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-bold">CIN</label>
+          <input
+            type="tel"
+            class="form-control"
+            [class.is-invalid]="contactSocieteCinField.invalid && (contactSocieteCinField.dirty || contactSocieteCinField.touched)"
+            [(ngModel)]="newContactSociete.cin"
+            [ngModelOptions]="{ standalone: true }"
+            #contactSocieteCinField="ngModel"
+            pattern="^[0-9]{8}$"
+          />
+          <small
+            class="form-text text-danger"
+            *ngIf="contactSocieteCinField.invalid && (contactSocieteCinField.dirty || contactSocieteCinField.touched)"
+          >
+            Numéro de CIN invalide.
+          </small>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-bold">Agence</label>
+          <select class="form-select" [(ngModel)]="newContactSociete.agenceId" [ngModelOptions]="{ standalone: true }">
+            <option [ngValue]="null">Aucune agence</option>
+            <option *ngFor="let agence of agencesAssociees" [ngValue]="agence.id">{{ agence.designation }}</option>
+          </select>
+        </div>
+
         <div class="col-12" *ngIf="!isCreatingContact && editingContactSociete">
           <label class="form-label fw-bold">Rôles</label>
           <div class="d-flex flex-wrap gap-3">
