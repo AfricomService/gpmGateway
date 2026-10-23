@@ -16,7 +16,9 @@ import { IUserAuthSociete } from '../user-auth-societe.model';
 import { IAssignRole } from '../assign-role.model';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 
-type AccordionSection = 'general' | 'coordonnees' | 'contacts';
+import { IAgence } from 'app/entities/projectService/agence/agence.model'; // adjust path if needed
+
+type AccordionSection = 'general' | 'coordonnees' | 'agences' | 'contacts';
 
 @Component({
   selector: 'jhi-societe-update',
@@ -27,6 +29,13 @@ export class SocieteUpdateComponent implements OnInit {
   isSaving = false;
   societe: ISociete | null = null;
 
+  // ── Agences associées ─────────────────────────────────────────
+  agencesAssociees: IAgence[] = [];
+  isLoadingAgences = false;
+  agencesSearchTerm = '';
+  selectedAgences: Record<number, number> = {};
+  isAssigningAgenceContactId: number | null = null;
+
   // ── Roles Contacts Société ─────────────────────────────────────
   roles: IRoleContactSociete[] = [];
   assignments: IUserAuthSociete[] = [];
@@ -35,7 +44,7 @@ export class SocieteUpdateComponent implements OnInit {
   isAssigningRoleContactId: number | null = null;
 
   // === Gestion de l'accordéon ===
-  openSections: Set<AccordionSection> = new Set(['general', 'coordonnees', 'contacts']);
+  openSections: Set<AccordionSection> = new Set(['general', 'coordonnees', 'agences', 'contacts']);
 
   contactsSearchTerm = '';
   isDeletingContactId: number | null = null;
@@ -127,6 +136,8 @@ export class SocieteUpdateComponent implements OnInit {
       nomPrenom: '',
       email: '',
       numTel: '',
+      cin: '',
+      agenceId: null,
     };
 
     this.modalService.open(this.contactSocieteModal, {
@@ -160,6 +171,8 @@ export class SocieteUpdateComponent implements OnInit {
       email: this.newContactSociete.email ?? null,
       numTel: this.newContactSociete.numTel ?? null,
       societeId: this.societe.id,
+      cin: this.newContactSociete.cin ?? null,
+      agenceId: this.newContactSociete.agenceId ?? null,
     } as IContactSociete;
 
     this.societeService.createContact(contactToCreate).subscribe({
@@ -184,6 +197,8 @@ export class SocieteUpdateComponent implements OnInit {
       nomPrenom: this.newContactSociete.nomPrenom.trim(),
       email: this.newContactSociete.email ?? null,
       numTel: this.newContactSociete.numTel ?? null,
+      cin: this.newContactSociete.cin ?? null,
+      agenceId: this.newContactSociete.agenceId ?? null,
     };
 
     this.societeService.updateContact(contactToUpdate).subscribe({
@@ -268,7 +283,7 @@ export class SocieteUpdateComponent implements OnInit {
       if (societe) {
         this.updateForm(societe);
         this.loadContactsAssocies();
-        this.loadContactsAssocies();
+        this.loadAgencesAssociees();
         this.loadRoles();
         this.loadAssignments();
       }
@@ -611,6 +626,71 @@ export class SocieteUpdateComponent implements OnInit {
     }
   }
 
+  // ── Agences associées ─────────────────────────────────────────
+  loadAgencesAssociees(): void {
+    if (!this.societe?.id) {
+      return;
+    }
+    this.isLoadingAgences = true;
+    this.societeService
+      .queryAgencesBySocieteId(this.societe.id)
+      .pipe(finalize(() => (this.isLoadingAgences = false)))
+      .subscribe({
+        next: res => (this.agencesAssociees = res.body ?? []),
+        error: () => (this.agencesAssociees = []),
+      });
+  }
+
+  get filteredAgencesAssociees(): IAgence[] {
+    const term = this.agencesSearchTerm.trim().toLowerCase();
+    if (!term) {
+      return this.agencesAssociees;
+    }
+    return this.agencesAssociees.filter(
+      a =>
+        (a.designation ?? '').toLowerCase().includes(term) ||
+        (a.identifiantUnique ?? '').toLowerCase().includes(term) ||
+        (a.ville ?? '').toLowerCase().includes(term)
+    );
+  }
+
+  onAgencesSearchChange(value: string): void {
+    this.agencesSearchTerm = value;
+  }
+
+  // ── Agence d'un contact ───────────────────────────────────────
+  getAgenceOfContact(contact: IContactSociete): IAgence | undefined {
+    return contact.agenceId ? this.agencesAssociees.find(a => a.id === contact.agenceId) : undefined;
+  }
+
+  assignAgence(contact: IContactSociete): void {
+    const agenceId = contact.id ? this.selectedAgences[contact.id] : undefined;
+    if (!agenceId) {
+      return;
+    }
+    this.updateContactAgence(contact, agenceId);
+  }
+
+  removeAgence(contact: IContactSociete): void {
+    this.updateContactAgence(contact, null);
+  }
+
+  private updateContactAgence(contact: IContactSociete, agenceId: number | null): void {
+    if (!contact.id) {
+      return;
+    }
+    this.isAssigningAgenceContactId = contact.id;
+    this.societeService
+      .updateContact({ ...contact, agenceId })
+      .pipe(finalize(() => (this.isAssigningAgenceContactId = null)))
+      .subscribe({
+        next: () => {
+          delete this.selectedAgences[contact.id!];
+          this.loadContactsAssocies();
+        },
+      });
+  }
+
   protected subscribeToSaveResponse(result: Observable<HttpResponse<ISociete>>, isCreation: boolean): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
       next: res => this.onSaveSuccess(res.body, isCreation),
@@ -632,6 +712,7 @@ export class SocieteUpdateComponent implements OnInit {
     }
 
     this.loadContactsAssocies();
+    this.loadAgencesAssociees();
 
     // ── Success banner ─────────────────────────────
     this.successMessage = isCreation ? 'Société créée avec succès.' : 'Société mise à jour avec succès.';

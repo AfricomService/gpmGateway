@@ -42,9 +42,7 @@ export class ZoneFormService {
       nom: new FormControl(zoneRawValue.nom, {
         validators: [Validators.required],
       }),
-      ville: new FormControl(zoneRawValue.ville, {
-        validators: [Validators.required],
-      }),
+      ville: new FormControl(zoneRawValue.ville, {}),
     });
   }
 

@@ -1,12 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
+import { FormBuilder, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
-import { finalize } from 'rxjs/operators';
+import { finalize, map } from 'rxjs/operators';
 
-import { VilleFormService, VilleFormGroup } from './ville-form.service';
-import { IVille } from '../ville.model';
+import { IVille, NewVille } from '../ville.model';
 import { VilleService } from '../service/ville.service';
+import { IZone } from '../../zone/zone.model';
+import { ZoneService } from '../../zone/service/zone.service';
 
 @Component({
   selector: 'jhi-ville-update',
@@ -16,12 +18,19 @@ export class VilleUpdateComponent implements OnInit {
   isSaving = false;
   ville: IVille | null = null;
 
-  editForm: VilleFormGroup = this.villeFormService.createVilleFormGroup();
+  zonesSharedCollection: IZone[] = [];
+
+  editForm = this.fb.group({
+    id: [null as number | null],
+    nom: [null as string | null, [Validators.required]],
+    zoneId: [null as number | null, [Validators.required]],
+  });
 
   constructor(
     protected villeService: VilleService,
-    protected villeFormService: VilleFormService,
-    protected activatedRoute: ActivatedRoute
+    protected zoneService: ZoneService,
+    protected activatedRoute: ActivatedRoute,
+    protected fb: FormBuilder
   ) {}
 
   ngOnInit(): void {
@@ -30,6 +39,7 @@ export class VilleUpdateComponent implements OnInit {
       if (ville) {
         this.updateForm(ville);
       }
+      this.loadRelationshipsOptions();
     });
   }
 
@@ -39,12 +49,19 @@ export class VilleUpdateComponent implements OnInit {
 
   save(): void {
     this.isSaving = true;
-    const ville = this.villeFormService.getVille(this.editForm);
+    const ville = this.createFromForm();
     if (ville.id !== null) {
-      this.subscribeToSaveResponse(this.villeService.update(ville));
+      this.subscribeToSaveResponse(this.villeService.update(ville as IVille));
     } else {
-      this.subscribeToSaveResponse(this.villeService.create(ville));
+      this.subscribeToSaveResponse(this.villeService.create(ville as NewVille));
     }
+  }
+
+  protected loadRelationshipsOptions(): void {
+    this.zoneService
+      .query()
+      .pipe(map((res: HttpResponse<IZone[]>) => res.body ?? []))
+      .subscribe((zones: IZone[]) => (this.zonesSharedCollection = zones));
   }
 
   protected subscribeToSaveResponse(result: Observable<HttpResponse<IVille>>): void {
@@ -54,20 +71,28 @@ export class VilleUpdateComponent implements OnInit {
     });
   }
 
+  protected onSaveFinalize(): void {
+    this.isSaving = false;
+  }
+
   protected onSaveSuccess(): void {
     this.previousState();
   }
 
   protected onSaveError(): void {
-    // Api for inheritance.
+    // Show an error message here if you want
   }
 
-  protected onSaveFinalize(): void {
-    this.isSaving = false;
+  protected createFromForm(): IVille | NewVille {
+    return { ...this.editForm.getRawValue() } as IVille | NewVille;
   }
 
   protected updateForm(ville: IVille): void {
     this.ville = ville;
-    this.villeFormService.resetForm(this.editForm, ville);
+    this.editForm.patchValue({
+      id: ville.id,
+      nom: ville.nom,
+      zoneId: ville.zoneId,
+    });
   }
 }

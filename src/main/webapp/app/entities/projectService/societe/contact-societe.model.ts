@@ -6,6 +6,8 @@ export interface IContactSociete {
   numTel?: string | null;
   societeId?: number | null;
   statusCompteKeycloak?: string | null;
+  cin?: string | null;
+  agenceId?: number | null;
 }
 
 export class ContactSociete implements IContactSociete {
@@ -16,7 +18,9 @@ export class ContactSociete implements IContactSociete {
     public email?: string | null,
     public numTel?: string | null,
     public societeId?: number | null,
-    public statusCompteKeycloak?: string | null
+    public statusCompteKeycloak?: string | null,
+    public cin?: string | null,
+    public agenceId?: number | null
   ) {}
 }
 

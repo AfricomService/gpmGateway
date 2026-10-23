@@ -82,7 +82,7 @@ export class ZoneComponent implements OnInit {
 
   /** Appelé au double-clic sur une carte ou une ligne : navigation directe vers l'édition. */
   goToEdit(zone: IZone): void {
-    this.router.navigate(['/zone', zone.id, 'edit']);
+    this.router.navigate(['/zone', zone.id, 'view']);
   }
 
   load(): void {

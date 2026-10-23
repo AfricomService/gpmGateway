@@ -39,6 +39,13 @@ export class VilleService {
     return this.http.get<IVille[]>(this.resourceUrl, { params: options, observe: 'response' });
   }
 
+  findAllByZoneId(zoneId: number): Observable<EntityArrayResponseType> {
+    return this.http.get<IVille[]>(`${this.resourceUrl}-by-zoneId`, {
+      params: { zoneId },
+      observe: 'response',
+    });
+  }
+
   delete(id: number): Observable<HttpResponse<{}>> {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }

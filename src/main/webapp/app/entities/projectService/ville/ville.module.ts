@@ -5,9 +5,10 @@ import { VilleDetailComponent } from './detail/ville-detail.component';
 import { VilleUpdateComponent } from './update/ville-update.component';
 import { VilleDeleteDialogComponent } from './delete/ville-delete-dialog.component';
 import { VilleRoutingModule } from './route/ville-routing.module';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 @NgModule({
-  imports: [SharedModule, VilleRoutingModule],
+  imports: [SharedModule, VilleRoutingModule, NgSelectModule],
   declarations: [VilleComponent, VilleDetailComponent, VilleUpdateComponent, VilleDeleteDialogComponent],
 })
 export class ProjectServiceVilleModule {}

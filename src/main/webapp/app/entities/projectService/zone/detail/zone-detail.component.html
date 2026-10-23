@@ -21,20 +21,27 @@
       </ng-template>
       <ng-template ngbPanelContent>
         <div class="row g-3">
-          <div class="col-md-4">
+          <div class="col-md-6">
             <small class="text-muted">ID</small>
             <div class="fw-semibold">{{ z.id }}</div>
           </div>
-          <div class="col-md-4">
+          <div class="col-md-6">
             <small class="text-muted">Nom</small>
             <div>{{ z.nom || '-' }}</div>
           </div>
-          <div class="col-md-4">
-            <small class="text-muted">Ville</small>
-            <div *ngIf="z.ville; else noVille">
-              <a [routerLink]="['/ville', z.ville.id, 'view']">{{ z.ville.nom }}</a>
+
+          <div class="col-12">
+            <small class="text-muted">Villes ({{ villes.length }})</small>
+            <div *ngIf="villes.length > 0; else noVilles" class="d-flex flex-wrap gap-2 mt-1">
+              <a
+                *ngFor="let v of villes"
+                [routerLink]="['/ville', v.id, 'view']"
+                class="badge bg-light text-dark border text-decoration-none"
+              >
+                {{ v.nom }}
+              </a>
             </div>
-            <ng-template #noVille><div>-</div></ng-template>
+            <ng-template #noVilles><div>-</div></ng-template>
           </div>
         </div>
       </ng-template>

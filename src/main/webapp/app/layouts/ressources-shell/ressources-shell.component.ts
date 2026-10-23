@@ -24,6 +24,9 @@ export class RessourcesShellComponent {
   navItems: RessourceNavItem[] = [
     { label: 'Vehicules', route: 'vehicules', icon: ['fas', 'truck'] },
     { label: 'Autres ressources', route: 'ressources', icon: ['fas', 'cubes'] },
+    { label: 'Agences', route: 'agences', icon: ['fas', 'building'] },
+    { label: 'Zones', route: 'zones', icon: ['fas', 'building'] },
+    { label: 'Villes', route: 'villes', icon: ['fas', 'building'] },
     {
       label: 'Paramètre ressources',
       icon: ['fas', 'cog'],
