@@ -576,3 +576,90 @@
   font-size: 0.8rem;
   color: #8a93a3;
 }
+
+/* ============ COMPACT CONTACT CARD ============ */
+.cu-item-card {
+  align-items: flex-start; // avatar/actions stay at the top when panels open
+}
+
+.cu-item-contact-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  margin-top: 0.1rem;
+}
+
+.cu-item-sep {
+  width: 1px;
+  height: 12px;
+  background: var(--cp-border);
+}
+
+.cu-item-link-icon--mail {
+  color: var(--cp-text-muted);
+}
+
+.cu-item-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.cu-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface);
+  color: var(--cp-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+  &:hover,
+  &.active {
+    border-color: var(--cp-accent);
+    color: var(--cp-accent);
+    background: var(--cp-accent-soft);
+  }
+}
+
+.cu-toggle-chevron {
+  font-size: 0.6rem;
+}
+
+.cu-toggle-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2e9e5b; // agence assigned
+}
+
+.cu-toggle-count {
+  background: var(--cp-accent);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+}
+
+.cu-item-panels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--cp-border);
+  font-size: 0.8rem;
+  color: var(--cp-text-muted);
+}
+
+.cu-item-panel {
+  min-width: 0;
+}
