@@ -45,6 +45,7 @@
             <!-- Identifiant unique généré côté serveur (WO-0001-26) — persisté mais non modifiable manuellement -->
             <input type="hidden" formControlName="identifiantUnique" data-cy="identifiantUnique" />
 
+            <!-- LIGNE 1 : PROJET (affaire) + CODE PROJET (lecture seule) -->
             <div class="row">
               <div class="col-md-6 mb-3">
                 <label
@@ -52,7 +53,7 @@
                   jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.affaireId"
                   for="field_affaireId"
                   [ngbTooltip]="'gpmGatewayApp.operationsServiceWorkOrder.help.affaireId' | translate"
-                  >Affaire Id</label
+                  >Projet</label
                 >
 
                 <!-- ID réel de l'affaire -->
@@ -98,26 +99,6 @@
               </div>
 
               <div class="col-md-6 mb-3">
-                <label
-                  class="form-label"
-                  jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.numFicheIntervention"
-                  for="field_numFicheIntervention"
-                  >Num Fiche Intervention</label
-                >
-                <input
-                  type="text"
-                  class="form-control cu-input"
-                  name="numFicheIntervention"
-                  id="field_numFicheIntervention"
-                  data-cy="numFicheIntervention"
-                  formControlName="numFicheIntervention"
-                />
-              </div>
-            </div>
-
-            <!-- CODE PROJET (lecture seule) + LIEU (liste des sites du client final) -->
-            <div class="row">
-              <div class="col-md-6 mb-3">
                 <label class="form-label" for="field_codeProjet">Code projet</label>
                 <input
                   type="text"
@@ -129,10 +110,135 @@
                   readonly
                 />
               </div>
+            </div>
+
+            <!-- LIGNE 2 : MOTIF (liste de tous les ModelPhaseOT) -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="field_modelPhase">Motif</label>
+
+                <ng-select
+                  id="field_modelPhase"
+                  data-cy="modelPhase"
+                  name="modelPhase"
+                  class="custom-ng-select"
+                  [items]="modelPhases"
+                  bindLabel="nom"
+                  [compareWith]="compareModelPhase"
+                  [searchable]="true"
+                  [clearable]="true"
+                  [loading]="loadingModelPhases"
+                  placeholder="Sélectionner un motif..."
+                  notFoundText="Aucun motif trouvé"
+                  loadingText="Chargement..."
+                  [ngModel]="selectedModelPhase"
+                  [ngModelOptions]="{ standalone: true }"
+                  (change)="onModelPhaseSelectChange($event)"
+                >
+                  <ng-template ng-option-tmp let-item="item">
+                    <div>{{ item.nom }}</div>
+                    <small class="text-muted" *ngIf="item.description">{{ item.description }}</small>
+                  </ng-template>
+                </ng-select>
+              </div>
+
+              <!-- OT EXTERNE : filtré par le motif sélectionné (modeleOtId) -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="field_otExterne">OT Externe</label>
+
+                <!-- ID réel de l'OT externe -->
+                <input type="hidden" formControlName="otExterneId" data-cy="otExterneId" />
+
+                <div class="cu-affaire-selector">
+                  <ng-select
+                    id="field_otExterne"
+                    data-cy="otExterne"
+                    name="otExterne"
+                    class="custom-ng-select"
+                    [items]="otExterneResults"
+                    bindLabel="reference"
+                    [compareWith]="compareOtExterne"
+                    [searchable]="true"
+                    [clearable]="true"
+                    [loading]="loadingOtExternes"
+                    [typeahead]="otExterneSearch$"
+                    [readonly]="!selectedModelPhase"
+                    (scrollToEnd)="onOtExterneScrollToEnd()"
+                    [placeholder]="selectedModelPhase ? 'Rechercher un OT externe...' : 'Sélectionnez d\'abord un motif'"
+                    notFoundText="Aucun OT externe trouvé pour ce motif"
+                    loadingText="Chargement..."
+                    [ngModel]="selectedOtExterne"
+                    [ngModelOptions]="{ standalone: true }"
+                    (change)="onOtExterneSelectChange($event)"
+                  >
+                    <ng-template ng-option-tmp let-item="item">
+                      <div>{{ item.reference }}</div>
+                      <small class="text-muted" *ngIf="item.lieu">{{ item.lieu }}</small>
+                    </ng-template>
+                  </ng-select>
+
+                  <button
+                    type="button"
+                    class="btn-cu-affaire-modal"
+                    title="Rechercher un OT externe"
+                    aria-label="Rechercher un OT externe"
+                    (click)="openOtExterneModal()"
+                  >
+                    <fa-icon icon="search"></fa-icon>
+                  </button>
+                </div>
+
+                <div *ngIf="otExterneError" class="cu-technicien-error">{{ otExterneError }}</div>
+              </div>
+            </div>
+
+            <!-- LIGNE 2 bis : BON DE COMMANDE (lecture seule, alimenté par l'OT externe) + SOUS PROJET (texte libre) -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="field_bonCommande">Bon de commande</label>
+
+                <div class="cu-affaire-selector">
+                  <input
+                    type="text"
+                    class="form-control cu-input"
+                    style="flex: 1; min-width: 0"
+                    id="field_bonCommande"
+                    data-cy="bonCommande"
+                    [value]="loadingBonCommande ? 'Chargement...' : selectedBonCommande?.identifiantUnique ?? ''"
+                    [placeholder]="selectedOtExterne ? 'Aucun bon de commande lié' : 'Sélectionnez d\'abord un OT externe'"
+                    readonly
+                  />
+
+                  <button
+                    *ngIf="selectedBonCommande"
+                    type="button"
+                    class="btn-cu-affaire-modal"
+                    title="Changer le bon de commande"
+                    aria-label="Changer le bon de commande"
+                    (click)="openBonCommandeModal()"
+                  >
+                    <fa-icon icon="search"></fa-icon>
+                  </button>
+                </div>
+              </div>
 
               <div class="col-md-6 mb-3">
-                <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.lieu" for="field_lieu">Lieu</label>
+                <label class="form-label" for="field_sousProjet">Sous projet</label>
+                <input
+                  type="text"
+                  class="form-control cu-input"
+                  id="field_sousProjet"
+                  data-cy="sousProjet"
+                  formControlName="sousProjet"
+                  placeholder="Saisir le sous projet"
+                />
+              </div>
+            </div>
 
+            <!-- LIGNE 3 : LIEU + VILLE + ZONE (Ville et Zone dérivées automatiquement du site, lecture seule) -->
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.lieu" for="field_lieu">Lieu</label>
                 <!-- Valeurs réelles persistées : désignation du lieu + ville/zone dérivées du site -->
                 <input type="hidden" formControlName="lieu" />
                 <input type="hidden" formControlName="villeId" data-cy="villeId" />
@@ -175,11 +281,8 @@
                   </button>
                 </div>
               </div>
-            </div>
 
-            <!-- VILLE / ZONE — dérivées automatiquement du site sélectionné (lecture seule) -->
-            <div class="row">
-              <div class="col-md-6 mb-3">
+              <div class="col-md-4 mb-3">
                 <label class="form-label" for="field_ville">Ville</label>
                 <input
                   type="text"
@@ -192,7 +295,7 @@
                 />
               </div>
 
-              <div class="col-md-6 mb-3">
+              <div class="col-md-4 mb-3">
                 <label class="form-label" for="field_zone">Zone</label>
                 <input
                   type="text"
@@ -463,7 +566,6 @@
           <div class="cu-accordion-body" *ngIf="isPanelOpen('equipes')">
             <!-- Champs conservés dans le formulaire (persistés) mais non affichés à l'écran -->
             <input type="hidden" formControlName="vehiculeId" data-cy="vehiculeId" />
-            <input type="hidden" formControlName="otExterneId" data-cy="otExterneId" />
             <input type="hidden" formControlName="valideurId" data-cy="valideurId" />
             <input type="hidden" formControlName="valideurUserLogin" data-cy="valideurUserLogin" />
 
@@ -609,7 +711,7 @@
           </div>
         </div>
 
-        <!-- SECTION 4 : OPTIONS -->
+        <!-- SECTION 4 : OPTIONS (vide pour l'instant) -->
         <div class="cu-accordion-item" [class.open]="isPanelOpen('options')">
           <button type="button" class="cu-accordion-header" (click)="togglePanel('options')">
             <span class="cu-accordion-header-left">
@@ -619,159 +721,7 @@
             <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
           </button>
 
-          <div class="cu-accordion-body" *ngIf="isPanelOpen('options')">
-            <!-- Mission de nuit -->
-            <div class="cu-option-row">
-              <div class="cu-option-left">
-                <label class="cu-switch">
-                  <input
-                    type="checkbox"
-                    name="missionDeNuit"
-                    id="field_missionDeNuit"
-                    data-cy="missionDeNuit"
-                    formControlName="missionDeNuit"
-                  />
-                  <span class="cu-switch-slider"></span>
-                </label>
-
-                <label
-                  class="cu-option-label"
-                  [class.cu-option-label-active]="editForm.get('missionDeNuit')?.value"
-                  jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.missionDeNuit"
-                  for="field_missionDeNuit"
-                >
-                  Mission De Nuit
-                </label>
-              </div>
-
-              <!-- Stepper : on le garde dans le DOM -->
-              <div class="cu-stepper" [hidden]="!editForm.get('missionDeNuit')?.value">
-                <button
-                  type="button"
-                  class="cu-stepper-btn"
-                  (click)="decrementNombreNuits()"
-                  [disabled]="(editForm.get('nombreNuits')?.value ?? 0) <= 0"
-                  aria-label="Diminuer le nombre de nuitées"
-                >
-                  <fa-icon icon="minus"></fa-icon>
-                </button>
-
-                <span class="cu-stepper-value">
-                  {{ editForm.get('nombreNuits')?.value ?? 0 }}
-                  nuitée{{ (editForm.get('nombreNuits')?.value ?? 0) > 1 ? 's' : '' }}
-                </span>
-
-                <button type="button" class="cu-stepper-btn" (click)="incrementNombreNuits()" aria-label="Augmenter le nombre de nuitées">
-                  <fa-icon icon="plus"></fa-icon>
-                </button>
-              </div>
-
-              <input type="hidden" formControlName="nombreNuits" data-cy="nombreNuits" />
-            </div>
-
-            <div
-              *ngIf="
-                editForm.get('missionDeNuit')!.invalid && (editForm.get('missionDeNuit')!.dirty || editForm.get('missionDeNuit')!.touched)
-              "
-            >
-              <small
-                class="form-text text-danger"
-                *ngIf="editForm.get('missionDeNuit')?.errors?.required"
-                jhiTranslate="entity.validation.required"
-              >
-                Ce champ est obligatoire.
-              </small>
-            </div>
-
-            <div
-              *ngIf="
-                editForm.get('missionDeNuit')!.invalid && (editForm.get('missionDeNuit')!.dirty || editForm.get('missionDeNuit')!.touched)
-              "
-            >
-              <small
-                class="form-text text-danger"
-                *ngIf="editForm.get('missionDeNuit')?.errors?.required"
-                jhiTranslate="entity.validation.required"
-              >
-                Ce champ est obligatoire.
-              </small>
-            </div>
-
-            <div class="cu-option-divider"></div>
-
-            <!-- Hébergement -->
-            <div class="cu-option-row">
-              <div class="cu-option-left">
-                <label class="cu-switch">
-                  <input type="checkbox" name="hebergement" id="field_hebergement" data-cy="hebergement" formControlName="hebergement" />
-
-                  <span class="cu-switch-slider"></span>
-                </label>
-
-                <label
-                  class="cu-option-label"
-                  [class.cu-option-label-active]="editForm.get('hebergement')?.value"
-                  jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.hebergement"
-                  for="field_hebergement"
-                >
-                  Hebergement
-                </label>
-              </div>
-
-              <!-- Stepper : on le garde dans le DOM -->
-              <div class="cu-stepper" [hidden]="!editForm.get('hebergement')?.value">
-                <button
-                  type="button"
-                  class="cu-stepper-btn"
-                  (click)="decrementNombreHebergements()"
-                  [disabled]="(editForm.get('nombreHebergements')?.value ?? 0) <= 0"
-                  aria-label="Diminuer le nombre d'hébergements"
-                >
-                  <fa-icon icon="minus"></fa-icon>
-                </button>
-
-                <span class="cu-stepper-value">
-                  {{ editForm.get('nombreHebergements')?.value ?? 0 }}
-                  hébergement{{ (editForm.get('nombreHebergements')?.value ?? 0) > 1 ? 's' : '' }}
-                </span>
-
-                <button
-                  type="button"
-                  class="cu-stepper-btn"
-                  (click)="incrementNombreHebergements()"
-                  aria-label="Augmenter le nombre d'hébergements"
-                >
-                  <fa-icon icon="plus"></fa-icon>
-                </button>
-              </div>
-
-              <input type="hidden" formControlName="nombreHebergements" data-cy="nombreHebergements" />
-            </div>
-
-            <div
-              *ngIf="editForm.get('hebergement')!.invalid && (editForm.get('hebergement')!.dirty || editForm.get('hebergement')!.touched)"
-            >
-              <small
-                class="form-text text-danger"
-                *ngIf="editForm.get('hebergement')?.errors?.required"
-                jhiTranslate="entity.validation.required"
-              >
-                Ce champ est obligatoire.
-              </small>
-            </div>
-
-            <div
-              *ngIf="editForm.get('hebergement')!.invalid && (editForm.get('hebergement')!.dirty || editForm.get('hebergement')!.touched)"
-            >
-              <small
-                class="form-text text-danger"
-                *ngIf="editForm.get('hebergement')?.errors?.required"
-                jhiTranslate="entity.validation.required"
-              >
-                Ce champ est obligatoire.
-              </small>
-            </div>
-          </div>
+          <div class="cu-accordion-body" *ngIf="isPanelOpen('options')"></div>
         </div>
 
         <!-- SECTION 5 : REMARQUE -->

@@ -78,6 +78,10 @@ export class ModelPhaseOTService {
     return modelPhaseOTCollection;
   }
 
+  findAll(): Observable<EntityArrayResponseType> {
+    return this.http.get<IModelPhaseOT[]>(`${this.resourceUrl}/all`, { observe: 'response' });
+  }
+
   findPhases(modelPhaseOTId: number): Observable<HttpResponse<IPhaseOt[]>> {
     return this.http.get<IPhaseOt[]>(`${this.resourceUrl}/${modelPhaseOTId}/phases`, { observe: 'response' });
   }

@@ -1,0 +1,100 @@
+<div class="affaire-modal">
+  <!-- HEADER -->
+  <div class="affaire-modal-header">
+    <div class="affaire-modal-header-icon">
+      <fa-icon icon="file-invoice"></fa-icon>
+    </div>
+
+    <div class="affaire-modal-header-text">
+      <h5 class="affaire-modal-title">Sélectionner un bon de commande</h5>
+      <span class="affaire-modal-subtitle">Recherchez puis sélectionnez le bon de commande à associer au work order.</span>
+    </div>
+
+    <button type="button" class="affaire-modal-close" aria-label="Fermer" (click)="cancel()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+
+  <!-- BODY -->
+  <div class="affaire-modal-body">
+    <div class="affaire-modal-search">
+      <input
+        id="bon-commande-modal-search"
+        type="text"
+        class="form-control"
+        [(ngModel)]="search"
+        (ngModelChange)="onSearchChange()"
+        placeholder="Identifiant, référence client ou lieu..."
+        autocomplete="off"
+      />
+    </div>
+
+    <div *ngIf="loading" class="affaire-modal-loading">
+      <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+      Chargement des bons de commande...
+    </div>
+
+    <div *ngIf="!loading" class="affaire-modal-table-wrap">
+      <table class="affaire-modal-table">
+        <thead>
+          <tr>
+            <th style="width: 160px">Identifiant</th>
+            <th>Référence client</th>
+            <th>Lieu</th>
+            <th style="width: 130px">Date</th>
+            <th style="width: 150px">Statut</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr
+            *ngFor="let bc of bonCommandes"
+            (click)="choose(bc)"
+            class="affaire-modal-row"
+            [style.background]="bc.id === selectedId ? 'var(--am-accent-soft)' : null"
+          >
+            <td>
+              <span class="affaire-modal-badge">{{ bc.identifiantUnique || '—' }}</span>
+            </td>
+            <td>{{ bc.referenceClient || '—' }}</td>
+            <td>{{ bc.lieu || '—' }}</td>
+            <td>{{ bc.dateBonCommande | formatMediumDate }}</td>
+            <td>{{ bc.status || '—' }}</td>
+          </tr>
+
+          <tr *ngIf="bonCommandes.length === 0" class="affaire-modal-empty-row">
+            <td colspan="5">
+              <div class="affaire-modal-empty">
+                <fa-icon icon="search"></fa-icon>
+                <span>Aucun bon de commande trouvé.</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINATION (côté serveur) -->
+    <div *ngIf="totalItems > pageSize" class="d-flex justify-content-center mt-3">
+      <ngb-pagination
+        [collectionSize]="totalItems"
+        [pageSize]="pageSize"
+        [page]="page"
+        [maxSize]="5"
+        [rotate]="true"
+        [boundaryLinks]="true"
+        size="sm"
+        (pageChange)="onPageChange($event)"
+      ></ngb-pagination>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="affaire-modal-footer">
+    <span class="affaire-modal-count" *ngIf="!loading">
+      {{ totalItems }} bon{{ totalItems > 1 ? 's' : '' }} de commande trouvé{{ totalItems > 1 ? 's' : '' }}
+    </span>
+
+    <button type="button" class="btn-affaire-cancel" (click)="cancel()">Annuler</button>
+  </div>
+</div>
