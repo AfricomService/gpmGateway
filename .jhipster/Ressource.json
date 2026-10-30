@@ -43,6 +43,10 @@
     {
       "fieldName": "additionalInfo",
       "fieldType": "String"
+    },
+    {
+      "fieldName": "agenceId",
+      "fieldType": "Long"
     }
   ],
   "jpaMetamodelFiltering": false,

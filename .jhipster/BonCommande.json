@@ -43,6 +43,14 @@
     {
       "fieldName": "montantMissionEffectue",
       "fieldType": "BigDecimal"
+    },
+    {
+      "fieldName": "identifiantUnique",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "String"
     }
   ],
   "jpaMetamodelFiltering": false,

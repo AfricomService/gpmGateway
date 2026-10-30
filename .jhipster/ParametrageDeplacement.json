@@ -1,0 +1,28 @@
+{
+  "changelogDate": "20261030134241",
+  "clientRootFolder": "operationsService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "workOrderId",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "date",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "params",
+      "fieldType": "String"
+    }
+  ],
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "operationsService",
+  "microservicePath": "D:\\CODE\\GPM\\operationsService",
+  "name": "ParametrageDeplacement",
+  "pagination": "no",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceClass"
+}

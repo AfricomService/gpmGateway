@@ -78,7 +78,8 @@
       "TypeRessource",
       "DetailRessource",
       "PhaseOt",
-      "ModelPhaseOT"
+      "ModelPhaseOT",
+      "ParametrageDeplacement"
     ],
     "entitySuffix": "",
     "gradleEnterpriseHost": "",
