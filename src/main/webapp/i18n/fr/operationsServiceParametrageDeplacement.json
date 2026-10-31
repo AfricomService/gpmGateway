@@ -1,0 +1,30 @@
+{
+  "gpmGatewayApp": {
+    "operationsServiceParametrageDeplacement": {
+      "home": {
+        "title": "ParametrageDeplacements",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Parametrage Deplacement",
+        "createOrEditLabel": "Créer ou éditer un Parametrage Deplacement",
+        "notFound": "Aucun Parametrage Deplacement trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Parametrage Deplacement {{ id }} ?"
+      },
+      "detail": {
+        "title": "Parametrage Deplacement"
+      },
+      "id": "ID",
+      "workOrderId": "Work Order Id",
+      "date": "Date",
+      "params": "Params"
+    }
+  },
+  "operationsServiceApp": {
+    "operationsServiceParametrageDeplacement": {
+      "created": "Un nouveau Parametrage Deplacement a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Parametrage Deplacement avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Parametrage Deplacement avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

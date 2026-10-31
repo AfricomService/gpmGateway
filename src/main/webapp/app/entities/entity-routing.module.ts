@@ -201,6 +201,11 @@ import { RouterModule } from '@angular/router';
         loadChildren: () => import('./operationsService/work-order/work-order.module').then(m => m.OperationsServiceWorkOrderModule),
       },
       {
+        path: 'parametre-wo',
+        data: { pageTitle: 'gpmGatewayApp.operationsServiceParametreWo.home.title' },
+        loadChildren: () => import('./operationsService/parametre-wo/parametre-wo.module').then(m => m.OperationsServiceParametreWOModule),
+      },
+      {
         path: 'wo-site',
         data: { pageTitle: 'gpmGatewayApp.operationsServiceWoSite.home.title' },
         loadChildren: () => import('./operationsService/wo-site/wo-site.module').then(m => m.OperationsServiceWoSiteModule),

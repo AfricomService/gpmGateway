@@ -1,0 +1,29 @@
+{
+  "gpmGatewayApp": {
+    "operationsServiceParametreWo": {
+      "home": {
+        "title": "ParametreWOS",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Parametre WO",
+        "createOrEditLabel": "Créer ou éditer un Parametre WO",
+        "notFound": "Aucun Parametre WO trouvé"
+      },
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Parametre WO {{ id }} ?"
+      },
+      "detail": {
+        "title": "Parametre WO"
+      },
+      "id": "ID",
+      "nom": "Nom",
+      "description": "Description"
+    }
+  },
+  "operationsServiceApp": {
+    "operationsServiceParametreWo": {
+      "created": "Un nouveau Parametre WO a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Parametre WO avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Parametre WO avec l'identifiant {{ param }} a été supprimé"
+    }
+  }
+}

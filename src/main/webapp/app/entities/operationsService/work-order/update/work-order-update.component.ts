@@ -48,6 +48,10 @@ import { OtExterneService } from 'app/entities/financeService/ot-externe/service
 import { OtExterneSelectorModalComponent } from 'app/entities/operationsService/work-order/ot-externe-selector-modal/ot-externe-selector-modal.component';
 import { BonCommandeSelectorModalComponent } from 'app/entities/operationsService/work-order/bon-commande-selector-modal/bon-commande-selector-modal.component';
 import { IBonCommande } from 'app/entities/financeService/bon-commande/bon-commande.model';
+import { IParametreWO } from 'app/entities/operationsService/parametre-wo/parametre-wo.model';
+import { ParametreWOService } from 'app/entities/operationsService/parametre-wo/service/parametre-wo.service';
+import { ParametrageDeplacementService } from 'app/entities/operationsService/parametrage-deplacement/service/parametrage-deplacement.service';
+import { NewParametrageDeplacement } from 'app/entities/operationsService/parametrage-deplacement/parametrage-deplacement.model';
 
 type AccordionPanel = 'global' | 'client' | 'equipes' | 'options' | 'remarque' | 'piecesJointes';
 
@@ -90,6 +94,79 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   get currentStatut(): string {
     return (this.editForm.get('statut')?.value as string | null | undefined) ?? StatutWO.Creation;
   }
+
+  /**
+   * Liste des jours (calendaires, bornes incluses) entre Date Heure Début Prév. et Date Heure Fin Prév.
+   * Ex. : début 30/10/2026 08:00, fin 01/11/2026 18:00 => ['30/10/2026', '31/10/2026', '01/11/2026'].
+   * Retourne [] si une date manque, est invalide, ou si la fin précède le début.
+   */
+  get joursPrevusDates(): dayjs.Dayjs[] {
+    const debutValue = this.editForm.get('dateHeureDebutPrev')?.value;
+    const finValue = this.editForm.get('dateHeureFinPrev')?.value;
+
+    if (!debutValue || !finValue) {
+      return [];
+    }
+
+    const debut = dayjs(debutValue as any).startOf('day');
+    const fin = dayjs(finValue as any).startOf('day');
+
+    if (!debut.isValid() || !fin.isValid() || fin.isBefore(debut)) {
+      return [];
+    }
+
+    const nbJours = fin.diff(debut, 'day') + 1;
+    return Array.from({ length: nbJours }, (_, i) => debut.add(i, 'day'));
+  }
+
+  get joursPrevus(): string[] {
+    return this.joursPrevusDates.map(jour => jour.format('DD/MM/YYYY'));
+  }
+
+  get nombreJoursPrevus(): number {
+    return this.joursPrevus.length;
+  }
+
+  // Compteurs calculés à partir des checkpoints cochés (un jour coché = +1)
+  get nombreHebergements(): number {
+    return this.countChecked('Hébergement');
+  }
+
+  get nombreNuits(): number {
+    return this.countChecked('Mission de nuit');
+  }
+
+  get nombreDeplacements(): number {
+    return this.countChecked('Déplacement');
+  }
+
+  private normalizeText(value?: string | null): string {
+    return (value ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toLowerCase();
+  }
+
+  /** Nombre de jours pour lesquels le paramètre portant ce nom est coché (comparaison sans accents ni casse). */
+  private countChecked(nomParametre: string): number {
+    const cible = this.normalizeText(nomParametre);
+    const parametre = this.parametresWO.find(p => this.normalizeText(p.nom) === cible);
+
+    if (!parametre) {
+      return 0;
+    }
+
+    return this.joursPrevusDates.filter((_, index) => this.isParametreChecked(index, parametre)).length;
+  }
+
+  // ================================
+  // Paramètres WO (Hébergement, Mission de nuit, Déplacement...) affichés pour chaque jour
+  // Checkpoints : état local pour l'instant (persistance à venir). Clé = `${indexJour}_${parametreId}`
+  // ================================
+  parametresWO: IParametreWO[] = [];
+  loadingParametresWO = false;
+  parametreChecks: { [key: string]: boolean } = {};
 
   // ================================
   // Accordéon (état purement visuel — même pattern que ot-externe-update)
@@ -264,7 +341,9 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     protected cdr: ChangeDetectorRef,
     protected stepperService: StatusStepperService,
     protected modelPhaseOTService: ModelPhaseOTService,
-    protected otExterneService: OtExterneService
+    protected otExterneService: OtExterneService,
+    protected parametreWOService: ParametreWOService,
+    protected parametrageDeplacementService: ParametrageDeplacementService
   ) {}
 
   ngOnInit(): void {
@@ -275,6 +354,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.loadResponsables();
     this.loadTechniciens();
     this.loadModelPhases();
+    this.loadParametresWO();
     this.loadAffaires(''); // Pré-charge la liste des projets dès l'ouverture du formulaire
 
     this.activatedRoute.data.subscribe(({ workOrder }) => {
@@ -927,6 +1007,74 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   }
 
   // ================================
+  // Paramètres WO (GET /api/parametre-wos) + checkpoints par jour
+  // ================================
+  private loadParametresWO(): void {
+    this.loadingParametresWO = true;
+
+    this.parametreWOService.query().subscribe({
+      next: res => {
+        this.parametresWO = res.body ?? [];
+        this.loadingParametresWO = false;
+      },
+      error: () => {
+        this.parametresWO = [];
+        this.loadingParametresWO = false;
+      },
+    });
+  }
+
+  private parametreKey(jourIndex: number, parametre: IParametreWO): string {
+    const jour = this.joursPrevusDates[jourIndex];
+    return `${jour ? jour.format('YYYY-MM-DD') : jourIndex}_${parametre.nom}`;
+  }
+
+  /**
+   * Construit une ligne par jour : { workOrderId, date, params: { Hébergement: true, "Mission de nuit": false, ... } }.
+   * La date est fixée à 12:00 (heure locale) pour que le jour reste le même quel que soit le fuseau lors de la conversion UTC.
+   */
+  private buildParametrages(workOrderId: number): NewParametrageDeplacement[] {
+    return this.joursPrevusDates.map((jour, index) => {
+      const params: Record<string, boolean> = {};
+      this.parametresWO.forEach(parametre => {
+        params[parametre.nom ?? ''] = this.isParametreChecked(index, parametre);
+      });
+
+      return { id: null, workOrderId, date: jour.hour(12).minute(0).second(0).millisecond(0), params };
+    });
+  }
+
+  /** Mode édition : recharge les lignes persistées et rallume les checkpoints correspondants. */
+  private loadParametrages(workOrderId: number): void {
+    this.parametrageDeplacementService.findByWorkOrder(workOrderId).subscribe({
+      next: res => {
+        const checks: { [key: string]: boolean } = {};
+
+        (res.body ?? []).forEach(row => {
+          if (!row.date || !row.params || typeof row.params !== 'object') {
+            return;
+          }
+          const dateKey = dayjs(row.date).format('YYYY-MM-DD');
+          Object.entries(row.params).forEach(([nom, value]) => {
+            checks[`${dateKey}_${nom}`] = value === true;
+          });
+        });
+
+        this.parametreChecks = checks;
+      },
+    });
+  }
+
+  isParametreChecked(jourIndex: number, parametre: IParametreWO): boolean {
+    return this.parametreChecks[this.parametreKey(jourIndex, parametre)] === true;
+  }
+
+  toggleParametre(jourIndex: number, parametre: IParametreWO): void {
+    const key = this.parametreKey(jourIndex, parametre);
+    this.parametreChecks[key] = !this.parametreChecks[key];
+  }
+
+  // ================================
   // Techniciens (sélection multiple, persistée via WorkOrderTechniciens)
   // ================================
   private loadTechniciens(): void {
@@ -1420,6 +1568,14 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.isSaving = true;
     const workOrder = this.workOrderFormService.getWorkOrder(this.editForm);
 
+    // Compteurs issus des checkpoints par jour
+    workOrder.nombreHebergements = this.nombreHebergements;
+    workOrder.nombreNuits = this.nombreNuits;
+    workOrder.nombreDeplacements = this.nombreDeplacements;
+    // Les booléens (obligatoires côté backend) sont dérivés des compteurs
+    workOrder.hebergement = this.nombreHebergements > 0;
+    workOrder.missionDeNuit = this.nombreNuits > 0;
+
     if (workOrder.id !== null) {
       this.subscribeToSaveResponse(this.workOrderService.update(workOrder));
     } else {
@@ -1458,6 +1614,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       this.workOrderTechniciensService.replaceForWorkOrder(workOrderId, contactSocieteIds),
       this.workOrderVehiculeService.replaceForWorkOrder(workOrderId, vehiculeIds),
       this.workOrderRessourceService.replaceForWorkOrder(workOrderId, ressourceIds),
+      this.parametrageDeplacementService.replaceForWorkOrder(workOrderId, this.buildParametrages(workOrderId)),
     ]).subscribe({
       next: () => this.uploadPendingPieceJointesThenNavigate(workOrderId),
       error: () => this.uploadPendingPieceJointesThenNavigate(workOrderId),
@@ -1593,6 +1750,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       this.loadAutresTechniciens(workOrder.id);
       this.loadAutresVehicules(workOrder.id);
       this.loadAutresRessources(workOrder.id);
+      this.loadParametrages(workOrder.id);
       this.loadPieceJointes(workOrder.id);
     }
   }
