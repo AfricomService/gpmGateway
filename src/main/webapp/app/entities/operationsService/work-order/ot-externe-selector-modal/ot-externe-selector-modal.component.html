@@ -1,0 +1,91 @@
+<div class="ot-modal">
+  <!-- ====================================================== -->
+  <!-- HEADER -->
+  <!-- ====================================================== -->
+  <div class="ot-modal-header">
+    <div class="ot-modal-header-icon">
+      <fa-icon icon="file-invoice"></fa-icon>
+    </div>
+
+    <div class="ot-modal-header-text">
+      <h5 class="ot-modal-title">{{ modalTitle }}</h5>
+      <span class="ot-modal-subtitle">Recherchez puis sélectionnez l'OT externe correspondant au motif choisi.</span>
+    </div>
+
+    <button type="button" class="ot-modal-close" aria-label="Fermer" (click)="cancel()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+
+  <!-- ====================================================== -->
+  <!-- BODY -->
+  <!-- ====================================================== -->
+  <div class="ot-modal-body">
+    <!-- Recherche -->
+    <div class="ot-modal-search">
+      <input
+        id="ot-externe-modal-search"
+        type="text"
+        class="form-control"
+        [(ngModel)]="search"
+        (ngModelChange)="onSearchChange()"
+        placeholder="Référence de l'OT externe..."
+        autocomplete="off"
+      />
+    </div>
+
+    <!-- Chargement -->
+    <div *ngIf="loading" class="ot-modal-loading">
+      <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+      Chargement des OT externes...
+    </div>
+
+    <!-- Tableau -->
+    <div *ngIf="!loading" class="ot-modal-table-wrap">
+      <table class="ot-modal-table">
+        <thead>
+          <tr>
+            <th style="width: 180px">Référence</th>
+            <th>Lieu</th>
+            <th style="width: 200px">Statut</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let ot of otExternes" (click)="choose(ot)" class="ot-modal-row">
+            <td>
+              <span class="ot-modal-badge">{{ ot.reference || '—' }}</span>
+            </td>
+
+            <td class="ot-modal-lieu">{{ ot.lieu || '—' }}</td>
+
+            <td>
+              <span class="ot-modal-statut">{{ ot.statut || '—' }}</span>
+            </td>
+          </tr>
+
+          <!-- Aucun résultat -->
+          <tr *ngIf="otExternes.length === 0" class="ot-modal-empty-row">
+            <td colspan="3">
+              <div class="ot-modal-empty">
+                <fa-icon icon="search"></fa-icon>
+                <span>Aucun OT externe trouvé pour ce motif.</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ====================================================== -->
+  <!-- FOOTER -->
+  <!-- ====================================================== -->
+  <div class="ot-modal-footer">
+    <span class="ot-modal-count" *ngIf="!loading">
+      {{ otExternes.length }} OT externe{{ otExternes.length > 1 ? 's' : '' }} trouvé{{ otExternes.length > 1 ? 's' : '' }}
+    </span>
+
+    <button type="button" class="btn-ot-cancel" (click)="cancel()">Annuler</button>
+  </div>
+</div>

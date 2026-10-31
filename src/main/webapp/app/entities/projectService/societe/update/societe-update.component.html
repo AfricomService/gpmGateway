@@ -333,98 +333,134 @@
                     <div class="cu-item-title">{{ contact.nomPrenom }}</div>
                     <span class="cu-item-badge-id" *ngIf="contact.matricule">{{ contact.matricule }}</span>
                   </div>
-                  <div class="cu-item-sub">
-                    <a [href]="'tel:' + contact.numTel" class="cu-item-link">
+
+                  <!-- Phone + email on one line -->
+                  <div class="cu-item-contact-line">
+                    <a [href]="'tel:' + contact.numTel" class="cu-item-link cu-item-sub">
                       <fa-icon icon="phone" class="cu-item-link-icon"></fa-icon>{{ contact.numTel || 'Téléphone non renseigné' }}
                     </a>
-                  </div>
-                  <div class="cu-item-sub">
-                    <a [href]="'mailto:' + contact.email" class="cu-item-link">{{ contact.email || 'Email non renseigné' }}</a>
+                    <span class="cu-item-sep"></span>
+                    <a [href]="'mailto:' + contact.email" class="cu-item-link cu-item-sub">
+                      <fa-icon icon="envelope" class="cu-item-link-icon cu-item-link-icon--mail"></fa-icon
+                      >{{ contact.email || 'Email non renseigné' }}
+                    </a>
                   </div>
 
-                  <div class="cu-item-sub mt-2">
-                    <div
-                      class="d-flex align-items-center flex-wrap gap-1 mb-2"
-                      *ngIf="getAgenceOfContact(contact) as agence; else assignAgenceBlock"
+                  <!-- Toggle buttons -->
+                  <div class="cu-item-toggles">
+                    <button
+                      type="button"
+                      class="cu-toggle-btn"
+                      [class.active]="expandedAgences[contact.id!]"
+                      (click)="toggleAgencePanel(contact.id!)"
                     >
-                      <strong>Agence :</strong>
-                      <span class="badge bg-primary d-flex align-items-center me-1">
-                        <span style="font-weight: 700; text-transform: uppercase">{{ agence.designation }}</span>
-                        <button
-                          type="button"
-                          class="btn-close btn-close-sm ms-2"
-                          style="font-size: 0.55rem; color: white"
-                          title="Retirer l'agence"
-                          [disabled]="isAssigningAgenceContactId === contact.id"
-                          (click)="removeAgence(contact)"
-                        ></button>
-                      </span>
+                      <fa-icon icon="building"></fa-icon>
+                      {{ expandedAgences[contact.id!] ? 'Masquer agence' : 'Afficher agence' }}
+                      <span class="cu-toggle-dot" *ngIf="getAgenceOfContact(contact)"></span>
+                      <fa-icon [icon]="expandedAgences[contact.id!] ? 'chevron-up' : 'chevron-down'" class="cu-toggle-chevron"></fa-icon>
+                    </button>
+
+                    <button
+                      type="button"
+                      class="cu-toggle-btn"
+                      [class.active]="expandedRoles[contact.id!]"
+                      (click)="toggleRolesPanel(contact.id!)"
+                    >
+                      <fa-icon icon="user-tag"></fa-icon>
+                      {{ expandedRoles[contact.id!] ? 'Masquer rôles' : 'Afficher rôles' }}
+                      <span class="cu-toggle-count" *ngIf="getContactRoles(contact.id!).length">{{
+                        getContactRoles(contact.id!).length
+                      }}</span>
+                      <fa-icon [icon]="expandedRoles[contact.id!] ? 'chevron-up' : 'chevron-down'" class="cu-toggle-chevron"></fa-icon>
+                    </button>
+                  </div>
+
+                  <!-- Panels (side by side) -->
+                  <div class="cu-item-panels" *ngIf="expandedAgences[contact.id!] || expandedRoles[contact.id!]">
+                    <!-- AGENCE -->
+                    <div class="cu-item-panel" *ngIf="expandedAgences[contact.id!]">
+                      <div
+                        class="d-flex align-items-center flex-wrap gap-1"
+                        *ngIf="getAgenceOfContact(contact) as agence; else assignAgenceBlock"
+                      >
+                        <strong>Agence :</strong>
+                        <span class="badge bg-primary d-flex align-items-center me-1">
+                          <span style="font-weight: 700; text-transform: uppercase">{{ agence.designation }}</span>
+                          <button
+                            type="button"
+                            class="btn-close btn-close-white btn-close-sm ms-2"
+                            style="font-size: 0.55rem"
+                            title="Retirer l'agence"
+                            [disabled]="isAssigningAgenceContactId === contact.id"
+                            (click)="removeAgence(contact)"
+                          ></button>
+                        </span>
+                      </div>
+
+                      <ng-template #assignAgenceBlock>
+                        <div class="d-flex align-items-center gap-2" *ngIf="agencesAssociees.length">
+                          <select
+                            class="form-select form-select-sm"
+                            style="width: 200px"
+                            [(ngModel)]="selectedAgences[contact.id!]"
+                            [ngModelOptions]="{ standalone: true }"
+                          >
+                            <option [ngValue]="undefined">Affecter une agence...</option>
+                            <option *ngFor="let agence of agencesAssociees" [ngValue]="agence.id">{{ agence.designation }}</option>
+                          </select>
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-primary"
+                            [disabled]="!selectedAgences[contact.id!] || isAssigningAgenceContactId === contact.id"
+                            (click)="assignAgence(contact)"
+                          >
+                            <span *ngIf="isAssigningAgenceContactId === contact.id" class="spinner-border spinner-border-sm"></span>
+                            <fa-icon *ngIf="isAssigningAgenceContactId !== contact.id" icon="check"></fa-icon>
+                            Affecter
+                          </button>
+                        </div>
+                      </ng-template>
                     </div>
 
-                    <ng-template #assignAgenceBlock>
-                      <div class="d-flex align-items-center gap-2 mb-2" *ngIf="agencesAssociees.length">
+                    <!-- ROLES -->
+                    <div class="cu-item-panel" *ngIf="expandedRoles[contact.id!]">
+                      <div class="d-flex align-items-center flex-wrap gap-1 mb-2" *ngIf="hasRole(contact.id!)">
+                        <strong>Rôles :</strong>
+                        <span class="badge bg-primary d-flex align-items-center me-1" *ngFor="let role of getContactRoles(contact.id!)">
+                          {{ role.label }}
+                          <button
+                            type="button"
+                            class="btn-close btn-close-white btn-close-sm ms-2"
+                            style="font-size: 0.55rem"
+                            title="Retirer ce rôle"
+                            (click)="removeRole(contact.id!, role.id!)"
+                          ></button>
+                        </span>
+                      </div>
+
+                      <div class="d-flex align-items-center gap-2" *ngIf="getAvailableRolesForContact(contact.id!).length">
                         <select
                           class="form-select form-select-sm"
-                          style="width: 220px"
-                          [(ngModel)]="selectedAgences[contact.id!]"
+                          style="width: 200px"
+                          [(ngModel)]="selectedRoles[contact.id!]"
                           [ngModelOptions]="{ standalone: true }"
                         >
-                          <option [ngValue]="undefined">Affecter une agence...</option>
-                          <option *ngFor="let agence of agencesAssociees" [ngValue]="agence.id">{{ agence.designation }}</option>
+                          <option [ngValue]="undefined">Ajouter un rôle...</option>
+                          <option *ngFor="let role of getAvailableRolesForContact(contact.id!)" [ngValue]="role.id">
+                            {{ role.label }}
+                          </option>
                         </select>
                         <button
                           type="button"
                           class="btn btn-sm btn-primary"
-                          [disabled]="!selectedAgences[contact.id!] || isAssigningAgenceContactId === contact.id"
-                          (click)="assignAgence(contact)"
+                          [disabled]="!selectedRoles[contact.id!] || isAssigningRoleContactId === contact.id"
+                          (click)="assignRole(contact.id!)"
                         >
-                          <span *ngIf="isAssigningAgenceContactId === contact.id" class="spinner-border spinner-border-sm"></span>
-                          <fa-icon *ngIf="isAssigningAgenceContactId !== contact.id" icon="check"></fa-icon>
+                          <span *ngIf="isAssigningRoleContactId === contact.id" class="spinner-border spinner-border-sm"></span>
+                          <fa-icon *ngIf="isAssigningRoleContactId !== contact.id" icon="check"></fa-icon>
                           Affecter
                         </button>
                       </div>
-                    </ng-template>
-                  </div>
-
-                  <div class="cu-item-sub mt-2">
-                    <!-- Roles exist -->
-                    <div class="d-flex align-items-center flex-wrap gap-1 mb-2" *ngIf="hasRole(contact.id!)">
-                      <strong>Rôles :</strong>
-                      <span class="badge bg-primary d-flex align-items-center me-1" *ngFor="let role of getContactRoles(contact.id!)">
-                        {{ role.label }}
-                        <button
-                          type="button"
-                          class="btn-close btn-close-white btn-close-sm ms-2"
-                          style="font-size: 0.55rem; color: white"
-                          title="Retirer ce rôle"
-                          (click)="removeRole(contact.id!, role.id!)"
-                        ></button>
-                      </span>
-                    </div>
-
-                    <div class="d-flex align-items-center gap-2" *ngIf="getAvailableRolesForContact(contact.id!).length">
-                      <select
-                        class="form-select form-select-sm"
-                        style="width: 220px"
-                        [(ngModel)]="selectedRoles[contact.id!]"
-                        [ngModelOptions]="{ standalone: true }"
-                      >
-                        <option [ngValue]="undefined">Ajouter un rôle...</option>
-                        <option *ngFor="let role of getAvailableRolesForContact(contact.id!)" [ngValue]="role.id">
-                          {{ role.label }}
-                        </option>
-                      </select>
-
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-primary"
-                        [disabled]="!selectedRoles[contact.id!] || isAssigningRoleContactId === contact.id"
-                        (click)="assignRole(contact.id!)"
-                      >
-                        <span *ngIf="isAssigningRoleContactId === contact.id" class="spinner-border spinner-border-sm"></span>
-                        <fa-icon *ngIf="isAssigningRoleContactId !== contact.id" icon="check"></fa-icon>
-                        Affecter
-                      </button>
                     </div>
                   </div>
                 </div>

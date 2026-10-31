@@ -690,3 +690,132 @@ textarea.cu-input {
   background: var(--cp-surface-hover);
   border-radius: 0 0 12px 12px;
 }
+/* ============ OPTIONS : LISTE DES JOURS PRÉVUS ============ */
+.cu-jours-title {
+  font-size: 0.9rem;
+  color: var(--cp-text-muted);
+  margin-bottom: 0.5rem;
+
+  strong {
+    color: var(--cp-accent);
+  }
+}
+
+.cu-jours-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  list-style: disc;
+  color: var(--cp-text);
+  font-size: 0.9rem;
+
+  li {
+    padding: 0.15rem 0;
+
+    &::marker {
+      color: var(--cp-accent);
+    }
+  }
+}
+
+.cu-jours-label {
+  font-weight: 700;
+}
+/* ============ OPTIONS : PARAMÈTRES PAR JOUR (checkpoints) ============ */
+.cu-jours-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.cu-jour-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--cp-border);
+  border-radius: 10px;
+  background: var(--cp-surface);
+}
+
+.cu-jour-header {
+  font-size: 0.9rem;
+  color: var(--cp-text);
+}
+
+.cu-parametres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cu-param-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.8rem;
+  border: 1px solid var(--cp-border);
+  border-radius: 999px;
+  background: var(--cp-surface-hover);
+  color: var(--cp-text);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    border-color: var(--cp-accent);
+  }
+
+  .cu-checkpoint {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ffffff; /* blanc = faux */
+    border: 1.5px solid #c3cad6;
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  &.checked .cu-checkpoint {
+    background: #1c9c4f; /* vert = vrai */
+    border-color: #1c9c4f;
+    box-shadow: 0 0 0 3px rgba(28, 156, 79, 0.2);
+  }
+}
+/* ============ OPTIONS : TOTAUX (hébergements, nuits, déplacements) ============ */
+.cu-totaux {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.7rem;
+  padding-top: 0.7rem;
+  border-top: 1px dashed var(--cp-border);
+}
+
+.cu-total-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.3rem 0.4rem 0.3rem 0.85rem;
+  border: 1px solid var(--cp-border);
+  border-radius: 999px;
+  background: var(--cp-surface-hover);
+}
+
+.cu-total-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--cp-text-muted);
+}
+
+.cu-total-value {
+  min-width: 26px;
+  text-align: center;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--cp-accent);
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 700;
+}

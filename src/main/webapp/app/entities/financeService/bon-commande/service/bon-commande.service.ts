@@ -91,6 +91,15 @@ export class BonCommandeService {
   }
 
   /**
+   * Récupère le bon de commande lié à un OT externe (404 si aucun).
+   */
+  findByOtExterne(otExterneId: number): Observable<EntityResponseType> {
+    return this.http
+      .get<RestBonCommande>(`${this.resourceUrl}/by-ot-externe/${otExterneId}`, { observe: 'response' })
+      .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+
+  /**
    * Récupère un contact (responsable) par son id.
    */
   findResponsableById(id: number): Observable<HttpResponse<IContactSociete>> {

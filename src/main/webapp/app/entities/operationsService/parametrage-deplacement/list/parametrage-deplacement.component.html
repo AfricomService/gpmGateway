@@ -1,0 +1,104 @@
+<div>
+  <h2 id="page-heading" data-cy="ParametrageDeplacementHeading">
+    <span jhiTranslate="gpmGatewayApp.operationsServiceParametrageDeplacement.home.title">ParametrageDeplacements</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
+        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+        <span jhiTranslate="gpmGatewayApp.operationsServiceParametrageDeplacement.home.refreshListLabel">Actualiser la liste</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-parametrage-deplacement"
+        [routerLink]="['/parametrage-deplacement/new']"
+      >
+        <fa-icon icon="plus"></fa-icon>
+        <span jhiTranslate="gpmGatewayApp.operationsServiceParametrageDeplacement.home.createLabel">
+          Créer un nouveau Parametrage Deplacement
+        </span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error></jhi-alert-error>
+
+  <jhi-alert></jhi-alert>
+
+  <div class="alert alert-warning" id="no-result" *ngIf="parametrageDeplacements?.length === 0">
+    <span jhiTranslate="gpmGatewayApp.operationsServiceParametrageDeplacement.home.notFound">Aucun Parametrage Deplacement trouvé</span>
+  </div>
+
+  <div class="table-responsive table-entities" id="entities" *ngIf="parametrageDeplacements && parametrageDeplacements.length > 0">
+    <table class="table table-striped" aria-describedby="page-heading">
+      <thead>
+        <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
+          <th scope="col" jhiSortBy="id">
+            <div class="d-flex">
+              <span jhiTranslate="global.field.id">ID</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="workOrderId">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.operationsServiceParametrageDeplacement.workOrderId">Work Order Id</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="date">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.operationsServiceParametrageDeplacement.date">Date</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="params">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.operationsServiceParametrageDeplacement.params">Params</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let parametrageDeplacement of parametrageDeplacements; trackBy: trackId" data-cy="entityTable">
+          <td>
+            <a [routerLink]="['/parametrage-deplacement', parametrageDeplacement.id, 'view']">{{ parametrageDeplacement.id }}</a>
+          </td>
+          <td>{{ parametrageDeplacement.workOrderId }}</td>
+          <td>{{ parametrageDeplacement.date | formatMediumDatetime }}</td>
+          <td>{{ parametrageDeplacement.params }}</td>
+          <td class="text-end">
+            <div class="btn-group">
+              <button
+                type="submit"
+                [routerLink]="['/parametrage-deplacement', parametrageDeplacement.id, 'view']"
+                class="btn btn-info btn-sm"
+                data-cy="entityDetailsButton"
+              >
+                <fa-icon icon="eye"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
+              </button>
+
+              <button
+                type="submit"
+                [routerLink]="['/parametrage-deplacement', parametrageDeplacement.id, 'edit']"
+                class="btn btn-primary btn-sm"
+                data-cy="entityEditButton"
+              >
+                <fa-icon icon="pencil-alt"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
+              </button>
+
+              <button type="submit" (click)="delete(parametrageDeplacement)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                <fa-icon icon="times"></fa-icon>
+                <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

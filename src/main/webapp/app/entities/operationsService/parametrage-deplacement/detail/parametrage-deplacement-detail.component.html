@@ -1,0 +1,42 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="parametrageDeplacement">
+      <h2 data-cy="parametrageDeplacementDetailsHeading">
+        <span jhiTranslate="gpmGatewayApp.operationsServiceParametrageDeplacement.detail.title">Parametrage Deplacement</span>
+      </h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ parametrageDeplacement.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceParametrageDeplacement.workOrderId">Work Order Id</span></dt>
+        <dd>
+          <span>{{ parametrageDeplacement.workOrderId }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceParametrageDeplacement.date">Date</span></dt>
+        <dd>
+          <span>{{ parametrageDeplacement.date | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceParametrageDeplacement.params">Params</span></dt>
+        <dd>
+          <span>{{ parametrageDeplacement.params }}</span>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/parametrage-deplacement', parametrageDeplacement.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>

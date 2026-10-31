@@ -18,6 +18,7 @@ export interface IWorkOrder {
   nombreNuits?: number | null;
   hebergement?: boolean | null;
   nombreHebergements?: number | null;
+  nombreDeplacements?: number | null;
   remarque?: string | null;
   numFicheIntervention?: string | null;
   statut?: StatutWO | null;
@@ -28,6 +29,8 @@ export interface IWorkOrder {
   siteId?: number | null;
   responsableId?: number | null;
   coordinateur?: number | null;
+  sousProjet?: string | null;
+  bonCommandeId?: number | null;
   identifiantUnique?: string | null;
   createdAt?: dayjs.Dayjs | null;
   updatedAt?: dayjs.Dayjs | null;

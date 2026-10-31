@@ -67,6 +67,8 @@ type WorkOrderFormGroupContent = {
   siteId: FormControl<WorkOrderFormRawValue['siteId']>;
   responsableId: FormControl<WorkOrderFormRawValue['responsableId']>;
   coordinateur: FormControl<WorkOrderFormRawValue['coordinateur']>;
+  sousProjet: FormControl<WorkOrderFormRawValue['sousProjet']>;
+  bonCommandeId: FormControl<WorkOrderFormRawValue['bonCommandeId']>;
 };
 
 export type WorkOrderFormGroup = FormGroup<WorkOrderFormGroupContent>;
@@ -122,6 +124,8 @@ export class WorkOrderFormService {
       siteId: new FormControl(workOrderRawValue.siteId),
       responsableId: new FormControl(workOrderRawValue.responsableId),
       coordinateur: new FormControl(workOrderRawValue.coordinateur),
+      sousProjet: new FormControl(workOrderRawValue.sousProjet),
+      bonCommandeId: new FormControl(workOrderRawValue.bonCommandeId),
     });
   }
 

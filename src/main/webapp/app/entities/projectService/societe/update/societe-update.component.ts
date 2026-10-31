@@ -91,6 +91,9 @@ export class SocieteUpdateComponent implements OnInit {
 
   private successMessageTimeout: ReturnType<typeof setTimeout> | null = null;
 
+  expandedAgences: Record<number, boolean> = {};
+  expandedRoles: Record<number, boolean> = {};
+
   constructor(
     protected societeService: SocieteService,
     protected societeFormService: SocieteFormService,
@@ -99,6 +102,14 @@ export class SocieteUpdateComponent implements OnInit {
     protected location: Location, // <-- add
     protected modalService: NgbModal
   ) {}
+
+  toggleAgencePanel(id: number): void {
+    this.expandedAgences[id] = !this.expandedAgences[id];
+  }
+
+  toggleRolesPanel(id: number): void {
+    this.expandedRoles[id] = !this.expandedRoles[id];
+  }
 
   openDeleteContactModal(content: any, contact: IContactSociete): void {
     this.contactToDelete = contact;

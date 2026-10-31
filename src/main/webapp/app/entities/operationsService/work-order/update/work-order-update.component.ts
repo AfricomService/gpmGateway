@@ -24,7 +24,7 @@ import { WorkOrderTechniciensService } from '../service/work-order-techniciens.s
 import { IVehicule } from 'app/entities/projectService/vehicule/vehicule.model';
 import { VehiculeService } from 'app/entities/projectService/vehicule/service/vehicule.service';
 import { WorkOrderVehiculeService } from '../service/work-order-vehicule.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, EMPTY } from 'rxjs';
 
 import { AffaireSelectorModalComponent } from 'app/entities/financeService/bon-commande/affaire-selector-modal/affaire-selector-modal.component';
 import { SiteSelectorModalComponent } from 'app/entities/financeService/bon-commande/site-selector-modal/site-selector-modal.component';
@@ -41,6 +41,17 @@ import { ScanSettingsService } from 'app/entities/projectService/piece-jointe/se
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { saveAs } from 'file-saver';
 import dayjs from 'dayjs/esm';
+import { IModelPhaseOT } from 'app/entities/financeService/model-phase-ot/model-phase-ot.model';
+import { ModelPhaseOTService } from 'app/entities/financeService/model-phase-ot/service/model-phase-ot.service';
+import { IOtExterne } from 'app/entities/financeService/ot-externe/ot-externe.model';
+import { OtExterneService } from 'app/entities/financeService/ot-externe/service/ot-externe.service';
+import { OtExterneSelectorModalComponent } from 'app/entities/operationsService/work-order/ot-externe-selector-modal/ot-externe-selector-modal.component';
+import { BonCommandeSelectorModalComponent } from 'app/entities/operationsService/work-order/bon-commande-selector-modal/bon-commande-selector-modal.component';
+import { IBonCommande } from 'app/entities/financeService/bon-commande/bon-commande.model';
+import { IParametreWO } from 'app/entities/operationsService/parametre-wo/parametre-wo.model';
+import { ParametreWOService } from 'app/entities/operationsService/parametre-wo/service/parametre-wo.service';
+import { ParametrageDeplacementService } from 'app/entities/operationsService/parametrage-deplacement/service/parametrage-deplacement.service';
+import { NewParametrageDeplacement } from 'app/entities/operationsService/parametrage-deplacement/parametrage-deplacement.model';
 
 type AccordionPanel = 'global' | 'client' | 'equipes' | 'options' | 'remarque' | 'piecesJointes';
 
@@ -53,6 +64,7 @@ interface PendingPieceJointe {
 
 const AFFAIRE_STATUT = 'ExecutionDesTravaux';
 const AFFAIRE_PAGE_SIZE = 15;
+const OT_EXTERNE_PAGE_SIZE = 15;
 const RESPONSABLE_ROLE_CODE = 'MANAGER';
 const TECHNICIEN_ROLE_CODE = 'TECHNIQUE';
 
@@ -82,6 +94,79 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   get currentStatut(): string {
     return (this.editForm.get('statut')?.value as string | null | undefined) ?? StatutWO.Creation;
   }
+
+  /**
+   * Liste des jours (calendaires, bornes incluses) entre Date Heure Début Prév. et Date Heure Fin Prév.
+   * Ex. : début 30/10/2026 08:00, fin 01/11/2026 18:00 => ['30/10/2026', '31/10/2026', '01/11/2026'].
+   * Retourne [] si une date manque, est invalide, ou si la fin précède le début.
+   */
+  get joursPrevusDates(): dayjs.Dayjs[] {
+    const debutValue = this.editForm.get('dateHeureDebutPrev')?.value;
+    const finValue = this.editForm.get('dateHeureFinPrev')?.value;
+
+    if (!debutValue || !finValue) {
+      return [];
+    }
+
+    const debut = dayjs(debutValue as any).startOf('day');
+    const fin = dayjs(finValue as any).startOf('day');
+
+    if (!debut.isValid() || !fin.isValid() || fin.isBefore(debut)) {
+      return [];
+    }
+
+    const nbJours = fin.diff(debut, 'day') + 1;
+    return Array.from({ length: nbJours }, (_, i) => debut.add(i, 'day'));
+  }
+
+  get joursPrevus(): string[] {
+    return this.joursPrevusDates.map(jour => jour.format('DD/MM/YYYY'));
+  }
+
+  get nombreJoursPrevus(): number {
+    return this.joursPrevus.length;
+  }
+
+  // Compteurs calculés à partir des checkpoints cochés (un jour coché = +1)
+  get nombreHebergements(): number {
+    return this.countChecked('Hébergement');
+  }
+
+  get nombreNuits(): number {
+    return this.countChecked('Mission de nuit');
+  }
+
+  get nombreDeplacements(): number {
+    return this.countChecked('Déplacement');
+  }
+
+  private normalizeText(value?: string | null): string {
+    return (value ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toLowerCase();
+  }
+
+  /** Nombre de jours pour lesquels le paramètre portant ce nom est coché (comparaison sans accents ni casse). */
+  private countChecked(nomParametre: string): number {
+    const cible = this.normalizeText(nomParametre);
+    const parametre = this.parametresWO.find(p => this.normalizeText(p.nom) === cible);
+
+    if (!parametre) {
+      return 0;
+    }
+
+    return this.joursPrevusDates.filter((_, index) => this.isParametreChecked(index, parametre)).length;
+  }
+
+  // ================================
+  // Paramètres WO (Hébergement, Mission de nuit, Déplacement...) affichés pour chaque jour
+  // Checkpoints : état local pour l'instant (persistance à venir). Clé = `${indexJour}_${parametreId}`
+  // ================================
+  parametresWO: IParametreWO[] = [];
+  loadingParametresWO = false;
+  parametreChecks: { [key: string]: boolean } = {};
 
   // ================================
   // Accordéon (état purement visuel — même pattern que ot-externe-update)
@@ -124,6 +209,33 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   selectedSite: ISite | null = null;
 
   // ================================
+  // Liste déroulante Modèle de phases (ModelPhaseOT — GET /api/model-phase-ots/all)
+  // ================================
+  modelPhases: IModelPhaseOT[] = [];
+  selectedModelPhase: IModelPhaseOT | null = null;
+  loadingModelPhases = false;
+
+  // ================================
+  // Liste déroulante OT Externe (filtrée par le Motif = ModelPhaseOT sélectionné, via modeleOtId)
+  // ================================
+  otExterneResults: IOtExterne[] = [];
+  selectedOtExterne: IOtExterne | null = null;
+  loadingOtExternes = false;
+  otExterneSearchTerm = '';
+  otExternePage = 0;
+  otExterneTotalItems = 0;
+  otExterneError = '';
+  private otExterneErrorTimeoutId?: ReturnType<typeof setTimeout>;
+
+  protected readonly otExterneSearch$ = new Subject<string>();
+
+  // ================================
+  // Bon de commande — alimenté automatiquement par l'OT externe sélectionné (lecture seule)
+  // ================================
+  selectedBonCommande: IBonCommande | null = null;
+  loadingBonCommande = false;
+
+  // ================================
   // Liste déroulante Responsable / Coordinateur (contacts ayant le rôle MANAGER)
   // — logique identique au champ Responsable de ot-externe-update, réutilisée pour les 2 champs
   // ================================
@@ -159,12 +271,6 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   loadingRessources = false;
   ressourceError = '';
   private ressourceErrorTimeoutId?: ReturnType<typeof setTimeout>;
-
-  // ================================
-  // Souscriptions Mission De Nuit / Hebergement (reset du compteur quand désactivé)
-  // ================================
-  private missionDeNuitSubscription?: Subscription;
-  private hebergementSubscription?: Subscription;
 
   // ================================
   // Pièces Jointes (upload manuel) — même logique que ot-externe-update
@@ -233,7 +339,11 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     protected sanitizer: DomSanitizer,
     protected modalService: NgbModal,
     protected cdr: ChangeDetectorRef,
-    protected stepperService: StatusStepperService
+    protected stepperService: StatusStepperService,
+    protected modelPhaseOTService: ModelPhaseOTService,
+    protected otExterneService: OtExterneService,
+    protected parametreWOService: ParametreWOService,
+    protected parametrageDeplacementService: ParametrageDeplacementService
   ) {}
 
   ngOnInit(): void {
@@ -243,26 +353,9 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
 
     this.loadResponsables();
     this.loadTechniciens();
+    this.loadModelPhases();
+    this.loadParametresWO();
     this.loadAffaires(''); // Pré-charge la liste des projets dès l'ouverture du formulaire
-
-    // On utilise valueChanges plutôt que (change) dans le template : cela garantit
-    // que la valeur du FormControl est déjà à jour au moment où ce code s'exécute,
-    // ce qui évite le décalage d'affichage observé avec (change).
-    this.missionDeNuitSubscription = this.editForm.get('missionDeNuit')?.valueChanges.subscribe(checked => {
-      if (!checked) {
-        this.editForm.get('nombreNuits')?.setValue(0, { emitEvent: false });
-      }
-
-      this.cdr.detectChanges();
-    });
-
-    this.hebergementSubscription = this.editForm.get('hebergement')?.valueChanges.subscribe(checked => {
-      if (!checked) {
-        this.editForm.get('nombreHebergements')?.setValue(0, { emitEvent: false });
-      }
-
-      this.cdr.detectChanges();
-    });
 
     this.activatedRoute.data.subscribe(({ workOrder }) => {
       this.workOrder = workOrder;
@@ -295,13 +388,46 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
           this.affaireResults = [];
         },
       });
+
+    // Recherche OT externe avec debounce (filtrée par le motif sélectionné)
+    this.otExterneSearch$
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap(search => {
+          const modeleOtId = this.selectedModelPhase?.id;
+          this.otExterneSearchTerm = search;
+          this.otExternePage = 0;
+
+          if (modeleOtId === null || modeleOtId === undefined) {
+            return EMPTY;
+          }
+
+          this.loadingOtExternes = true;
+          return this.otExterneService.findByModeleOt(modeleOtId, {
+            page: this.otExternePage,
+            size: OT_EXTERNE_PAGE_SIZE,
+            sort: ['reference,asc'],
+            search,
+          });
+        })
+      )
+      .subscribe({
+        next: res => this.onOtExternePageLoaded(res, true),
+        error: () => {
+          this.loadingOtExternes = false;
+          this.otExterneResults = [];
+        },
+      });
   }
 
   ngOnDestroy(): void {
     this.affaireSearch$.complete();
+    this.otExterneSearch$.complete();
+    if (this.otExterneErrorTimeoutId) {
+      clearTimeout(this.otExterneErrorTimeoutId);
+    }
     this.stepperService.clear(); // le stepper disparaît en quittant la page
-    this.missionDeNuitSubscription?.unsubscribe();
-    this.hebergementSubscription?.unsubscribe();
     if (this.technicienErrorTimeoutId) {
       clearTimeout(this.technicienErrorTimeoutId);
     }
@@ -606,38 +732,270 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   }
 
   // ================================
-  // Steppers Mission De Nuit / Hebergement
+  // Modèle de phases (ModelPhaseOT)
   // ================================
-  incrementNombreNuits(): void {
-    this.incrementCounter('nombreNuits');
+  private loadModelPhases(): void {
+    this.loadingModelPhases = true;
+
+    this.modelPhaseOTService.findAll().subscribe({
+      next: res => {
+        this.modelPhases = res.body ?? [];
+        this.loadingModelPhases = false;
+      },
+      error: () => {
+        this.modelPhases = [];
+        this.loadingModelPhases = false;
+      },
+    });
   }
 
-  decrementNombreNuits(): void {
-    this.decrementCounter('nombreNuits');
-  }
+  compareModelPhase = (a: IModelPhaseOT | null, b: IModelPhaseOT | null): boolean => (a && b ? a.id === b.id : a === b);
 
-  incrementNombreHebergements(): void {
-    this.incrementCounter('nombreHebergements');
-  }
+  onModelPhaseSelectChange(modelPhase: IModelPhaseOT | null): void {
+    this.selectedModelPhase = modelPhase;
 
-  decrementNombreHebergements(): void {
-    this.decrementCounter('nombreHebergements');
-  }
+    // Le motif a changé : l'OT externe précédemment choisi n'est plus valide
+    this.selectedOtExterne = null;
+    this.editForm.patchValue({ otExterneId: null });
+    this.resetBonCommande();
+    this.otExterneResults = [];
+    this.otExterneTotalItems = 0;
+    this.otExterneSearchTerm = '';
 
-  private incrementCounter(controlName: 'nombreNuits' | 'nombreHebergements'): void {
-    const control = this.editForm.get(controlName);
-    const current = control?.value ?? 0;
-    control?.setValue(current + 1);
-    control?.markAsDirty();
-  }
-
-  private decrementCounter(controlName: 'nombreNuits' | 'nombreHebergements'): void {
-    const control = this.editForm.get(controlName);
-    const current = control?.value ?? 0;
-    if (current > 0) {
-      control?.setValue(current - 1);
-      control?.markAsDirty();
+    if (modelPhase?.id !== null && modelPhase?.id !== undefined) {
+      this.loadOtExternes('');
     }
+  }
+
+  // ================================
+  // OT Externe (liste filtrée par modeleOtId = motif sélectionné)
+  // ================================
+  private loadOtExternes(search: string): void {
+    const modeleOtId = this.selectedModelPhase?.id;
+
+    if (modeleOtId === null || modeleOtId === undefined) {
+      this.otExterneResults = [];
+      return;
+    }
+
+    this.otExternePage = 0;
+    this.loadingOtExternes = true;
+
+    this.otExterneService
+      .findByModeleOt(modeleOtId, { page: this.otExternePage, size: OT_EXTERNE_PAGE_SIZE, sort: ['reference,asc'], search })
+      .subscribe({
+        next: res => this.onOtExternePageLoaded(res, true),
+        error: () => {
+          this.loadingOtExternes = false;
+          this.otExterneResults = [];
+        },
+      });
+  }
+
+  onOtExterneScrollToEnd(): void {
+    const modeleOtId = this.selectedModelPhase?.id;
+    const hasMore = this.otExterneResults.length < this.otExterneTotalItems;
+
+    if (modeleOtId !== null && modeleOtId !== undefined && hasMore && !this.loadingOtExternes) {
+      this.otExternePage += 1;
+      this.loadingOtExternes = true;
+
+      this.otExterneService
+        .findByModeleOt(modeleOtId, {
+          page: this.otExternePage,
+          size: OT_EXTERNE_PAGE_SIZE,
+          sort: ['reference,asc'],
+          search: this.otExterneSearchTerm,
+        })
+        .subscribe({
+          next: res => this.onOtExternePageLoaded(res, false),
+          error: () => {
+            this.loadingOtExternes = false;
+          },
+        });
+    }
+  }
+
+  compareOtExterne = (a: IOtExterne | null, b: IOtExterne | null): boolean => (a && b ? a.id === b.id : a === b);
+
+  private onOtExternePageLoaded(res: HttpResponse<IOtExterne[]>, reset: boolean): void {
+    const items = res.body ?? [];
+
+    this.otExterneTotalItems = Number(res.headers.get('X-Total-Count') ?? items.length);
+    this.otExterneResults = reset ? items : [...this.otExterneResults, ...items];
+    this.loadingOtExternes = false;
+  }
+
+  onOtExterneSelectChange(otExterne: IOtExterne | null): void {
+    this.editForm.patchValue({ otExterneId: otExterne?.id ?? null });
+    this.selectedOtExterne = otExterne;
+
+    if (otExterne?.id !== null && otExterne?.id !== undefined) {
+      this.loadBonCommandeByOtExterne(otExterne.id);
+    } else {
+      this.resetBonCommande();
+    }
+  }
+
+  private resetBonCommande(): void {
+    this.selectedBonCommande = null;
+    this.loadingBonCommande = false;
+    this.editForm.patchValue({ bonCommandeId: null });
+  }
+
+  /**
+   * Applique un bon de commande (valeur auto depuis l'OT externe OU choix manuel via le modal)
+   * et le met dans le formulaire pour qu'il soit persisté (WorkOrder.bonCommandeId).
+   */
+  private applyBonCommande(bonCommande: IBonCommande | null): void {
+    this.selectedBonCommande = bonCommande;
+    this.loadingBonCommande = false;
+    this.editForm.patchValue({ bonCommandeId: bonCommande?.id ?? null });
+    this.editForm.get('bonCommandeId')?.markAsDirty();
+    this.cdr.detectChanges();
+  }
+
+  /**
+   * Récupère le bon de commande lié à l'OT externe (GET /api/bon-commandes/by-ot-externe/{id}).
+   * Relation many-to-one : un OT externe a au plus un bon de commande.
+   * La valeur obtenue sert de valeur par défaut, modifiable ensuite via le modal.
+   */
+  private loadBonCommandeByOtExterne(otExterneId: number): void {
+    this.resetBonCommande();
+    this.loadingBonCommande = true;
+
+    this.bonCommandeService.findByOtExterne(otExterneId).subscribe({
+      next: res => this.applyBonCommande(res.body ?? null),
+      error: () => {
+        // 404 : aucun bon de commande lié à cet OT externe
+        this.resetBonCommande();
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  /**
+   * Mode édition : charge le bon de commande PERSISTÉ sur le work order (GET /api/bon-commandes/{id}).
+   * Ne touche pas au formulaire : bonCommandeId vient déjà de resetForm().
+   */
+  private loadBonCommandeLabel(bonCommandeId: number): void {
+    this.loadingBonCommande = true;
+
+    this.bonCommandeService.find(bonCommandeId).subscribe({
+      next: res => {
+        this.selectedBonCommande = res.body ?? null;
+        this.loadingBonCommande = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.selectedBonCommande = null;
+        this.loadingBonCommande = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  /**
+   * Ouvre le modal de sélection (liste paginée + recherche backend) pour remplacer
+   * le bon de commande rempli automatiquement par l'OT externe.
+   */
+  openBonCommandeModal(): void {
+    const modalRef = this.modalService.open(BonCommandeSelectorModalComponent, {
+      size: 'xl',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'affaire-selector-modal-window',
+    });
+
+    modalRef.componentInstance.selectedId = this.selectedBonCommande?.id ?? null;
+
+    modalRef.result
+      .then((bonCommande: IBonCommande) => {
+        if (bonCommande) {
+          this.applyBonCommande(bonCommande);
+        }
+      })
+      .catch(() => {
+        // Fermeture du modal sans sélection
+      });
+  }
+
+  private showOtExterneError(message: string): void {
+    this.otExterneError = message;
+
+    if (this.otExterneErrorTimeoutId) {
+      clearTimeout(this.otExterneErrorTimeoutId);
+    }
+
+    this.otExterneErrorTimeoutId = setTimeout(() => {
+      this.otExterneError = '';
+      this.otExterneErrorTimeoutId = undefined;
+    }, 4000);
+  }
+
+  openOtExterneModal(): void {
+    const modeleOtId = this.selectedModelPhase?.id;
+
+    if (modeleOtId === null || modeleOtId === undefined) {
+      this.showOtExterneError("Veuillez d'abord sélectionner un motif avant de choisir un OT externe.");
+      return;
+    }
+
+    const modalRef = this.modalService.open(OtExterneSelectorModalComponent, {
+      size: 'xl',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'ot-externe-selector-modal-window',
+    });
+
+    modalRef.componentInstance.modeleOtId = modeleOtId;
+    modalRef.componentInstance.modalTitle = 'Sélectionner un OT externe';
+
+    modalRef.result
+      .then((otExterne: IOtExterne) => {
+        if (otExterne) {
+          if (!this.otExterneResults.some(o => o.id === otExterne.id)) {
+            this.otExterneResults = [otExterne, ...this.otExterneResults];
+          }
+          this.onOtExterneSelectChange(otExterne);
+        }
+      })
+      .catch(() => {
+        // Fermeture du modal sans sélection
+      });
+  }
+
+  /**
+   * Mode édition : retrouve l'OT externe enregistré, puis restaure le Motif (via otExterne.modeleOtId).
+   * Le motif n'est pas persisté sur le work order, il est donc déduit de l'OT externe.
+   */
+  private loadOtExterneLabel(otExterneId: number): void {
+    this.otExterneService.find(otExterneId).subscribe({
+      next: res => {
+        const otExterne = res.body ?? null;
+        this.selectedOtExterne = otExterne;
+
+        if (!otExterne) {
+          return;
+        }
+
+        if (!this.otExterneResults.some(o => o.id === otExterne.id)) {
+          this.otExterneResults = [otExterne, ...this.otExterneResults];
+        }
+
+        const modeleOtId = otExterne.modeleOtId;
+        if (modeleOtId !== null && modeleOtId !== undefined) {
+          this.modelPhaseOTService.find(modeleOtId).subscribe({
+            next: mpRes => {
+              this.selectedModelPhase = mpRes.body ?? null;
+              this.cdr.detectChanges();
+            },
+          });
+        }
+
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   private loadCoordinateurLabel(coordinateurId: number): void {
@@ -646,6 +1004,74 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
         this.selectedCoordinateur = res.body ?? null;
       },
     });
+  }
+
+  // ================================
+  // Paramètres WO (GET /api/parametre-wos) + checkpoints par jour
+  // ================================
+  private loadParametresWO(): void {
+    this.loadingParametresWO = true;
+
+    this.parametreWOService.query().subscribe({
+      next: res => {
+        this.parametresWO = res.body ?? [];
+        this.loadingParametresWO = false;
+      },
+      error: () => {
+        this.parametresWO = [];
+        this.loadingParametresWO = false;
+      },
+    });
+  }
+
+  private parametreKey(jourIndex: number, parametre: IParametreWO): string {
+    const jour = this.joursPrevusDates[jourIndex];
+    return `${jour ? jour.format('YYYY-MM-DD') : jourIndex}_${parametre.nom}`;
+  }
+
+  /**
+   * Construit une ligne par jour : { workOrderId, date, params: { Hébergement: true, "Mission de nuit": false, ... } }.
+   * La date est fixée à 12:00 (heure locale) pour que le jour reste le même quel que soit le fuseau lors de la conversion UTC.
+   */
+  private buildParametrages(workOrderId: number): NewParametrageDeplacement[] {
+    return this.joursPrevusDates.map((jour, index) => {
+      const params: Record<string, boolean> = {};
+      this.parametresWO.forEach(parametre => {
+        params[parametre.nom ?? ''] = this.isParametreChecked(index, parametre);
+      });
+
+      return { id: null, workOrderId, date: jour.hour(12).minute(0).second(0).millisecond(0), params };
+    });
+  }
+
+  /** Mode édition : recharge les lignes persistées et rallume les checkpoints correspondants. */
+  private loadParametrages(workOrderId: number): void {
+    this.parametrageDeplacementService.findByWorkOrder(workOrderId).subscribe({
+      next: res => {
+        const checks: { [key: string]: boolean } = {};
+
+        (res.body ?? []).forEach(row => {
+          if (!row.date || !row.params || typeof row.params !== 'object') {
+            return;
+          }
+          const dateKey = dayjs(row.date).format('YYYY-MM-DD');
+          Object.entries(row.params).forEach(([nom, value]) => {
+            checks[`${dateKey}_${nom}`] = value === true;
+          });
+        });
+
+        this.parametreChecks = checks;
+      },
+    });
+  }
+
+  isParametreChecked(jourIndex: number, parametre: IParametreWO): boolean {
+    return this.parametreChecks[this.parametreKey(jourIndex, parametre)] === true;
+  }
+
+  toggleParametre(jourIndex: number, parametre: IParametreWO): void {
+    const key = this.parametreKey(jourIndex, parametre);
+    this.parametreChecks[key] = !this.parametreChecks[key];
   }
 
   // ================================
@@ -1142,6 +1568,14 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.isSaving = true;
     const workOrder = this.workOrderFormService.getWorkOrder(this.editForm);
 
+    // Compteurs issus des checkpoints par jour
+    workOrder.nombreHebergements = this.nombreHebergements;
+    workOrder.nombreNuits = this.nombreNuits;
+    workOrder.nombreDeplacements = this.nombreDeplacements;
+    // Les booléens (obligatoires côté backend) sont dérivés des compteurs
+    workOrder.hebergement = this.nombreHebergements > 0;
+    workOrder.missionDeNuit = this.nombreNuits > 0;
+
     if (workOrder.id !== null) {
       this.subscribeToSaveResponse(this.workOrderService.update(workOrder));
     } else {
@@ -1180,6 +1614,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       this.workOrderTechniciensService.replaceForWorkOrder(workOrderId, contactSocieteIds),
       this.workOrderVehiculeService.replaceForWorkOrder(workOrderId, vehiculeIds),
       this.workOrderRessourceService.replaceForWorkOrder(workOrderId, ressourceIds),
+      this.parametrageDeplacementService.replaceForWorkOrder(workOrderId, this.buildParametrages(workOrderId)),
     ]).subscribe({
       next: () => this.uploadPendingPieceJointesThenNavigate(workOrderId),
       error: () => this.uploadPendingPieceJointesThenNavigate(workOrderId),
@@ -1280,6 +1715,23 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       this.loadClientInfo(Number(clientId));
     }
 
+    // OT externe (et Motif associé)
+    const otExterneId = workOrder.otExterneId;
+
+    if (otExterneId !== null && otExterneId !== undefined) {
+      this.loadOtExterneLabel(Number(otExterneId));
+    }
+
+    // Bon de commande : la valeur persistée sur le work order prime sur celle de l'OT externe
+    const bonCommandeId = workOrder.bonCommandeId;
+
+    if (bonCommandeId !== null && bonCommandeId !== undefined) {
+      this.loadBonCommandeLabel(Number(bonCommandeId));
+    } else if (otExterneId !== null && otExterneId !== undefined) {
+      // Anciens work orders sans bonCommandeId : repli sur le bon de commande de l'OT externe
+      this.loadBonCommandeByOtExterne(Number(otExterneId));
+    }
+
     // Libellés Responsable / Coordinateur
     const responsableId = workOrder.responsableId;
 
@@ -1298,6 +1750,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       this.loadAutresTechniciens(workOrder.id);
       this.loadAutresVehicules(workOrder.id);
       this.loadAutresRessources(workOrder.id);
+      this.loadParametrages(workOrder.id);
       this.loadPieceJointes(workOrder.id);
     }
   }

@@ -1,4 +1,6 @@
 import {
+  faChevronUp,
+  faUserTag,
   faArrowLeft,
   faAsterisk,
   faBan,
@@ -171,5 +173,7 @@ export const fontAwesomeIcons = [
   faUserShield,
   faFile,
   faCubes,
+  faChevronUp,
+  faUserTag,
   // jhipster-needle-add-icon-import
 ];
