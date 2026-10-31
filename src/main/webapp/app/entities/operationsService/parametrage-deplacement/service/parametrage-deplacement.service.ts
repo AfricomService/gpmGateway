@@ -68,6 +68,19 @@ export class ParametrageDeplacementService {
       .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 
+  findByWorkOrder(workOrderId: number): Observable<EntityArrayResponseType> {
+    return this.http
+      .get<RestParametrageDeplacement[]>(`${this.resourceUrl}/work-order/${workOrderId}`, { observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
+  replaceForWorkOrder(workOrderId: number, items: NewParametrageDeplacement[]): Observable<EntityArrayResponseType> {
+    const copy = items.map(item => this.convertDateFromClient(item));
+    return this.http
+      .put<RestParametrageDeplacement[]>(`${this.resourceUrl}/work-order/${workOrderId}`, copy, { observe: 'response' })
+      .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
   delete(id: number): Observable<HttpResponse<{}>> {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }

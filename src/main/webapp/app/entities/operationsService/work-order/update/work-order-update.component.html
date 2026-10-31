@@ -711,8 +711,8 @@
           </div>
         </div>
 
-        <!-- SECTION 4 : OPTIONS (vide pour l'instant) -->
-        <div class="cu-accordion-item" [class.open]="isPanelOpen('options')">
+        <!-- SECTION 4 : OPTIONS (visible uniquement une fois le work order sauvegardé, donc en mode édition) -->
+        <div class="cu-accordion-item" *ngIf="workOrder?.id" [class.open]="isPanelOpen('options')">
           <button type="button" class="cu-accordion-header" (click)="togglePanel('options')">
             <span class="cu-accordion-header-left">
               <fa-icon icon="sliders-h" class="cu-accordion-icon"></fa-icon>
@@ -721,7 +721,53 @@
             <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
           </button>
 
-          <div class="cu-accordion-body" *ngIf="isPanelOpen('options')"></div>
+          <div class="cu-accordion-body" *ngIf="isPanelOpen('options')">
+            <div class="cu-jours-title">
+              Durée prévue :
+              <strong>{{ nombreJoursPrevus }} jour{{ nombreJoursPrevus > 1 ? 's' : '' }}</strong>
+            </div>
+
+            <div class="cu-jours-grid" *ngIf="joursPrevus.length > 0">
+              <div class="cu-jour-row" *ngFor="let jour of joursPrevus; let i = index">
+                <div class="cu-jour-header">
+                  <span class="cu-jours-label">Jour {{ i + 1 }}</span> le {{ jour }}
+                </div>
+
+                <div class="cu-parametres">
+                  <button
+                    type="button"
+                    class="cu-param-chip"
+                    *ngFor="let parametre of parametresWO"
+                    [class.checked]="isParametreChecked(i, parametre)"
+                    [title]="parametre.description ?? ''"
+                    (click)="toggleParametre(i, parametre)"
+                  >
+                    <span class="cu-checkpoint"></span>
+                    {{ parametre.nom }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="cu-totaux" *ngIf="joursPrevus.length > 0">
+              <div class="cu-total-item">
+                <span class="cu-total-label">Nombre d'hébergements</span>
+                <span class="cu-total-value">{{ nombreHebergements }}</span>
+              </div>
+              <div class="cu-total-item">
+                <span class="cu-total-label">Nombre de missions de nuit</span>
+                <span class="cu-total-value">{{ nombreNuits }}</span>
+              </div>
+              <div class="cu-total-item">
+                <span class="cu-total-label">Nombre de déplacements</span>
+                <span class="cu-total-value">{{ nombreDeplacements }}</span>
+              </div>
+            </div>
+
+            <div *ngIf="joursPrevus.length === 0" class="cu-empty-panel">
+              Renseignez la date de début et la date de fin prévues pour afficher les jours.
+            </div>
+          </div>
         </div>
 
         <!-- SECTION 5 : REMARQUE -->

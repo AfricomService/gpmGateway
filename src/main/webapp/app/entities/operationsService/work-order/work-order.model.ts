@@ -18,6 +18,7 @@ export interface IWorkOrder {
   nombreNuits?: number | null;
   hebergement?: boolean | null;
   nombreHebergements?: number | null;
+  nombreDeplacements?: number | null;
   remarque?: string | null;
   numFicheIntervention?: string | null;
   statut?: StatutWO | null;
