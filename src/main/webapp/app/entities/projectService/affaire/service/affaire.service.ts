@@ -101,6 +101,10 @@ export class AffaireService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
+  findLabelsByIds(ids: number[]): Observable<Record<string, string>> {
+    return this.http.get<Record<string, string>>(`${this.resourceUrl}/labels`, { params: { ids: ids.join(',') } });
+  }
+
   query(req?: any): Observable<EntityArrayResponseType> {
     const options = createRequestOption(req);
     return this.http

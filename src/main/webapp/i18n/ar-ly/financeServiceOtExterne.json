@@ -9,52 +9,58 @@
         "notFound": "لم يتم العثور على أي أمر عمل خارجي"
       },
       "delete": {
-        "question": "هل أنت متأكد أنك تريد حذف أمر العمل الخارجي {{ id }}؟"
+        "question": "هل أنت متأكد أنك تريد حذف أمر العمل الخارجي {{ id }} ؟"
       },
       "detail": {
         "title": "أمر عمل خارجي"
       },
-      "id": "المعرف",
+      "id": "المعرّف",
       "reference": "المرجع",
       "statut": "الحالة",
-      "affaireId": "مشروع",
-      "clientId": "معرف العميل",
-      "lieu": "الموقع",
+      "affaireId": "المشروع",
+      "clientId": "معرّف العميل",
+      "lieu": "المكان",
       "responsableId": "المسؤول",
-      "bonCommandeId": "أمر الشراء",
+      "bonCommandeId": "طلب الشراء",
       "createdAt": "تاريخ الإنشاء",
       "updatedAt": "تاريخ التحديث",
-      "createdBy": "أنشئ من قبل",
-      "createdByUserLogin": "اسم مستخدم المنشئ",
-      "updatedBy": "حُدّث من قبل",
-      "updatedByUserLogin": "اسم مستخدم المحدّث",
+      "createdBy": "أنشئ بواسطة",
+      "createdByUserLogin": "معرّف المستخدم المنشئ",
+      "updatedBy": "حُدّث بواسطة",
+      "updatedByUserLogin": "معرّف المستخدم المحدّث",
       "help": {
-        "affaireId": "مفتاح خارجي بين الخدمات → الصفقة (projectService)",
-        "clientId": "مفتاح خارجي بين الخدمات → العميل (projectService)"
+        "affaireId": "Cross-service FK → Affaire (projectService)",
+        "clientId": "Cross-service FK → Client (projectService)"
       },
       "bonCommande": {
-        "selectBonCommande": "اختر أمر شراء"
+        "selectBonCommande": "اختر طلب شراء"
       },
       "dateDebut": "تاريخ بداية أمر العمل",
-      "selectAffaire": "اختر صفقة",
+      "selectAffaire": "اختر مشروعاً",
       "selectClient": "اختر عميلاً",
-      "selectBonCommande": "اختر أمر شراء",
+      "selectBonCommande": "اختر طلب شراء",
       "modeleOt": "نموذج أمر العمل",
       "selectModeleOt": "اختر نموذجاً",
-      "modeModele": "بناءً على نموذج أمر عمل",
+      "modeModele": "مبني على نموذج أمر عمل",
       "modeLibre": "أمر عمل حر",
       "section": {
         "informationsGenerales": "معلومات عامة",
         "modeCreation": "طريقة الإنشاء",
         "modeleOtPhases": "نموذج أمر العمل والمراحل"
       }
+    },
+    "StatutOtExterne": {
+      "null": "",
+      "Brouillon": "مسودة",
+      "ExecutionDesTravaux": "تنفيذ الأشغال",
+      "Fin": "منتهي"
     }
   },
   "financeServiceApp": {
     "financeServiceOtExterne": {
-      "created": "تم إنشاء أمر عمل خارجي جديد بالمعرف {{ param }}",
-      "updated": "تم تحديث أمر العمل الخارجي بالمعرف {{ param }}",
-      "deleted": "تم حذف أمر العمل الخارجي بالمعرف {{ param }}"
+      "created": "تم إنشاء أمر عمل خارجي جديد بالمعرّف {{ param }}",
+      "updated": "تم تحديث أمر العمل الخارجي ذو المعرّف {{ param }}",
+      "deleted": "تم حذف أمر العمل الخارجي ذو المعرّف {{ param }}"
     }
   }
 }

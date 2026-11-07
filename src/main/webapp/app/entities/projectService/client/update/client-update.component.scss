@@ -1,12 +1,13 @@
 .client-update-page {
-  --cp-accent: #f5822a;
-  --cp-accent-hover: #ff9a4d;
-  --cp-accent-soft: rgba(245, 130, 42, 0.12);
+  /* Palette alignée sur l'interface work order */
+  --cp-accent: #2f6fed;
+  --cp-accent-hover: #4f86f2;
+  --cp-accent-soft: rgba(47, 111, 237, 0.1);
   --cp-text: #1a2233;
-  --cp-text-muted: #8a93a3;
-  --cp-border: #e7e9ee;
+  --cp-text-muted: #5b6475;
+  --cp-border: #e9ecf2;
   --cp-surface: #ffffff;
-  --cp-surface-hover: #f2f4f8;
+  --cp-surface-hover: #f4f6fa;
   --cp-danger: #e0524d;
   --cp-danger-soft: rgba(224, 82, 77, 0.12);
 
@@ -14,49 +15,15 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  gap: 16px;
-  padding: 1.5rem 1.5rem 2rem;
+  padding: 0.5rem 1rem 1rem;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
   color: var(--cp-text);
-}
-
-.btn-cu-back-floating {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  margin-top: 2px;
-  border-radius: 50%;
-  border: 1px solid var(--cp-border);
-  background: var(--cp-surface);
-  color: var(--cp-text-muted);
-  font-size: 0.95rem;
-  box-shadow: 0 4px 14px -8px rgba(26, 34, 51, 0.25);
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
-  z-index: 10;
-  white-space: nowrap;
-  flex-shrink: 0;
-
-  &:hover {
-    background: var(--cp-surface-hover);
-    color: var(--cp-accent);
-    border-color: var(--cp-accent);
-    transform: translateX(-2px);
-  }
-}
-
-@media (max-width: 1300px) {
-  .btn-cu-back-floating {
-    display: none;
-  }
 }
 
 .cu-container {
   position: relative;
   width: 100%;
-  max-width: 1100px;
+  max-width: 100%;
 }
 
 /* ============ TOOLBAR ============ */
@@ -69,8 +36,8 @@
   background: var(--cp-surface-hover);
   border: 1px solid var(--cp-border);
   border-radius: 12px;
-  padding: 0.45rem 1rem;
-  margin-bottom: 1rem;
+  padding: 0.3rem 0.75rem;
+  margin-bottom: 0.6rem;
   box-shadow: 0 4px 14px -10px rgba(26, 34, 51, 0.15);
 }
 
@@ -92,12 +59,12 @@
   background: var(--cp-accent);
   color: #ffffff;
   font-size: 0.85rem;
-  box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
+  box-shadow: 0 6px 14px -8px rgba(47, 111, 237, 0.55);
   transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 
   &:hover:not(:disabled) {
     background: var(--cp-accent-hover);
-    box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.7);
+    box-shadow: 0 8px 18px -8px rgba(47, 111, 237, 0.7);
     transform: translateY(-1px);
   }
 
@@ -130,12 +97,12 @@
   background: var(--cp-accent);
   color: #ffffff;
   font-size: 0.85rem;
-  box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
+  box-shadow: 0 6px 14px -8px rgba(47, 111, 237, 0.55);
   transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 
   &:hover:not(:disabled) {
     background: var(--cp-accent-hover);
-    box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.7);
+    box-shadow: 0 8px 18px -8px rgba(47, 111, 237, 0.7);
     transform: translateY(-1px);
   }
 
@@ -151,14 +118,15 @@
 .cu-accordion {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  margin-bottom: 1.5rem;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
 }
 
 .cu-accordion-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.85rem;
+  gap: 0.6rem;
+  align-items: start;
 }
 
 .cu-accordion-item {
@@ -170,7 +138,7 @@
 
   &.open {
     border-color: var(--cp-accent);
-    box-shadow: 0 10px 24px -18px rgba(245, 130, 42, 0.5);
+    box-shadow: 0 10px 24px -18px rgba(47, 111, 237, 0.5);
   }
 }
 
@@ -182,7 +150,7 @@
   gap: 0.75rem;
   border: none;
   background: var(--cp-surface);
-  padding: 1rem 1.25rem;
+  padding: 0.65rem 1rem;
   cursor: pointer;
   transition: background 0.2s ease;
 
@@ -260,25 +228,35 @@
 }
 
 .cu-accordion-body {
-  padding: 1.25rem;
+  padding: 0.85rem 1rem;
   border-top: 1px dashed var(--cp-border);
 
   .form-label {
     font-size: 0.85rem;
     color: var(--cp-text-muted);
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.2rem;
   }
 
   .form-control {
-    border-radius: 10px;
+    border-radius: 8px;
     border: 1px solid var(--cp-border);
-    padding: 0.55rem 0.85rem;
+    padding: 0.45rem 0.75rem;
     font-size: 0.9rem;
 
     &:focus {
       border-color: var(--cp-accent);
-      box-shadow: 0 0 0 3px var(--cp-accent-soft);
+      box-shadow: 0 0 0 0.15rem var(--cp-accent-soft);
     }
+  }
+
+  /* Espace entre les lignes de champs : remplace le mb-3 (1rem) du HTML.
+     !important nécessaire car Bootstrap déclare .mb-3 avec !important. */
+  .row {
+    --bs-gutter-x: 1rem;
+  }
+
+  .row > [class*='col-'].mb-3 {
+    margin-bottom: 0.6rem !important;
   }
 }
 
@@ -286,7 +264,7 @@
 .cu-item-list {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.5rem;
   max-height: 240px;
   overflow-y: auto;
 }
@@ -299,7 +277,7 @@
   background: var(--cp-surface-hover);
   border: 1px solid var(--cp-border);
   border-radius: 10px;
-  padding: 0.75rem 1rem;
+  padding: 0.6rem 0.85rem;
 }
 
 .cu-item-card-clickable {
@@ -308,7 +286,7 @@
 
   &:hover {
     border-color: var(--cp-accent);
-    box-shadow: 0 6px 16px -10px rgba(245, 130, 42, 0.5);
+    box-shadow: 0 6px 16px -10px rgba(47, 111, 237, 0.5);
     transform: translateY(-1px);
   }
 }
@@ -388,7 +366,7 @@
 
 .cu-empty {
   text-align: center;
-  padding: 1.5rem 0;
+  padding: 1rem 0;
   color: var(--cp-text-muted);
   font-size: 0.88rem;
 }
@@ -421,7 +399,8 @@
 
 .cu-toolbar-bottom {
   justify-content: space-between;
-  padding: 0.3rem 0.75rem;
+  padding: 0.25rem 0.75rem;
+  margin-bottom: 0;
 }
 
 .cu-badge-status {
@@ -438,7 +417,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  margin-top: 0.75rem;
+  margin-top: 0.6rem;
 
   .cu-pagination-info {
     font-size: 0.8rem;
@@ -455,7 +434,7 @@
 
 @media (max-width: 768px) {
   .client-update-page {
-    padding: 1rem 1rem 1.5rem;
+    padding: 0.5rem 0.75rem 1rem;
   }
 
   .cu-toolbar {
@@ -468,112 +447,7 @@
   }
 }
 
-/* Bouton d'enregistrement texte, utilisé dans les modals NgbModal (Contact, Site, Agence...) */
-/* Non scopé car NgbModal rend son contenu hors de l'arbre DOM du composant (ngb-modal-window) */
-.btn-cu-save-modal {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 1.25rem;
-  border-radius: 8px;
-  border: none;
-  background: #f5822a;
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 0.85rem;
-  white-space: nowrap;
-  box-shadow: 0 6px 14px -8px rgba(245, 130, 42, 0.55);
-  transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
-
-  &:hover:not(:disabled) {
-    background: #ff9a4d;
-    box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.7);
-    transform: translateY(-1px);
-  }
-
-  &:disabled {
-    opacity: 0.55;
-    cursor: default;
-    box-shadow: none;
-    transform: none;
-  }
-}
-/* ============ IMPORT MODAL (Sites) ============ */
-/* Non scopé car NgbModal rend son contenu hors de l'arbre DOM du composant */
-.import-step {
-  margin-bottom: 0.5rem;
-}
-
-.import-step-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.import-step-badge {
-  flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background-color: #f5822a;
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 0.85rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.import-step-title {
-  font-weight: 700;
-  font-size: 0.92rem;
-  color: #1a2233;
-}
-
-.import-step-subtitle {
-  color: #8a93a3;
-  font-size: 0.85rem;
-  margin-top: 2px;
-}
-
-.import-dropzone {
-  border: 2px dashed #e7e9ee;
-  border-radius: 12px;
-  padding: 32px;
-  text-align: center;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
-}
-
-.import-dropzone-active {
-  border-color: #f5822a;
-  background-color: rgba(245, 130, 42, 0.08);
-}
-
-.import-file-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background-color: rgba(245, 130, 42, 0.12);
-  color: #1a2233;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.85rem;
-}
-
-.btn-cu-remove-file {
-  border: none;
-  background: none;
-  color: #8a93a3;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  transition: color 0.18s ease;
-
-  &:hover {
-    color: #e0524d;
-  }
-}
+/* ============ BOUTONS D'ÉTAT (activer / désactiver) ============ */
 .btn-cu-activate {
   display: flex;
   align-items: center;
@@ -612,14 +486,122 @@
   }
 }
 
+/* ============ MODALES (rendues hors de l'arbre DOM du composant par NgbModal) ============ */
+
+/* Bouton d'enregistrement texte des modals (Contact, Site, Agence...) */
+.btn-cu-save-modal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  border: none;
+  background: #2f6fed;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  box-shadow: 0 6px 14px -8px rgba(47, 111, 237, 0.55);
+  transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+
+  &:hover:not(:disabled) {
+    background: #4f86f2;
+    box-shadow: 0 8px 18px -8px rgba(47, 111, 237, 0.7);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: default;
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+/* Modal d'import des sites */
+.import-step {
+  margin-bottom: 0.5rem;
+}
+
+.import-step-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.import-step-badge {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #2f6fed;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.import-step-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: #1a2233;
+}
+
+.import-step-subtitle {
+  color: #5b6475;
+  font-size: 0.85rem;
+  margin-top: 2px;
+}
+
+.import-dropzone {
+  border: 2px dashed #e9ecf2;
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.import-dropzone-active {
+  border-color: #2f6fed;
+  background-color: rgba(47, 111, 237, 0.08);
+}
+
+.import-file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(47, 111, 237, 0.1);
+  color: #1a2233;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.btn-cu-remove-file {
+  border: none;
+  background: none;
+  color: #5b6475;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.18s ease;
+
+  &:hover {
+    color: #e0524d;
+  }
+}
+
 /* Bouton "Compte utilisateur créé" - état succès dans le modal Contact */
-/* Non scopé car NgbModal rend son contenu hors de l'arbre DOM du composant */
 .btn-cu-kc-created {
   background-color: rgba(46, 158, 91, 0.12) !important;
   border-color: #2e9e5b !important;
   color: #2e9e5b !important;
   opacity: 1 !important;
 }
+
 .kc-result-modal {
   text-align: center;
   padding: 2rem 1.5rem 1rem;
@@ -653,8 +635,8 @@
 }
 
 .kc-result-credentials {
-  background: #f2f4f8;
-  border: 1px solid #e7e9ee;
+  background: #f4f6fa;
+  border: 1px solid #e9ecf2;
   border-radius: 10px;
   padding: 0.9rem 1.1rem;
   margin-bottom: 1rem;
@@ -668,20 +650,20 @@
   padding: 0.35rem 0;
 
   & + .kc-cred-row {
-    border-top: 1px dashed #e7e9ee;
+    border-top: 1px dashed #e9ecf2;
   }
 }
 
 .kc-cred-label {
   font-size: 0.8rem;
-  color: #8a93a3;
+  color: #5b6475;
   font-weight: 600;
 }
 
 .kc-cred-value {
   font-weight: 700;
   font-size: 0.9rem;
-  color: #f5822a;
+  color: #2f6fed;
   font-family: 'Courier New', monospace;
 }
 
@@ -690,11 +672,11 @@
   align-items: center;
   justify-content: center;
   font-size: 0.8rem;
-  color: #8a93a3;
+  color: #5b6475;
 }
 
 .cu-field-locked {
-  background-color: #f2f4f8 !important;
-  color: #8a93a3;
+  background-color: #f4f6fa !important;
+  color: #5b6475;
   cursor: not-allowed;
 }

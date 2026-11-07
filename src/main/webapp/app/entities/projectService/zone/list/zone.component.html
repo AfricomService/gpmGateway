@@ -64,18 +64,7 @@
       >
         <div class="zone-card-header">
           <span class="zone-ref">#{{ zone.id }}</span>
-        </div>
 
-        <h3 class="zone-title">{{ zone.nom || 'Sans nom' }}</h3>
-
-        <div class="zone-details">
-          <div *ngIf="zone.ville?.nom">
-            <fa-icon icon="flag" class="text-muted"></fa-icon>
-            <span>{{ zone.ville?.nom }}</span>
-          </div>
-        </div>
-
-        <div class="zone-card-footer">
           <div class="card-actions">
             <button
               (click)="$event.stopPropagation(); delete(zone)"
@@ -86,6 +75,15 @@
             >
               <fa-icon icon="trash-alt"></fa-icon>
             </button>
+          </div>
+        </div>
+
+        <h3 class="zone-title">{{ zone.nom || 'Sans nom' }}</h3>
+
+        <div class="zone-details" *ngIf="zone.ville?.nom">
+          <div>
+            <fa-icon icon="flag" class="text-muted"></fa-icon>
+            <span>{{ zone.ville?.nom }}</span>
           </div>
         </div>
       </div>
@@ -127,7 +125,7 @@
     </div>
 
     <!-- Pagination -->
-    <div *ngIf="filteredZones && filteredZones.length > 0">
+    <div *ngIf="filteredZones && filteredZones.length > 0" class="zones-pagination">
       <div class="d-flex justify-content-center">
         <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
       </div>

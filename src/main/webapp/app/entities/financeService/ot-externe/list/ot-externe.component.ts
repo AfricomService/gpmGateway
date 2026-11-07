@@ -1,13 +1,27 @@
-import { Component, OnInit } from '@angular/core';
-import { HttpHeaders, HttpResponse } from '@angular/common/http';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { HttpHeaders } from '@angular/common/http';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { ActivatedRoute, Data, ParamMap, Router } from '@angular/router';
-import { combineLatest, filter, Observable, switchMap, tap } from 'rxjs';
+import {
+  catchError,
+  combineLatest,
+  debounceTime,
+  filter,
+  forkJoin,
+  map,
+  Observable,
+  of,
+  Subject,
+  Subscription,
+  switchMap,
+  tap,
+} from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { IOtExterne } from '../ot-externe.model';
 import { IClient } from 'app/entities/projectService/client/client.model';
 import { ClientService } from 'app/entities/projectService/client/service/client.service';
+import { AffaireService } from 'app/entities/projectService/affaire/service/affaire.service';
 
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { ASC, DESC, SORT, ITEM_DELETED_EVENT, DEFAULT_SORT_DATA } from 'app/config/navigation.constants';
@@ -43,7 +57,7 @@ interface StatutFilterOption {
   templateUrl: './ot-externe.component.html',
   styleUrls: ['./ot-externe.component.scss'],
 })
-export class OtExterneComponent implements OnInit {
+export class OtExterneComponent implements OnInit, OnDestroy {
   otExternes?: IOtExterne[];
   filteredOtExternes: IOtExterne[] = [];
   isLoading = false;
@@ -53,17 +67,27 @@ export class OtExterneComponent implements OnInit {
   // clientId -> raisonSociale
   clientsMap = new Map<number, string>();
 
+  // affaireId -> designationAffaire
+  affairesMap = new Map<number, string>();
+
   // ---- Filtre latéral par statut ----
   isSidebarCollapsed = false;
   activeStatutFilter: string | null = null;
 
   statutFilterOptions: StatutFilterOption[] = [
     { label: 'Tous', value: null, icon: 'clipboard' },
-    { label: 'Création', value: 'Creation', icon: 'folder' },
-    { label: 'En cours', value: 'EnCours', icon: 'clock' },
-    { label: 'Paiement', value: 'Paiement', icon: 'file-invoice-dollar' },
-    { label: 'Fin', value: 'Fin', icon: 'check-circle' },
+    { label: 'Brouillon', value: 'Brouillon', icon: 'folder' },
+    { label: 'Exécution des travaux', value: 'ExecutionDesTravaux', icon: 'clock' },
+    { label: 'Terminé', value: 'Fin', icon: 'check-circle' },
   ];
+
+  // statut -> nombre d'OT (calculé côté serveur sur toute la base accessible)
+  statutCounts: Record<string, number> = {};
+
+  // Recherche serveur : ids d'affaires correspondants (debounce 400 ms)
+  private searchAffaireIds: number[] = [];
+  private readonly search$ = new Subject<string>();
+  private searchSubscription?: Subscription;
 
   navItems: OtExterneNavItem[] = [
     {
@@ -88,6 +112,7 @@ export class OtExterneComponent implements OnInit {
   constructor(
     protected otExterneService: OtExterneService,
     protected clientService: ClientService,
+    protected affaireService: AffaireService,
     protected activatedRoute: ActivatedRoute,
     public router: Router,
     protected modalService: NgbModal
@@ -96,8 +121,32 @@ export class OtExterneComponent implements OnInit {
   trackId = (_index: number, item: IOtExterne): number => this.otExterneService.getOtExterneIdentifier(item);
 
   ngOnInit(): void {
-    this.loadClients();
     this.load();
+
+    this.searchSubscription = this.search$
+      .pipe(
+        debounceTime(400),
+        switchMap(term => {
+          const trimmed = term.trim();
+          if (!trimmed) {
+            return of<number[]>([]);
+          }
+          return this.affaireService.searchIds(trimmed).pipe(
+            map(res => res.body ?? []),
+            catchError(() => of<number[]>([]))
+          );
+        })
+      )
+      .subscribe(ids => {
+        this.searchAffaireIds = ids;
+        this.page = 1;
+        this.reload();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.searchSubscription?.unsubscribe();
+    this.search$.complete();
   }
 
   toggleGroup(item: OtExterneNavItem): void {
@@ -142,15 +191,54 @@ export class OtExterneComponent implements OnInit {
     this.handleNavigation(page, this.predicate, this.ascending);
   }
 
-  // ---- Résolution des noms de clients ----
-  protected loadClients(): void {
-    // size élevé pour récupérer l'ensemble des clients en une fois ;
-    // adaptez si vous avez un très grand nombre de clients (pagination ou endpoint dédié).
-    this.clientService.query({ size: 2000, sort: ['raisonSociale,asc'] }).subscribe({
-      next: (res: HttpResponse<IClient[]>) => {
-        this.clientsMap = new Map((res.body ?? []).filter(c => c.id != null).map(c => [c.id as number, c.raisonSociale ?? '—']));
-      },
+  // ---- Résolution des noms de clients et d'affaires (à la demande) ----
+  protected loadReferencedLabels(otExternes: IOtExterne[]): void {
+    const clientIds = this.collectMissingIds(
+      otExternes.map(ot => ot.clientId),
+      this.clientsMap
+    );
+    const affaireIds = this.collectMissingIds(
+      otExternes.map(ot => ot.affaireId),
+      this.affairesMap
+    );
+
+    if (clientIds.length > 0) {
+      forkJoin(
+        clientIds.map(id =>
+          this.clientService.find(id).pipe(
+            map(res => res.body),
+            catchError(() => of(null))
+          )
+        )
+      ).subscribe(clients => {
+        clients.forEach(client => {
+          if (client?.id !== null && client?.id !== undefined) {
+            this.clientsMap.set(client.id, client.raisonSociale ?? '—');
+          }
+        });
+        this.applyFilter();
+      });
+    }
+
+    if (affaireIds.length > 0) {
+      this.affaireService
+        .findLabelsByIds(affaireIds)
+        .pipe(catchError(() => of({} as Record<string, string>)))
+        .subscribe(labels => {
+          Object.entries(labels).forEach(([id, label]) => this.affairesMap.set(Number(id), label ?? '—'));
+          this.applyFilter();
+        });
+    }
+  }
+
+  protected collectMissingIds(ids: Array<number | null | undefined>, cache: Map<number, string>): number[] {
+    const uniqueIds = new Set<number>();
+    ids.forEach(id => {
+      if (id !== null && id !== undefined && !cache.has(id)) {
+        uniqueIds.add(id);
+      }
     });
+    return Array.from(uniqueIds);
   }
 
   getClientName(clientId?: number | null): string {
@@ -160,6 +248,13 @@ export class OtExterneComponent implements OnInit {
     return this.clientsMap.get(clientId) ?? String(clientId);
   }
 
+  getAffaireName(affaireId?: number | null): string {
+    if (affaireId === null || affaireId === undefined) {
+      return '—';
+    }
+    return this.affairesMap.get(affaireId) ?? String(affaireId);
+  }
+
   // ---- Sidebar : filtre par statut ----
   toggleSidebar(): void {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
@@ -167,85 +262,70 @@ export class OtExterneComponent implements OnInit {
 
   selectStatutFilter(value: string | null): void {
     this.activeStatutFilter = value;
-    this.applyFilter();
+    this.page = 1;
+    this.reload();
   }
 
   countByStatut(value: string | null): number {
-    if (!this.otExternes) {
-      return 0;
-    }
     if (value === null) {
-      return this.otExternes.length;
+      return this.totalCount;
     }
-    return this.otExternes.filter(ot => ot.statut === value).length;
+    return this.statutCounts[value] ?? 0;
   }
 
   // ---- Recherche + filtre statut combinés (sur la page courante) ----
   onSearchChange(term: string): void {
     this.searchTerm = term;
-    this.applyFilter();
+    this.search$.next(term);
   }
 
   clearSearch(): void {
     this.searchTerm = '';
-    this.applyFilter();
+    this.search$.next('');
   }
 
+  // Le filtrage (recherche + statut) est fait côté serveur
   protected applyFilter(): void {
-    if (!this.otExternes) {
-      this.filteredOtExternes = [];
-      return;
-    }
+    this.filteredOtExternes = this.otExternes ?? [];
+  }
 
-    let result = this.otExternes;
+  /** Recharge avec l'état courant (statut, recherche, tri, page) sans passer par la route. */
+  protected reload(): void {
+    this.queryBackend(this.page, this.predicate, this.ascending).subscribe({
+      next: (res: EntityArrayResponseType) => this.onResponseSuccess(res),
+    });
+  }
 
-    if (this.activeStatutFilter !== null) {
-      result = result.filter(ot => ot.statut === this.activeStatutFilter);
-    }
-
-    const term = this.searchTerm.trim().toLowerCase();
-    if (term) {
-      result = result.filter(
-        ot =>
-          (ot.reference ?? '').toLowerCase().includes(term) ||
-          (ot.statut ?? '').toLowerCase().includes(term) ||
-          this.getClientName(ot.clientId).toLowerCase().includes(term) ||
-          String(ot.affaireId ?? '').includes(term)
-      );
-    }
-
-    this.filteredOtExternes = result;
+  protected loadCounts(): void {
+    this.otExterneService
+      .countByStatut()
+      .pipe(catchError(() => of({} as Record<string, number>)))
+      .subscribe(counts => (this.statutCounts = counts));
   }
 
   // ---- Statistiques des cartes (valeurs réelles de StatutOtExterne) ----
   get totalCount(): number {
-    return this.otExternes?.length ?? 0;
+    return Object.values(this.statutCounts).reduce((sum, n) => sum + n, 0);
   }
 
   get creationCount(): number {
-    return this.otExternes?.filter(ot => ot.statut === 'Brouillon').length ?? 0;
+    return this.statutCounts['Brouillon'] ?? 0;
   }
 
   get enCoursCount(): number {
-    return this.otExternes?.filter(ot => ot.statut === 'ExecutionDesTravaux').length ?? 0;
-  }
-
-  get paiementCount(): number {
-    return this.otExternes?.filter(ot => ot.statut === 'ExecutionDesTravaux').length ?? 0;
+    return this.statutCounts['ExecutionDesTravaux'] ?? 0;
   }
 
   get finCount(): number {
-    return this.otExternes?.filter(ot => ot.statut === 'Fin').length ?? 0;
+    return this.statutCounts['Fin'] ?? 0;
   }
 
   getStatutClass(statut?: string | null): string {
     switch (statut) {
-      case 'Creation':
+      case 'Brouillon':
         return 'badge-creation';
-      case 'EnCours':
+      case 'ExecutionDesTravaux':
         return 'badge-en-cours';
-      case 'Paiement':
-        return 'badge-paiement';
       case 'Fin':
         return 'badge-fin';
       default:
@@ -273,6 +353,8 @@ export class OtExterneComponent implements OnInit {
     const dataFromBody = this.fillComponentAttributesFromResponseBody(response.body);
     this.otExternes = dataFromBody;
     this.applyFilter();
+    this.loadReferencedLabels(dataFromBody);
+    this.loadCounts();
   }
 
   protected fillComponentAttributesFromResponseBody(data: IOtExterne[] | null): IOtExterne[] {
@@ -286,11 +368,22 @@ export class OtExterneComponent implements OnInit {
   protected queryBackend(page?: number, predicate?: string, ascending?: boolean): Observable<EntityArrayResponseType> {
     this.isLoading = true;
     const pageToLoad: number = page ?? 1;
-    const queryObject = {
+    const queryObject: any = {
       page: pageToLoad - 1,
       size: this.itemsPerPage,
       sort: this.getSortQueryParam(predicate, ascending),
     };
+
+    if (this.activeStatutFilter) {
+      queryObject.statut = this.activeStatutFilter;
+    }
+
+    const term = this.searchTerm.trim();
+    if (term) {
+      queryObject.search = term;
+      queryObject.affaireIds = this.searchAffaireIds.join(',');
+    }
+
     return this.otExterneService.query(queryObject).pipe(tap(() => (this.isLoading = false)));
   }
 

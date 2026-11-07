@@ -10,13 +10,19 @@ import { ZoneService } from '../service/zone.service';
 import { IVille } from 'app/entities/projectService/ville/ville.model';
 import { VilleService } from 'app/entities/projectService/ville/service/ville.service';
 
+type AccordionPanel = 'global';
+
 @Component({
   selector: 'jhi-zone-update',
   templateUrl: './zone-update.component.html',
+  styleUrls: ['./zone-update.component.scss'],
 })
 export class ZoneUpdateComponent implements OnInit {
   isSaving = false;
   zone: IZone | null = null;
+
+  // Accordéon (état purement visuel — même pattern que work-order-update)
+  openPanels: Set<AccordionPanel> = new Set(['global']);
 
   villesSharedCollection: IVille[] = [];
 
@@ -40,6 +46,21 @@ export class ZoneUpdateComponent implements OnInit {
 
       this.loadRelationshipsOptions();
     });
+  }
+
+  // ================================
+  // Accordéon
+  // ================================
+  togglePanel(panel: AccordionPanel): void {
+    if (this.openPanels.has(panel)) {
+      this.openPanels.delete(panel);
+    } else {
+      this.openPanels.add(panel);
+    }
+  }
+
+  isPanelOpen(panel: AccordionPanel): boolean {
+    return this.openPanels.has(panel);
   }
 
   previousState(): void {

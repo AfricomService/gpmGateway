@@ -2,11 +2,11 @@
   "gpmGatewayApp": {
     "financeServiceOtExterne": {
       "home": {
-        "title": "OtExternes",
+        "title": "Ot Externes",
         "refreshListLabel": "Refresh list",
         "createLabel": "Create a new Ot Externe",
-        "createOrEditLabel": "Create or edit a Ot Externe",
-        "notFound": "No Ot Externes found"
+        "createOrEditLabel": "Create or edit an Ot Externe",
+        "notFound": "No Ot Externe found"
       },
       "delete": {
         "question": "Are you sure you want to delete Ot Externe {{ id }}?"
@@ -20,8 +20,8 @@
       "affaireId": "Project",
       "clientId": "Client Id",
       "lieu": "Location",
-      "responsableId": "Responsible",
-      "bonCommandeId": "Purchase Order",
+      "responsableId": "Manager",
+      "bonCommandeId": "Purchase order",
       "createdAt": "Created At",
       "updatedAt": "Updated At",
       "createdBy": "Created By",
@@ -35,26 +35,32 @@
       "bonCommande": {
         "selectBonCommande": "Select a purchase order"
       },
-      "dateDebut": "OT Start Date",
-      "selectAffaire": "Select an affaire",
+      "dateDebut": "OT start date",
+      "selectAffaire": "Select a project",
       "selectClient": "Select a client",
       "selectBonCommande": "Select a purchase order",
-      "modeleOt": "OT Model",
-      "selectModeleOt": "Select a model",
-      "modeModele": "Based on an OT model",
-      "modeLibre": "Free-form OT",
+      "modeleOt": "OT template",
+      "selectModeleOt": "Select a template",
+      "modeModele": "Based on an OT template",
+      "modeLibre": "Free OT",
       "section": {
         "informationsGenerales": "General Information",
-        "modeCreation": "Creation Mode",
-        "modeleOtPhases": "OT Model and Phases"
+        "modeCreation": "Creation mode",
+        "modeleOtPhases": "OT template and phases"
       }
+    },
+    "StatutOtExterne": {
+      "null": "",
+      "Brouillon": "Draft",
+      "ExecutionDesTravaux": "Work in progress",
+      "Fin": "Completed"
     }
   },
   "financeServiceApp": {
     "financeServiceOtExterne": {
-      "created": "A new Ot Externe has been created with identifier {{ param }}",
-      "updated": "A Ot Externe has been updated with identifier {{ param }}",
-      "deleted": "A Ot Externe has been deleted with identifier {{ param }}"
+      "created": "A new Ot Externe is created with identifier {{ param }}",
+      "updated": "A Ot Externe is updated with identifier {{ param }}",
+      "deleted": "A Ot Externe is deleted with identifier {{ param }}"
     }
   }
 }

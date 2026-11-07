@@ -1,123 +1,169 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
+<div class="cu-agence-update">
+  <div class="cu-container">
     <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-      <h2
-        id="jhi-agence-heading"
-        data-cy="AgenceCreateUpdateHeading"
-        jhiTranslate="gpmGatewayApp.projectServiceAgence.home.createOrEditLabel"
-      >
-        Créer ou éditer un Agence
-      </h2>
+      <jhi-alert-error></jhi-alert-error>
 
-      <div>
-        <jhi-alert-error></jhi-alert-error>
+      <!-- ====================================================== -->
+      <!-- TOOLBAR -->
+      <!-- ====================================================== -->
+      <div class="cu-toolbar cu-toolbar-end">
+        <span class="cu-badge-id" *ngIf="agence?.id"> Agence #{{ agence?.id }} </span>
 
-        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
-          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
-          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAgence.designation" for="field_designation"
-            >Designation</label
-          >
-          <input
-            type="text"
-            class="form-control"
-            name="designation"
-            id="field_designation"
-            data-cy="designation"
-            formControlName="designation"
-          />
-          <div *ngIf="editForm.get('designation')!.invalid && (editForm.get('designation')!.dirty || editForm.get('designation')!.touched)">
-            <small
-              class="form-text text-danger"
-              *ngIf="editForm.get('designation')?.errors?.required"
-              jhiTranslate="entity.validation.required"
-            >
-              Ce champ est obligatoire.
-            </small>
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAgence.adresse" for="field_adresse">Adresse</label>
-          <input type="text" class="form-control" name="adresse" id="field_adresse" data-cy="adresse" formControlName="adresse" />
-          <div *ngIf="editForm.get('adresse')!.invalid && (editForm.get('adresse')!.dirty || editForm.get('adresse')!.touched)">
-            <small
-              class="form-text text-danger"
-              *ngIf="editForm.get('adresse')?.errors?.required"
-              jhiTranslate="entity.validation.required"
-            >
-              Ce champ est obligatoire.
-            </small>
-          </div>
-        </div>
-
-        <!-- Ville field changed to a select dropdown -->
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAgence.ville" for="field_ville">Ville</label>
-          <select class="form-control" id="field_ville" data-cy="ville" name="ville" formControlName="ville">
-            <option [ngValue]="null" disabled>Sélectionner une ville</option>
-            <option [ngValue]="villeOption.nom" *ngFor="let villeOption of villesSharedCollection">
-              {{ villeOption.nom }}
-            </option>
-          </select>
-          <div *ngIf="editForm.get('ville')!.invalid && (editForm.get('ville')!.dirty || editForm.get('ville')!.touched)">
-            <small class="form-text text-danger" *ngIf="editForm.get('ville')?.errors?.required" jhiTranslate="entity.validation.required">
-              Ce champ est obligatoire.
-            </small>
-          </div>
-        </div>
-
-        <!-- Pays field changed to a select with static value "TUNISIE" -->
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAgence.pays" for="field_pays">Pays</label>
-          <select class="form-control" id="field_pays" data-cy="pays" name="pays" formControlName="pays">
-            <option value="TUNISIE">TUNISIE</option>
-          </select>
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAgence.societe" for="field_societe">Societe</label>
-          <select
-            class="form-control"
-            id="field_societe"
-            data-cy="societe"
-            name="societe"
-            formControlName="societe"
-            [compareWith]="compareSociete"
-          >
-            <option *ngIf="editForm.get(['societe'])!.value == null" [ngValue]="null" selected></option>
-            <option [ngValue]="societeOption" *ngFor="let societeOption of societesSharedCollection">
-              {{ societeOption.raisonSociale }}
-            </option>
-          </select>
-        </div>
-        <div *ngIf="editForm.get(['societe'])!.invalid && (editForm.get(['societe'])!.dirty || editForm.get(['societe'])!.touched)">
-          <small
-            class="form-text text-danger"
-            *ngIf="editForm.get(['societe'])?.errors?.required"
-            jhiTranslate="entity.validation.required"
-          >
-            Ce champ est obligatoire.
-          </small>
-        </div>
-      </div>
-
-      <div>
-        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
-          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
-        </button>
+        <!-- ID conservé dans le formulaire (non modifiable) -->
+        <input type="hidden" formControlName="id" data-cy="id" />
 
         <button
           type="submit"
           id="save-entity"
           data-cy="entityCreateSaveButton"
+          title="Sauvegarder"
           [disabled]="editForm.invalid || isSaving"
-          class="btn btn-primary"
+          class="btn-cu-save"
         >
-          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+          <fa-icon icon="save"></fa-icon>
+        </button>
+      </div>
+
+      <!-- ====================================================== -->
+      <!-- ACCORDEON -->
+      <!-- ====================================================== -->
+      <div class="cu-accordion">
+        <!-- SECTION 1 : INFORMATIONS GENERALES -->
+        <div class="cu-accordion-item" [class.open]="isPanelOpen('global')">
+          <button type="button" class="cu-accordion-header" (click)="togglePanel('global')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="building" class="cu-accordion-icon"></fa-icon>
+              <span
+                id="jhi-agence-heading"
+                data-cy="AgenceCreateUpdateHeading"
+                jhiTranslate="gpmGatewayApp.projectServiceAgence.home.createOrEditLabel"
+                >Créer ou éditer un Agence</span
+              >
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isPanelOpen('global')">
+            <!-- LIGNE 1 : DESIGNATION + ADRESSE -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAgence.designation" for="field_designation"
+                  >Designation</label
+                >
+                <input
+                  type="text"
+                  class="form-control cu-input"
+                  name="designation"
+                  id="field_designation"
+                  data-cy="designation"
+                  formControlName="designation"
+                />
+                <div
+                  *ngIf="
+                    editForm.get('designation')!.invalid && (editForm.get('designation')!.dirty || editForm.get('designation')!.touched)
+                  "
+                >
+                  <small
+                    class="form-text text-danger"
+                    *ngIf="editForm.get('designation')?.errors?.required"
+                    jhiTranslate="entity.validation.required"
+                  >
+                    Ce champ est obligatoire.
+                  </small>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAgence.adresse" for="field_adresse">Adresse</label>
+                <input
+                  type="text"
+                  class="form-control cu-input"
+                  name="adresse"
+                  id="field_adresse"
+                  data-cy="adresse"
+                  formControlName="adresse"
+                />
+                <div *ngIf="editForm.get('adresse')!.invalid && (editForm.get('adresse')!.dirty || editForm.get('adresse')!.touched)">
+                  <small
+                    class="form-text text-danger"
+                    *ngIf="editForm.get('adresse')?.errors?.required"
+                    jhiTranslate="entity.validation.required"
+                  >
+                    Ce champ est obligatoire.
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <!-- LIGNE 2 : VILLE + PAYS -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAgence.ville" for="field_ville">Ville</label>
+                <select class="form-select cu-input" id="field_ville" data-cy="ville" name="ville" formControlName="ville">
+                  <option [ngValue]="null" disabled>Sélectionner une ville</option>
+                  <option [ngValue]="villeOption.nom" *ngFor="let villeOption of villesSharedCollection">
+                    {{ villeOption.nom }}
+                  </option>
+                </select>
+                <div *ngIf="editForm.get('ville')!.invalid && (editForm.get('ville')!.dirty || editForm.get('ville')!.touched)">
+                  <small
+                    class="form-text text-danger"
+                    *ngIf="editForm.get('ville')?.errors?.required"
+                    jhiTranslate="entity.validation.required"
+                  >
+                    Ce champ est obligatoire.
+                  </small>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAgence.pays" for="field_pays">Pays</label>
+                <select class="form-select cu-input" id="field_pays" data-cy="pays" name="pays" formControlName="pays">
+                  <option value="TUNISIE">TUNISIE</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- LIGNE 3 : SOCIETE -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.projectServiceAgence.societe" for="field_societe">Societe</label>
+                <select
+                  class="form-select cu-input"
+                  id="field_societe"
+                  data-cy="societe"
+                  name="societe"
+                  formControlName="societe"
+                  [compareWith]="compareSociete"
+                >
+                  <option *ngIf="editForm.get(['societe'])!.value == null" [ngValue]="null" selected></option>
+                  <option [ngValue]="societeOption" *ngFor="let societeOption of societesSharedCollection">
+                    {{ societeOption.raisonSociale }}
+                  </option>
+                </select>
+                <div *ngIf="editForm.get(['societe'])!.invalid && (editForm.get(['societe'])!.dirty || editForm.get(['societe'])!.touched)">
+                  <small
+                    class="form-text text-danger"
+                    *ngIf="editForm.get(['societe'])?.errors?.required"
+                    jhiTranslate="entity.validation.required"
+                  >
+                    Ce champ est obligatoire.
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================== -->
+      <!-- FOOTER -->
+      <!-- ====================================================== -->
+      <div class="cu-toolbar cu-toolbar-bottom cu-toolbar-end">
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>
+          &nbsp;
+          <span jhiTranslate="entity.action.cancel">Annuler</span>
         </button>
       </div>
     </form>
