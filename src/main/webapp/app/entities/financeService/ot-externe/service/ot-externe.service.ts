@@ -64,6 +64,10 @@ export class OtExterneService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
+  countByStatut(): Observable<Record<string, number>> {
+    return this.http.get<Record<string, number>>(`${this.resourceUrl}/count-by-statut`);
+  }
+
   query(req?: any): Observable<EntityArrayResponseType> {
     const options = createRequestOption(req);
     return this.http

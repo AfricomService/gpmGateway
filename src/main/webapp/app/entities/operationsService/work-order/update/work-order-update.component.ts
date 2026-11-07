@@ -168,6 +168,12 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   loadingParametresWO = false;
   parametreChecks: { [key: string]: boolean } = {};
 
+  // Sauvegarde indépendante de l'accordéon Options
+  isSavingOptions = false;
+  optionsSaved = false;
+  optionsSaveError = false;
+  private optionsFeedbackTimeoutId?: ReturnType<typeof setTimeout>;
+
   // ================================
   // Accordéon (état purement visuel — même pattern que ot-externe-update)
   // ================================
@@ -436,6 +442,9 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     }
     if (this.ressourceErrorTimeoutId) {
       clearTimeout(this.ressourceErrorTimeoutId);
+    }
+    if (this.optionsFeedbackTimeoutId) {
+      clearTimeout(this.optionsFeedbackTimeoutId);
     }
   }
 
@@ -1072,6 +1081,59 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   toggleParametre(jourIndex: number, parametre: IParametreWO): void {
     const key = this.parametreKey(jourIndex, parametre);
     this.parametreChecks[key] = !this.parametreChecks[key];
+  }
+
+  /**
+   * Enregistre uniquement l'accordéon Options (sans passer par le bouton "Sauvegarder" global) :
+   *  - les lignes par jour (ParametrageDeplacement) via PUT /parametrage-deplacements/work-order/{id}
+   *  - les compteurs du work order via PATCH /work-orders/{id} (les champs null sont ignorés côté backend)
+   */
+  saveOptions(): void {
+    const workOrderId = this.workOrder?.id;
+
+    if (workOrderId === null || workOrderId === undefined || this.isSavingOptions) {
+      return;
+    }
+
+    this.isSavingOptions = true;
+    this.optionsSaved = false;
+    this.optionsSaveError = false;
+
+    const nombreHebergements = this.nombreHebergements;
+    const nombreNuits = this.nombreNuits;
+    const nombreDeplacements = this.nombreDeplacements;
+
+    forkJoin([
+      this.parametrageDeplacementService.replaceForWorkOrder(workOrderId, this.buildParametrages(workOrderId)),
+      this.workOrderService.partialUpdate({
+        id: workOrderId,
+        nombreHebergements,
+        nombreNuits,
+        nombreDeplacements,
+        hebergement: nombreHebergements > 0,
+        missionDeNuit: nombreNuits > 0,
+      }),
+    ])
+      .pipe(finalize(() => (this.isSavingOptions = false)))
+      .subscribe({
+        next: () => this.showOptionsFeedback(false),
+        error: () => this.showOptionsFeedback(true),
+      });
+  }
+
+  private showOptionsFeedback(isError: boolean): void {
+    this.optionsSaved = !isError;
+    this.optionsSaveError = isError;
+
+    if (this.optionsFeedbackTimeoutId) {
+      clearTimeout(this.optionsFeedbackTimeoutId);
+    }
+
+    this.optionsFeedbackTimeoutId = setTimeout(() => {
+      this.optionsSaved = false;
+      this.optionsSaveError = false;
+      this.optionsFeedbackTimeoutId = undefined;
+    }, 3000);
   }
 
   // ================================

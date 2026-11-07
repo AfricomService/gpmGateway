@@ -1,0 +1,243 @@
+@use 'sass:color';
+
+:host {
+  --cp-accent: #2f6fed;
+  --cp-accent-hover: #4f86f2;
+  --cp-accent-light: #e8f0fe;
+  --cp-accent-soft: rgba(47, 111, 237, 0.1);
+  --cp-text: #1a2233;
+  --cp-text-muted: #5b6475;
+  --cp-border: #e9ecf2;
+  --cp-surface: #ffffff;
+  --cp-surface-hover: #f4f6fa;
+  --cp-radius: 10px;
+}
+
+.cu-zone-update {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0.5rem 1rem 1rem;
+}
+
+.cu-container {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* ============ TOOLBAR ============ */
+.cu-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  background: var(--cp-surface-hover);
+  border: 1px solid var(--cp-border);
+  border-radius: 12px;
+  padding: 0.3rem 0.75rem;
+  margin-bottom: 0.6rem;
+  box-shadow: 0 4px 14px -10px rgba(26, 34, 51, 0.15);
+}
+
+.cu-toolbar-end {
+  justify-content: flex-end;
+}
+
+.cu-toolbar-bottom {
+  padding: 0.25rem 0.75rem;
+  margin-bottom: 0;
+}
+
+.cu-badge-id {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--cp-accent);
+  background: var(--cp-accent-soft);
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  margin-right: auto;
+}
+
+/* ============ BOUTONS TOOLBAR ============ */
+.btn-cu-save {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 8px;
+  border: none;
+  background: var(--cp-accent);
+  color: #ffffff;
+  font-size: 0.85rem;
+  box-shadow: 0 6px 14px -8px rgba(47, 111, 237, 0.55);
+  transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+
+  &:hover:not(:disabled) {
+    background: color.adjust(#2f6fed, $lightness: -8%);
+    box-shadow: 0 8px 18px -8px rgba(47, 111, 237, 0.7);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: default;
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+.btn-cu-cancel {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-surface);
+  color: var(--cp-text-muted);
+  font-weight: 600;
+  font-size: 0.8rem;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    background: var(--cp-surface-hover);
+    color: var(--cp-text);
+    border-color: var(--cp-accent);
+  }
+}
+
+/* ============ ACCORDEON ============ */
+.cu-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.cu-accordion-item {
+  background: var(--cp-surface);
+  border: 1px solid var(--cp-border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &.open {
+    border-color: var(--cp-accent);
+    box-shadow: 0 10px 24px -18px rgba(47, 111, 237, 0.5);
+    overflow: visible;
+  }
+}
+
+.cu-accordion-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: none;
+  border-radius: 13px 13px 0 0;
+  background: var(--cp-surface);
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: var(--cp-surface-hover);
+  }
+}
+
+.cu-accordion-item:not(.open) .cu-accordion-header {
+  border-radius: 13px;
+}
+
+.cu-accordion-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--cp-text);
+  min-width: 0;
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.cu-accordion-icon {
+  color: var(--cp-accent);
+  flex-shrink: 0;
+}
+
+.cu-accordion-chevron {
+  color: var(--cp-text-muted);
+  transition: transform 0.25s ease;
+}
+
+.cu-accordion-item.open .cu-accordion-chevron {
+  transform: rotate(180deg);
+  color: var(--cp-accent);
+}
+
+.cu-accordion-body {
+  padding: 0.85rem 1rem;
+  border-top: 1px dashed var(--cp-border);
+
+  .form-label {
+    font-size: 0.85rem;
+    color: var(--cp-text-muted);
+    margin-bottom: 0.2rem;
+  }
+
+  .row {
+    --bs-gutter-x: 1rem;
+  }
+
+  /* !important nécessaire car Bootstrap déclare .mb-3 avec !important */
+  .row > [class*='col-'].mb-3 {
+    margin-bottom: 0.6rem !important;
+  }
+}
+
+/* ============ CHAMPS ============ */
+.cu-input {
+  border-radius: 8px;
+  border: 1px solid var(--cp-border);
+
+  &:focus {
+    border-color: var(--cp-accent);
+    box-shadow: 0 0 0 0.15rem var(--cp-accent-soft);
+  }
+}
+
+select.cu-input {
+  cursor: pointer;
+}
+
+.form-control[readonly] {
+  background: var(--cp-surface-hover);
+  color: var(--cp-text-muted);
+  cursor: default;
+}
+/* ============ CHAMP OBLIGATOIRE ============ */
+.cu-required {
+  color: #dc3545;
+  font-weight: 700;
+  margin-left: 0.2rem;
+}
+
+/* Texte de l'option "-- Sélectionner quelque chose --" quand aucune valeur n'est choisie */
+select.cu-input.ng-invalid {
+  color: var(--cp-text-muted);
+}
+
+select.cu-input.ng-valid {
+  color: var(--cp-text);
+}

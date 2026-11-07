@@ -1,12 +1,13 @@
 .societes-page {
-  --sp-accent: #f5822a;
-  --sp-accent-hover: #ff9a4d;
-  --sp-accent-soft: rgba(245, 130, 42, 0.12);
+  /* Palette alignée sur l'interface work order */
+  --sp-accent: #2f6fed;
+  --sp-accent-hover: #4f86f2;
+  --sp-accent-soft: rgba(47, 111, 237, 0.1);
   --sp-text: #1a2233;
-  --sp-text-muted: #8a93a3;
-  --sp-border: #e7e9ee;
+  --sp-text-muted: #5b6475;
+  --sp-border: #e9ecf2;
   --sp-surface: #ffffff;
-  --sp-surface-hover: #f2f4f8;
+  --sp-surface-hover: #f4f6fa;
   --sp-success: #1f9d55;
   --sp-success-soft: rgba(31, 157, 85, 0.12);
   --sp-info: #7c5cff;
@@ -17,9 +18,9 @@
   --sp-warning-soft: rgba(217, 119, 6, 0.12);
 
   display: flex;
-  /* La navbar est en fixed-top (min-height: 72px) : on réserve l'espace
-     nécessaire pour que le header (titre + boutons) ne soit plus masqué. */
-  padding: 96px 1.5rem 1.5rem;
+  /* Le fil d'Ariane (breadcrumb) réserve déjà l'espace sous la navbar :
+     on ne garde donc qu'un petit espacement en haut. */
+  padding: 1rem 1.5rem 1.5rem;
   align-items: flex-start;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
@@ -34,7 +35,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 
   h2 {
     font-size: 1.5rem;
@@ -85,7 +86,7 @@
   color: #ffffff !important;
   font-weight: 600;
   font-size: 0.92rem;
-  box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.55);
+  box-shadow: 0 8px 18px -8px rgba(47, 111, 237, 0.55);
   transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 
   fa-icon,
@@ -95,7 +96,7 @@
 
   &:hover {
     background: var(--sp-accent-hover) !important;
-    box-shadow: 0 10px 22px -8px rgba(245, 130, 42, 0.7);
+    box-shadow: 0 10px 22px -8px rgba(47, 111, 237, 0.7);
     transform: translateY(-1px);
     color: #ffffff !important;
   }
@@ -226,7 +227,7 @@
 
   &:hover {
     border-color: var(--sp-accent);
-    box-shadow: 0 12px 26px -16px rgba(245, 130, 42, 0.4);
+    box-shadow: 0 12px 26px -16px rgba(47, 111, 237, 0.4);
     transform: translateY(-2px);
   }
 }
@@ -421,7 +422,7 @@
   }
 }
 
-/* ============ PAGINATION ORANGE ============ */
+/* ============ PAGINATION BLEUE ============ */
 ::ng-deep {
   .societes-content ngb-pagination {
     .pagination {
@@ -450,7 +451,7 @@
       &.active .page-link {
         background: var(--sp-accent) !important;
         color: #ffffff !important;
-        box-shadow: 0 4px 10px -4px rgba(245, 130, 42, 0.5);
+        box-shadow: 0 4px 10px -4px rgba(47, 111, 237, 0.5);
       }
 
       &.disabled .page-link {
@@ -464,7 +465,7 @@
 /* ============ RESPONSIVE ============ */
 @media (max-width: 900px) {
   .societes-page {
-    padding: 88px 1rem 1rem;
+    padding: 0.75rem 1rem 1rem;
   }
 
   .societes-toolbar-right {

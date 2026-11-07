@@ -722,9 +722,28 @@
           </button>
 
           <div class="cu-accordion-body" *ngIf="isPanelOpen('options')">
-            <div class="cu-jours-title">
-              Durée prévue :
-              <strong>{{ nombreJoursPrevus }} jour{{ nombreJoursPrevus > 1 ? 's' : '' }}</strong>
+            <div class="cu-options-header">
+              <div class="cu-jours-title">
+                Durée prévue :
+                <strong>{{ nombreJoursPrevus }} jour{{ nombreJoursPrevus > 1 ? 's' : '' }}</strong>
+              </div>
+
+              <div class="cu-options-actions">
+                <span class="cu-options-feedback cu-options-feedback-success" *ngIf="optionsSaved">✓ Options enregistrées</span>
+                <span class="cu-options-feedback cu-options-feedback-error" *ngIf="optionsSaveError">✕ Échec de l'enregistrement</span>
+
+                <button
+                  type="button"
+                  class="btn-cu-save-options"
+                  title="Enregistrer les options"
+                  [disabled]="isSavingOptions || isSaving || joursPrevus.length === 0"
+                  (click)="saveOptions()"
+                >
+                  <span *ngIf="isSavingOptions" class="spinner-border spinner-border-sm"></span>
+                  <fa-icon *ngIf="!isSavingOptions" icon="save"></fa-icon>
+                  &nbsp;Enregistrer
+                </button>
+              </div>
             </div>
 
             <div class="cu-jours-grid" *ngIf="joursPrevus.length > 0">
