@@ -1,12 +1,13 @@
 .agences-page {
-  --agp-accent: #f5822a;
-  --agp-accent-hover: #ff9a4d;
-  --agp-accent-soft: rgba(245, 130, 42, 0.12);
+  /* Palette alignée sur l'interface work order */
+  --agp-accent: #2f6fed;
+  --agp-accent-hover: #4f86f2;
+  --agp-accent-soft: rgba(47, 111, 237, 0.1);
   --agp-text: #1a2233;
-  --agp-text-muted: #8a93a3;
-  --agp-border: #e7e9ee;
+  --agp-text-muted: #5b6475;
+  --agp-border: #e9ecf2;
   --agp-surface: #ffffff;
-  --agp-surface-hover: #f2f4f8;
+  --agp-surface-hover: #f4f6fa;
   --agp-success: #1f9d55;
   --agp-success-soft: rgba(31, 157, 85, 0.12);
   --agp-info: #7c5cff;
@@ -15,9 +16,9 @@
   --agp-danger-soft: rgba(224, 82, 77, 0.12);
 
   display: flex;
-  /* La navbar est en fixed-top (min-height: 72px) : on réserve l'espace
-     nécessaire pour que le header (titre + boutons) ne soit plus masqué. */
-  padding: 24px 1.5rem 1.5rem;
+  /* Le fil d'Ariane (breadcrumb) réserve déjà l'espace sous la navbar :
+     on ne garde donc qu'un petit espacement en haut. */
+  padding: 1rem 1.5rem 1.5rem;
   align-items: flex-start;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
@@ -32,7 +33,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 
   h2 {
     font-size: 1.5rem;
@@ -83,7 +84,7 @@
   color: #ffffff !important;
   font-weight: 600;
   font-size: 0.92rem;
-  box-shadow: 0 8px 18px -8px rgba(245, 130, 42, 0.55);
+  box-shadow: 0 8px 18px -8px rgba(47, 111, 237, 0.55);
   transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 
   fa-icon,
@@ -93,7 +94,7 @@
 
   &:hover {
     background: var(--agp-accent-hover) !important;
-    box-shadow: 0 10px 22px -8px rgba(245, 130, 42, 0.7);
+    box-shadow: 0 10px 22px -8px rgba(47, 111, 237, 0.7);
     transform: translateY(-1px);
     color: #ffffff !important;
   }
@@ -224,7 +225,7 @@
 
   &:hover {
     border-color: var(--agp-accent);
-    box-shadow: 0 12px 26px -16px rgba(245, 130, 42, 0.4);
+    box-shadow: 0 12px 26px -16px rgba(47, 111, 237, 0.4);
     transform: translateY(-2px);
   }
 }
@@ -368,7 +369,7 @@
   justify-content: flex-end;
 }
 
-/* ============ PAGINATION ORANGE ============ */
+/* ============ PAGINATION BLEUE ============ */
 ::ng-deep {
   .agences-content ngb-pagination {
     .pagination {
@@ -397,7 +398,7 @@
       &.active .page-link {
         background: var(--agp-accent) !important;
         color: #ffffff !important;
-        box-shadow: 0 4px 10px -4px rgba(245, 130, 42, 0.5);
+        box-shadow: 0 4px 10px -4px rgba(47, 111, 237, 0.5);
       }
 
       &.disabled .page-link {
@@ -411,7 +412,7 @@
 /* ============ RESPONSIVE ============ */
 @media (max-width: 900px) {
   .agences-page {
-    padding: 20px 1rem 1rem;
+    padding: 0.75rem 1rem 1rem;
   }
 
   .agences-toolbar-right {

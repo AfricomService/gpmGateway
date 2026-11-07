@@ -160,6 +160,8 @@
   &.open {
     border-color: var(--cp-accent);
     box-shadow: 0 10px 24px -18px rgba(47, 111, 237, 0.5);
+    /* Permet aux listes déroulantes (ng-select) de dépasser du cadre de l'accordéon ouvert */
+    overflow: visible;
   }
 }
 
@@ -170,6 +172,7 @@
   justify-content: space-between;
   gap: 0.75rem;
   border: none;
+  border-radius: 13px 13px 0 0;
   background: var(--cp-surface);
   padding: 0.65rem 1rem;
   cursor: pointer;
@@ -178,6 +181,10 @@
   &:hover {
     background: var(--cp-surface-hover);
   }
+}
+
+.cu-accordion-item:not(.open) .cu-accordion-header {
+  border-radius: 13px;
 }
 
 .cu-accordion-header-left {
@@ -818,4 +825,61 @@ textarea.cu-input {
   color: #ffffff;
   font-size: 0.8rem;
   font-weight: 700;
+}
+/* ============ OPTIONS : BOUTON ENREGISTRER ============ */
+.cu-options-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+
+  .cu-jours-title {
+    margin-bottom: 0;
+  }
+}
+
+.cu-options-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.btn-cu-save-options {
+  display: flex;
+  align-items: center;
+  padding: 0.35rem 0.85rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--cp-accent);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  transition: background 0.2s ease, transform 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--cp-accent-hover);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: default;
+  }
+}
+
+.cu-options-feedback {
+  font-size: 0.8rem;
+  font-weight: 600;
+  animation: cu-technicien-error-fade 0.2s ease;
+
+  &.cu-options-feedback-success {
+    color: #1c7c3f;
+  }
+
+  &.cu-options-feedback-error {
+    color: #c0362c;
+  }
 }

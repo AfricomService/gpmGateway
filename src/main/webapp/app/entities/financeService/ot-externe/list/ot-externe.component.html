@@ -104,7 +104,7 @@
 
       <div class="stat-card">
         <div class="stat-info">
-          <span class="stat-label">Création</span>
+          <span class="stat-label">Brouillon</span>
           <span class="stat-value">{{ creationCount }}</span>
         </div>
         <div class="stat-icon stat-icon-neutral">
@@ -114,7 +114,7 @@
 
       <div class="stat-card">
         <div class="stat-info">
-          <span class="stat-label">En cours</span>
+          <span class="stat-label">Exécution des travaux</span>
           <span class="stat-value">{{ enCoursCount }}</span>
         </div>
         <div class="stat-icon stat-icon-warning">
@@ -124,17 +124,7 @@
 
       <div class="stat-card">
         <div class="stat-info">
-          <span class="stat-label">Paiement</span>
-          <span class="stat-value">{{ paiementCount }}</span>
-        </div>
-        <div class="stat-icon stat-icon-success">
-          <fa-icon icon="file-invoice-dollar"></fa-icon>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-info">
-          <span class="stat-label">Fin</span>
+          <span class="stat-label">Terminé</span>
           <span class="stat-value">{{ finCount }}</span>
         </div>
         <div class="stat-icon stat-icon-neutral">
@@ -221,7 +211,7 @@
               <a [routerLink]="['/ot-externe', otExterne.id, 'view']">{{ otExterne.reference }}</a>
             </td>
             <td>{{ getClientName(otExterne.clientId) }}</td>
-            <td>{{ otExterne.affaireId ?? '—' }}</td>
+            <td>{{ getAffaireName(otExterne.affaireId) }}</td>
             <td>
               <span class="badge-statut" [ngClass]="getStatutClass(otExterne.statut)">
                 {{ 'gpmGatewayApp.StatutOtExterne.' + otExterne.statut | translate }}

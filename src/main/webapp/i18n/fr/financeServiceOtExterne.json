@@ -48,6 +48,12 @@
         "modeCreation": "Mode de création",
         "modeleOtPhases": "Modèle OT et phases"
       }
+    },
+    "StatutOtExterne": {
+      "null": "",
+      "Brouillon": "Brouillon",
+      "ExecutionDesTravaux": "Exécution des travaux",
+      "Fin": "Terminé"
     }
   },
   "financeServiceApp": {

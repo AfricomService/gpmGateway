@@ -12,13 +12,19 @@ import { SocieteService } from 'app/entities/projectService/societe/service/soci
 import { IVille } from 'app/entities/projectService/ville/ville.model'; // Update path if needed
 import { VilleService } from 'app/entities/projectService/ville/service/ville.service'; // Update path if needed
 
+type AccordionPanel = 'global';
+
 @Component({
   selector: 'jhi-agence-update',
   templateUrl: './agence-update.component.html',
+  styleUrls: ['./agence-update.component.scss'],
 })
 export class AgenceUpdateComponent implements OnInit {
   isSaving = false;
   agence: IAgence | null = null;
+
+  // Accordéon (état purement visuel — même pattern que work-order-update)
+  openPanels: Set<AccordionPanel> = new Set(['global']);
 
   societesSharedCollection: ISociete[] = [];
   villesSharedCollection: IVille[] = [];
@@ -47,6 +53,21 @@ export class AgenceUpdateComponent implements OnInit {
 
       this.loadRelationshipsOptions();
     });
+  }
+
+  // ================================
+  // Accordéon
+  // ================================
+  togglePanel(panel: AccordionPanel): void {
+    if (this.openPanels.has(panel)) {
+      this.openPanels.delete(panel);
+    } else {
+      this.openPanels.add(panel);
+    }
+  }
+
+  isPanelOpen(panel: AccordionPanel): boolean {
+    return this.openPanels.has(panel);
   }
 
   previousState(): void {

@@ -1,15 +1,4 @@
 <div class="client-update-page">
-  <button
-    type="button"
-    id="back-to-client-list"
-    data-cy="entityBackButton"
-    title="Retour à la liste"
-    class="btn-cu-back-floating"
-    [routerLink]="['/client']"
-  >
-    <fa-icon icon="arrow-left"></fa-icon>
-  </button>
-
   <div class="cu-container">
     <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
       <jhi-alert-error></jhi-alert-error>

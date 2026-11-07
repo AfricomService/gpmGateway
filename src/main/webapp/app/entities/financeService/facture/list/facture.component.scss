@@ -1,43 +1,49 @@
-// ===== Palette (orange app) =====
-$orange-primary: #f97316;
-$orange-dark: #ea580c;
-$orange-light: #fff7ed;
-$orange-border: #fed7aa;
+// ===== Palette (bleu, alignée sur la page Missions) =====
+$blue-primary: #2f6fed;
+$blue-dark: #1e56c8;
+$blue-hover: #4f86f2;
+$blue-light: #eef3fe;
+$blue-border: #c7d7fb;
+
+// Couleur sémantique "en attente / en cours" : on la garde ambre
+$warning: #d97706;
+$warning-soft: #fef3c7;
 
 $text-dark: #1f2937;
 $text-muted: #6b7280;
 $border-light: #e5e7eb;
 $bg-card: #ffffff;
 
-// ===== Fix chevauchement navbar =====
+// Le breadcrumb est déjà rendu par MainComponent : plus de margin-top ici
 :host {
   display: block;
-  margin-top: 70px; // ajustez à la hauteur réelle de votre navbar
 }
 
 .facture-layout {
   display: flex;
   align-items: flex-start;
-  gap: 20px;
+  gap: 16px;
+  padding: 0.75rem 1rem 1rem;
 }
 
 // ===== Sidebar =====
 .fact-sidebar {
-  flex: 0 0 220px;
+  flex: 0 0 210px;
   background: $bg-card;
   border: 1px solid $border-light;
-  border-radius: 12px;
-  padding: 16px 12px;
+  border-radius: 14px;
+  padding: 12px 10px;
   position: sticky;
-  top: 82px;
+  top: 70px;
 }
 
 .sidebar-title {
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: $text-muted;
-  padding: 0 10px 14px;
+  padding: 0 8px 10px;
 }
 
 .sidebar-nav {
@@ -50,11 +56,13 @@ $bg-card: #ffffff;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px;
-  border-radius: 8px;
+  padding: 8px 10px;
+  border-radius: 9px;
   color: $text-dark;
   font-size: 0.9rem;
+  font-weight: 500;
   text-decoration: none;
+  transition: background 0.25s ease, color 0.25s ease;
 
   fa-icon {
     width: 16px;
@@ -62,18 +70,18 @@ $bg-card: #ffffff;
   }
 
   &:hover {
-    background: $orange-light;
+    background: #f4f6fa;
     text-decoration: none;
     color: $text-dark;
   }
 
   &.active {
-    background: $orange-light;
-    color: $orange-dark;
+    background: $blue-light;
+    color: $blue-primary;
     font-weight: 600;
 
     fa-icon {
-      color: $orange-primary;
+      color: $blue-primary;
     }
   }
 }
@@ -82,14 +90,14 @@ $bg-card: #ffffff;
 .facture-page {
   flex: 1;
   min-width: 0;
-  padding: 4px 0;
+  padding: 0;
 }
 
 // ===== Cartes statistiques =====
 .stats-row {
   display: flex;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   flex-wrap: wrap;
 }
 
@@ -97,8 +105,8 @@ $bg-card: #ffffff;
   flex: 1 1 220px;
   background: $bg-card;
   border: 1px solid $border-light;
-  border-radius: 12px;
-  padding: 18px 20px;
+  border-radius: 14px;
+  padding: 14px 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -108,7 +116,7 @@ $bg-card: #ffffff;
 .stat-info {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .stat-label {
@@ -128,7 +136,7 @@ $bg-card: #ffffff;
 }
 
 .stat-value-warning {
-  color: $orange-dark;
+  color: $warning;
 }
 
 .stat-icon {
@@ -158,8 +166,8 @@ $bg-card: #ffffff;
 }
 
 .stat-icon-warning {
-  background: #ffedd5;
-  color: $orange-dark;
+  background: $warning-soft;
+  color: $warning;
 }
 
 // ===== En-tête =====
@@ -169,10 +177,11 @@ $bg-card: #ffffff;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 
   h2 {
     margin: 0;
+    font-size: 1.4rem;
     font-weight: 700;
     color: $text-dark;
   }
@@ -186,27 +195,32 @@ $bg-card: #ffffff;
 .btn-outline-refresh {
   background: #fff;
   border: 1px solid $border-light;
-  color: $text-dark;
-  border-radius: 8px;
+  color: $text-muted;
+  border-radius: 10px;
   padding: 8px 14px;
   font-weight: 500;
+  transition: background 0.25s ease;
 
   &:hover {
-    background: #f9fafb;
+    background: #f4f6fa;
   }
 }
 
-.btn-primary-orange {
-  background: $orange-primary;
-  border: 1px solid $orange-primary;
+.btn-primary-blue {
+  background: $blue-primary;
+  border: 1px solid $blue-primary;
   color: #fff;
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 8px 16px;
   font-weight: 600;
+  box-shadow: 0 8px 18px -8px rgba($blue-primary, 0.55);
+  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 
   &:hover {
-    background: $orange-dark;
-    border-color: $orange-dark;
+    background: $blue-hover;
+    border-color: $blue-hover;
+    color: #fff;
+    transform: translateY(-1px);
   }
 }
 
@@ -215,7 +229,7 @@ $bg-card: #ffffff;
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
   flex-wrap: wrap;
 }
 
@@ -227,11 +241,13 @@ $bg-card: #ffffff;
   background: #fff;
   border: 1px solid $border-light;
   border-radius: 10px;
-  padding: 10px 14px;
+  padding: 0 14px;
+  height: 40px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
 
   &:focus-within {
-    border-color: $orange-primary;
-    box-shadow: 0 0 0 3px rgba($orange-primary, 0.12);
+    border-color: $blue-primary;
+    box-shadow: 0 0 0 3px rgba($blue-primary, 0.12);
   }
 }
 
@@ -242,10 +258,12 @@ $bg-card: #ffffff;
 
 .search-input {
   flex: 1;
+  height: 100%;
   border: none;
   outline: none;
   font-size: 0.95rem;
   color: $text-dark;
+  background: transparent;
 
   &::placeholder {
     color: $text-muted;
@@ -255,7 +273,8 @@ $bg-card: #ffffff;
 .statut-select {
   border: 1px solid $border-light;
   border-radius: 10px;
-  padding: 10px 14px;
+  height: 40px;
+  padding: 0 14px;
   font-size: 0.9rem;
   color: $text-dark;
   background: #fff;
@@ -263,20 +282,22 @@ $bg-card: #ffffff;
 
   &:focus {
     outline: none;
-    border-color: $orange-primary;
-    box-shadow: 0 0 0 3px rgba($orange-primary, 0.12);
+    border-color: $blue-primary;
+    box-shadow: 0 0 0 3px rgba($blue-primary, 0.12);
   }
 }
 
 .btn-clear-filters {
-  border: none;
-  background: transparent;
+  border: 1px solid $border-light;
+  background: #fff;
   color: $text-muted;
-  padding: 8px;
-  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  transition: background 0.25s ease, color 0.25s ease;
 
   &:hover {
-    background: #f3f4f6;
+    background: #f4f6fa;
     color: $text-dark;
   }
 }
@@ -291,7 +312,7 @@ $bg-card: #ffffff;
 .view-toggle {
   display: flex;
   border: 1px solid $border-light;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
 }
 
@@ -299,34 +320,42 @@ $bg-card: #ffffff;
   border: none;
   background: #fff;
   color: $text-muted;
-  padding: 8px 12px;
+  width: 40px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s ease, color 0.25s ease;
 
   &:hover {
-    background: #f9fafb;
+    background: #f4f6fa;
   }
 
   &.active {
-    background: $orange-light;
-    color: $orange-dark;
+    background: $blue-light;
+    color: $blue-primary;
   }
 }
 
 // ===== Tableau =====
 .table-entities {
   background: $bg-card;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid $border-light;
   overflow: hidden;
+  margin-bottom: 12px;
 }
 
 .facture-table {
   margin-bottom: 0;
 
   thead th {
-    background: #fafafa;
+    background: #f4f6fa;
     color: $text-muted;
-    font-weight: 600;
-    font-size: 0.85rem;
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
     border-bottom: 1px solid $border-light;
     white-space: nowrap;
   }
@@ -342,49 +371,48 @@ $bg-card: #ffffff;
     border-bottom: none;
   }
 
-  tbody tr:hover {
-    background: $orange-light;
-  }
-
   .col-actions {
     width: 1%;
   }
 }
 
 .cell-reference {
-  color: $orange-dark;
-  font-weight: 600;
+  color: $blue-primary;
+  font-weight: 700;
 }
 
 .row-clickable {
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background 0.2s ease;
 }
 
 .facture-table tbody tr.row-clickable:hover {
-  background: $orange-light;
+  background: $blue-light;
 }
 
 .facture-grid .facture-card.row-clickable:hover {
-  border-color: $orange-border;
-  box-shadow: 0 2px 8px rgba($orange-primary, 0.12);
+  border-color: $blue-primary;
+  box-shadow: 0 12px 26px -16px rgba($blue-primary, 0.4);
+  transform: translateY(-2px);
 }
 
 // ===== Vue grille =====
 .facture-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+  margin-bottom: 12px;
 }
 
 .facture-card {
   background: $bg-card;
   border: 1px solid $border-light;
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 14px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 }
 
 .facture-card-header {
@@ -417,7 +445,7 @@ $bg-card: #ffffff;
 
 .row-value-strong {
   font-weight: 700;
-  color: $orange-dark;
+  color: $blue-primary;
 }
 
 .facture-card-footer {
@@ -453,8 +481,8 @@ $bg-card: #ffffff;
 }
 
 .badge-decharge {
-  background: #ffedd5;
-  color: $orange-dark;
+  background: $warning-soft;
+  color: $warning;
 }
 
 .badge-fin {
@@ -480,12 +508,12 @@ $bg-card: #ffffff;
 }
 
 .btn-view {
-  background: $orange-light;
-  color: $orange-dark;
-  border-color: $orange-border;
+  background: $blue-light;
+  color: $blue-dark;
+  border-color: $blue-border;
 
   &:hover {
-    background: $orange-border;
+    background: $blue-border;
   }
 }
 
@@ -513,6 +541,7 @@ $bg-card: #ffffff;
 @media (max-width: 900px) {
   .facture-layout {
     flex-direction: column;
+    padding: 0.6rem 0.75rem 1rem;
   }
 
   .fact-sidebar {
@@ -525,33 +554,44 @@ $bg-card: #ffffff;
     margin-left: 0;
   }
 }
-// ===== Pagination (thème orange) =====
-::ng-deep .ot-externe-page ngb-pagination,
+
+// ===== Pagination (thème bleu) =====
 ::ng-deep .facture-page ngb-pagination {
+  .pagination {
+    gap: 0.35rem;
+    margin-bottom: 0;
+  }
+
   .page-link {
-    color: $orange-dark;
-    border-color: $border-light;
+    border: none;
+    border-radius: 8px;
+    color: $text-muted;
+    font-weight: 600;
+    min-width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, color 0.2s ease;
 
     &:hover {
-      background-color: $orange-light;
-      border-color: $orange-border;
-      color: $orange-dark;
+      background-color: rgba($blue-primary, 0.1);
+      color: $blue-primary;
     }
 
     &:focus {
-      box-shadow: 0 0 0 3px rgba($orange-primary, 0.15);
+      box-shadow: 0 0 0 3px rgba($blue-primary, 0.15);
     }
   }
 
   .page-item.active .page-link {
-    background-color: $orange-primary;
-    border-color: $orange-primary;
+    background-color: $blue-primary;
     color: #fff;
+    box-shadow: 0 4px 10px -4px rgba($blue-primary, 0.5);
   }
 
   .page-item.disabled .page-link {
-    color: $text-muted;
-    background-color: #fff;
-    border-color: $border-light;
+    color: #c4cad6;
+    background-color: transparent;
   }
 }
