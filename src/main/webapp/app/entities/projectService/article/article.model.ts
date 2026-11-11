@@ -10,6 +10,9 @@ export interface IArticle {
   prixUnitHT?: number | null;
   prixAchat?: number | null;
   granularite?: string | null;
+  itemCode?: string | null;
+  familleArticle?: string | null;
+  codeGroupe?: string | null;
 
   createdAt?: dayjs.Dayjs | null;
   updatedAt?: dayjs.Dayjs | null;

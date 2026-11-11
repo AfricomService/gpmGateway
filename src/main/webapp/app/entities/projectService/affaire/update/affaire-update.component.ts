@@ -1018,6 +1018,7 @@ export class AffaireUpdateComponent implements OnInit {
   protected updateForm(affaire: IAffaire): void {
     this.affaire = affaire;
     this.isEditMode = !affaire.id;
+
     this.affaireFormService.resetForm(this.editForm, affaire);
 
     if (!affaire.id && !this.editForm.get('statut')?.value) {
