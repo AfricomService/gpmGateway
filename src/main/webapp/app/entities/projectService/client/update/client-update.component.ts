@@ -10,6 +10,7 @@ import { ClientService } from '../service/client.service';
 import { IContact, NewContact } from 'app/entities/projectService/contact/contact.model';
 import { ContactService } from 'app/entities/projectService/contact/service/contact.service';
 import { ISite, NewSite } from 'app/entities/projectService/site/site.model';
+import { ISiteList } from 'app/entities/projectService/site/site-list.model';
 import { SiteService } from 'app/entities/projectService/site/service/site.service';
 import { SiteImportService, ISiteImportResult } from 'app/entities/projectService/site/service/site-import.service';
 import { IVille } from 'app/entities/projectService/ville/ville.model';
@@ -39,6 +40,7 @@ export class ClientUpdateComponent implements OnInit {
   @ViewChild('agenceModal') agenceModal!: TemplateRef<unknown>;
   @ViewChild('siteImportModal') siteImportModal!: TemplateRef<unknown>;
   @ViewChild('keycloakResultModal') keycloakResultModal!: TemplateRef<unknown>;
+  @ViewChild('siteDeleteModal') siteDeleteModal!: TemplateRef<unknown>;
 
   isSaving = false;
   client: IClient | null = null;
@@ -48,7 +50,7 @@ export class ClientUpdateComponent implements OnInit {
   contactSearchTerm = '';
 
   allSites: ISite[] = [];
-  selectedSites: ISite[] = [];
+  selectedSites: ISiteList[] = [];
   allVilles: IVille[] = [];
   siteSearchTerm = '';
   sitesPage = 0;
@@ -71,6 +73,10 @@ export class ClientUpdateComponent implements OnInit {
   newSite: Partial<NewSite> = {};
 
   editingSite: ISite | null = null;
+  siteCodeError: string | null = null;
+
+  siteToDelete: ISiteList | null = null;
+  deletingSite = false;
 
   siteImportFile: File | null = null;
   siteImportInProgress = false;
@@ -406,15 +412,24 @@ export class ClientUpdateComponent implements OnInit {
   }
 
   openSiteModal(): void {
+    this.editingSite = null;
+    this.siteCodeError = null;
     this.newSite = { ville: null };
     this.modalService.open(this.siteModal, { size: 'lg', backdrop: 'static', centered: true });
   }
 
-  openEditSiteModal(site: ISite): void {
-    this.editingSite = site;
-    const { id, ...siteWithoutId } = site;
-    this.newSite = { ...siteWithoutId };
-    this.modalService.open(this.siteModal, { size: 'lg', backdrop: 'static', centered: true });
+  openEditSiteModal(siteRow: ISiteList): void {
+    this.siteService.find(siteRow.id).subscribe(res => {
+      const site = res.body;
+      if (!site) {
+        return;
+      }
+      this.editingSite = site;
+      this.siteCodeError = null;
+      const { id, ...siteWithoutId } = site;
+      this.newSite = { ...siteWithoutId };
+      this.modalService.open(this.siteModal, { size: 'lg', backdrop: 'static', centered: true });
+    });
   }
 
   compareVille = (o1: IVille | { id: number; nom: string } | null, o2: IVille | { id: number; nom: string } | null): boolean =>
@@ -424,7 +439,7 @@ export class ClientUpdateComponent implements OnInit {
 
   saveSite(modal: any): void {
     const clientRef = this.client ? { id: this.client.id, raisonSociale: this.client.raisonSociale } : null;
-    if (!clientRef || !this.newSite.code?.trim() || !this.newSite.designation?.trim() || !this.newSite.ville) {
+    if (!clientRef || !this.newSite.code?.trim()) {
       return;
     }
 
@@ -432,7 +447,7 @@ export class ClientUpdateComponent implements OnInit {
       const siteToUpdate: ISite = {
         ...this.editingSite,
         code: this.newSite.code.trim(),
-        designation: this.newSite.designation.trim(),
+        designation: this.newSite.designation?.trim() || null,
         gpsX: this.newSite.gpsX ?? null,
         gpsY: this.newSite.gpsY ?? null,
         nodaleGpm: this.newSite.nodaleGpm?.trim() ?? null,
@@ -440,7 +455,7 @@ export class ClientUpdateComponent implements OnInit {
         typeSite: this.newSite.typeSite?.trim() ?? null,
         regionSite: this.newSite.regionSite?.trim() ?? null,
         zoneNom: this.newSite.zoneNom?.trim() ?? null,
-        ville: this.newSite.ville,
+        ville: this.newSite.ville ?? null,
       };
 
       this.siteService.update(siteToUpdate).subscribe({
@@ -448,9 +463,7 @@ export class ClientUpdateComponent implements OnInit {
           this.loadSites();
           modal.close();
         },
-        error: () => {
-          // Optionnel : notifier l'utilisateur via jhi-alert-error ou toast
-        },
+        error: err => this.onSiteSaveError(err),
       });
       return;
     }
@@ -458,7 +471,7 @@ export class ClientUpdateComponent implements OnInit {
     const siteToCreate: NewSite = {
       id: null,
       code: this.newSite.code.trim(),
-      designation: this.newSite.designation.trim(),
+      designation: this.newSite.designation?.trim() || null,
       gpsX: this.newSite.gpsX ?? null,
       gpsY: this.newSite.gpsY ?? null,
       nodaleGpm: this.newSite.nodaleGpm?.trim() ?? null,
@@ -466,7 +479,7 @@ export class ClientUpdateComponent implements OnInit {
       typeSite: this.newSite.typeSite?.trim() ?? null,
       regionSite: this.newSite.regionSite?.trim() ?? null,
       zoneNom: this.newSite.zoneNom?.trim() ?? null,
-      ville: this.newSite.ville,
+      ville: this.newSite.ville ?? null,
       client: clientRef,
     };
 
@@ -475,10 +488,14 @@ export class ClientUpdateComponent implements OnInit {
         this.loadSites();
         modal.close();
       },
-      error: () => {
-        // Optionnel : notifier l'utilisateur via jhi-alert-error ou toast
-      },
+      error: err => this.onSiteSaveError(err),
     });
+  }
+
+  protected onSiteSaveError(err: any): void {
+    if (err?.error?.errorKey === 'codeexists') {
+      this.siteCodeError = 'Ce code de site est déjà utilisé pour ce client. Veuillez saisir un autre code.';
+    }
   }
 
   openSiteImportModal(): void {
@@ -568,16 +585,32 @@ export class ClientUpdateComponent implements OnInit {
     });
   }
 
-  unlinkSite(site: ISite): void {
+  unlinkSite(site: ISiteList): void {
     if (!site.id) {
       return;
     }
-    this.siteService.delete(site.id).subscribe({
+    this.siteToDelete = site;
+    this.modalService.open(this.siteDeleteModal, { size: 'md', backdrop: 'static', centered: true });
+  }
+
+  confirmDeleteSite(modal: any): void {
+    if (!this.siteToDelete?.id) {
+      return;
+    }
+    this.deletingSite = true;
+    this.siteService.delete(this.siteToDelete.id).subscribe({
       next: () => {
+        this.deletingSite = false;
+        this.siteToDelete = null;
+        modal.close();
+        // Si on vient de supprimer le dernier site de la page, on revient à la page précédente
+        if (this.selectedSites.length === 1 && this.sitesPage > 0) {
+          this.sitesPage--;
+        }
         this.loadSites();
       },
       error: () => {
-        // Optionnel : notifier l'utilisateur via jhi-alert-error ou toast
+        this.deletingSite = false;
       },
     });
   }
@@ -590,10 +623,10 @@ export class ClientUpdateComponent implements OnInit {
     const term = this.siteSearchTerm.trim();
 
     const request$ = term
-      ? this.siteService.searchByClientId(this.client.id, term, req)
-      : this.siteService.findByClientId(this.client.id, req);
+      ? this.siteService.searchListByClientId(this.client.id, term, req)
+      : this.siteService.findListByClientId(this.client.id, req);
 
-    request$.subscribe((res: HttpResponse<ISite[]>) => {
+    request$.subscribe((res: HttpResponse<ISiteList[]>) => {
       this.selectedSites = res.body ?? [];
       this.sitesTotalItems = Number(res.headers.get('X-Total-Count')) || 0;
     });
@@ -602,6 +635,10 @@ export class ClientUpdateComponent implements OnInit {
   searchSites(): void {
     this.sitesPage = 0;
     this.loadSites();
+  }
+
+  get sitesTotalPages(): number {
+    return Math.max(1, Math.ceil(this.sitesTotalItems / this.sitesItemsPerPage));
   }
 
   sitesPreviousPage(): void {

@@ -3,7 +3,7 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import dayjs from 'dayjs/esm';
-
+import { ISiteList } from '../site-list.model';
 import { isPresent } from 'app/core/util/operators';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
@@ -80,6 +80,17 @@ export class SiteService {
     return this.http
       .get<RestSite[]>(`${this.resourceUrl}/client/${clientId}/search`, { params, observe: 'response' })
       .pipe(map(res => this.convertResponseArrayFromServer(res)));
+  }
+
+  findListByClientId(clientId: number, req?: any): Observable<HttpResponse<ISiteList[]>> {
+    const options = createRequestOption(req);
+    return this.http.get<ISiteList[]>(`${this.resourceUrl}/client/${clientId}/list`, { params: options, observe: 'response' });
+  }
+
+  searchListByClientId(clientId: number, designation: string, req?: any): Observable<HttpResponse<ISiteList[]>> {
+    const options = createRequestOption(req);
+    const params = { ...options, designation };
+    return this.http.get<ISiteList[]>(`${this.resourceUrl}/client/${clientId}/list/search`, { params, observe: 'response' });
   }
 
   getSiteIdentifier(site: Pick<ISite, 'id'>): number {
