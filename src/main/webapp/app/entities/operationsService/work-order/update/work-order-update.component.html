@@ -713,6 +713,93 @@
           </div>
         </div>
 
+        <!-- SECTION : ARTICLES ASSOCIES -->
+        <div *ngIf="workOrder" class="cu-accordion-item" [class.open]="isPanelOpen('articlesAssocies')">
+          <button type="button" class="cu-accordion-header" (click)="togglePanel('articlesAssocies')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="box-open" class="cu-accordion-icon"></fa-icon>
+              <span>Articles associés</span>
+              <span class="cu-accordion-count" *ngIf="chosenArticles.length">{{ chosenArticles.length }}</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isPanelOpen('articlesAssocies')">
+            <ng-container *ngIf="workOrder?.id; else woNotSavedArticles">
+              <ng-container *ngIf="selectedAffaire; else noProjetSelected">
+                <div class="cu-detail-toolbar">
+                  <button type="button" class="btn-cu-add" (click)="openArticleModal()" [disabled]="savingChosenArticles">
+                    <span *ngIf="savingChosenArticles" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    <fa-icon *ngIf="!savingChosenArticles" icon="box-open"></fa-icon>&nbsp;{{
+                      savingChosenArticles ? 'Enregistrement...' : 'Sélectionner des articles'
+                    }}
+                  </button>
+                </div>
+
+                <div *ngIf="chosenArticles.length > 0; else noArticlesChosen" class="cu-item-list">
+                  <div class="cu-item-card" *ngFor="let sel of chosenArticles">
+                    <div class="cu-item-info">
+                      <div class="cu-item-title">
+                        <strong>{{ sel.article.code }} - ({{ sel.article.codeClient }})</strong> — {{ sel.article.designation }}
+                        <span class="text-muted ms-2" *jhiHasAnyAuthority="'ROLE_CAN_SEE_PRICE'"
+                          >(Prix HT: {{ sel.article.prixUnitHT }} DT - Prix Achat: {{ sel.article.prixAchat }} DT)</span
+                        >
+                      </div>
+                    </div>
+
+                    <div class="cu-item-qte" *ngIf="sel.article.id">
+                      <label class="cu-item-qte-label">Qté commandée</label>
+                      <input
+                        type="number"
+                        min="1"
+                        class="form-control form-control-sm cu-item-qte-input"
+                        [ngModel]="sel.qte"
+                        [ngModelOptions]="{ standalone: true }"
+                        [disabled]="savingChosenArticles"
+                        (ngModelChange)="onChosenArticleQuantityChange(sel.article.id, $event)"
+                        (change)="commitChosenArticleQuantity()"
+                      />
+                    </div>
+
+                    <div class="cu-item-qte" *ngIf="sel.article.id">
+                      <label class="cu-item-qte-label">Qté effectuée</label>
+                      <input
+                        type="number"
+                        class="form-control form-control-sm cu-item-qte-input"
+                        [value]="sel.qteEffectuee ?? 0"
+                        readonly
+                      />
+                    </div>
+
+                    <button
+                      *ngIf="sel.article.id"
+                      type="button"
+                      class="cu-item-remove"
+                      [disabled]="removingArticleId === sel.article.id || savingChosenArticles"
+                      (click)="askRemoveChosenArticle(sel)"
+                    >
+                      <span *ngIf="removingArticleId === sel.article.id" class="spinner-border spinner-border-sm" role="status"></span>
+                      <fa-icon *ngIf="removingArticleId !== sel.article.id" icon="times"></fa-icon>
+                    </button>
+                  </div>
+                </div>
+
+                <ng-template #noArticlesChosen>
+                  <div class="cu-empty-panel">Aucun article sélectionné. Cliquez sur « Sélectionner des articles » pour en ajouter.</div>
+                </ng-template>
+              </ng-container>
+
+              <ng-template #noProjetSelected>
+                <div class="cu-empty-panel">Sélectionnez d'abord un projet pour choisir ses articles.</div>
+              </ng-template>
+            </ng-container>
+
+            <ng-template #woNotSavedArticles>
+              <div class="cu-empty-panel">Vous devez d'abord enregistrer le work order pour pouvoir ajouter des articles.</div>
+            </ng-template>
+          </div>
+        </div>
+
         <!-- SECTION 4 : OPTIONS (visible uniquement une fois le work order sauvegardé, donc en mode édition) -->
         <div class="cu-accordion-item" *ngIf="workOrder?.id" [class.open]="isPanelOpen('options')">
           <button type="button" class="cu-accordion-header" (click)="togglePanel('options')">
@@ -1870,6 +1957,29 @@
         </div>
       </ng-template>
 
+      <!-- MODAL : Confirmation de suppression d'un article -->
+      <ng-template #woArticleDeleteConfirmModal let-modal>
+        <div class="modal-header">
+          <h5 class="modal-title"><fa-icon icon="exclamation-triangle"></fa-icon>&nbsp;Confirmer la suppression</h5>
+          <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-2">Voulez-vous vraiment retirer cet article du work order ?</p>
+          <div class="alert alert-warning mb-0" *ngIf="articleToRemove">
+            <strong>{{ articleToRemove.article.code }}</strong>
+            <span *ngIf="articleToRemove.article.codeClient"> ({{ articleToRemove.article.codeClient }})</span>
+            — {{ articleToRemove.article.designation }}
+            <br />
+            <small>Quantité commandée : {{ articleToRemove.qte }}</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss()">
+            <fa-icon icon="times"></fa-icon>&nbsp;Annuler
+          </button>
+          <button type="button" class="btn btn-danger" (click)="modal.close(true)"><fa-icon icon="trash"></fa-icon>&nbsp;Supprimer</button>
+        </div>
+      </ng-template>
       <!-- ====================================================== -->
       <!-- MODAL RENOMMER PIECE JOINTE -->
       <!-- ====================================================== -->
