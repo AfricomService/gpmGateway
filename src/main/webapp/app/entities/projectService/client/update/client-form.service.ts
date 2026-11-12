@@ -45,6 +45,7 @@ type ClientFormGroupContent = {
   updatedBy: FormControl<ClientFormRawValue['updatedBy']>;
   updatedByUserLogin: FormControl<ClientFormRawValue['updatedByUserLogin']>;
   status: FormControl<ClientFormRawValue['status']>;
+  matriculeFiscale: FormControl<ClientFormRawValue['matriculeFiscale']>;
 };
 
 export type ClientFormGroup = FormGroup<ClientFormGroupContent>;
@@ -85,6 +86,7 @@ export class ClientFormService {
       updatedBy: new FormControl(clientRawValue.updatedBy),
       updatedByUserLogin: new FormControl(clientRawValue.updatedByUserLogin),
       status: new FormControl(clientRawValue.status),
+      matriculeFiscale: new FormControl(clientRawValue.matriculeFiscale),
     });
   }
 

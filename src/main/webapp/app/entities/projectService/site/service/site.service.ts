@@ -82,6 +82,12 @@ export class SiteService {
       .pipe(map(res => this.convertResponseArrayFromServer(res)));
   }
 
+  searchLieuxByClientId(clientId: number, search: string, req?: any): Observable<HttpResponse<ISite[]>> {
+    const options = createRequestOption(req);
+    const params = { ...options, search };
+    return this.http.get<ISite[]>(`${this.resourceUrl}/client/${clientId}/lieux`, { params, observe: 'response' });
+  }
+
   findListByClientId(clientId: number, req?: any): Observable<HttpResponse<ISiteList[]>> {
     const options = createRequestOption(req);
     return this.http.get<ISiteList[]>(`${this.resourceUrl}/client/${clientId}/list`, { params: options, observe: 'response' });

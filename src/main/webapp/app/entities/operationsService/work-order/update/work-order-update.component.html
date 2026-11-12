@@ -256,6 +256,8 @@
                     [searchable]="true"
                     [clearable]="true"
                     [loading]="loadingClientSites"
+                    [typeahead]="clientSitesSearch$"
+                    (scrollToEnd)="onClientSitesScrollToEnd()"
                     placeholder="Sélectionnez d'abord un projet"
                     notFoundText="Aucun site trouvé pour ce client"
                     loadingText="Chargement..."
@@ -263,9 +265,9 @@
                     [ngModelOptions]="{ standalone: true }"
                     (change)="onLieuSelectChange($event)"
                   >
-                    <ng-template ng-label-tmp let-item="item"> {{ item.designation }} </ng-template>
+                    <ng-template ng-label-tmp let-item="item"> {{ item.designation || item.code }} </ng-template>
                     <ng-template ng-option-tmp let-item="item">
-                      <div>{{ item.designation }}</div>
+                      <div>{{ item.designation || item.code }}</div>
                       <small class="text-muted" *ngIf="item.code">Code : {{ item.code }}</small>
                     </ng-template>
                   </ng-select>

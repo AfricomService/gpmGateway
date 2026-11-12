@@ -126,8 +126,15 @@
               </div>
 
               <div class="col-md-4 mb-3">
-                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceClient.fax" for="field_fax">Fax</label>
-                <input type="text" class="form-control" name="fax" id="field_fax" data-cy="fax" formControlName="fax" />
+                <label class="form-label fw-bold" for="field_matriculeFiscale">Matricule fiscale</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="matriculeFiscale"
+                  id="field_matriculeFiscale"
+                  data-cy="matriculeFiscale"
+                  formControlName="matriculeFiscale"
+                />
               </div>
             </div>
           </div>
@@ -396,7 +403,7 @@
       <div class="cu-toolbar cu-toolbar-bottom">
         <div class="cu-toolbar-left">
           <span *ngIf="editForm.get('status')?.value" class="cu-badge-status">
-            {{ editForm.get('status')?.value }}
+            {{ getStatusLabel(editForm.get('status')?.value) }}
           </span>
 
           <button

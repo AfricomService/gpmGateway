@@ -695,6 +695,21 @@ export class ClientUpdateComponent implements OnInit {
     });
   }
 
+  getStatusLabel(status?: string | null): string {
+    switch (status) {
+      case 'ACTIF':
+        return 'ACTIF';
+      case 'DEACTIVATED':
+        return 'DÉSACTIVÉ';
+      case 'DRAFT':
+        return 'BROUILLON';
+      case 'DELETED':
+        return 'SUPPRIMÉ';
+      default:
+        return status ?? '';
+    }
+  }
+
   save(): void {
     this.isSaving = true;
     const client = this.clientFormService.getClient(this.editForm);
@@ -715,9 +730,10 @@ export class ClientUpdateComponent implements OnInit {
 
   protected onSaveSuccess(res: HttpResponse<IClient>, isNewClient: boolean): void {
     if (isNewClient && res.body?.id) {
-      this.router.navigate(['/client', res.body.id, 'edit']);
-    } else {
-      this.previousState();
+      this.router.navigate(['/client', res.body.id, 'edit'], { replaceUrl: true });
+    } else if (res.body) {
+      // On reste sur la page : on met à jour le client et le formulaire avec les données enregistrées
+      this.updateForm(res.body);
     }
   }
 
