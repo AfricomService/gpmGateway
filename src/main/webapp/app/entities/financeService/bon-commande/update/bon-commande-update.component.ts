@@ -81,6 +81,8 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
 
   @ViewChild('statutConfirmModal') statutConfirmModal!: TemplateRef<any>;
 
+  @ViewChild('articleDeleteConfirmModal') articleDeleteConfirmModal!: TemplateRef<any>;
+
   isSaving = false;
   bonCommande: IBonCommande | null = null;
 
@@ -90,6 +92,8 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   // Accordéon
   // ================================
   openPanels: Set<AccordionPanel> = new Set(['global']);
+
+  articleToRemove: ArticleSelection | null = null;
 
   // ================================
   // Liste déroulante Affaire (ng-select)
@@ -210,6 +214,8 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
     protected stepperService: StatusStepperService
   ) {}
 
+  readonly statutSteps: StatusStep[] = BON_COMMANDE_STEPS;
+
   ngOnInit(): void {
     // Cycle de vie affiché sous le breadcrumb (rendu par MainComponent)
     this.stepperService.show(this.statutSteps, this.currentStatut);
@@ -232,6 +238,12 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
         });
       }
     });
+
+    /**
+     * Ouvre la modale de confirmation avant de supprimer la liaison
+     * Bon de commande <-> Article. La suppression réelle n'a lieu
+     * qu'après clic sur "Supprimer".
+     */
 
     // Recherche avec debounce de 300 ms
     this.affaireSearch$
@@ -259,6 +271,33 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
       });
   }
 
+  askRemoveChosenArticle(sel: ArticleSelection): void {
+    if (this.removingArticleId !== null || sel.article.id === null || sel.article.id === undefined) {
+      return;
+    }
+
+    this.articleToRemove = sel;
+
+    const modalRef = this.modalService.open(this.articleDeleteConfirmModal, {
+      size: 'md',
+      centered: true,
+      backdrop: 'static',
+    });
+
+    modalRef.result
+      .then(confirmed => {
+        if (confirmed && sel.article.id !== null && sel.article.id !== undefined) {
+          this.removeChosenArticle(sel.article.id);
+        }
+      })
+      .catch(() => {
+        // Modale annulée : on ne fait rien
+      })
+      .finally(() => {
+        this.articleToRemove = null;
+      });
+  }
+
   ngOnDestroy(): void {
     this.affaireSearch$.complete();
     this.stepperService.clear(); // le stepper disparaît en quittant la page
@@ -282,8 +321,6 @@ export class BonCommandeUpdateComponent implements OnInit, OnDestroy {
   get isExisting(): boolean {
     return this.editForm.controls.id.value !== null;
   }
-
-  readonly statutSteps: StatusStep[] = BON_COMMANDE_STEPS;
 
   // En création, le statut n'existe pas encore : le backend le fixe à "Brouillon" au save()
   get currentStatut(): string {
