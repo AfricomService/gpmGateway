@@ -1,11 +1,13 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { of, Subject } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
 import { ISite } from 'app/entities/projectService/site/site.model';
 import { SiteService } from 'app/entities/projectService/site/service/site.service';
+
+const PAGE_SIZE = 20;
 
 @Component({
   selector: 'jhi-site-selector-modal',
@@ -19,64 +21,95 @@ export class SiteSelectorModalComponent implements OnInit, OnDestroy {
    */
   @Input() clientId: number | null = null;
 
-  allSites: ISite[] = [];
   sites: ISite[] = [];
 
   search = '';
 
   loading = false;
 
+  // Pagination serveur (page 0-based, comme Spring Data)
+  page = 0;
+  readonly pageSize = PAGE_SIZE;
+  totalItems = 0;
+
   private readonly searchSubject = new Subject<string>();
+  private readonly loadSubject = new Subject<void>();
 
   constructor(public activeModal: NgbActiveModal, private siteService: SiteService) {}
 
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.totalItems / this.pageSize));
+  }
+
+  get hasPrevious(): boolean {
+    return this.page > 0;
+  }
+
+  get hasNext(): boolean {
+    return this.page + 1 < this.totalPages;
+  }
+
   ngOnInit(): void {
-    this.searchSubject.pipe(debounceTime(300), distinctUntilChanged()).subscribe(search => {
-      this.applyFilter(search);
+    // Toute nouvelle recherche repart de la première page
+    this.searchSubject.pipe(debounceTime(300), distinctUntilChanged()).subscribe(() => {
+      this.page = 0;
+      this.loadSubject.next();
     });
+
+    // switchMap : une réponse tardive ne peut pas écraser une requête plus récente
+    this.loadSubject
+      .pipe(
+        switchMap(() => {
+          this.loading = true;
+          return this.siteService
+            .searchLieuxByClientId(this.clientId as number, this.search.trim(), { page: this.page, size: this.pageSize })
+            .pipe(catchError(() => of(null)));
+        })
+      )
+      .subscribe((res: HttpResponse<ISite[]> | null) => {
+        if (res) {
+          this.sites = res.body ?? [];
+          this.totalItems = Number(res.headers.get('X-Total-Count') ?? this.sites.length);
+        } else {
+          this.sites = [];
+          this.totalItems = 0;
+        }
+        this.loading = false;
+      });
 
     this.loadSites();
   }
 
   ngOnDestroy(): void {
     this.searchSubject.complete();
+    this.loadSubject.complete();
   }
 
   onSearchChange(): void {
-    this.searchSubject.next(this.search);
+    this.searchSubject.next(this.search.trim());
   }
 
   loadSites(): void {
     if (this.clientId === null || this.clientId === undefined) {
-      this.allSites = [];
       this.sites = [];
+      this.totalItems = 0;
       return;
     }
-
-    this.loading = true;
-
-    this.siteService.findByClientId(this.clientId).subscribe({
-      next: (res: HttpResponse<ISite[]>) => {
-        this.allSites = res.body ?? [];
-        this.applyFilter(this.search);
-        this.loading = false;
-      },
-      error: () => {
-        this.allSites = [];
-        this.sites = [];
-        this.loading = false;
-      },
-    });
+    this.loadSubject.next();
   }
 
-  private applyFilter(search: string): void {
-    const term = search.trim().toLowerCase();
+  previousPage(): void {
+    if (this.hasPrevious && !this.loading) {
+      this.page -= 1;
+      this.loadSites();
+    }
+  }
 
-    this.sites = !term
-      ? this.allSites
-      : this.allSites.filter(
-          site => (site.designation?.toLowerCase() ?? '').includes(term) || (site.code?.toLowerCase() ?? '').includes(term)
-        );
+  nextPage(): void {
+    if (this.hasNext && !this.loading) {
+      this.page += 1;
+      this.loadSites();
+    }
   }
 
   choose(site: ISite): void {

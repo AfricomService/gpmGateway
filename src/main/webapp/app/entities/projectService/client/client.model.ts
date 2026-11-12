@@ -16,6 +16,7 @@ export interface IClient {
   updatedByUserLogin?: string | null;
   status?: string | null;
   nextContactNumber?: number | null;
+  matriculeFiscale?: string | null;
 }
 
 export type NewClient = Omit<IClient, 'id'> & { id: null };

@@ -65,6 +65,7 @@ interface PendingPieceJointe {
 const AFFAIRE_STATUT = 'ExecutionDesTravaux';
 const AFFAIRE_PAGE_SIZE = 15;
 const OT_EXTERNE_PAGE_SIZE = 15;
+const SITE_PAGE_SIZE = 15;
 const RESPONSABLE_ROLE_CODE = 'MANAGER';
 const TECHNICIEN_ROLE_CODE = 'TECHNIQUE';
 
@@ -208,6 +209,10 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   // Sites associés au client final — alimente la liste déroulante "Lieu" (identique à ot-externe-update)
   clientSites: ISite[] = [];
   loadingClientSites = false;
+  clientSitesSearchTerm = '';
+  clientSitesPage = 0;
+  clientSitesTotalItems = 0;
+  protected readonly clientSitesSearch$ = new Subject<string>();
 
   // Site actuellement sélectionné pour le champ "Lieu" — sert aussi à dériver
   // automatiquement Ville et Zone (site -> zone -> ville), sans appel API supplémentaire
@@ -425,11 +430,38 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
           this.otExterneResults = [];
         },
       });
+    // Recherche serveur des lieux (code ou désignation) avec debounce
+    this.clientSitesSearch$
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap(search => {
+          const clientId = this.editForm.get('clientId')?.value;
+          this.clientSitesSearchTerm = search ?? '';
+          this.clientSitesPage = 0;
+          if (clientId === null || clientId === undefined) {
+            return EMPTY;
+          }
+          this.loadingClientSites = true;
+          return this.siteService.searchLieuxByClientId(Number(clientId), this.clientSitesSearchTerm, {
+            page: 0,
+            size: SITE_PAGE_SIZE,
+          });
+        })
+      )
+      .subscribe({
+        next: res => this.onClientSitesPageLoaded(res, true),
+        error: () => {
+          this.loadingClientSites = false;
+          this.clientSites = [];
+        },
+      });
   }
 
   ngOnDestroy(): void {
     this.affaireSearch$.complete();
     this.otExterneSearch$.complete();
+    this.clientSitesSearch$.complete();
     if (this.otExterneErrorTimeoutId) {
       clearTimeout(this.otExterneErrorTimeoutId);
     }
@@ -623,48 +655,86 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Récupère les sites associés au client final (GET /api/sites/client/{clientId}),
-   * pour alimenter la liste déroulante "Lieu" (identique à ot-externe-update).
+   * Charge la première page des sites du client (GET /api/sites/client/{clientId}/lieux),
+   * avec recherche serveur et défilement infini. En édition, le site enregistré est
+   * ajouté en tête de liste s'il n'est pas dans la première page.
    */
   private loadClientSites(clientId: number): void {
     this.clientSites = [];
+    this.clientSitesSearchTerm = '';
+    this.clientSitesPage = 0;
     this.loadingClientSites = true;
 
-    this.siteService.findByClientId(clientId).subscribe({
+    this.siteService.searchLieuxByClientId(clientId, '', { page: 0, size: SITE_PAGE_SIZE }).subscribe({
       next: res => {
-        this.clientSites = res.body ?? [];
-        this.loadingClientSites = false;
-
-        // Mode édition : on retrouve le site par son id (siteId), fiable et stable.
-        // Filet de sécurité pour les WorkOrder enregistrés avant l'ajout de siteId :
-        // on retombe alors sur l'ancien matching par désignation.
-        const siteId = this.editForm.get('siteId')?.value;
-        const lieu = this.editForm.get('lieu')?.value;
-
-        this.selectedSite = siteId
-          ? this.clientSites.find(s => s.id === siteId) ?? null
-          : lieu
-          ? this.clientSites.find(s => s.designation === lieu) ?? null
-          : null;
-
-        if (siteId && !this.selectedSite) {
-          console.warn(`[WorkOrder][edit] Site id=${siteId} introuvable parmi les sites du client ${clientId}.`, this.clientSites);
-        }
-
-        if (lieu && !this.selectedSite) {
-          console.warn(
-            `[WorkOrder][edit] Aucun site trouvé pour lieu="${this.editForm.get('lieu')?.value}" parmi ${
-              this.clientSites.length
-            } site(s) du client ${clientId}.`,
-            this.clientSites
-          );
-        }
+        this.onClientSitesPageLoaded(res, true);
+        this.restoreSelectedSite();
       },
       error: () => {
         this.clientSites = [];
         this.loadingClientSites = false;
       },
     });
+  }
+
+  private restoreSelectedSite(): void {
+    const siteId = this.editForm.get('siteId')?.value;
+    const lieu = this.editForm.get('lieu')?.value;
+
+    if (siteId) {
+      const found = this.clientSites.find(s => s.id === siteId);
+      if (found) {
+        this.selectedSite = found;
+        return;
+      }
+      this.siteService.find(siteId).subscribe({
+        next: res => {
+          const site = res.body ?? null;
+          if (site) {
+            this.clientSites = [site, ...this.clientSites];
+            this.selectedSite = site;
+            this.cdr.detectChanges();
+          }
+        },
+      });
+    } else if (lieu) {
+      // Anciens work orders sans siteId : repli sur la désignation
+      this.selectedSite = this.clientSites.find(s => s.designation === lieu) ?? null;
+    }
+  }
+
+  private onClientSitesPageLoaded(res: HttpResponse<ISite[]>, reset: boolean): void {
+    const items = res.body ?? [];
+    this.clientSitesTotalItems = Number(res.headers.get('X-Total-Count') ?? items.length);
+    this.clientSites = reset ? this.mergeSelectedSite(items) : [...this.clientSites, ...items];
+    this.loadingClientSites = false;
+  }
+
+  /** Garde le site sélectionné dans la liste même s'il ne correspond pas à la recherche. */
+  private mergeSelectedSite(items: ISite[]): ISite[] {
+    const selected = this.selectedSite;
+    return selected && !items.some(s => s.id === selected.id) ? [selected, ...items] : items;
+  }
+
+  onClientSitesScrollToEnd(): void {
+    const clientId = this.editForm.get('clientId')?.value;
+    const hasMore = this.clientSites.length < this.clientSitesTotalItems;
+
+    if (clientId === null || clientId === undefined || !hasMore || this.loadingClientSites) {
+      return;
+    }
+
+    this.clientSitesPage += 1;
+    this.loadingClientSites = true;
+
+    this.siteService
+      .searchLieuxByClientId(Number(clientId), this.clientSitesSearchTerm, { page: this.clientSitesPage, size: SITE_PAGE_SIZE })
+      .subscribe({
+        next: res => this.onClientSitesPageLoaded(res, false),
+        error: () => {
+          this.loadingClientSites = false;
+        },
+      });
   }
 
   private loadClientCommandeInfo(clientCommandeId: number | null): void {
