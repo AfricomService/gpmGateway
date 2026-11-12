@@ -126,8 +126,15 @@
               </div>
 
               <div class="col-md-4 mb-3">
-                <label class="form-label fw-bold" jhiTranslate="gpmGatewayApp.projectServiceClient.fax" for="field_fax">Fax</label>
-                <input type="text" class="form-control" name="fax" id="field_fax" data-cy="fax" formControlName="fax" />
+                <label class="form-label fw-bold" for="field_matriculeFiscale">Matricule fiscale</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="matriculeFiscale"
+                  id="field_matriculeFiscale"
+                  data-cy="matriculeFiscale"
+                  formControlName="matriculeFiscale"
+                />
               </div>
             </div>
           </div>
@@ -193,7 +200,7 @@
               <span class="cu-accordion-header-left">
                 <fa-icon icon="map-marker-alt" class="cu-accordion-icon"></fa-icon>
                 <span>Sites liés</span>
-                <span class="cu-accordion-count" *ngIf="selectedSites.length">{{ selectedSites.length }}</span>
+                <span class="cu-accordion-count" *ngIf="sitesTotalItems">{{ sitesTotalItems }}</span>
               </span>
               <span class="cu-accordion-header-right">
                 <button type="button" class="btn-cu-add" (click)="$event.stopPropagation(); openSiteImportModal()">
@@ -237,9 +244,7 @@
 
               <div class="cu-pagination" *ngIf="sitesTotalItems > sitesItemsPerPage">
                 <button type="button" class="btn-cu-cancel" [disabled]="sitesPage === 0" (click)="sitesPreviousPage()">Précédent</button>
-                <span class="cu-pagination-info">
-                  Page {{ sitesPage + 1 }} / {{ sitesTotalItems / sitesItemsPerPage | number: '1.0-0' }}
-                </span>
+                <span class="cu-pagination-info"> Page {{ sitesPage + 1 }} / {{ sitesTotalPages }} </span>
                 <button
                   type="button"
                   class="btn-cu-cancel"
@@ -398,7 +403,7 @@
       <div class="cu-toolbar cu-toolbar-bottom">
         <div class="cu-toolbar-left">
           <span *ngIf="editForm.get('status')?.value" class="cu-badge-status">
-            {{ editForm.get('status')?.value }}
+            {{ getStatusLabel(editForm.get('status')?.value) }}
           </span>
 
           <button
@@ -571,16 +576,24 @@
         <div class="row g-3">
           <div class="col-md-6">
             <label class="form-label fw-bold">Code <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" [(ngModel)]="newSite.code" [ngModelOptions]="{ standalone: true }" />
+            <input
+              type="text"
+              class="form-control"
+              [class.is-invalid]="!!siteCodeError"
+              [(ngModel)]="newSite.code"
+              (ngModelChange)="siteCodeError = null"
+              [ngModelOptions]="{ standalone: true }"
+            />
+            <small class="form-text text-danger" *ngIf="siteCodeError">{{ siteCodeError }}</small>
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-bold">Désignation <span class="text-danger">*</span></label>
+            <label class="form-label fw-bold">Désignation</label>
             <input type="text" class="form-control" [(ngModel)]="newSite.designation" [ngModelOptions]="{ standalone: true }" />
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-bold">Gouvernorat <span class="text-danger">*</span></label>
+            <label class="form-label fw-bold">Gouvernorat</label>
             <select class="form-control" [(ngModel)]="newSite.ville" [ngModelOptions]="{ standalone: true }" [compareWith]="compareVille">
-              <option [ngValue]="null">-- Sélectionner une ville --</option>
+              <option [ngValue]="null">-- Aucun --</option>
               <option *ngFor="let ville of allVilles" [ngValue]="{ id: ville.id, nom: ville.nom }">{{ ville.nom }}</option>
             </select>
           </div>
@@ -616,12 +629,28 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
-        <button
-          class="btn-cu-save-modal"
-          [disabled]="!newSite.code?.trim() || !newSite.designation?.trim() || !newSite.ville"
-          (click)="saveSite(modal)"
-        >
+        <button class="btn-cu-save-modal" [disabled]="!newSite.code?.trim()" (click)="saveSite(modal)">
           {{ editingSite ? 'Enregistrer' : 'Ajouter' }}
+        </button>
+      </div>
+    </ng-template>
+    <ng-template #siteDeleteModal let-modal>
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmation de suppression</h5>
+        <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-1">Voulez-vous vraiment supprimer ce site ?</p>
+        <p class="mb-2">
+          <strong>{{ siteToDelete?.code }}</strong>
+          <span *ngIf="siteToDelete?.designation"> - {{ siteToDelete?.designation }}</span>
+        </p>
+        <small class="text-muted">Cette action est irréversible.</small>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
+        <button type="button" class="btn btn-danger" [disabled]="deletingSite" (click)="confirmDeleteSite(modal)">
+          <fa-icon icon="times"></fa-icon>&nbsp;{{ deletingSite ? 'Suppression...' : 'Supprimer' }}
         </button>
       </div>
     </ng-template>

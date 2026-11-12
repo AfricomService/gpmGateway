@@ -101,10 +101,26 @@
   <!-- FOOTER -->
   <!-- ====================================================== -->
   <div class="site-modal-footer">
-    <span class="site-modal-count" *ngIf="!loading && clientId !== null">
-      {{ sites.length }} site{{ sites.length > 1 ? 's' : '' }} trouvé{{ sites.length > 1 ? 's' : '' }}
+    <span class="site-modal-count" *ngIf="clientId !== null">
+      {{ totalItems }} site{{ totalItems > 1 ? 's' : '' }} trouvé{{ totalItems > 1 ? 's' : '' }}
     </span>
     <span class="site-modal-count" *ngIf="clientId === null"></span>
+
+    <div class="site-modal-pager" *ngIf="clientId !== null && totalItems > pageSize">
+      <button
+        type="button"
+        class="btn-site-page"
+        [disabled]="!hasPrevious || loading"
+        (click)="previousPage()"
+        aria-label="Page précédente"
+      >
+        ‹
+      </button>
+      <span class="site-modal-page-info">Page {{ page + 1 }} / {{ totalPages }}</span>
+      <button type="button" class="btn-site-page" [disabled]="!hasNext || loading" (click)="nextPage()" aria-label="Page suivante">
+        ›
+      </button>
+    </div>
 
     <button type="button" class="btn-site-cancel" (click)="cancel()">Annuler</button>
   </div>

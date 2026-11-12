@@ -10,6 +10,7 @@
     },
     "concurrencyFailure": "Un autre utilisateur a modifié ces données en même temps que vous. Vos changements n'ont pas été sauvegardés.",
     "validation": "Erreur de validation côté serveur.",
-    "raisonsocialeexists": "Un client avec cette raison sociale existe déjà."
+    "raisonsocialeexists": "Un client avec cette raison sociale existe déjà.",
+    "codeexists": "Ce code de site est déjà utilisé pour ce client. Veuillez saisir un autre code."
   }
 }
