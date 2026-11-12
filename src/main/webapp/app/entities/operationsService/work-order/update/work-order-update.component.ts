@@ -52,8 +52,15 @@ import { IParametreWO } from 'app/entities/operationsService/parametre-wo/parame
 import { ParametreWOService } from 'app/entities/operationsService/parametre-wo/service/parametre-wo.service';
 import { ParametrageDeplacementService } from 'app/entities/operationsService/parametrage-deplacement/service/parametrage-deplacement.service';
 import { NewParametrageDeplacement } from 'app/entities/operationsService/parametrage-deplacement/parametrage-deplacement.model';
+import {
+  ArticleSelection,
+  ArticleSelectorModalComponent,
+} from '../../../financeService/bon-commande/article-selector-modal/article-selector-modal.component';
+import { WoArticlesService } from '../service/wo-articles.service';
+import { ArticleService } from '../../../projectService/article/service/article.service';
+import { IWoArticles } from '../wo-articles.model';
 
-type AccordionPanel = 'global' | 'client' | 'equipes' | 'options' | 'remarque' | 'piecesJointes';
+type AccordionPanel = 'global' | 'client' | 'equipes' | 'options' | 'articlesAssocies' | 'remarque' | 'piecesJointes';
 
 interface PendingPieceJointe {
   tempId: string;
@@ -76,6 +83,19 @@ const TECHNICIEN_ROLE_CODE = 'TECHNIQUE';
 export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   @ViewChild('clientDetailsModal') clientDetailsModal!: TemplateRef<any>;
   @ViewChild('clientCommandeDetailsModal') clientCommandeDetailsModal!: TemplateRef<any>;
+
+  @ViewChild('woArticleDeleteConfirmModal') woArticleDeleteConfirmModal!: TemplateRef<any>;
+
+  // ================================
+  // Articles associés (persistés immédiatement via WoArticles)
+  // ================================
+  chosenArticles: ArticleSelection[] = [];
+  savingChosenArticles = false;
+  removingArticleId: number | null = null;
+  articleToRemove: ArticleSelection | null = null;
+
+  // Vrai si l'affaire a changé : les anciens articles seront supprimés au prochain enregistrement
+  private articlesNeedReset = false;
 
   isSaving = false;
   workOrder: IWorkOrder | null = null;
@@ -349,7 +369,9 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     protected modelPhaseOTService: ModelPhaseOTService,
     protected otExterneService: OtExterneService,
     protected parametreWOService: ParametreWOService,
-    protected parametrageDeplacementService: ParametrageDeplacementService
+    protected parametrageDeplacementService: ParametrageDeplacementService,
+    protected woArticlesService: WoArticlesService,
+    protected articleService: ArticleService
   ) {}
 
   ngOnInit(): void {
@@ -530,6 +552,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   selectAffaire(affaire: IAffaire): void {
     const clientId = affaire.client?.id ?? null;
     const societeId = (affaire as any).societeId ?? null;
+    const affaireChanged = this.selectedAffaire?.id !== affaire.id;
 
     this.editForm.patchValue({
       affaireId: affaire.id,
@@ -543,6 +566,11 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.selectedAffaire = affaire;
     this.selectedAffaireCode = affaire.identifiantUnique ?? null;
     this.selectedSite = null;
+
+    if (affaireChanged && this.chosenArticles.length > 0) {
+      this.chosenArticles = [];
+      this.articlesNeedReset = true;
+    }
 
     this.loadClientInfo(clientId);
     this.loadClientCommandeInfo(affaire.clientCommande ?? null);
@@ -593,6 +621,10 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       this.clientSites = [];
       this.vehicules = [];
       this.ressources = [];
+      if (this.chosenArticles.length > 0) {
+        this.articlesNeedReset = true;
+      }
+      this.chosenArticles = [];
     }
   }
 
@@ -1626,6 +1658,161 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     window.history.back();
   }
 
+  // ================================
+  // Articles associés
+  // ================================
+  private loadWoArticles(woId: number): void {
+    this.woArticlesService.findByWo(woId).subscribe({
+      next: res => {
+        const links = (res.body ?? []).filter(
+          (l): l is IWoArticles & { articleId: number } => l.articleId !== null && l.articleId !== undefined
+        );
+
+        if (links.length === 0) {
+          this.chosenArticles = [];
+          this.cdr.detectChanges();
+          return;
+        }
+
+        forkJoin(links.map(l => this.articleService.find(l.articleId))).subscribe({
+          next: responses => {
+            const mapped = responses.map((r, index) => {
+              const article = r.body;
+              if (!article) {
+                return null;
+              }
+              // Prix figés au moment de l'affectation (et non le prix courant de l'article)
+              const link = links[index];
+              if (link.prixArticle !== null && link.prixArticle !== undefined) {
+                article.prixAchat = link.prixArticle;
+              }
+              if (link.prixArticleHT !== null && link.prixArticleHT !== undefined) {
+                article.prixUnitHT = link.prixArticleHT;
+              }
+              const sel: ArticleSelection = { article, qte: link.qteCommande ?? 1, qteEffectuee: link.qteEffectuee ?? 0 };
+              return sel;
+            });
+
+            this.chosenArticles = mapped.filter((s): s is ArticleSelection => s !== null);
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            this.chosenArticles = [];
+            this.cdr.detectChanges();
+          },
+        });
+      },
+      error: () => {
+        this.chosenArticles = [];
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private buildArticlesPayload(): Partial<IWoArticles>[] {
+    return this.chosenArticles
+      .filter(sel => sel.article.id !== null && sel.article.id !== undefined)
+      .map(sel => ({
+        articleId: sel.article.id as number,
+        qteCommande: sel.qte,
+        // Prix figés à l'affectation ; le backend les conserve pour les articles déjà liés
+        prixArticle: sel.article.prixAchat ?? null,
+        prixArticleHT: sel.article.prixUnitHT ?? null,
+      }));
+  }
+
+  /** Envoie la liste courante au backend ; en cas d'échec, restaure `previous`. */
+  private persistArticles(previous: ArticleSelection[], onDone?: () => void): void {
+    const woId = this.workOrder?.id;
+
+    if (woId === null || woId === undefined) {
+      return;
+    }
+
+    this.savingChosenArticles = true;
+
+    this.woArticlesService.replaceForWo(woId, this.buildArticlesPayload()).subscribe({
+      next: () => {
+        this.savingChosenArticles = false;
+        onDone?.();
+      },
+      error: () => {
+        this.chosenArticles = previous;
+        this.savingChosenArticles = false;
+        this.removingArticleId = null;
+        alert("Erreur lors de l'enregistrement des articles.");
+      },
+    });
+  }
+
+  openArticleModal(): void {
+    const modalRef = this.modalService.open(ArticleSelectorModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'article-selector-modal-window',
+    });
+
+    modalRef.componentInstance.affaireId = this.selectedAffaire?.id ?? null;
+    modalRef.componentInstance.initialSelection = this.chosenArticles;
+
+    modalRef.result
+      .then((selection: ArticleSelection[]) => {
+        const previous = this.chosenArticles;
+        this.chosenArticles = selection ?? [];
+        this.articlesNeedReset = false; // la liste a été redéfinie pour la nouvelle affaire
+        this.persistArticles(previous);
+      })
+      .catch(() => {
+        // Fermeture du modal sans validation
+      });
+  }
+
+  askRemoveChosenArticle(sel: ArticleSelection): void {
+    if (this.removingArticleId !== null || sel.article.id === null || sel.article.id === undefined) {
+      return;
+    }
+
+    this.articleToRemove = sel;
+
+    const modalRef = this.modalService.open(this.woArticleDeleteConfirmModal, { size: 'md', centered: true, backdrop: 'static' });
+
+    modalRef.result
+      .then(confirmed => {
+        if (confirmed && sel.article.id !== null && sel.article.id !== undefined) {
+          this.removeChosenArticle(sel.article.id);
+        }
+      })
+      .catch(() => {
+        // Modale annulée : on ne fait rien
+      })
+      .finally(() => {
+        this.articleToRemove = null;
+      });
+  }
+
+  private removeChosenArticle(articleId: number): void {
+    const previous = this.chosenArticles;
+
+    this.chosenArticles = this.chosenArticles.filter(sel => sel.article.id !== articleId);
+    this.removingArticleId = articleId;
+
+    this.persistArticles(previous, () => (this.removingArticleId = null));
+  }
+
+  onChosenArticleQuantityChange(articleId: number, qte: number | string): void {
+    const parsed = Number(qte);
+    const target = this.chosenArticles.find(sel => sel.article.id === articleId);
+    if (target) {
+      target.qte = Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
+    }
+  }
+
+  /** Appelé quand l'utilisateur valide la quantité (blur / Entrée) : enregistrement immédiat. */
+  commitChosenArticleQuantity(): void {
+    this.persistArticles(this.chosenArticles);
+  }
+
   save(): void {
     this.isSaving = true;
     const workOrder = this.workOrderFormService.getWorkOrder(this.editForm);
@@ -1672,12 +1859,19 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     const vehiculeIds = this.selectedVehicules.map(v => v.id).filter((id): id is number => id !== null && id !== undefined);
     const ressourceIds = this.selectedRessources.map(r => r.id).filter((id): id is number => id !== null && id !== undefined);
 
-    forkJoin([
+    const calls: Observable<unknown>[] = [
       this.workOrderTechniciensService.replaceForWorkOrder(workOrderId, contactSocieteIds),
       this.workOrderVehiculeService.replaceForWorkOrder(workOrderId, vehiculeIds),
       this.workOrderRessourceService.replaceForWorkOrder(workOrderId, ressourceIds),
       this.parametrageDeplacementService.replaceForWorkOrder(workOrderId, this.buildParametrages(workOrderId)),
-    ]).subscribe({
+    ];
+
+    if (this.articlesNeedReset) {
+      calls.push(this.woArticlesService.replaceForWo(workOrderId, []));
+      this.articlesNeedReset = false;
+    }
+
+    forkJoin(calls).subscribe({
       next: () => this.uploadPendingPieceJointesThenNavigate(workOrderId),
       error: () => this.uploadPendingPieceJointesThenNavigate(workOrderId),
     });
@@ -1727,6 +1921,8 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
 
   protected updateForm(workOrder: IWorkOrder): void {
     this.workOrder = workOrder;
+
+    this.loadWoArticles(workOrder.id);
 
     this.workOrderFormService.resetForm(this.editForm, workOrder);
 
