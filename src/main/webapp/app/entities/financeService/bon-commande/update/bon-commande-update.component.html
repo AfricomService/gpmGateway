@@ -678,7 +678,7 @@
                       type="button"
                       class="cu-item-remove"
                       [disabled]="removingArticleId === sel.article.id"
-                      (click)="removeChosenArticle(sel.article.id)"
+                      (click)="askRemoveChosenArticle(sel)"
                     >
                       <span *ngIf="removingArticleId === sel.article.id" class="spinner-border spinner-border-sm" role="status"></span>
                       <fa-icon *ngIf="removingArticleId !== sel.article.id" icon="times"></fa-icon>
@@ -1809,6 +1809,31 @@
             <span *ngIf="isChangingStatut" class="spinner-border spinner-border-sm me-1"></span>
             <fa-icon *ngIf="!isChangingStatut" icon="check"></fa-icon>&nbsp;Confirmer
           </button>
+        </div>
+      </ng-template>
+      <!-- ====================================================== -->
+      <!-- MODAL : Confirmation de suppression d'un article -->
+      <!-- ====================================================== -->
+      <ng-template #articleDeleteConfirmModal let-modal>
+        <div class="modal-header">
+          <h5 class="modal-title"><fa-icon icon="exclamation-triangle"></fa-icon>&nbsp;Confirmer la suppression</h5>
+          <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-2">Voulez-vous vraiment retirer cet article du bon de commande ?</p>
+          <div class="alert alert-info mb-0" *ngIf="articleToRemove">
+            <strong>{{ articleToRemove.article.code }}</strong>
+            <span *ngIf="articleToRemove.article.codeClient"> ({{ articleToRemove.article.codeClient }})</span>
+            — {{ articleToRemove.article.designation }}
+            <br />
+            <small>Quantité commandée : {{ articleToRemove.qte }}</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss()">
+            <fa-icon icon="times"></fa-icon>&nbsp;Annuler
+          </button>
+          <button type="button" class="btn btn-danger" (click)="modal.close(true)"><fa-icon icon="trash"></fa-icon>&nbsp;Supprimer</button>
         </div>
       </ng-template>
     </form>
