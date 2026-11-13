@@ -476,17 +476,17 @@
   gap: 0.4rem;
   padding: 0.4rem 0.85rem;
   border-radius: 8px;
-  border: 1px solid var(--cp-border);
-  background: var(--cp-surface);
-  color: var(--cp-text-muted);
+  border: 1px solid #e9ecf2;
+  background: #ffffff;
+  color: #5b6475;
   font-weight: 600;
   font-size: 0.8rem;
   transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 
   &:hover {
-    background: var(--cp-surface-hover);
-    color: var(--cp-text);
-    border-color: var(--cp-accent);
+    background: #f4f6fa;
+    color: #1a2233;
+    border-color: #2f6fed;
   }
 }
 
@@ -516,15 +516,16 @@
 .btn-cu-edit {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0 0.9rem;
+  justify-content: center;
+  width: 34px;
   height: 34px;
+  padding: 0;
   border-radius: 8px;
   border: none;
   background: var(--cp-accent-soft);
   color: var(--cp-accent);
   font-weight: 700;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   white-space: nowrap;
   transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 
@@ -739,6 +740,31 @@ input[ngbDatepicker] {
     cursor: default;
     box-shadow: none;
     transform: none;
+  }
+}
+
+.btn-cu-danger-modal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  border: none;
+  background: #e0524d;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  transition: background 0.25s ease, transform 0.25s ease;
+
+  &:hover:not(:disabled) {
+    background: #c9403b;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: default;
   }
 }
 
