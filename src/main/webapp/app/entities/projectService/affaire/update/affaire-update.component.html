@@ -56,8 +56,15 @@
         </button>
 
         <!-- Bouton Modifier (mode lecture sur fiche existante) -->
-        <button *ngIf="!isEditMode && isExisting && canWrite" type="button" class="btn-cu-edit" (click)="toggleEditMode()" title="Modifier">
-          <fa-icon icon="pen"></fa-icon>&nbsp;<span>Modifier</span>
+        <button
+          *ngIf="!isEditMode && isExisting && canWrite"
+          type="button"
+          class="btn-cu-edit"
+          (click)="toggleEditMode()"
+          title="Modifier"
+          aria-label="Modifier"
+        >
+          <fa-icon icon="pen"></fa-icon>
         </button>
       </div>
 
@@ -558,6 +565,27 @@
       <button type="button" class="btn btn-primary" (click)="modal.close(true)" [disabled]="isChangingStatut">
         <span *ngIf="isChangingStatut" class="spinner-border spinner-border-sm me-1"></span>
         <fa-icon *ngIf="!isChangingStatut" icon="check"></fa-icon>&nbsp;Confirmer
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- Confirmation suppression d'un article -->
+  <ng-template #articleDeleteConfirmModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Confirmer la suppression</h5>
+      <button type="button" class="btn-close" aria-label="Fermer" (click)="modal.dismiss()"></button>
+    </div>
+
+    <div class="modal-body">
+      <p class="mb-2">Voulez-vous vraiment retirer cet article de l'affaire ?</p>
+      <strong>{{ articlePendingDelete?.code }} — {{ articlePendingDelete?.designation }}</strong>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-cu-cancel" (click)="modal.dismiss()">Annuler</button>
+      <button type="button" class="btn-cu-danger-modal" [disabled]="isRemovingArticle" (click)="confirmRemoveArticle(modal)">
+        <span *ngIf="isRemovingArticle" class="spinner-border spinner-border-sm me-2"></span>
+        Supprimer
       </button>
     </div>
   </ng-template>
