@@ -42,7 +42,6 @@ import {
   faTasks,
   faThLarge,
   faThList,
-  faTimes,
   faTrashAlt,
   faUser,
   faUserPlus,
@@ -88,6 +87,9 @@ import {
   faBox,
   faPen,
   faTag,
+  faExclamationTriangle,
+  faTrash,
+  faTimes,
   // jhipster-needle-add-icon-import
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -181,5 +183,7 @@ export const fontAwesomeIcons = [
   faBox,
   faPen,
   faTag,
+  faExclamationTriangle,
+  faTrash,
   // jhipster-needle-add-icon-import
 ];
