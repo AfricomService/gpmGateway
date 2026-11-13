@@ -61,6 +61,7 @@ export class AffaireUpdateComponent implements OnInit {
   @ViewChild('matriceModal') matriceModal!: TemplateRef<any>;
   @ViewChild('societeModal') societeModal!: TemplateRef<any>;
   @ViewChild('statutConfirmModal') statutConfirmModal!: TemplateRef<any>;
+  @ViewChild('articleDeleteConfirmModal') articleDeleteConfirmModal!: TemplateRef<any>;
 
   isSaving = false;
   affaire: IAffaire | null = null;
@@ -87,6 +88,10 @@ export class AffaireUpdateComponent implements OnInit {
   articlesItemsPerPage = 5;
   articlesSearchTerm = '';
   isLoadingArticles = false;
+
+  // ── Confirmation suppression d'un article ───────────────────────
+  articlePendingDelete: IArticle | null = null;
+  isRemovingArticle = false;
 
   Authority = Authority;
 
@@ -326,22 +331,52 @@ export class AffaireUpdateComponent implements OnInit {
     this.loadArticlesByAffaire();
   }
 
+  /**
+   * Clic sur X : ouvre la modale de confirmation.
+   * La suppression n'est faite qu'après clic sur "Supprimer".
+   */
   removeArticle(article: IArticle): void {
-    if (!article.id || !this.canWrite) {
+    if (!article.id || !this.canWrite || this.isRemovingArticle) {
+      return;
+    }
+
+    this.articlePendingDelete = article;
+
+    this.modalService.open(this.articleDeleteConfirmModal, { size: 'md', backdrop: 'static', centered: true }).result.then(
+      () => {},
+      () => {
+        // Modale fermée / annulée : on ne fait rien
+      }
+    );
+  }
+
+  confirmRemoveArticle(modal: any): void {
+    const article = this.articlePendingDelete;
+    if (!article?.id) {
+      modal.dismiss();
       return;
     }
 
     if (this.affaire?.id) {
+      this.isRemovingArticle = true;
       // Server call to delete relation
-      this.affaireService.removeRelation(this.affaire.id, article.id).subscribe({
-        next: () => {
-          this.loadArticlesByAffaire();
-        },
-        error: err => console.error('Error removing article relation', err),
-      });
+      this.affaireService
+        .removeRelation(this.affaire.id, article.id)
+        .pipe(finalize(() => (this.isRemovingArticle = false)))
+        .subscribe({
+          next: () => {
+            this.loadArticlesByAffaire();
+            modal.close();
+          },
+          error: err => {
+            console.error('Error removing article relation', err);
+            modal.dismiss();
+          },
+        });
     } else {
       // Local removal for unsaved Affaire
       this.selectedArticles = this.selectedArticles.filter(a => a.id !== article.id);
+      modal.close();
     }
   }
 
