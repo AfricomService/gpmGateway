@@ -344,6 +344,14 @@ textarea.cu-input {
     border-color: var(--cp-accent);
     box-shadow: 0 0 0 3px var(--cp-accent-soft);
   }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--cp-surface-hover);
+    color: var(--cp-text-muted);
+    transform: none;
+  }
 }
 
 /* ============ INFORMATION CLIENT (colonnes) ============ */

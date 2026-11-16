@@ -593,7 +593,8 @@
                     [searchable]="true"
                     [clearable]="true"
                     [loading]="loadingResponsables"
-                    placeholder="Rechercher un responsable..."
+                    [disabled]="!selectedAffaire"
+                    [placeholder]="selectedAffaire ? 'Rechercher un responsable...' : 'Sélectionnez d\'abord un projet'"
                     notFoundText="Aucun responsable trouvé"
                     loadingText="Chargement..."
                     [ngModel]="selectedResponsable"
@@ -611,6 +612,7 @@
                     class="btn-cu-affaire-modal"
                     title="Rechercher un responsable"
                     aria-label="Rechercher un responsable"
+                    [disabled]="!selectedAffaire"
                     (click)="openResponsableModal()"
                   >
                     <fa-icon icon="search"></fa-icon>
@@ -639,7 +641,8 @@
                     [searchable]="true"
                     [clearable]="true"
                     [loading]="loadingResponsables"
-                    placeholder="Rechercher un coordinateur..."
+                    [disabled]="!selectedAffaire"
+                    [placeholder]="selectedAffaire ? 'Rechercher un coordinateur...' : 'Sélectionnez d\'abord un projet'"
                     notFoundText="Aucun coordinateur trouvé"
                     loadingText="Chargement..."
                     [ngModel]="selectedCoordinateur"
@@ -657,6 +660,7 @@
                     class="btn-cu-affaire-modal"
                     title="Rechercher un coordinateur"
                     aria-label="Rechercher un coordinateur"
+                    [disabled]="!selectedAffaire"
                     (click)="openCoordinateurModal()"
                   >
                     <fa-icon icon="search"></fa-icon>
@@ -683,7 +687,8 @@
                     [multiple]="true"
                     [closeOnSelect]="false"
                     [loading]="loadingTechniciens"
-                    placeholder="Rechercher un ou plusieurs techniciens..."
+                    [disabled]="!selectedAffaire"
+                    [placeholder]="selectedAffaire ? 'Rechercher un ou plusieurs techniciens...' : 'Sélectionnez d\'abord un projet'"
                     notFoundText="Aucun technicien trouvé"
                     loadingText="Chargement..."
                     [ngModel]="selectedTechniciens"
@@ -701,6 +706,7 @@
                     class="btn-cu-affaire-modal"
                     title="Rechercher un technicien"
                     aria-label="Rechercher un technicien"
+                    [disabled]="!selectedAffaire"
                     (click)="openTechnicienModal()"
                   >
                     <fa-icon icon="search"></fa-icon>

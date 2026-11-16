@@ -384,8 +384,6 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.stepperService.show(this.statutSteps, this.currentStatut);
     this.editForm.get('statut')?.valueChanges.subscribe(() => this.stepperService.show(this.statutSteps, this.currentStatut));
 
-    this.loadResponsables();
-    this.loadTechniciens();
     this.loadModelPhases();
     this.loadParametresWO();
     this.loadAffaires(''); // Pré-charge la liste des projets dès l'ouverture du formulaire
@@ -606,7 +604,21 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
 
     this.loadClientInfo(clientId);
     this.loadClientCommandeInfo(affaire.clientCommande ?? null);
+
+    // Responsable / Coordinateur : liste filtrée par la société de l'affaire
+    if (affaireChanged) {
+      this.selectedResponsable = null;
+      this.selectedCoordinateur = null;
+      this.editForm.patchValue({ responsableId: null, coordinateur: null });
+    }
+    this.loadResponsables(societeId);
     this.applyResponsableFromAffaire(affaire);
+
+    // Techniciens : liste filtrée par la société de l'affaire
+    if (affaireChanged) {
+      this.selectedTechniciens = [];
+    }
+    this.loadTechniciens(societeId);
 
     // Recharge les listes véhicules/ressources filtrées sur la société de l'affaire sélectionnée
     this.loadVehicules(societeId);
@@ -653,6 +665,12 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       this.clientSites = [];
       this.vehicules = [];
       this.ressources = [];
+      this.responsables = [];
+      this.techniciens = [];
+      this.selectedTechniciens = [];
+      this.selectedResponsable = null;
+      this.selectedCoordinateur = null;
+      this.editForm.patchValue({ responsableId: null, coordinateur: null });
       if (this.chosenArticles.length > 0) {
         this.articlesNeedReset = true;
       }
@@ -795,10 +813,21 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   // ================================
   // Liste déroulante Responsable (contacts ayant le rôle MANAGER) — identique à ot-externe-update
   // ================================
-  private loadResponsables(): void {
+  /** Société de l'affaire sélectionnée (null tant qu'aucun projet n'est choisi). */
+  get societeIdAffaire(): number | null {
+    return (this.selectedAffaire as any)?.societeId ?? null;
+  }
+
+  private loadResponsables(societeId?: number | null): void {
+    if (societeId === null || societeId === undefined) {
+      this.responsables = [];
+      this.loadingResponsables = false;
+      return;
+    }
+
     this.loadingResponsables = true;
 
-    this.bonCommandeService.findResponsablesByRole(RESPONSABLE_ROLE_CODE).subscribe({
+    this.bonCommandeService.findResponsablesByRole(RESPONSABLE_ROLE_CODE, societeId).subscribe({
       next: res => {
         this.responsables = res.body ?? [];
         this.loadingResponsables = false;
@@ -1241,10 +1270,16 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   // ================================
   // Techniciens (sélection multiple, persistée via WorkOrderTechniciens)
   // ================================
-  private loadTechniciens(): void {
+  private loadTechniciens(societeId?: number | null): void {
+    if (societeId === null || societeId === undefined) {
+      this.techniciens = [];
+      this.loadingTechniciens = false;
+      return;
+    }
+
     this.loadingTechniciens = true;
 
-    this.bonCommandeService.findResponsablesByRole(TECHNICIEN_ROLE_CODE).subscribe({
+    this.bonCommandeService.findResponsablesByRole(TECHNICIEN_ROLE_CODE, societeId).subscribe({
       next: res => {
         this.techniciens = res.body ?? [];
         this.loadingTechniciens = false;
@@ -1332,6 +1367,10 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   }
 
   openTechnicienModal(): void {
+    if (this.societeIdAffaire === null) {
+      return;
+    }
+
     const modalRef = this.modalService.open(ContactSelectorModalComponent, {
       size: 'lg',
       centered: true,
@@ -1340,6 +1379,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     });
 
     modalRef.componentInstance.roleCode = TECHNICIEN_ROLE_CODE;
+    modalRef.componentInstance.societeId = this.societeIdAffaire;
     modalRef.componentInstance.modalTitle = 'Sélectionner un ou plusieurs techniciens';
     modalRef.componentInstance.multiple = true;
     modalRef.componentInstance.initialSelection = this.selectedTechniciens;
@@ -1608,6 +1648,10 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   }
 
   openResponsableModal(): void {
+    if (this.societeIdAffaire === null) {
+      return;
+    }
+
     const modalRef = this.modalService.open(ContactSelectorModalComponent, {
       size: 'lg',
       centered: true,
@@ -1616,6 +1660,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     });
 
     modalRef.componentInstance.roleCode = RESPONSABLE_ROLE_CODE;
+    modalRef.componentInstance.societeId = this.societeIdAffaire;
     modalRef.componentInstance.modalTitle = 'Sélectionner un responsable';
 
     modalRef.result
@@ -1630,6 +1675,10 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   }
 
   openCoordinateurModal(): void {
+    if (this.societeIdAffaire === null) {
+      return;
+    }
+
     const modalRef = this.modalService.open(ContactSelectorModalComponent, {
       size: 'lg',
       centered: true,
@@ -1638,6 +1687,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     });
 
     modalRef.componentInstance.roleCode = RESPONSABLE_ROLE_CODE;
+    modalRef.componentInstance.societeId = this.societeIdAffaire;
     modalRef.componentInstance.modalTitle = 'Sélectionner un coordinateur';
 
     modalRef.result
@@ -2032,6 +2082,8 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
             const societeId = (affaire as any).societeId ?? null;
             this.loadVehicules(societeId);
             this.loadRessources(societeId);
+            this.loadResponsables(societeId);
+            this.loadTechniciens(societeId);
           }
         },
       });

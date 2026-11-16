@@ -136,10 +136,16 @@
 .cs-list-item-main {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  flex: 1 1 auto;
   min-width: 0;
+  text-align: left;
 }
 
 .cs-list-item-name {
+  display: block;
+  max-width: 100%;
+  text-align: left;
   font-weight: 700;
   font-size: 0.9rem;
   color: var(--cs-text);
@@ -149,6 +155,9 @@
 }
 
 .cs-list-item-email {
+  display: block;
+  max-width: 100%;
+  text-align: left;
   font-size: 0.8rem;
   color: var(--cs-text-muted);
   overflow: hidden;

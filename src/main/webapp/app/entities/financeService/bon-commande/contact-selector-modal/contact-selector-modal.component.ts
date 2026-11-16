@@ -25,6 +25,12 @@ export class ContactSelectorModalComponent implements OnInit {
   // Work order courant à exclure du contrôle (mode édition)
   @Input() excludeWorkOrderId: number | null = null;
 
+  // Optionnel : si renseigné, ne liste que les contacts de cette société
+  @Input() societeId: number | null = null;
+
+  // Optionnel : si true, masque les boutons de rôle (le rôle reste celui passé par le parent)
+  @Input() lockRole = false;
+
   contacts: IContactSociete[] = [];
   filteredContacts: IContactSociete[] = [];
   loading = false;
@@ -153,7 +159,7 @@ export class ContactSelectorModalComponent implements OnInit {
   private loadContacts(): void {
     this.loading = true;
 
-    this.bonCommandeService.findResponsablesByRole(this.roleCode).subscribe({
+    this.bonCommandeService.findResponsablesByRole(this.roleCode, this.societeId).subscribe({
       next: (res: HttpResponse<IContactSociete[]>) => {
         this.contacts = res.body ?? [];
         this.applyFilter();

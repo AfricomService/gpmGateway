@@ -20,6 +20,8 @@ type ParametreWOFormGroupContent = {
   id: FormControl<IParametreWO['id'] | NewParametreWO['id']>;
   nom: FormControl<IParametreWO['nom']>;
   description: FormControl<IParametreWO['description']>;
+  montantTechnicien: FormControl<IParametreWO['montantTechnicien']>;
+  montantChefTechnicien: FormControl<IParametreWO['montantChefTechnicien']>;
 };
 
 export type ParametreWOFormGroup = FormGroup<ParametreWOFormGroupContent>;
@@ -41,6 +43,8 @@ export class ParametreWOFormService {
       ),
       nom: new FormControl(parametreWORawValue.nom),
       description: new FormControl(parametreWORawValue.description),
+      montantTechnicien: new FormControl(parametreWORawValue.montantTechnicien),
+      montantChefTechnicien: new FormControl(parametreWORawValue.montantChefTechnicien),
     });
   }
 
