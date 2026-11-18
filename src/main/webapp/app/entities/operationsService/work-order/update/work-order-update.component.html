@@ -610,11 +610,9 @@
             <input type="hidden" formControlName="valideurUserLogin" data-cy="valideurUserLogin" />
 
             <div class="row">
-              <!-- RESPONSABLE — identique à ot-externe-update -->
+              <!-- RESPONSABLE MISSION -->
               <div class="col-md-6 mb-3">
-                <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.responsableId" for="field_responsableId"
-                  >Responsable</label
-                >
+                <label class="form-label" for="field_responsableId">Responsable mission</label>
 
                 <!-- ID réel du responsable (contact ayant le rôle MANAGER) -->
                 <input type="hidden" formControlName="responsableId" />
@@ -632,7 +630,7 @@
                     [clearable]="true"
                     [loading]="loadingResponsables"
                     [disabled]="!selectedAffaire"
-                    [placeholder]="selectedAffaire ? 'Rechercher un responsable...' : 'Sélectionnez d\'abord un projet'"
+                    [placeholder]="selectedAffaire ? 'Rechercher un responsable mission...' : 'Sélectionnez d\'abord un projet'"
                     notFoundText="Aucun responsable trouvé"
                     loadingText="Chargement..."
                     [ngModel]="selectedResponsable"
@@ -648,8 +646,8 @@
                   <button
                     type="button"
                     class="btn-cu-affaire-modal"
-                    title="Rechercher un responsable"
-                    aria-label="Rechercher un responsable"
+                    title="Rechercher un responsable mission"
+                    aria-label="Rechercher un responsable mission"
                     [disabled]="!selectedAffaire"
                     (click)="openResponsableModal()"
                   >
@@ -658,56 +656,7 @@
                 </div>
               </div>
 
-              <!-- COORDINATEUR — même logique que Responsable -->
-              <div class="col-md-6 mb-3">
-                <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.coordinateur" for="field_coordinateur"
-                  >Coordinateur</label
-                >
-
-                <!-- ID réel du coordinateur (contact ayant le rôle MANAGER) -->
-                <input type="hidden" formControlName="coordinateur" />
-
-                <div class="cu-affaire-selector">
-                  <ng-select
-                    id="field_coordinateur"
-                    data-cy="coordinateur"
-                    name="coordinateur"
-                    class="custom-ng-select"
-                    [items]="responsables"
-                    bindLabel="nomPrenom"
-                    [compareWith]="compareResponsable"
-                    [searchable]="true"
-                    [clearable]="true"
-                    [loading]="loadingResponsables"
-                    [disabled]="!selectedAffaire"
-                    [placeholder]="selectedAffaire ? 'Rechercher un coordinateur...' : 'Sélectionnez d\'abord un projet'"
-                    notFoundText="Aucun coordinateur trouvé"
-                    loadingText="Chargement..."
-                    [ngModel]="selectedCoordinateur"
-                    [ngModelOptions]="{ standalone: true }"
-                    (change)="onCoordinateurSelectChange($event)"
-                  >
-                    <ng-template ng-option-tmp let-item="item">
-                      <div>{{ item.nomPrenom }}</div>
-                      <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
-                    </ng-template>
-                  </ng-select>
-
-                  <button
-                    type="button"
-                    class="btn-cu-affaire-modal"
-                    title="Rechercher un coordinateur"
-                    aria-label="Rechercher un coordinateur"
-                    [disabled]="!selectedAffaire"
-                    (click)="openCoordinateurModal()"
-                  >
-                    <fa-icon icon="search"></fa-icon>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div class="row">
+              <!-- TECHNICIENS -->
               <div class="col-md-6 mb-3">
                 <label class="form-label" for="field_techniciens">Techniciens</label>
 
@@ -753,8 +702,10 @@
 
                 <div *ngIf="technicienError" class="cu-technicien-error">{{ technicienError }}</div>
               </div>
+            </div>
 
-              <!-- VALIDEUR — même logique que Responsable -->
+            <div class="row">
+              <!-- VALIDEUR -->
               <div class="col-md-6 mb-3">
                 <label class="form-label" for="field_valideurId">Valideur</label>
 
@@ -794,6 +745,54 @@
                     aria-label="Rechercher un valideur"
                     [disabled]="!selectedAffaire"
                     (click)="openValideurModal()"
+                  >
+                    <fa-icon icon="search"></fa-icon>
+                  </button>
+                </div>
+              </div>
+
+              <!-- COORDINATEUR -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.coordinateur" for="field_coordinateur"
+                  >Coordinateur</label
+                >
+
+                <!-- ID réel du coordinateur (contact ayant le rôle MANAGER) -->
+                <input type="hidden" formControlName="coordinateur" />
+
+                <div class="cu-affaire-selector">
+                  <ng-select
+                    id="field_coordinateur"
+                    data-cy="coordinateur"
+                    name="coordinateur"
+                    class="custom-ng-select"
+                    [items]="responsables"
+                    bindLabel="nomPrenom"
+                    [compareWith]="compareResponsable"
+                    [searchable]="true"
+                    [clearable]="true"
+                    [loading]="loadingResponsables"
+                    [disabled]="!selectedAffaire"
+                    [placeholder]="selectedAffaire ? 'Rechercher un coordinateur...' : 'Sélectionnez d\'abord un projet'"
+                    notFoundText="Aucun coordinateur trouvé"
+                    loadingText="Chargement..."
+                    [ngModel]="selectedCoordinateur"
+                    [ngModelOptions]="{ standalone: true }"
+                    (change)="onCoordinateurSelectChange($event)"
+                  >
+                    <ng-template ng-option-tmp let-item="item">
+                      <div>{{ item.nomPrenom }}</div>
+                      <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
+                    </ng-template>
+                  </ng-select>
+
+                  <button
+                    type="button"
+                    class="btn-cu-affaire-modal"
+                    title="Rechercher un coordinateur"
+                    aria-label="Rechercher un coordinateur"
+                    [disabled]="!selectedAffaire"
+                    (click)="openCoordinateurModal()"
                   >
                     <fa-icon icon="search"></fa-icon>
                   </button>

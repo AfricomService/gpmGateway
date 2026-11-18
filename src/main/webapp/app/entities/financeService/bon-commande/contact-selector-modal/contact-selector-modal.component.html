@@ -32,7 +32,7 @@
     <button
       type="button"
       class="cs-list-item"
-      [class.cs-list-item-selected]="multiple && isSelected(contact)"
+      [class.cs-list-item-selected]="isSelected(contact)"
       *ngFor="let contact of filteredContacts"
       (click)="select(contact)"
     >

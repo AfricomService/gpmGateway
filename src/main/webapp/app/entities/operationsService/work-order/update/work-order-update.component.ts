@@ -63,6 +63,7 @@ import {
 import { WoArticlesService } from '../service/wo-articles.service';
 import { ArticleService } from '../../../projectService/article/service/article.service';
 import { IWoArticles } from '../wo-articles.model';
+import { AccountService } from 'app/core/auth/account.service';
 
 type AccordionPanel = 'global' | 'client' | 'equipes' | 'options' | 'articlesAssocies' | 'remarque' | 'piecesJointes';
 
@@ -275,6 +276,8 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   // — logique identique au champ Responsable de ot-externe-update, réutilisée pour les 2 champs
   // ================================
   responsables: IContactSociete[] = [];
+  // Vrai après un changement d'affaire par l'utilisateur : Responsable/Coordinateur seront pré-remplis avec le user connecté
+  private prefillResponsablesFromUser = false;
   selectedResponsable: IContactSociete | null = null;
   selectedCoordinateur: IContactSociete | null = null;
   selectedValideur: IContactSociete | null = null;
@@ -385,7 +388,8 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     protected parametrageDeplacementService: ParametrageDeplacementService,
     protected woArticlesService: WoArticlesService,
     protected articleService: ArticleService,
-    protected societeService: SocieteService
+    protected societeService: SocieteService,
+    protected accountService: AccountService
   ) {}
 
   ngOnInit(): void {
@@ -622,6 +626,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       this.selectedCoordinateur = null;
       this.selectedValideur = null;
       this.editForm.patchValue({ responsableId: null, coordinateur: null, valideur: null });
+      this.prefillResponsablesFromUser = true;
     }
     this.applyValideurFromAffaire(affaire);
 
@@ -693,6 +698,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     } else {
       this.editForm.patchValue({ affaireId: null, clientId: null, lieu: null, villeId: null, zoneId: null, siteId: null });
       this.selectedAffaire = null;
+      this.prefillResponsablesFromUser = false;
       this.selectedAffaireCode = null;
       this.selectedClientInfo = null;
       this.selectedClientCommandeInfo = null;
@@ -874,7 +880,12 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.bonCommandeService.findResponsablesByRoleForSocietes(RESPONSABLE_ROLE_CODE, societeIds).subscribe({
       next: contacts => {
         this.responsables = contacts;
+        // Garde les valeurs déjà sélectionnées dans la liste, même si elles n'en font pas partie
+        this.ensureInResponsables(this.selectedResponsable);
+        this.ensureInResponsables(this.selectedCoordinateur);
+        this.ensureInResponsables(this.selectedValideur);
         this.loadingResponsables = false;
+        this.applyCurrentUserAsResponsableCoordinateur();
       },
       error: () => {
         this.responsables = [];
@@ -883,12 +894,56 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Après un changement d'affaire (création ou édition) : pré-remplit Responsable et Coordinateur avec le contact du user connecté
+   * (login du user = matricule du contact). Ne s'applique que si le contact fait partie de la liste
+   * (rôle MANAGER, société principale ou intermédiaires) et si le champ est encore vide.
+   */
+  private applyCurrentUserAsResponsableCoordinateur(): void {
+    // Pas de pré-remplissage au chargement d'un work order existant : les valeurs enregistrées priment.
+    // Il n'a lieu qu'après un changement d'affaire par l'utilisateur (création ou édition).
+    if (!this.prefillResponsablesFromUser) {
+      return;
+    }
+    this.prefillResponsablesFromUser = false;
+
+    this.accountService.identity().subscribe(account => {
+      const login = account?.login?.trim().toLowerCase();
+
+      if (!login) {
+        return;
+      }
+
+      const moi = this.responsables.find(c => (c.matricule ?? '').trim().toLowerCase() === login);
+
+      if (!moi) {
+        return;
+      }
+
+      if (!this.editForm.get('responsableId')?.value) {
+        this.onResponsableSelectChange(moi);
+      }
+
+      if (!this.editForm.get('coordinateur')?.value) {
+        this.onCoordinateurSelectChange(moi);
+      }
+    });
+  }
+
+  /** Ajoute le contact à la liste `responsables` s'il n'y est pas, pour qu'il apparaisse sélectionné dans les listes. */
+  private ensureInResponsables(contact: IContactSociete | null): void {
+    if (contact && !this.responsables.some(r => r.id === contact.id)) {
+      this.responsables = [contact, ...this.responsables];
+    }
+  }
+
   onResponsableSelectChange(responsable: IContactSociete | null): void {
     this.editForm.patchValue({
       responsableId: responsable?.id ?? null,
     });
 
     this.selectedResponsable = responsable;
+    this.ensureInResponsables(responsable);
   }
 
   onCoordinateurSelectChange(coordinateur: IContactSociete | null): void {
@@ -897,6 +952,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     });
 
     this.selectedCoordinateur = coordinateur;
+    this.ensureInResponsables(coordinateur);
   }
 
   onValideurSelectChange(valideur: IContactSociete | null): void {
@@ -905,6 +961,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     });
 
     this.selectedValideur = valideur;
+    this.ensureInResponsables(valideur);
   }
 
   compareResponsable = (a: IContactSociete | null, b: IContactSociete | null): boolean => (a && b ? a.id === b.id : a === b);
@@ -919,6 +976,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.bonCommandeService.findResponsableById(responsableId).subscribe({
       next: res => {
         this.selectedResponsable = res.body ?? null;
+        this.ensureInResponsables(this.selectedResponsable);
       },
     });
   }
@@ -1207,6 +1265,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.bonCommandeService.findResponsableById(coordinateurId).subscribe({
       next: res => {
         this.selectedCoordinateur = res.body ?? null;
+        this.ensureInResponsables(this.selectedCoordinateur);
       },
     });
   }
@@ -1215,6 +1274,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.bonCommandeService.findResponsableById(valideurId).subscribe({
       next: res => {
         this.selectedValideur = res.body ?? null;
+        this.ensureInResponsables(this.selectedValideur);
       },
     });
   }
@@ -1775,6 +1835,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     // Société principale + sociétés intermédiaires (prioritaire sur societeId dans la modale)
     modalRef.componentInstance.societeIds = this.societeIdsTechniciens;
     modalRef.componentInstance.modalTitle = 'Sélectionner un responsable';
+    modalRef.componentInstance.initialSelection = this.selectedResponsable ? [this.selectedResponsable] : [];
 
     modalRef.result
       .then((contact: IContactSociete) => {
@@ -1803,6 +1864,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     modalRef.componentInstance.societeId = this.societeIdAffaire;
     modalRef.componentInstance.societeIds = this.societeIdsTechniciens;
     modalRef.componentInstance.modalTitle = 'Sélectionner un coordinateur';
+    modalRef.componentInstance.initialSelection = this.selectedCoordinateur ? [this.selectedCoordinateur] : [];
 
     modalRef.result
       .then((contact: IContactSociete) => {
@@ -1831,6 +1893,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     modalRef.componentInstance.societeId = this.societeIdAffaire;
     modalRef.componentInstance.societeIds = this.societeIdsTechniciens;
     modalRef.componentInstance.modalTitle = 'Sélectionner un valideur';
+    modalRef.componentInstance.initialSelection = this.selectedValideur ? [this.selectedValideur] : [];
 
     modalRef.result
       .then((contact: IContactSociete) => {
