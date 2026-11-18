@@ -112,6 +112,45 @@
               </div>
             </div>
 
+            <!-- LIGNE 1 bis : SOCIETE EXECUTRICE + TYPE MISSION -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="field_societeExecutrice">Société exécutrice</label>
+
+                <!-- ID réel de la société exécutrice (persisté), dérivé de la société principale de l'affaire -->
+                <input type="hidden" formControlName="societeExecutrice" data-cy="societeExecutrice" />
+
+                <input
+                  type="text"
+                  class="form-control cu-input"
+                  id="field_societeExecutriceLabel"
+                  data-cy="societeExecutriceLabel"
+                  [value]="societeExecutriceLabel"
+                  placeholder="Sélectionnez d'abord un projet"
+                  readonly
+                />
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="field_typeMission">Type mission</label>
+
+                <ng-select
+                  id="field_typeMission"
+                  data-cy="typeMission"
+                  name="typeMission"
+                  formControlName="typeMission"
+                  [items]="typeMissionOptions"
+                  bindLabel="label"
+                  bindValue="value"
+                  [searchable]="false"
+                  [clearable]="true"
+                  class="custom-ng-select"
+                  placeholder="Sélectionner un type de mission..."
+                >
+                </ng-select>
+              </div>
+            </div>
+
             <!-- LIGNE 2 : MOTIF (liste de tous les ModelPhaseOT) -->
             <div class="row">
               <div class="col-md-6 mb-3">
@@ -568,7 +607,6 @@
           <div class="cu-accordion-body" *ngIf="isPanelOpen('equipes')">
             <!-- Champs conservés dans le formulaire (persistés) mais non affichés à l'écran -->
             <input type="hidden" formControlName="vehiculeId" data-cy="vehiculeId" />
-            <input type="hidden" formControlName="valideurId" data-cy="valideurId" />
             <input type="hidden" formControlName="valideurUserLogin" data-cy="valideurUserLogin" />
 
             <div class="row">
@@ -714,6 +752,52 @@
                 </div>
 
                 <div *ngIf="technicienError" class="cu-technicien-error">{{ technicienError }}</div>
+              </div>
+
+              <!-- VALIDEUR — même logique que Responsable -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="field_valideurId">Valideur</label>
+
+                <!-- ID réel du valideur (contact ayant le rôle MANAGER) -->
+                <input type="hidden" formControlName="valideur" data-cy="valideurId" />
+
+                <div class="cu-affaire-selector">
+                  <ng-select
+                    id="field_valideurId"
+                    data-cy="valideur"
+                    name="valideur"
+                    class="custom-ng-select"
+                    [items]="responsables"
+                    bindLabel="nomPrenom"
+                    [compareWith]="compareResponsable"
+                    [searchable]="true"
+                    [clearable]="true"
+                    [loading]="loadingResponsables"
+                    [disabled]="!selectedAffaire"
+                    [placeholder]="selectedAffaire ? 'Rechercher un valideur...' : 'Sélectionnez d\'abord un projet'"
+                    notFoundText="Aucun valideur trouvé"
+                    loadingText="Chargement..."
+                    [ngModel]="selectedValideur"
+                    [ngModelOptions]="{ standalone: true }"
+                    (change)="onValideurSelectChange($event)"
+                  >
+                    <ng-template ng-option-tmp let-item="item">
+                      <div>{{ item.nomPrenom }}</div>
+                      <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
+                    </ng-template>
+                  </ng-select>
+
+                  <button
+                    type="button"
+                    class="btn-cu-affaire-modal"
+                    title="Rechercher un valideur"
+                    aria-label="Rechercher un valideur"
+                    [disabled]="!selectedAffaire"
+                    (click)="openValideurModal()"
+                  >
+                    <fa-icon icon="search"></fa-icon>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -863,18 +947,10 @@
               </div>
             </div>
 
-            <div class="cu-totaux" *ngIf="joursPrevus.length > 0">
-              <div class="cu-total-item">
-                <span class="cu-total-label">Nombre d'hébergements</span>
-                <span class="cu-total-value">{{ nombreHebergements }}</span>
-              </div>
-              <div class="cu-total-item">
-                <span class="cu-total-label">Nombre de missions de nuit</span>
-                <span class="cu-total-value">{{ nombreNuits }}</span>
-              </div>
-              <div class="cu-total-item">
-                <span class="cu-total-label">Nombre de déplacements</span>
-                <span class="cu-total-value">{{ nombreDeplacements }}</span>
+            <div class="cu-totaux" *ngIf="joursPrevus.length > 0 && parametresWO.length > 0">
+              <div class="cu-total-item" *ngFor="let parametre of parametresWO" [title]="parametre.description ?? ''">
+                <span class="cu-total-label">{{ parametre.nom }}</span>
+                <span class="cu-total-value">{{ totalParametre(parametre) }}</span>
               </div>
             </div>
 

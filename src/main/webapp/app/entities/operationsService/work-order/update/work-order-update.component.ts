@@ -26,6 +26,10 @@ import { VehiculeService } from 'app/entities/projectService/vehicule/service/ve
 import { WorkOrderVehiculeService } from '../service/work-order-vehicule.service';
 import { forkJoin, EMPTY } from 'rxjs';
 
+import { SocieteService } from 'app/entities/projectService/societe/service/societe.service';
+import { ISociete } from 'app/entities/projectService/societe/societe.model';
+import { map } from 'rxjs/operators';
+
 import { AffaireSelectorModalComponent } from 'app/entities/financeService/bon-commande/affaire-selector-modal/affaire-selector-modal.component';
 import { SiteSelectorModalComponent } from 'app/entities/financeService/bon-commande/site-selector-modal/site-selector-modal.component';
 import { ContactSelectorModalComponent } from 'app/entities/financeService/bon-commande/contact-selector-modal/contact-selector-modal.component';
@@ -102,6 +106,26 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   workOrder: IWorkOrder | null = null;
   statutWOValues = Object.keys(StatutWO);
 
+  // ================================
+  // Société exécutrice + Type mission
+  // ================================
+  societesSharedCollection: ISociete[] = [];
+  readonly typeMissionOptions: { value: string; label: string }[] = [
+    { value: 'Principale', label: 'Principale' },
+    { value: 'Intermédiaire', label: 'Intermédiaire' },
+  ];
+
+  /** Raison sociale de la société exécutrice (lecture seule), retrouvée à partir de l'id du formulaire. */
+  get societeExecutriceLabel(): string {
+    const id = this.editForm.get('societeExecutrice')?.value;
+
+    if (id === null || id === undefined || (id as any) === '') {
+      return '';
+    }
+
+    return this.societesSharedCollection.find(s => s.id === Number(id))?.raisonSociale ?? '';
+  }
+
   // Cycle de vie affiché dans le stepper (ordre = ordre du workflow)
   readonly statutSteps: StatusStep[] = [
     { key: StatutWO.Creation, label: 'Création' },
@@ -148,37 +172,17 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     return this.joursPrevus.length;
   }
 
-  // Compteurs calculés à partir des checkpoints cochés (un jour coché = +1)
-  get nombreHebergements(): number {
-    return this.countChecked('Hébergement');
-  }
-
-  get nombreNuits(): number {
-    return this.countChecked('Mission de nuit');
-  }
-
-  get nombreDeplacements(): number {
-    return this.countChecked('Déplacement');
-  }
-
-  private normalizeText(value?: string | null): string {
-    return (value ?? '')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .trim()
-      .toLowerCase();
-  }
-
-  /** Nombre de jours pour lesquels le paramètre portant ce nom est coché (comparaison sans accents ni casse). */
-  private countChecked(nomParametre: string): number {
-    const cible = this.normalizeText(nomParametre);
-    const parametre = this.parametresWO.find(p => this.normalizeText(p.nom) === cible);
-
-    if (!parametre) {
-      return 0;
-    }
-
+  /**
+   * Nombre de jours pour lesquels un paramètre est coché (un jour coché = +1).
+   * Calculé côté front à partir des checkpoints, jamais persisté.
+   */
+  countCheckedForParametre(parametre: IParametreWO): number {
     return this.joursPrevusDates.filter((_, index) => this.isParametreChecked(index, parametre)).length;
+  }
+
+  /** Total d'un paramètre, utilisé par l'affichage dynamique des totaux. */
+  totalParametre(parametre: IParametreWO): number {
+    return this.countCheckedForParametre(parametre);
   }
 
   // ================================
@@ -273,6 +277,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   responsables: IContactSociete[] = [];
   selectedResponsable: IContactSociete | null = null;
   selectedCoordinateur: IContactSociete | null = null;
+  selectedValideur: IContactSociete | null = null;
   loadingResponsables = false;
 
   // ================================
@@ -282,6 +287,9 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   techniciens: IContactSociete[] = [];
   selectedTechniciens: IContactSociete[] = [];
   loadingTechniciens = false;
+  // Sociétés dont les techniciens (et responsables) sont proposés : société de l'affaire + sociétés intermédiaires
+  societeIdsTechniciens: number[] = [];
+
   technicienError = '';
   private technicienErrorTimeoutId?: ReturnType<typeof setTimeout>;
 
@@ -376,7 +384,8 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     protected parametreWOService: ParametreWOService,
     protected parametrageDeplacementService: ParametrageDeplacementService,
     protected woArticlesService: WoArticlesService,
-    protected articleService: ArticleService
+    protected articleService: ArticleService,
+    protected societeService: SocieteService
   ) {}
 
   ngOnInit(): void {
@@ -386,6 +395,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
 
     this.loadModelPhases();
     this.loadParametresWO();
+    this.loadSocietes();
     this.loadAffaires(''); // Pré-charge la liste des projets dès l'ouverture du formulaire
 
     this.activatedRoute.data.subscribe(({ workOrder }) => {
@@ -605,20 +615,26 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.loadClientInfo(clientId);
     this.loadClientCommandeInfo(affaire.clientCommande ?? null);
 
-    // Responsable / Coordinateur : liste filtrée par la société de l'affaire
+    // Responsable / Coordinateur / Valideur : liste filtrée par la société de l'affaire + ses sociétés intermédiaires
+    // (chargée par loadSocieteIdsTechniciens() une fois les sociétés résolues)
     if (affaireChanged) {
       this.selectedResponsable = null;
       this.selectedCoordinateur = null;
-      this.editForm.patchValue({ responsableId: null, coordinateur: null });
+      this.selectedValideur = null;
+      this.editForm.patchValue({ responsableId: null, coordinateur: null, valideur: null });
     }
-    this.loadResponsables(societeId);
-    this.applyResponsableFromAffaire(affaire);
+    this.applyValideurFromAffaire(affaire);
 
-    // Techniciens : liste filtrée par la société de l'affaire
+    // Société exécutrice : valeur par défaut = Société Principale de l'affaire (modifiable)
+    if (affaireChanged || !this.editForm.get('societeExecutrice')?.value) {
+      this.applySocieteExecutriceFromAffaire(affaire);
+    }
+
+    // Techniciens : liste filtrée par la société de l'affaire + ses sociétés intermédiaires
     if (affaireChanged) {
       this.selectedTechniciens = [];
     }
-    this.loadTechniciens(societeId);
+    this.loadSocieteIdsTechniciens(affaire);
 
     // Recharge les listes véhicules/ressources filtrées sur la société de l'affaire sélectionnée
     this.loadVehicules(societeId);
@@ -626,11 +642,11 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Pré-remplit le champ "Responsable" du work order avec le responsable
+   * Pré-remplit le champ "Valideur" du work order avec le responsable
    * projet déjà défini sur l'affaire sélectionnée (IAffaire.responsableProjetId),
    * en le proposant comme valeur par défaut (l'utilisateur peut ensuite la changer).
    */
-  private applyResponsableFromAffaire(affaire: IAffaire): void {
+  private applyValideurFromAffaire(affaire: IAffaire): void {
     const responsableProjetId = (affaire as any).responsableProjetId;
 
     if (responsableProjetId === null || responsableProjetId === undefined || responsableProjetId === '') {
@@ -646,10 +662,29 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       next: res => {
         const contact = res.body ?? null;
         if (contact) {
-          this.onResponsableSelectChange(contact);
+          this.onValideurSelectChange(contact);
         }
       },
     });
+  }
+
+  /**
+   * Pré-sélectionne la Société exécutrice avec la Société Principale de l'affaire
+   * (valeur par défaut, l'utilisateur peut ensuite la modifier).
+   */
+  private applySocieteExecutriceFromAffaire(affaire: IAffaire): void {
+    const societeId = (affaire as any).societeId;
+
+    if (societeId === null || societeId === undefined || societeId === '') {
+      return;
+    }
+
+    const parsedId = Number(societeId);
+    if (Number.isNaN(parsedId)) {
+      return;
+    }
+
+    this.editForm.patchValue({ societeExecutrice: parsedId }, { emitEvent: false });
   }
 
   onAffaireSelectChange(affaire: IAffaire | null): void {
@@ -667,10 +702,12 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       this.ressources = [];
       this.responsables = [];
       this.techniciens = [];
+      this.societeIdsTechniciens = [];
       this.selectedTechniciens = [];
       this.selectedResponsable = null;
       this.selectedCoordinateur = null;
-      this.editForm.patchValue({ responsableId: null, coordinateur: null });
+      this.selectedValideur = null;
+      this.editForm.patchValue({ responsableId: null, coordinateur: null, valideur: null, societeExecutrice: null });
       if (this.chosenArticles.length > 0) {
         this.articlesNeedReset = true;
       }
@@ -818,8 +855,15 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     return (this.selectedAffaire as any)?.societeId ?? null;
   }
 
-  private loadResponsables(societeId?: number | null): void {
-    if (societeId === null || societeId === undefined) {
+  /**
+   * Charge les contacts MANAGER de la société principale de l'affaire
+   * + de ses sociétés intermédiaires (liste partagée par Responsable, Coordinateur et Valideur).
+   * Appelée une fois societeIdsTechniciens résolu (voir loadSocieteIdsTechniciens).
+   */
+  private loadResponsables(): void {
+    const societeIds = this.societeIdsTechniciens;
+
+    if (societeIds.length === 0) {
       this.responsables = [];
       this.loadingResponsables = false;
       return;
@@ -827,9 +871,9 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
 
     this.loadingResponsables = true;
 
-    this.bonCommandeService.findResponsablesByRole(RESPONSABLE_ROLE_CODE, societeId).subscribe({
-      next: res => {
-        this.responsables = res.body ?? [];
+    this.bonCommandeService.findResponsablesByRoleForSocietes(RESPONSABLE_ROLE_CODE, societeIds).subscribe({
+      next: contacts => {
+        this.responsables = contacts;
         this.loadingResponsables = false;
       },
       error: () => {
@@ -855,6 +899,14 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.selectedCoordinateur = coordinateur;
   }
 
+  onValideurSelectChange(valideur: IContactSociete | null): void {
+    this.editForm.patchValue({
+      valideur: valideur?.id ?? null,
+    });
+
+    this.selectedValideur = valideur;
+  }
+
   compareResponsable = (a: IContactSociete | null, b: IContactSociete | null): boolean => (a && b ? a.id === b.id : a === b);
 
   compareVehicule = (a: IVehicule | null, b: IVehicule | null): boolean => (a && b ? a.id === b.id : a === b);
@@ -869,6 +921,19 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
         this.selectedResponsable = res.body ?? null;
       },
     });
+  }
+
+  // ================================
+  // Sociétés (liste Société exécutrice — identique à Société Principale de affaire-update)
+  // ================================
+  private loadSocietes(): void {
+    this.societeService
+      .query({ page: 0, size: 1000, sort: ['id', 'asc'] })
+      .pipe(map((res: HttpResponse<ISociete[]>) => res.body ?? []))
+      .subscribe({
+        next: societes => (this.societesSharedCollection = societes),
+        error: () => (this.societesSharedCollection = []),
+      });
   }
 
   // ================================
@@ -1146,6 +1211,14 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadValideurLabel(valideurId: number): void {
+    this.bonCommandeService.findResponsableById(valideurId).subscribe({
+      next: res => {
+        this.selectedValideur = res.body ?? null;
+      },
+    });
+  }
+
   // ================================
   // Paramètres WO (GET /api/parametre-wos) + checkpoints par jour
   // ================================
@@ -1219,6 +1292,11 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
    *  - les lignes par jour (ParametrageDeplacement) via PUT /parametrage-deplacements/work-order/{id}
    *  - les compteurs du work order via PATCH /work-orders/{id} (les champs null sont ignorés côté backend)
    */
+  /**
+   * Enregistre uniquement les lignes par jour (ParametrageDeplacement) via
+   * PUT /parametrage-deplacements/work-order/{id}.
+   * Les totaux par paramètre sont calculés côté front et ne sont plus persistés.
+   */
   saveOptions(): void {
     const workOrderId = this.workOrder?.id;
 
@@ -1230,21 +1308,8 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.optionsSaved = false;
     this.optionsSaveError = false;
 
-    const nombreHebergements = this.nombreHebergements;
-    const nombreNuits = this.nombreNuits;
-    const nombreDeplacements = this.nombreDeplacements;
-
-    forkJoin([
-      this.parametrageDeplacementService.replaceForWorkOrder(workOrderId, this.buildParametrages(workOrderId)),
-      this.workOrderService.partialUpdate({
-        id: workOrderId,
-        nombreHebergements,
-        nombreNuits,
-        nombreDeplacements,
-        hebergement: nombreHebergements > 0,
-        missionDeNuit: nombreNuits > 0,
-      }),
-    ])
+    this.parametrageDeplacementService
+      .replaceForWorkOrder(workOrderId, this.buildParametrages(workOrderId))
       .pipe(finalize(() => (this.isSavingOptions = false)))
       .subscribe({
         next: () => this.showOptionsFeedback(false),
@@ -1270,8 +1335,52 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   // ================================
   // Techniciens (sélection multiple, persistée via WorkOrderTechniciens)
   // ================================
-  private loadTechniciens(societeId?: number | null): void {
-    if (societeId === null || societeId === undefined) {
+  /**
+   * Détermine les sociétés éligibles (société principale + sociétés intermédiaires de l'affaire)
+   * puis charge les techniciens correspondants.
+   * En cas d'échec de l'appel, repli sur la société principale seule (comportement historique).
+   */
+  private loadSocieteIdsTechniciens(affaire: IAffaire): void {
+    const rawSocieteId = (affaire as any).societeId;
+    const principal: number[] = rawSocieteId !== null && rawSocieteId !== undefined ? [Number(rawSocieteId)] : [];
+
+    if (affaire.id === null || affaire.id === undefined) {
+      this.societeIdsTechniciens = principal;
+      this.loadTechniciens();
+      this.loadResponsables();
+      return;
+    }
+
+    this.bonCommandeService.findSocieteIdsForContacts(affaire.id).subscribe({
+      next: res => {
+        // L'utilisateur a changé d'affaire entre-temps : on ignore cette réponse
+        if (this.selectedAffaire?.id !== affaire.id) {
+          return;
+        }
+        const ids = res.body ?? [];
+        this.societeIdsTechniciens = ids.length > 0 ? ids : principal;
+        this.loadTechniciens();
+        this.loadResponsables();
+      },
+      error: () => {
+        if (this.selectedAffaire?.id !== affaire.id) {
+          return;
+        }
+        this.societeIdsTechniciens = principal;
+        this.loadTechniciens();
+        this.loadResponsables();
+      },
+    });
+  }
+
+  /**
+   * Charge les techniciens de la société principale de l'affaire
+   * + de ses sociétés intermédiaires (la société exécutrice n'intervient pas).
+   */
+  private loadTechniciens(): void {
+    const societeIds = this.societeIdsTechniciens;
+
+    if (societeIds.length === 0) {
       this.techniciens = [];
       this.loadingTechniciens = false;
       return;
@@ -1279,9 +1388,9 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
 
     this.loadingTechniciens = true;
 
-    this.bonCommandeService.findResponsablesByRole(TECHNICIEN_ROLE_CODE, societeId).subscribe({
-      next: res => {
-        this.techniciens = res.body ?? [];
+    this.bonCommandeService.findResponsablesByRoleForSocietes(TECHNICIEN_ROLE_CODE, societeIds).subscribe({
+      next: contacts => {
+        this.techniciens = contacts;
         this.loadingTechniciens = false;
       },
       error: () => {
@@ -1380,6 +1489,8 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
 
     modalRef.componentInstance.roleCode = TECHNICIEN_ROLE_CODE;
     modalRef.componentInstance.societeId = this.societeIdAffaire;
+    // Société de l'affaire + sociétés intermédiaires (prioritaire sur societeId dans la modale)
+    modalRef.componentInstance.societeIds = this.societeIdsTechniciens;
     modalRef.componentInstance.modalTitle = 'Sélectionner un ou plusieurs techniciens';
     modalRef.componentInstance.multiple = true;
     modalRef.componentInstance.initialSelection = this.selectedTechniciens;
@@ -1661,6 +1772,8 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
 
     modalRef.componentInstance.roleCode = RESPONSABLE_ROLE_CODE;
     modalRef.componentInstance.societeId = this.societeIdAffaire;
+    // Société principale + sociétés intermédiaires (prioritaire sur societeId dans la modale)
+    modalRef.componentInstance.societeIds = this.societeIdsTechniciens;
     modalRef.componentInstance.modalTitle = 'Sélectionner un responsable';
 
     modalRef.result
@@ -1688,12 +1801,41 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
 
     modalRef.componentInstance.roleCode = RESPONSABLE_ROLE_CODE;
     modalRef.componentInstance.societeId = this.societeIdAffaire;
+    modalRef.componentInstance.societeIds = this.societeIdsTechniciens;
     modalRef.componentInstance.modalTitle = 'Sélectionner un coordinateur';
 
     modalRef.result
       .then((contact: IContactSociete) => {
         if (contact) {
           this.onCoordinateurSelectChange(contact);
+        }
+      })
+      .catch(() => {
+        // Fermeture du modal sans sélection
+      });
+  }
+
+  openValideurModal(): void {
+    if (this.societeIdAffaire === null) {
+      return;
+    }
+
+    const modalRef = this.modalService.open(ContactSelectorModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'contact-selector-modal-window',
+    });
+
+    modalRef.componentInstance.roleCode = RESPONSABLE_ROLE_CODE;
+    modalRef.componentInstance.societeId = this.societeIdAffaire;
+    modalRef.componentInstance.societeIds = this.societeIdsTechniciens;
+    modalRef.componentInstance.modalTitle = 'Sélectionner un valideur';
+
+    modalRef.result
+      .then((contact: IContactSociete) => {
+        if (contact) {
+          this.onValideurSelectChange(contact);
         }
       })
       .catch(() => {
@@ -1937,13 +2079,10 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.isSaving = true;
     const workOrder = this.workOrderFormService.getWorkOrder(this.editForm);
 
-    // Compteurs issus des checkpoints par jour
-    workOrder.nombreHebergements = this.nombreHebergements;
-    workOrder.nombreNuits = this.nombreNuits;
-    workOrder.nombreDeplacements = this.nombreDeplacements;
-    // Les booléens (obligatoires côté backend) sont dérivés des compteurs
-    workOrder.hebergement = this.nombreHebergements > 0;
-    workOrder.missionDeNuit = this.nombreNuits > 0;
+    // Les booléens hebergement / missionDeNuit sont obligatoires (@NotNull) côté backend.
+    // On ne les calcule plus à partir des compteurs : valeur neutre, jamais modifiée depuis l'écran.
+    workOrder.hebergement = workOrder.hebergement ?? false;
+    workOrder.missionDeNuit = workOrder.missionDeNuit ?? false;
 
     if (workOrder.id !== null) {
       this.subscribeToSaveResponse(this.workOrderService.update(workOrder));
@@ -2082,8 +2221,8 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
             const societeId = (affaire as any).societeId ?? null;
             this.loadVehicules(societeId);
             this.loadRessources(societeId);
-            this.loadResponsables(societeId);
-            this.loadTechniciens(societeId);
+            // loadSocieteIdsTechniciens charge aussi les responsables (principale + intermédiaires)
+            this.loadSocieteIdsTechniciens(affaire);
           }
         },
       });
@@ -2123,6 +2262,12 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
 
     if (coordinateurId !== null && coordinateurId !== undefined) {
       this.loadCoordinateurLabel(Number(coordinateurId));
+    }
+
+    const valideurId = workOrder.valideur;
+
+    if (valideurId !== null && valideurId !== undefined) {
+      this.loadValideurLabel(Number(valideurId));
     }
 
     // Techniciens / Véhicules / Ressources

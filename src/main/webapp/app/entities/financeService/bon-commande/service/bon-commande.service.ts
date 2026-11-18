@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import dayjs from 'dayjs/esm';
 
 import { isPresent } from 'app/core/util/operators';
@@ -33,6 +33,8 @@ export class BonCommandeService {
   protected contactSocieteResourceUrl = this.applicationConfigService.getEndpointFor('api/contact-societes', 'projectservice');
 
   protected roleContactSocieteResourceUrl = this.applicationConfigService.getEndpointFor('api/role-contact-societes', 'projectservice');
+
+  protected affaireResourceUrl = this.applicationConfigService.getEndpointFor('api/affaires', 'projectservice');
 
   protected numsequentielleResourceUrl = this.applicationConfigService.getEndpointFor('api/numsequentielles', 'projectservice');
 
@@ -121,6 +123,49 @@ export class BonCommandeService {
       params,
       observe: 'response',
     });
+  }
+
+  /**
+   * Ids des sociétés dont les contacts sont éligibles pour une affaire :
+   * société principale + sociétés intermédiaires.
+   */
+  findSocieteIdsForContacts(affaireId: number): Observable<HttpResponse<number[]>> {
+    return this.http.get<number[]>(`${this.affaireResourceUrl}/${affaireId}/societe-ids-contacts`, { observe: 'response' });
+  }
+
+  /**
+   * Contacts ayant un rôle donné, pour PLUSIEURS sociétés : une requête par société,
+   * résultats fusionnés et dédoublonnés (un contact présent dans deux sociétés n'apparaît qu'une fois).
+   * Une société en erreur ne vide pas toute la liste.
+   */
+  findResponsablesByRoleForSocietes(roleCode: string, societeIds: number[]): Observable<IContactSociete[]> {
+    const ids = Array.from(new Set(societeIds.filter(id => id !== null && id !== undefined)));
+
+    if (ids.length === 0) {
+      return of([]);
+    }
+
+    return forkJoin(
+      ids.map(id =>
+        this.findResponsablesByRole(roleCode, id).pipe(
+          map(res => res.body ?? []),
+          catchError(() => of([] as IContactSociete[]))
+        )
+      )
+    ).pipe(
+      map(lists => {
+        const merged = new Map<number | string, IContactSociete>();
+        lists.forEach(list =>
+          list.forEach(contact => {
+            const key = contact.id ?? `${contact.matricule ?? ''}|${contact.email ?? ''}`;
+            if (!merged.has(key)) {
+              merged.set(key, contact);
+            }
+          })
+        );
+        return Array.from(merged.values());
+      })
+    );
   }
 
   /**
