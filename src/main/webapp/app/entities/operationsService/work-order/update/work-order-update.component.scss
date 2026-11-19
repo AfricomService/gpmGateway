@@ -984,3 +984,27 @@ textarea.cu-input {
     cursor: default;
   }
 }
+/* ============ BOUTON DE TRANSITION DE STATUT ============ */
+.btn-cu-transition {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.9rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--cp-accent);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  transition: background 0.2s ease, transform 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--cp-accent-hover);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: default;
+  }
+}

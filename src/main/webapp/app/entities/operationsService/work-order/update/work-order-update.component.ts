@@ -64,6 +64,8 @@ import { WoArticlesService } from '../service/wo-articles.service';
 import { ArticleService } from '../../../projectService/article/service/article.service';
 import { IWoArticles } from '../wo-articles.model';
 import { AccountService } from 'app/core/auth/account.service';
+import { DATE_TIME_FORMAT } from 'app/config/input.constants';
+import { IMissionLine } from 'app/entities/operationsService/mission/mission.model';
 
 type AccordionPanel = 'global' | 'client' | 'equipes' | 'options' | 'articlesAssocies' | 'remarque' | 'piecesJointes';
 
@@ -72,6 +74,19 @@ interface PendingPieceJointe {
   file: File;
   displayName: string;
   extension: string;
+}
+
+interface StatutTransition {
+  event: string; // valeur de l'enum backend WorkOrderEvent
+  label: string; // texte du bouton
+  next: StatutWO; // statut attendu après la transition
+}
+
+// Ligne de la modale « Exécuter » : un bénéficiaire de mission (responsable ou technicien)
+interface MissionRow {
+  contact: IContactSociete;
+  role: 'MANAGER' | 'TECHNIQUE'; // affichage seulement : le titre réel est déduit par le backend
+  noteMission: number | null;
 }
 
 const AFFAIRE_STATUT = 'ExecutionDesTravaux';
@@ -91,6 +106,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   @ViewChild('clientCommandeDetailsModal') clientCommandeDetailsModal!: TemplateRef<any>;
 
   @ViewChild('woArticleDeleteConfirmModal') woArticleDeleteConfirmModal!: TemplateRef<any>;
+  @ViewChild('missionsModal') missionsModal!: TemplateRef<any>;
 
   // ================================
   // Articles associés (persistés immédiatement via WoArticles)
@@ -106,6 +122,25 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   isSaving = false;
   workOrder: IWorkOrder | null = null;
   statutWOValues = Object.keys(StatutWO);
+
+  // ================================
+  // Changement de statut (workflow) — une seule action possible par statut
+  // ================================
+  isTransitioning = false;
+  transitionError = '';
+
+  // Modale « Exécuter » : missions à créer (responsable + techniciens) avant la passation de statut
+  missionRows: MissionRow[] = [];
+  missionsModalError = '';
+
+  // Les valeurs de `event` correspondent à l'enum Java WorkOrderEvent
+  readonly statutTransitions: Partial<Record<StatutWO, StatutTransition>> = {
+    [StatutWO.Creation]: { event: 'START_EXECUTION', label: 'Exécuter', next: StatutWO.ExecutionTravaux },
+    [StatutWO.ExecutionTravaux]: { event: 'VERIFY', label: 'Vérifier', next: StatutWO.VerificationWO },
+    [StatutWO.VerificationWO]: { event: 'VALIDATE_TECH', label: 'Valider technique', next: StatutWO.ValidationTechnique },
+    [StatutWO.ValidationTechnique]: { event: 'VALIDATE_RESOURCES', label: 'Valider ressources', next: StatutWO.ValidationRessources },
+    [StatutWO.ValidationRessources]: { event: 'FINISH', label: 'Terminer', next: StatutWO.Fin },
+  };
 
   // ================================
   // Société exécutrice + Type mission
@@ -141,6 +176,153 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     return (this.editForm.get('statut')?.value as string | null | undefined) ?? StatutWO.Creation;
   }
 
+  /** Transition disponible depuis le statut courant (undefined si statut final ou work order non enregistré). */
+  get nextTransition(): StatutTransition | undefined {
+    if (this.workOrder?.id === null || this.workOrder?.id === undefined) {
+      return undefined;
+    }
+    return this.statutTransitions[this.currentStatut as StatutWO];
+  }
+
+  triggerTransition(): void {
+    const transition = this.nextTransition;
+    const workOrderId = this.workOrder?.id;
+
+    if (!transition || workOrderId === null || workOrderId === undefined || this.isTransitioning) {
+      return;
+    }
+
+    this.transitionError = '';
+
+    // « Exécuter » : étape intermédiaire (création des missions) avant la passation de statut
+    if (transition.event === 'START_EXECUTION') {
+      this.openMissionsModal(workOrderId, transition);
+      return;
+    }
+
+    this.isTransitioning = true;
+
+    this.workOrderService
+      .triggerTransition(workOrderId, transition.event)
+      .pipe(finalize(() => (this.isTransitioning = false)))
+      .subscribe({
+        next: res => this.onTransitionSuccess(workOrderId, (res.body ?? transition.next) as StatutWO),
+        error: err => (this.transitionError = this.extractTransitionError(err)),
+      });
+  }
+
+  // ================================
+  // Modale « Exécuter » : missions (responsable + techniciens)
+  // ================================
+  /** Responsable mission d'abord, puis les techniciens (sans doublon : un responsable déjà technicien n'a qu'une ligne). */
+  private buildMissionRows(): MissionRow[] {
+    const rows: MissionRow[] = [];
+    const seen = new Set<number>();
+
+    const responsable = this.selectedResponsable;
+    if (responsable?.id !== null && responsable?.id !== undefined) {
+      rows.push({ contact: responsable, role: 'MANAGER', noteMission: null });
+      seen.add(responsable.id);
+    }
+
+    this.selectedTechniciens.forEach(technicien => {
+      if (technicien.id !== null && technicien.id !== undefined && !seen.has(technicien.id)) {
+        rows.push({ contact: technicien, role: 'TECHNIQUE', noteMission: null });
+        seen.add(technicien.id);
+      }
+    });
+
+    return rows;
+  }
+
+  get missionRowsValid(): boolean {
+    return (
+      this.missionRows.length > 0 &&
+      this.missionRows.every(
+        r => r.noteMission !== null && r.noteMission !== undefined && !Number.isNaN(Number(r.noteMission)) && Number(r.noteMission) >= 0
+      )
+    );
+  }
+
+  private openMissionsModal(workOrderId: number, transition: StatutTransition): void {
+    this.missionRows = this.buildMissionRows();
+    this.missionsModalError = '';
+
+    // Aucune équipe sélectionnée : aucune mission à créer, on exécute directement
+    if (this.missionRows.length === 0) {
+      this.sendStartExecution(workOrderId, transition);
+      return;
+    }
+
+    this.modalService.open(this.missionsModal, { size: 'lg', centered: true, backdrop: 'static' });
+  }
+
+  confirmMissionsModal(modal: any): void {
+    const transition = this.nextTransition;
+    const workOrderId = this.workOrder?.id;
+
+    if (!transition || workOrderId === null || workOrderId === undefined || this.isTransitioning || !this.missionRowsValid) {
+      return;
+    }
+
+    this.missionsModalError = '';
+    this.sendStartExecution(workOrderId, transition, modal);
+  }
+
+  /** Envoie les missions + déclenche START_EXECUTION. Avec `modal`, les erreurs restent affichées dans la modale. */
+  private sendStartExecution(workOrderId: number, transition: StatutTransition, modal?: any): void {
+    const missions: IMissionLine[] = this.missionRows.map(row => ({
+      contactSocieteId: row.contact.id as number,
+      contactSocieteMatricule: row.contact.matricule ?? null,
+      noteMission: Number(row.noteMission),
+    }));
+
+    this.isTransitioning = true;
+
+    this.workOrderService
+      .startExecution(workOrderId, missions)
+      .pipe(finalize(() => (this.isTransitioning = false)))
+      .subscribe({
+        next: res => {
+          modal?.close();
+          this.onTransitionSuccess(workOrderId, (res.body ?? transition.next) as StatutWO);
+        },
+        error: err => {
+          const message = this.extractTransitionError(err);
+          if (modal) {
+            this.missionsModalError = message;
+          } else {
+            this.transitionError = message;
+          }
+        },
+      });
+  }
+
+  private onTransitionSuccess(workOrderId: number, newStatut: StatutWO): void {
+    // Met à jour le formulaire : le badge et le stepper se rafraîchissent via valueChanges
+    this.editForm.patchValue({ statut: newStatut });
+    if (this.workOrder) {
+      this.workOrder = { ...this.workOrder, statut: newStatut };
+    }
+    this.cdr.detectChanges();
+
+    // Les actions du workflow modifient d'autres champs (ex. dateHeureDebutReel à START_EXECUTION) :
+    // on les resynchronise pour qu'un « Sauvegarder » ultérieur ne les écrase pas.
+    this.workOrderService.find(workOrderId).subscribe(r => {
+      const fresh = r.body;
+      if (fresh) {
+        this.editForm.patchValue({
+          dateHeureDebutReel: fresh.dateHeureDebutReel ? fresh.dateHeureDebutReel.format(DATE_TIME_FORMAT) : null,
+          dateHeureFinReel: fresh.dateHeureFinReel ? fresh.dateHeureFinReel.format(DATE_TIME_FORMAT) : null,
+        });
+      }
+    });
+  }
+
+  private extractTransitionError(err: any): string {
+    // `message` vaut "error.http.400" : le texte utile est dans `detail` ou `title`
+    return err?.error?.detail ?? err?.error?.title ?? 'Transition de statut impossible.';
+  }
   /**
    * Liste des jours (calendaires, bornes incluses) entre Date Heure Début Prév. et Date Heure Fin Prév.
    * Ex. : début 30/10/2026 08:00, fin 01/11/2026 18:00 => ['30/10/2026', '31/10/2026', '01/11/2026'].
