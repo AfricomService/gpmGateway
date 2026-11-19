@@ -944,6 +944,27 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
 
     this.selectedResponsable = responsable;
     this.ensureInResponsables(responsable);
+    this.applySocieteExecutriceFromResponsable(responsable);
+  }
+
+  /**
+   * La Société exécutrice suit la société du Responsable mission sélectionné :
+   *  - responsable d'une société intermédiaire => société intermédiaire
+   *  - responsable de la société principale (ou champ vidé) => société principale de l'affaire
+   */
+  private applySocieteExecutriceFromResponsable(responsable: IContactSociete | null): void {
+    const principalId = this.societeIdAffaire;
+
+    if (principalId === null || principalId === undefined) {
+      return;
+    }
+
+    const societeResponsable = responsable?.societeId;
+    const cible = societeResponsable !== null && societeResponsable !== undefined ? Number(societeResponsable) : Number(principalId);
+
+    if (!Number.isNaN(cible)) {
+      this.editForm.patchValue({ societeExecutrice: cible });
+    }
   }
 
   onCoordinateurSelectChange(coordinateur: IContactSociete | null): void {
