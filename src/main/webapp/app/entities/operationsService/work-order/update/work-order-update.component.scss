@@ -1047,3 +1047,37 @@ textarea.cu-input {
     max-width: 95vw;
   }
 }
+
+.rm-search-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+
+  .form-control {
+    flex: 1;
+    min-width: 0;
+    border-radius: 8px;
+  }
+}
+
+.rm-link-btn {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: #2f6fed;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0.4rem;
+  border-radius: 6px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: rgba(47, 111, 237, 0.1);
+  }
+
+  &:disabled {
+    color: #9aa3b2;
+    cursor: default;
+  }
+}

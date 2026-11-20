@@ -1339,19 +1339,41 @@
           </div>
 
           <!-- Ligne 3 : line types + files definitions -->
+          <!-- Ligne 3 : line types + files definitions -->
           <div class="row">
             <div class="col-md-6 mb-3">
               <label class="form-label">
                 Types de ligne
                 <span class="rm-count">{{ selectedRmLineTypeIds.size }}/{{ rmLineTypes.length }}</span>
               </label>
+
+              <div class="rm-search-row">
+                <input
+                  type="text"
+                  class="form-control form-control-sm"
+                  placeholder="Rechercher un type de ligne..."
+                  [(ngModel)]="rmLineTypeSearch"
+                  [ngModelOptions]="{ standalone: true }"
+                  [disabled]="rmLineTypes.length === 0"
+                />
+                <button type="button" class="rm-link-btn" [disabled]="filteredRmLineTypes.length === 0" (click)="selectAllRmLineTypes()">
+                  Tout
+                </button>
+                <button type="button" class="rm-link-btn" [disabled]="selectedRmLineTypeIds.size === 0" (click)="clearRmLineTypes()">
+                  Aucun
+                </button>
+              </div>
+
               <div class="rm-select-list">
                 <div *ngIf="loadingRmDetails" class="rm-select-empty">Chargement...</div>
                 <div *ngIf="!loadingRmDetails && !selectedRmTemplate" class="rm-select-empty">Sélectionnez d'abord un template</div>
                 <div *ngIf="!loadingRmDetails && selectedRmTemplate && rmLineTypes.length === 0" class="rm-select-empty">
                   Aucun type de ligne
                 </div>
-                <label class="rm-select-item" *ngFor="let lt of rmLineTypes" [class.selected]="selectedRmLineTypeIds.has(lt.id)">
+                <div *ngIf="!loadingRmDetails && rmLineTypes.length > 0 && filteredRmLineTypes.length === 0" class="rm-select-empty">
+                  Aucun résultat
+                </div>
+                <label class="rm-select-item" *ngFor="let lt of filteredRmLineTypes" [class.selected]="selectedRmLineTypeIds.has(lt.id)">
                   <input type="checkbox" [checked]="selectedRmLineTypeIds.has(lt.id)" (change)="toggleRmLineType(lt.id)" />
                   <span>{{ lt.label }}</span>
                 </label>
@@ -1363,13 +1385,34 @@
                 Définitions de fichiers
                 <span class="rm-count">{{ selectedRmFilesDefIds.size }}/{{ rmFilesDefs.length }}</span>
               </label>
+
+              <div class="rm-search-row">
+                <input
+                  type="text"
+                  class="form-control form-control-sm"
+                  placeholder="Rechercher une définition..."
+                  [(ngModel)]="rmFilesDefSearch"
+                  [ngModelOptions]="{ standalone: true }"
+                  [disabled]="rmFilesDefs.length === 0"
+                />
+                <button type="button" class="rm-link-btn" [disabled]="filteredRmFilesDefs.length === 0" (click)="selectAllRmFilesDefs()">
+                  Tout
+                </button>
+                <button type="button" class="rm-link-btn" [disabled]="selectedRmFilesDefIds.size === 0" (click)="clearRmFilesDefs()">
+                  Aucun
+                </button>
+              </div>
+
               <div class="rm-select-list">
                 <div *ngIf="loadingRmDetails" class="rm-select-empty">Chargement...</div>
                 <div *ngIf="!loadingRmDetails && !selectedRmTemplate" class="rm-select-empty">Sélectionnez d'abord un template</div>
                 <div *ngIf="!loadingRmDetails && selectedRmTemplate && rmFilesDefs.length === 0" class="rm-select-empty">
                   Aucune définition de fichier
                 </div>
-                <label class="rm-select-item" *ngFor="let fd of rmFilesDefs" [class.selected]="selectedRmFilesDefIds.has(fd.id)">
+                <div *ngIf="!loadingRmDetails && rmFilesDefs.length > 0 && filteredRmFilesDefs.length === 0" class="rm-select-empty">
+                  Aucun résultat
+                </div>
+                <label class="rm-select-item" *ngFor="let fd of filteredRmFilesDefs" [class.selected]="selectedRmFilesDefIds.has(fd.id)">
                   <input type="checkbox" [checked]="selectedRmFilesDefIds.has(fd.id)" (change)="toggleRmFilesDef(fd.id)" />
                   <span>{{ fd.label }}</span>
                 </label>

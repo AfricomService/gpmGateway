@@ -117,6 +117,9 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   rmTicketError = '';
   rmTicketSuccess = '';
 
+  rmLineTypeSearch = '';
+  rmFilesDefSearch = '';
+
   // ================================
   // Articles associés (persistés immédiatement via WoArticles)
   // ================================
@@ -141,6 +144,19 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     { key: StatutWO.ValidationRessources, label: 'Validation ressources' },
     { key: StatutWO.Fin, label: 'Fin' },
   ];
+
+  get filteredRmLineTypes(): IRmLineType[] {
+    return this.filterRmByLabel(this.rmLineTypes, this.rmLineTypeSearch);
+  }
+
+  get filteredRmFilesDefs(): IRmFilesDefinition[] {
+    return this.filterRmByLabel(this.rmFilesDefs, this.rmFilesDefSearch);
+  }
+
+  private filterRmByLabel<T extends { label: string }>(items: T[], term: string): T[] {
+    const search = this.normalizeText(term);
+    return search ? items.filter(item => this.normalizeText(item.label).includes(search)) : items;
+  }
 
   get currentStatut(): string {
     return (this.editForm.get('statut')?.value as string | null | undefined) ?? StatutWO.Creation;
@@ -435,6 +451,8 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.rmFilesDefs = [];
     this.selectedRmLineTypeIds.clear();
     this.selectedRmFilesDefIds.clear();
+    this.rmLineTypeSearch = '';
+    this.rmFilesDefSearch = '';
     this.rmTicketError = '';
 
     if (this.rmTemplates.length === 0) {
@@ -481,12 +499,30 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     });
   }
 
+  selectAllRmLineTypes(): void {
+    this.filteredRmLineTypes.forEach(lt => this.selectedRmLineTypeIds.add(lt.id));
+  }
+
+  clearRmLineTypes(): void {
+    this.selectedRmLineTypeIds.clear();
+  }
+
+  selectAllRmFilesDefs(): void {
+    this.filteredRmFilesDefs.forEach(fd => this.selectedRmFilesDefIds.add(fd.id));
+  }
+
+  clearRmFilesDefs(): void {
+    this.selectedRmFilesDefIds.clear();
+  }
+
   onRmTemplateChange(template: IRmTemplate | null): void {
     this.selectedRmTemplate = template;
     this.rmLineTypes = [];
     this.rmFilesDefs = [];
     this.selectedRmLineTypeIds.clear();
     this.selectedRmFilesDefIds.clear();
+    this.rmLineTypeSearch = '';
+    this.rmFilesDefSearch = '';
 
     if (!template) {
       return;
