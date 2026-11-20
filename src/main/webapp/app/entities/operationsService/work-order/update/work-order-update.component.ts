@@ -60,7 +60,10 @@ import { WoArticlesService } from '../service/wo-articles.service';
 import { ArticleService } from '../../../projectService/article/service/article.service';
 import { IWoArticles } from '../wo-articles.model';
 
-type AccordionPanel = 'global' | 'client' | 'equipes' | 'options' | 'articlesAssocies' | 'remarque' | 'piecesJointes';
+import { NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { RmTicketService, IRmTemplate, IRmLineType, IRmFilesDefinition, IRmUser } from '../service/rm-ticket.service';
+
+type AccordionPanel = 'global' | 'client' | 'equipes' | 'options' | 'articlesAssocies' | 'executionSurSite' | 'remarque' | 'piecesJointes';
 
 interface PendingPieceJointe {
   tempId: string;
@@ -86,6 +89,33 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   @ViewChild('clientCommandeDetailsModal') clientCommandeDetailsModal!: TemplateRef<any>;
 
   @ViewChild('woArticleDeleteConfirmModal') woArticleDeleteConfirmModal!: TemplateRef<any>;
+
+  @ViewChild('rmTicketModal') rmTicketModal!: TemplateRef<any>;
+
+  // ================================
+  // Exécution sur site — création d'un ticket dans RM
+  // ================================
+  rmModalRef?: NgbModalRef;
+  rmClient = '';
+  rmReference = '';
+
+  rmTemplates: IRmTemplate[] = [];
+  loadingRmTemplates = false;
+  selectedRmTemplate: IRmTemplate | null = null;
+
+  rmLineTypes: IRmLineType[] = [];
+  rmFilesDefs: IRmFilesDefinition[] = [];
+  loadingRmDetails = false;
+  selectedRmLineTypeIds = new Set<number>();
+  selectedRmFilesDefIds = new Set<number>();
+
+  rmUsers: IRmUser[] = [];
+  loadingRmUsers = false;
+  selectedRmUser: IRmUser | null = null;
+
+  creatingRmTicket = false;
+  rmTicketError = '';
+  rmTicketSuccess = '';
 
   // ================================
   // Articles associés (persistés immédiatement via WoArticles)
@@ -376,8 +406,149 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     protected parametreWOService: ParametreWOService,
     protected parametrageDeplacementService: ParametrageDeplacementService,
     protected woArticlesService: WoArticlesService,
-    protected articleService: ArticleService
+    protected articleService: ArticleService,
+    protected rmTicketService: RmTicketService
   ) {}
+
+  // ================================
+  // Exécution sur site — ticket RM
+  // ================================
+  get canCreateRmTicket(): boolean {
+    return (
+      this.rmClient.trim().length > 0 &&
+      this.rmReference.trim().length > 0 &&
+      !!this.selectedRmTemplate &&
+      this.selectedRmLineTypeIds.size > 0 &&
+      this.selectedRmFilesDefIds.size > 0 &&
+      !!this.selectedRmUser
+    );
+  }
+
+  openRmTicketModal(): void {
+    // Pré-remplissage automatique (modifiable)
+    this.rmClient = this.selectedClientInfo?.raisonSociale ?? '';
+    this.rmReference = 'EXE-' + (this.workOrder?.identifiantUnique ?? '');
+
+    this.selectedRmTemplate = null;
+    this.selectedRmUser = null;
+    this.rmLineTypes = [];
+    this.rmFilesDefs = [];
+    this.selectedRmLineTypeIds.clear();
+    this.selectedRmFilesDefIds.clear();
+    this.rmTicketError = '';
+
+    if (this.rmTemplates.length === 0) {
+      this.loadRmTemplates();
+    }
+    if (this.rmUsers.length === 0) {
+      this.loadRmUsers();
+    }
+
+    this.rmModalRef = this.modalService.open(this.rmTicketModal, {
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'rm-ticket-modal-window',
+    });
+  }
+
+  private loadRmTemplates(): void {
+    this.loadingRmTemplates = true;
+    this.rmTicketService.getTemplates().subscribe({
+      next: templates => {
+        this.rmTemplates = templates;
+        this.loadingRmTemplates = false;
+      },
+      error: () => {
+        this.rmTemplates = [];
+        this.loadingRmTemplates = false;
+        this.rmTicketError = 'Impossible de charger les templates RM.';
+      },
+    });
+  }
+
+  private loadRmUsers(): void {
+    this.loadingRmUsers = true;
+    this.rmTicketService.getUsers().subscribe({
+      next: users => {
+        this.rmUsers = users;
+        this.loadingRmUsers = false;
+      },
+      error: () => {
+        this.rmUsers = [];
+        this.loadingRmUsers = false;
+        this.rmTicketError = 'Impossible de charger les utilisateurs RM.';
+      },
+    });
+  }
+
+  onRmTemplateChange(template: IRmTemplate | null): void {
+    this.selectedRmTemplate = template;
+    this.rmLineTypes = [];
+    this.rmFilesDefs = [];
+    this.selectedRmLineTypeIds.clear();
+    this.selectedRmFilesDefIds.clear();
+
+    if (!template) {
+      return;
+    }
+
+    this.loadingRmDetails = true;
+    forkJoin({
+      lineTypes: this.rmTicketService.getLineTypes(template.id),
+      filesDefs: this.rmTicketService.getFilesDefinitions(template.id),
+    }).subscribe({
+      next: ({ lineTypes, filesDefs }) => {
+        if (this.selectedRmTemplate?.id !== template.id) {
+          return; // le template a changé entre-temps
+        }
+        this.rmLineTypes = lineTypes;
+        this.rmFilesDefs = filesDefs;
+        this.loadingRmDetails = false;
+      },
+      error: () => {
+        this.loadingRmDetails = false;
+        this.rmTicketError = 'Impossible de charger les types de ligne / définitions de fichiers.';
+      },
+    });
+  }
+
+  toggleRmLineType(id: number): void {
+    this.selectedRmLineTypeIds.has(id) ? this.selectedRmLineTypeIds.delete(id) : this.selectedRmLineTypeIds.add(id);
+  }
+
+  toggleRmFilesDef(id: number): void {
+    this.selectedRmFilesDefIds.has(id) ? this.selectedRmFilesDefIds.delete(id) : this.selectedRmFilesDefIds.add(id);
+  }
+
+  createRmTicket(): void {
+    if (!this.canCreateRmTicket || this.creatingRmTicket) {
+      return;
+    }
+
+    this.creatingRmTicket = true;
+    this.rmTicketError = '';
+
+    this.rmTicketService
+      .createTicket({
+        reference: this.rmReference.trim(),
+        clientFinal: this.rmClient.trim(),
+        technicianId: this.selectedRmUser!.id,
+        rapportTemplateId: this.selectedRmTemplate!.id,
+        lineTypeIds: Array.from(this.selectedRmLineTypeIds),
+        filesDefIds: Array.from(this.selectedRmFilesDefIds),
+      })
+      .pipe(finalize(() => (this.creatingRmTicket = false)))
+      .subscribe({
+        next: res => {
+          this.rmTicketSuccess = `Ticket créé dans RM (réf. ${res?.reference ?? this.rmReference}).`;
+          this.rmModalRef?.close();
+          this.cdr.detectChanges();
+        },
+        error: err => {
+          this.rmTicketError = err?.error?.detail ?? err?.error?.message ?? 'Échec de la création du ticket dans RM.';
+        },
+      });
+  }
 
   ngOnInit(): void {
     // Cycle de vie affiché sous le breadcrumb (rendu par MainComponent)

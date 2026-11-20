@@ -800,6 +800,28 @@
           </div>
         </div>
 
+        <!-- SECTION : EXECUTION SUR SITE -->
+        <div *ngIf="workOrder?.id" class="cu-accordion-item" [class.open]="isPanelOpen('executionSurSite')">
+          <button type="button" class="cu-accordion-header" (click)="togglePanel('executionSurSite')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="building" class="cu-accordion-icon"></fa-icon>
+              <span>Execution Sur Site</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isPanelOpen('executionSurSite')">
+            <div class="cu-detail-toolbar">
+              <button type="button" class="btn-cu-add" title="Créer un ticket dans RM" (click)="openRmTicketModal()">
+                <fa-icon icon="plus"></fa-icon>
+              </button>
+            </div>
+
+            <div *ngIf="rmTicketSuccess" class="cu-options-feedback cu-options-feedback-success">✓ {{ rmTicketSuccess }}</div>
+            <div *ngIf="!rmTicketSuccess" class="cu-empty-panel">Cliquez sur « + » pour créer un ticket dans RM.</div>
+          </div>
+        </div>
+
         <!-- SECTION 4 : OPTIONS (visible uniquement une fois le work order sauvegardé, donc en mode édition) -->
         <div class="cu-accordion-item" *ngIf="workOrder?.id" [class.open]="isPanelOpen('options')">
           <button type="button" class="cu-accordion-header" (click)="togglePanel('options')">
@@ -1259,9 +1281,139 @@
         </div>
       </ng-template>
 
+      <!-- MODAL : Créer un ticket dans RM -->
+      <ng-template #rmTicketModal let-modal>
+        <div class="modal-header">
+          <h5 class="modal-title"><fa-icon icon="plus"></fa-icon>&nbsp;Créer un ticket dans RM</h5>
+          <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+        </div>
+
+        <div class="modal-body rm-ticket-body">
+          <!-- Ligne 1 : client + référence -->
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label" for="rm_client">Client</label>
+              <input
+                readonly
+                type="text"
+                class="form-control"
+                id="rm_client"
+                maxlength="64"
+                [(ngModel)]="rmClient"
+                [ngModelOptions]="{ standalone: true }"
+              />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label" for="rm_reference">Référence</label>
+              <input
+                readonly
+                type="text"
+                class="form-control"
+                id="rm_reference"
+                maxlength="64"
+                [(ngModel)]="rmReference"
+                [ngModelOptions]="{ standalone: true }"
+              />
+            </div>
+          </div>
+
+          <!-- Ligne 2 : template -->
+          <div class="row">
+            <div class="col-12 mb-3">
+              <label class="form-label">Template de rapport</label>
+              <ng-select
+                class="custom-ng-select"
+                [items]="rmTemplates"
+                bindLabel="name"
+                [searchable]="true"
+                [clearable]="true"
+                [loading]="loadingRmTemplates"
+                placeholder="Rechercher un template..."
+                notFoundText="Aucun template trouvé"
+                loadingText="Chargement..."
+                [ngModel]="selectedRmTemplate"
+                [ngModelOptions]="{ standalone: true }"
+                (change)="onRmTemplateChange($event)"
+              ></ng-select>
+            </div>
+          </div>
+
+          <!-- Ligne 3 : line types + files definitions -->
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">
+                Types de ligne
+                <span class="rm-count">{{ selectedRmLineTypeIds.size }}/{{ rmLineTypes.length }}</span>
+              </label>
+              <div class="rm-select-list">
+                <div *ngIf="loadingRmDetails" class="rm-select-empty">Chargement...</div>
+                <div *ngIf="!loadingRmDetails && !selectedRmTemplate" class="rm-select-empty">Sélectionnez d'abord un template</div>
+                <div *ngIf="!loadingRmDetails && selectedRmTemplate && rmLineTypes.length === 0" class="rm-select-empty">
+                  Aucun type de ligne
+                </div>
+                <label class="rm-select-item" *ngFor="let lt of rmLineTypes" [class.selected]="selectedRmLineTypeIds.has(lt.id)">
+                  <input type="checkbox" [checked]="selectedRmLineTypeIds.has(lt.id)" (change)="toggleRmLineType(lt.id)" />
+                  <span>{{ lt.label }}</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label">
+                Définitions de fichiers
+                <span class="rm-count">{{ selectedRmFilesDefIds.size }}/{{ rmFilesDefs.length }}</span>
+              </label>
+              <div class="rm-select-list">
+                <div *ngIf="loadingRmDetails" class="rm-select-empty">Chargement...</div>
+                <div *ngIf="!loadingRmDetails && !selectedRmTemplate" class="rm-select-empty">Sélectionnez d'abord un template</div>
+                <div *ngIf="!loadingRmDetails && selectedRmTemplate && rmFilesDefs.length === 0" class="rm-select-empty">
+                  Aucune définition de fichier
+                </div>
+                <label class="rm-select-item" *ngFor="let fd of rmFilesDefs" [class.selected]="selectedRmFilesDefIds.has(fd.id)">
+                  <input type="checkbox" [checked]="selectedRmFilesDefIds.has(fd.id)" (change)="toggleRmFilesDef(fd.id)" />
+                  <span>{{ fd.label }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ligne 4 : technicien -->
+          <div class="row">
+            <div class="col-12 mb-2">
+              <label class="form-label">Technicien</label>
+              <ng-select
+                class="custom-ng-select"
+                [items]="rmUsers"
+                bindLabel="fullName"
+                [searchable]="true"
+                [clearable]="true"
+                [loading]="loadingRmUsers"
+                placeholder="Sélectionner un technicien..."
+                notFoundText="Aucun utilisateur trouvé"
+                loadingText="Chargement..."
+                [ngModel]="selectedRmUser"
+                [ngModelOptions]="{ standalone: true }"
+                (change)="selectedRmUser = $event"
+              ></ng-select>
+            </div>
+          </div>
+
+          <div *ngIf="rmTicketError" class="cu-technicien-error">{{ rmTicketError }}</div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" [disabled]="creatingRmTicket" (click)="modal.dismiss()">Annuler</button>
+          <button type="button" class="btn btn-primary" [disabled]="!canCreateRmTicket || creatingRmTicket" (click)="createRmTicket()">
+            <span *ngIf="creatingRmTicket" class="spinner-border spinner-border-sm me-2" role="status"></span>
+            Créer un ticket dans RM
+          </button>
+        </div>
+      </ng-template>
+
       <!-- ====================================================== -->
       <!-- MODAL SCAN PJCARE -->
       <!-- ====================================================== -->
+
       <ng-template #ScanModal let-modal>
         <div class="modal-header" style="border-bottom: 2px solid #e9ecef; padding: 16px 20px">
           <div style="display: flex; align-items: center; gap: 10px">
