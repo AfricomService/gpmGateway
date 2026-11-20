@@ -80,7 +80,8 @@
       "PhaseOt",
       "ModelPhaseOT",
       "ParametrageDeplacement",
-      "ParametreWO"
+      "ParametreWO",
+      "NoteFrais"
     ],
     "entitySuffix": "",
     "gradleEnterpriseHost": "",

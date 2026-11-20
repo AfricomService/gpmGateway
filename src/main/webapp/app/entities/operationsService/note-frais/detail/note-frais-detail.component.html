@@ -1,0 +1,50 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="noteFrais">
+      <h2 data-cy="noteFraisDetailsHeading">
+        <span jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.detail.title">Note Frais</span>
+      </h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ noteFrais.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.dateDebut">Date Debut</span></dt>
+        <dd>
+          <span>{{ noteFrais.dateDebut | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.dateFin">Date Fin</span></dt>
+        <dd>
+          <span>{{ noteFrais.dateFin | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.contactSocieteId">Contact Societe Id</span></dt>
+        <dd>
+          <span>{{ noteFrais.contactSocieteId }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.montantTotale">Montant Totale</span></dt>
+        <dd>
+          <span>{{ noteFrais.montantTotale }}</span>
+        </dd>
+        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.montantTotaleEnLettre">Montant Totale En Lettre</span></dt>
+        <dd>
+          <span>{{ noteFrais.montantTotaleEnLettre }}</span>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+      </button>
+
+      <button type="button" [routerLink]="['/note-frais', noteFrais.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+      </button>
+    </div>
+  </div>
+</div>
