@@ -20,3 +20,13 @@ export interface IMissionLine {
   contactSocieteMatricule: string | null;
   noteMission: number;
 }
+
+export interface IMissionLigne {
+  id: number;
+  workOrderIdentifiant?: string | null;
+  clientId?: number | null;
+  dateDebut?: string | null;
+  dateFin?: string | null;
+  typeMission?: string | null;
+  montantTotale?: number | null;
+}

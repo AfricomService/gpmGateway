@@ -1,49 +1,132 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
-    <div *ngIf="noteFrais">
-      <h2 data-cy="noteFraisDetailsHeading">
-        <span jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.detail.title">Note Frais</span>
-      </h2>
+<div class="cu-note-frais-detail">
+  <div class="cu-container" *ngIf="noteFrais">
+    <jhi-alert-error></jhi-alert-error>
 
-      <hr />
+    <jhi-alert></jhi-alert>
 
-      <jhi-alert-error></jhi-alert-error>
-
-      <jhi-alert></jhi-alert>
-
-      <dl class="row-md jh-entity-details">
-        <dt><span jhiTranslate="global.field.id">ID</span></dt>
-        <dd>
-          <span>{{ noteFrais.id }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.dateDebut">Date Debut</span></dt>
-        <dd>
-          <span>{{ noteFrais.dateDebut | formatMediumDatetime }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.dateFin">Date Fin</span></dt>
-        <dd>
-          <span>{{ noteFrais.dateFin | formatMediumDatetime }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.contactSocieteId">Contact Societe Id</span></dt>
-        <dd>
-          <span>{{ noteFrais.contactSocieteId }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.montantTotale">Montant Totale</span></dt>
-        <dd>
-          <span>{{ noteFrais.montantTotale }}</span>
-        </dd>
-        <dt><span jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.montantTotaleEnLettre">Montant Totale En Lettre</span></dt>
-        <dd>
-          <span>{{ noteFrais.montantTotaleEnLettre }}</span>
-        </dd>
-      </dl>
-
-      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
-        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+    <!-- ====================================================== -->
+    <!-- TOOLBAR -->
+    <!-- ====================================================== -->
+    <div class="cu-toolbar cu-toolbar-end" data-cy="noteFraisDetailsHeading">
+      <button
+        type="button"
+        class="btn-cu-edit"
+        title="Éditer"
+        aria-label="Éditer"
+        data-cy="entityEditButton"
+        [routerLink]="['/note-frais', noteFrais.id, 'edit']"
+      >
+        <fa-icon icon="pencil-alt"></fa-icon>
       </button>
+    </div>
 
-      <button type="button" [routerLink]="['/note-frais', noteFrais.id, 'edit']" class="btn btn-primary">
-        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+    <!-- ====================================================== -->
+    <!-- ACCORDEON -->
+    <!-- ====================================================== -->
+    <div class="cu-accordion">
+      <!-- SECTION 1 : INFORMATIONS GENERALES -->
+      <div class="cu-accordion-item" [class.open]="isPanelOpen('general')">
+        <button type="button" class="cu-accordion-header" (click)="togglePanel('general')">
+          <span class="cu-accordion-header-left">
+            <fa-icon icon="file-invoice" class="cu-accordion-icon"></fa-icon>
+            <span>Informations générales</span>
+          </span>
+          <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+        </button>
+
+        <div class="cu-accordion-body" *ngIf="isPanelOpen('general')">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label" for="field_beneficiaire">Bénéficiaire</label>
+              <input
+                id="field_beneficiaire"
+                data-cy="contactSocieteId"
+                type="text"
+                class="form-control cu-input"
+                [value]="beneficiaireLabel"
+                readonly
+              />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label" for="field_dateDebut">Date début</label>
+              <input
+                id="field_dateDebut"
+                data-cy="dateDebut"
+                type="text"
+                class="form-control cu-input"
+                [value]="noteFrais.dateDebut | formatMediumDatetime"
+                readonly
+              />
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label" for="field_dateFin">Date fin</label>
+              <input
+                id="field_dateFin"
+                data-cy="dateFin"
+                type="text"
+                class="form-control cu-input"
+                [value]="noteFrais.dateFin | formatMediumDatetime"
+                readonly
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2 : MONTANTS -->
+      <div class="cu-accordion-item" [class.open]="isPanelOpen('montants')">
+        <button type="button" class="cu-accordion-header" (click)="togglePanel('montants')">
+          <span class="cu-accordion-header-left">
+            <fa-icon icon="coins" class="cu-accordion-icon"></fa-icon>
+            <span>Montants</span>
+          </span>
+          <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+        </button>
+
+        <div class="cu-accordion-body" *ngIf="isPanelOpen('montants')">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label" for="field_montantTotale">Montant total</label>
+              <input
+                id="field_montantTotale"
+                data-cy="montantTotale"
+                type="text"
+                class="form-control cu-input cu-input-num"
+                [value]="noteFrais.montantTotale | number: '1.2-2'"
+                readonly
+              />
+            </div>
+
+            <div class="col-md-8 mb-3">
+              <label class="form-label" for="field_montantTotaleEnLettre">Montant total en lettres</label>
+              <input
+                id="field_montantTotaleEnLettre"
+                data-cy="montantTotaleEnLettre"
+                type="text"
+                class="form-control cu-input"
+                [value]="noteFrais.montantTotaleEnLettre ?? ''"
+                readonly
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- FOOTER -->
+    <!-- ====================================================== -->
+    <div class="cu-toolbar cu-toolbar-bottom">
+      <div class="cu-toolbar-left"></div>
+
+      <button type="button" class="btn-cu-cancel" (click)="previousState()" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>
+        &nbsp;
+        <span jhiTranslate="entity.action.back">Retour</span>
       </button>
     </div>
   </div>

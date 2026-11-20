@@ -1,113 +1,250 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
+<div class="cu-note-frais-update">
+  <div class="cu-container">
     <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-      <h2
-        id="jhi-note-frais-heading"
-        data-cy="NoteFraisCreateUpdateHeading"
-        jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.home.createOrEditLabel"
-      >
-        Créer ou éditer un Note Frais
-      </h2>
+      <jhi-alert-error></jhi-alert-error>
 
-      <div>
-        <jhi-alert-error></jhi-alert-error>
-
-        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
-          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
-          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.dateDebut" for="field_dateDebut"
-            >Date Debut</label
-          >
-          <div class="d-flex">
-            <input
-              id="field_dateDebut"
-              data-cy="dateDebut"
-              type="datetime-local"
-              class="form-control"
-              name="dateDebut"
-              formControlName="dateDebut"
-              placeholder="YYYY-MM-DD HH:mm"
-            />
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.dateFin" for="field_dateFin">Date Fin</label>
-          <div class="d-flex">
-            <input
-              id="field_dateFin"
-              data-cy="dateFin"
-              type="datetime-local"
-              class="form-control"
-              name="dateFin"
-              formControlName="dateFin"
-              placeholder="YYYY-MM-DD HH:mm"
-            />
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.contactSocieteId" for="field_contactSocieteId"
-            >Contact Societe Id</label
-          >
-          <input
-            type="number"
-            class="form-control"
-            name="contactSocieteId"
-            id="field_contactSocieteId"
-            data-cy="contactSocieteId"
-            formControlName="contactSocieteId"
-          />
-        </div>
-
-        <div class="row mb-3">
-          <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.montantTotale" for="field_montantTotale"
-            >Montant Totale</label
-          >
-          <input
-            type="number"
-            class="form-control"
-            name="montantTotale"
-            id="field_montantTotale"
-            data-cy="montantTotale"
-            formControlName="montantTotale"
-          />
-        </div>
-
-        <div class="row mb-3">
-          <label
-            class="form-label"
-            jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.montantTotaleEnLettre"
-            for="field_montantTotaleEnLettre"
-            >Montant Totale En Lettre</label
-          >
-          <input
-            type="text"
-            class="form-control"
-            name="montantTotaleEnLettre"
-            id="field_montantTotaleEnLettre"
-            data-cy="montantTotaleEnLettre"
-            formControlName="montantTotaleEnLettre"
-          />
-        </div>
-      </div>
-
-      <div>
-        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
-          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
-        </button>
+      <!-- ====================================================== -->
+      <!-- TOOLBAR -->
+      <!-- ====================================================== -->
+      <div class="cu-toolbar cu-toolbar-end">
+        <span class="cu-badge-id" *ngIf="!isNew">Note de frais #{{ editForm.controls.id.value }}</span>
+        <span class="cu-badge-id" *ngIf="isNew">Nouvelle note de frais</span>
 
         <button
           type="submit"
           id="save-entity"
           data-cy="entityCreateSaveButton"
-          [disabled]="editForm.invalid || isSaving"
-          class="btn btn-primary"
+          title="Sauvegarder"
+          [disabled]="editForm.invalid || isSaving || (isNew && selectedMissionIds.size === 0)"
+          class="btn-cu-save"
         >
-          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+          <span *ngIf="isSaving" class="spinner-border spinner-border-sm"></span>
+          <fa-icon *ngIf="!isSaving" icon="save"></fa-icon>
+        </button>
+      </div>
+
+      <!-- ====================================================== -->
+      <!-- ACCORDEON -->
+      <!-- ====================================================== -->
+      <div class="cu-accordion">
+        <!-- SECTION 1 : INFORMATIONS GENERALES -->
+        <div class="cu-accordion-item" [class.open]="isPanelOpen('general')">
+          <button type="button" class="cu-accordion-header" (click)="togglePanel('general')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="file-invoice" class="cu-accordion-icon"></fa-icon>
+              <span>Informations générales</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isPanelOpen('general')">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.dateDebut" for="field_dateDebut"
+                  >Date Debut</label
+                >
+                <input
+                  id="field_dateDebut"
+                  data-cy="dateDebut"
+                  type="datetime-local"
+                  class="form-control cu-input"
+                  name="dateDebut"
+                  formControlName="dateDebut"
+                  placeholder="YYYY-MM-DD HH:mm"
+                />
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.dateFin" for="field_dateFin"
+                  >Date Fin</label
+                >
+                <input
+                  id="field_dateFin"
+                  data-cy="dateFin"
+                  type="datetime-local"
+                  class="form-control cu-input"
+                  name="dateFin"
+                  formControlName="dateFin"
+                  placeholder="YYYY-MM-DD HH:mm"
+                />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="field_contactSocieteId">Bénéficiaire *</label>
+
+                <div class="cu-affaire-selector">
+                  <input
+                    type="text"
+                    class="form-control cu-input"
+                    style="flex: 1; min-width: 0"
+                    id="field_contactSocieteId"
+                    data-cy="contactSocieteId"
+                    [value]="beneficiaireLabel"
+                    placeholder="Sélectionner un bénéficiaire"
+                    readonly
+                  />
+
+                  <button
+                    type="button"
+                    class="btn-cu-affaire-modal"
+                    title="Rechercher un bénéficiaire"
+                    aria-label="Rechercher un bénéficiaire"
+                    [disabled]="!isNew"
+                    (click)="openBeneficiaireModal()"
+                  >
+                    <fa-icon icon="search"></fa-icon>
+                  </button>
+
+                  <button
+                    *ngIf="selectedBeneficiaire && isNew"
+                    type="button"
+                    class="btn-cu-affaire-modal btn-cu-clear"
+                    title="Effacer le bénéficiaire"
+                    aria-label="Effacer le bénéficiaire"
+                    (click)="onBeneficiaireSelected(null)"
+                  >
+                    <fa-icon icon="times"></fa-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2 : MISSIONS (création uniquement) -->
+        <div class="cu-accordion-item" *ngIf="isNew" [class.open]="isPanelOpen('missions')">
+          <button type="button" class="cu-accordion-header" (click)="togglePanel('missions')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="clipboard-list" class="cu-accordion-icon"></fa-icon>
+              <span>Missions</span>
+              <span class="cu-accordion-count" *ngIf="missions.length">{{ selectedMissionIds.size }} / {{ missions.length }}</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isPanelOpen('missions')">
+            <div class="cu-empty-panel" *ngIf="!rechercheComplete">
+              Renseignez la période et le bénéficiaire pour afficher les missions.
+            </div>
+
+            <div class="cu-empty-panel" *ngIf="rechercheComplete && loadingMissions">
+              <span class="spinner-border spinner-border-sm me-2" role="status"></span>Recherche des missions en cours...
+            </div>
+
+            <div *ngIf="missionsError" class="cu-technicien-error">{{ missionsError }}</div>
+
+            <ng-container *ngIf="rechercheComplete && !loadingMissions && missionsSearched">
+              <div class="cu-empty-panel" *ngIf="missions.length === 0">Aucune mission sur cette période.</div>
+
+              <div class="table-responsive" *ngIf="missions.length > 0">
+                <table class="cu-table">
+                  <thead>
+                    <tr>
+                      <th class="cu-col-check">
+                        <input
+                          type="checkbox"
+                          [checked]="allMissionsSelected"
+                          (change)="toggleAllMissions()"
+                          aria-label="Tout sélectionner"
+                        />
+                      </th>
+                      <th>Mission</th>
+                      <th>Client</th>
+                      <th>Date début</th>
+                      <th>Date fin</th>
+                      <th>Type</th>
+                      <th class="cu-col-num">Montant total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let m of missions" [class.cu-row-selected]="isMissionSelected(m.id!)" (click)="toggleMission(m.id!)">
+                      <td class="cu-col-check" (click)="$event.stopPropagation()">
+                        <input type="checkbox" [checked]="isMissionSelected(m.id!)" (change)="toggleMission(m.id!)" />
+                      </td>
+                      <td>
+                        <span class="cu-item-badge-id">{{ m.workOrderIdentifiant }}</span>
+                      </td>
+                      <td>{{ m.clientId ? clientNames[m.clientId] : '' }}</td>
+                      <td>{{ m.dateDebut | date: 'dd/MM/yyyy HH:mm' }}</td>
+                      <td>{{ m.dateFin | date: 'dd/MM/yyyy HH:mm' }}</td>
+                      <td>{{ m.typeMission }}</td>
+                      <td class="cu-col-num">{{ m.montantTotale }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+
+        <!-- SECTION 3 : MONTANTS -->
+        <div class="cu-accordion-item" [class.open]="isPanelOpen('montants')">
+          <button type="button" class="cu-accordion-header" (click)="togglePanel('montants')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="coins" class="cu-accordion-icon"></fa-icon>
+              <span>Montants</span>
+            </span>
+            <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isPanelOpen('montants')">
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.montantTotale" for="field_montantTotale"
+                  >Montant Totale</label
+                >
+                <input
+                  type="number"
+                  class="form-control cu-input"
+                  name="montantTotale"
+                  id="field_montantTotale"
+                  data-cy="montantTotale"
+                  formControlName="montantTotale"
+                  readonly
+                />
+              </div>
+
+              <div class="col-md-8 mb-3">
+                <label
+                  class="form-label"
+                  jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.montantTotaleEnLettre"
+                  for="field_montantTotaleEnLettre"
+                  >Montant Totale En Lettre</label
+                >
+                <input
+                  type="text"
+                  class="form-control cu-input"
+                  name="montantTotaleEnLettre"
+                  id="field_montantTotaleEnLettre"
+                  data-cy="montantTotaleEnLettre"
+                  formControlName="montantTotaleEnLettre"
+                  placeholder="Sélectionnez des missions"
+                  readonly
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================== -->
+      <!-- FOOTER -->
+      <!-- ====================================================== -->
+      <div class="cu-toolbar cu-toolbar-bottom">
+        <div class="cu-toolbar-left">
+          <span class="cu-item-badge-id" *ngIf="isNew && selectedMissionIds.size > 0">
+            {{ selectedMissionIds.size }} mission{{ selectedMissionIds.size > 1 ? 's' : '' }} sélectionnée{{
+              selectedMissionIds.size > 1 ? 's' : ''
+            }}
+          </span>
+        </div>
+
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>
+          &nbsp;
+          <span jhiTranslate="entity.action.cancel">Annuler</span>
         </button>
       </div>
     </form>

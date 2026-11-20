@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpHeaders } from '@angular/common/http';
 import { ActivatedRoute, Data, ParamMap, Router } from '@angular/router';
-import { combineLatest, filter, Observable, switchMap, tap } from 'rxjs';
+import { combineLatest, filter, forkJoin, Observable, switchMap, tap } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { INoteFrais } from '../note-frais.model';
@@ -10,10 +10,12 @@ import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/co
 import { ASC, DESC, SORT, ITEM_DELETED_EVENT, DEFAULT_SORT_DATA } from 'app/config/navigation.constants';
 import { EntityArrayResponseType, NoteFraisService } from '../service/note-frais.service';
 import { NoteFraisDeleteDialogComponent } from '../delete/note-frais-delete-dialog.component';
+import { BonCommandeService } from 'app/entities/financeService/bon-commande/service/bon-commande.service';
 
 @Component({
   selector: 'jhi-note-frais',
   templateUrl: './note-frais.component.html',
+  styleUrls: ['./note-frais.component.scss'],
 })
 export class NoteFraisComponent implements OnInit {
   noteFrais?: INoteFrais[];
@@ -26,8 +28,12 @@ export class NoteFraisComponent implements OnInit {
   totalItems = 0;
   page = 1;
 
+  // Nom du bénéficiaire, par contactSocieteId (chargé à la demande)
+  private beneficiaires = new Map<number, string>();
+
   constructor(
     protected noteFraisService: NoteFraisService,
+    protected bonCommandeService: BonCommandeService,
     protected activatedRoute: ActivatedRoute,
     public router: Router,
     protected modalService: NgbModal
@@ -37,6 +43,17 @@ export class NoteFraisComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+  }
+
+  beneficiaireName(contactSocieteId?: number | null): string {
+    if (contactSocieteId === null || contactSocieteId === undefined) {
+      return '—';
+    }
+    return this.beneficiaires.get(contactSocieteId) ?? 'Chargement...';
+  }
+
+  openView(noteFrais: INoteFrais): void {
+    this.router.navigate(['/note-frais', noteFrais.id, 'view']);
   }
 
   delete(noteFrais: INoteFrais): void {
@@ -90,6 +107,25 @@ export class NoteFraisComponent implements OnInit {
     this.fillComponentAttributesFromResponseHeader(response.headers);
     const dataFromBody = this.fillComponentAttributesFromResponseBody(response.body);
     this.noteFrais = dataFromBody;
+    this.loadBeneficiaires(dataFromBody);
+  }
+
+  /** Charge uniquement les bénéficiaires de la page courante qui ne sont pas déjà en cache. */
+  private loadBeneficiaires(list: INoteFrais[]): void {
+    const ids = Array.from(new Set(list.map(n => n.contactSocieteId).filter((id): id is number => id !== null && id !== undefined))).filter(
+      id => !this.beneficiaires.has(id)
+    );
+
+    if (ids.length === 0) {
+      return;
+    }
+
+    forkJoin(ids.map(id => this.bonCommandeService.findResponsableById(id))).subscribe({
+      next: responses =>
+        responses.forEach((r, i) => {
+          this.beneficiaires.set(ids[i], r.body?.nomPrenom ?? '—');
+        }),
+    });
   }
 
   protected fillComponentAttributesFromResponseBody(data: INoteFrais[] | null): INoteFrais[] {

@@ -90,6 +90,7 @@ import {
   faExclamationTriangle,
   faTrash,
   faTimes,
+  faCoins,
   // jhipster-needle-add-icon-import
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -185,5 +186,6 @@ export const fontAwesomeIcons = [
   faTag,
   faExclamationTriangle,
   faTrash,
+  faCoins,
   // jhipster-needle-add-icon-import
 ];
