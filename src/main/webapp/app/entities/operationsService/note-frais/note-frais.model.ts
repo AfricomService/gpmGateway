@@ -7,6 +7,7 @@ export interface INoteFrais {
   contactSocieteId?: number | null;
   montantTotale?: number | null;
   montantTotaleEnLettre?: string | null;
+  identifiantUnique?: string | null;
 }
 
 export type NewNoteFrais = Omit<INoteFrais, 'id'> & { id: null };

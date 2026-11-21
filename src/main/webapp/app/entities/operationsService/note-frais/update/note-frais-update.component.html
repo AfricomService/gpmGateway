@@ -7,8 +7,9 @@
       <!-- TOOLBAR -->
       <!-- ====================================================== -->
       <div class="cu-toolbar cu-toolbar-end">
-        <span class="cu-badge-id" *ngIf="!isNew">Note de frais #{{ editForm.controls.id.value }}</span>
-        <span class="cu-badge-id" *ngIf="isNew">Nouvelle note de frais</span>
+        <span class="cu-badge-id" style="margin-right: auto" *ngIf="!isNew">{{
+          noteFrais?.identifiantUnique ?? '#' + editForm.controls.id.value
+        }}</span>
 
         <button
           type="submit"

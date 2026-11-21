@@ -2,7 +2,8 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin, merge, Observable, Subject, Subscription } from 'rxjs';
-import { debounceTime, finalize, takeUntil } from 'rxjs/operators';
+import { debounceTime, finalize, switchMap, takeUntil } from 'rxjs/operators';
+import { NumsequentielleService } from 'app/entities/projectService/numsequentielle/service/numsequentielle.service';
 import dayjs from 'dayjs/esm';
 
 import { NoteFraisFormService, NoteFraisFormGroup } from './note-frais-form.service';
@@ -57,7 +58,8 @@ export class NoteFraisUpdateComponent implements OnInit, OnDestroy {
     protected missionService: MissionService,
     protected modalService: NgbModal,
     protected bonCommandeService: BonCommandeService,
-    protected clientService: ClientService
+    protected clientService: ClientService,
+    protected numsequentielleService: NumsequentielleService
   ) {}
 
   ngOnInit(): void {
@@ -270,7 +272,15 @@ export class NoteFraisUpdateComponent implements OnInit, OnDestroy {
     if (noteFrais.id !== null) {
       this.subscribeToSaveResponse(this.noteFraisService.update(noteFrais));
     } else {
-      this.subscribeToSaveResponse(this.noteFraisService.createFromMissions(noteFrais, Array.from(this.selectedMissionIds)));
+      // Création : on génère l'identifiant unique juste avant l'enregistrement
+      const create$ = this.numsequentielleService
+        .generateIdentifiantNoteFrais()
+        .pipe(
+          switchMap(res =>
+            this.noteFraisService.createFromMissions({ ...noteFrais, identifiantUnique: res.body }, Array.from(this.selectedMissionIds))
+          )
+        );
+      this.subscribeToSaveResponse(create$);
     }
   }
 

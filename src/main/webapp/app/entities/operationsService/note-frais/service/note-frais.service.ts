@@ -50,6 +50,7 @@ export class NoteFraisService {
       dateDebut: copy.dateDebut,
       dateFin: copy.dateFin,
       contactSocieteId: copy.contactSocieteId,
+      identifiantUnique: noteFrais.identifiantUnique,
       missionIds,
     };
     return this.http

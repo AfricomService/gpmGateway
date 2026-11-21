@@ -54,6 +54,13 @@ export class NumsequentielleService {
     });
   }
 
+  generateIdentifiantNoteFrais(): Observable<HttpResponse<string>> {
+    return this.http.post<string>(`${this.resourceUrl}/generate-identifiant-note-frais`, null, {
+      observe: 'response',
+      responseType: 'text' as 'json',
+    });
+  }
+
   previewFormat(format: string, codeNumSeq: string): Observable<HttpResponse<string>> {
     const params = new URLSearchParams({ format, codeNumSeq }).toString();
     return this.http.post<string>(`${this.resourceUrl}/preview-format?${params}`, null, {
