@@ -72,6 +72,8 @@ interface PendingPieceJointe {
   extension: string;
 }
 
+const RM_APP_URL = 'http://www.globalgpm-tn.com';
+
 const AFFAIRE_STATUT = 'ExecutionDesTravaux';
 const AFFAIRE_PAGE_SIZE = 15;
 const OT_EXTERNE_PAGE_SIZE = 15;
@@ -469,6 +471,14 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
           this.rmRequestsError = 'Impossible de charger les tickets RM.';
         },
       });
+  }
+
+  /** Double-clic sur un ticket : ouvre sa vue détail dans RM (nouvel onglet). */
+  openRmRequest(r: IRmRapportRequest): void {
+    if (r.id === null || r.id === undefined) {
+      return;
+    }
+    window.open(`${RM_APP_URL}/rapport-request/${r.id}/view`, '_blank');
   }
 
   /**

@@ -849,7 +849,12 @@
                 <span>Statut</span>
               </div>
 
-              <div class="rm-table-row" *ngFor="let r of rmRequests">
+              <div
+                class="rm-table-row rm-table-row-clickable"
+                *ngFor="let r of rmRequests"
+                title="Double-cliquez pour ouvrir le ticket"
+                (click)="openRmRequest(r)"
+              >
                 <span class="rm-cell rm-cell-strong" [title]="r.reference">{{ r.reference }}</span>
                 <span class="rm-cell" [title]="r.nomRapport ?? ''">{{ r.nomRapport || '—' }}</span>
                 <span class="rm-cell">{{ r.nomTechnicien || '—' }}</span>

@@ -38,6 +38,7 @@ export interface IRmTicketRequest {
 }
 
 export interface IRmRapportRequest {
+  id: number;
   reference: string;
   dateCreation?: string | null;
   datePlanification?: string | null;

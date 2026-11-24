@@ -1149,3 +1149,14 @@ textarea.cu-input {
     color: var(--cp-accent);
   }
 }
+
+.rm-table-row-clickable {
+  cursor: pointer;
+  user-select: none; /* évite la sélection de texte lors du double-clic */
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    border-color: var(--cp-accent);
+    background: var(--cp-accent-soft);
+  }
+}
