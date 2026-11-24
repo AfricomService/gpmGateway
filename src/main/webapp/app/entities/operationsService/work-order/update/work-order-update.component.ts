@@ -471,6 +471,27 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Référence unique du prochain ticket RM :
+   * EXE-<WO>, puis EXE-1-<WO>, EXE-2-<WO>, ...
+   * Se base sur les références déjà existantes pour garantir l'unicité.
+   */
+  buildNextRmReference(): string {
+    const wo = this.workOrder?.identifiantUnique ?? '';
+    const used = new Set(this.rmRequests.map(r => (r.reference ?? '').trim().toUpperCase()));
+
+    const first = `EXE-${wo}`;
+    if (!used.has(first.toUpperCase())) {
+      return first;
+    }
+
+    let n = 1;
+    while (used.has(`EXE-${n}-${wo}`.toUpperCase())) {
+      n++;
+    }
+    return `EXE-${n}-${wo}`;
+  }
+
   rmStatusClass(statut?: string | null): string {
     const s = this.normalizeText(statut);
     if (s.includes('progress') || s.includes('cours')) {
@@ -485,7 +506,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   openRmTicketModal(): void {
     // Pré-remplissage automatique (modifiable)
     this.rmClient = this.selectedClientInfo?.raisonSociale ?? '';
-    this.rmReference = 'EXE-' + (this.workOrder?.identifiantUnique ?? '');
+    this.rmReference = this.buildNextRmReference();
 
     this.selectedRmTemplate = null;
     this.selectedRmUser = null;

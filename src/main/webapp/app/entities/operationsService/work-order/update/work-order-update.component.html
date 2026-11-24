@@ -817,7 +817,13 @@
               <button type="button" class="btn-cu-add" title="Actualiser" [disabled]="loadingRmRequests" (click)="loadRmRequests()">
                 <fa-icon icon="sync"></fa-icon>
               </button>
-              <button type="button" class="btn-cu-add" title="Créer un ticket dans RM" (click)="openRmTicketModal()">
+              <button
+                type="button"
+                class="btn-cu-add"
+                title="Créer un ticket dans RM"
+                [disabled]="loadingRmRequests"
+                (click)="openRmTicketModal()"
+              >
                 <fa-icon icon="plus"></fa-icon>
               </button>
             </div>
@@ -831,39 +837,29 @@
               Aucun ticket RM associé à ce work order. Cliquez sur « + » pour en créer un.
             </div>
 
-            <div *ngIf="rmRequests.length > 0" class="cu-item-list">
-              <div class="cu-item-card rm-request-card" *ngFor="let r of rmRequests">
-                <div class="rm-request-main">
-                  <div class="cu-item-title">{{ r.reference }}</div>
-                  <div class="rm-request-sub">{{ r.nomRapport }}</div>
-                </div>
+            <div *ngIf="rmRequests.length > 0" class="rm-table">
+              <div class="rm-table-head">
+                <span>Référence</span>
+                <span>Rapport</span>
+                <span>Technicien</span>
+                <span>Entreprise</span>
+                <span>Création</span>
+                <span>Planification</span>
+                <span>Fin travaux</span>
+                <span>Statut</span>
+              </div>
 
-                <div class="rm-request-meta">
-                  <span class="rm-meta-label">Technicien</span>
-                  <span class="rm-meta-value">{{ r.nomTechnicien || '—' }}</span>
-                </div>
-
-                <div class="rm-request-meta">
-                  <span class="rm-meta-label">Entreprise</span>
-                  <span class="rm-meta-value">{{ r.nomEntreprise || '—' }}</span>
-                </div>
-
-                <div class="rm-request-meta">
-                  <span class="rm-meta-label">Création</span>
-                  <span class="rm-meta-value">{{ r.dateCreation ? (r.dateCreation | date: 'dd/MM/yyyy HH:mm') : '—' }}</span>
-                </div>
-
-                <div class="rm-request-meta">
-                  <span class="rm-meta-label">Planification</span>
-                  <span class="rm-meta-value">{{ r.datePlanification ? (r.datePlanification | date: 'dd/MM/yyyy HH:mm') : '—' }}</span>
-                </div>
-
-                <div class="rm-request-meta">
-                  <span class="rm-meta-label">Fin travaux</span>
-                  <span class="rm-meta-value">{{ r.dateFinTravaux ? (r.dateFinTravaux | date: 'dd/MM/yyyy HH:mm') : '—' }}</span>
-                </div>
-
-                <span class="rm-status-chip" [ngClass]="rmStatusClass(r.statut)">{{ r.statut || '—' }}</span>
+              <div class="rm-table-row" *ngFor="let r of rmRequests">
+                <span class="rm-cell rm-cell-strong" [title]="r.reference">{{ r.reference }}</span>
+                <span class="rm-cell" [title]="r.nomRapport ?? ''">{{ r.nomRapport || '—' }}</span>
+                <span class="rm-cell">{{ r.nomTechnicien || '—' }}</span>
+                <span class="rm-cell">{{ r.nomEntreprise || '—' }}</span>
+                <span class="rm-cell">{{ r.dateCreation ? (r.dateCreation | date: 'dd/MM/yyyy HH:mm') : '—' }}</span>
+                <span class="rm-cell">{{ r.datePlanification ? (r.datePlanification | date: 'dd/MM/yyyy HH:mm') : '—' }}</span>
+                <span class="rm-cell">{{ r.dateFinTravaux ? (r.dateFinTravaux | date: 'dd/MM/yyyy HH:mm') : '—' }}</span>
+                <span class="rm-cell">
+                  <span class="rm-status-chip" [ngClass]="rmStatusClass(r.statut)">{{ r.statut || '—' }}</span>
+                </span>
               </div>
             </div>
           </div>
