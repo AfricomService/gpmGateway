@@ -61,7 +61,7 @@ import { ArticleService } from '../../../projectService/article/service/article.
 import { IWoArticles } from '../wo-articles.model';
 
 import { NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { RmTicketService, IRmTemplate, IRmLineType, IRmFilesDefinition, IRmUser } from '../service/rm-ticket.service';
+import { RmTicketService, IRmTemplate, IRmLineType, IRmFilesDefinition, IRmUser, IRmRapportRequest } from '../service/rm-ticket.service';
 
 type AccordionPanel = 'global' | 'client' | 'equipes' | 'options' | 'articlesAssocies' | 'executionSurSite' | 'remarque' | 'piecesJointes';
 
@@ -98,6 +98,10 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   rmModalRef?: NgbModalRef;
   rmClient = '';
   rmReference = '';
+
+  rmRequests: IRmRapportRequest[] = [];
+  loadingRmRequests = false;
+  rmRequestsError = '';
 
   rmTemplates: IRmTemplate[] = [];
   loadingRmTemplates = false;
@@ -440,6 +444,44 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     );
   }
 
+  /** Charge les rapport requests RM liés à l'identifiant unique du work order. */
+  loadRmRequests(): void {
+    const uniqueId = this.workOrder?.identifiantUnique;
+
+    if (!uniqueId) {
+      this.rmRequests = [];
+      return;
+    }
+
+    this.loadingRmRequests = true;
+    this.rmRequestsError = '';
+
+    this.rmTicketService
+      .getRapportRequests(uniqueId)
+      .pipe(finalize(() => (this.loadingRmRequests = false)))
+      .subscribe({
+        next: list => {
+          // plus récent en premier
+          this.rmRequests = [...(list ?? [])].sort((a, b) => Date.parse(b.dateCreation ?? '') - Date.parse(a.dateCreation ?? ''));
+        },
+        error: () => {
+          this.rmRequests = [];
+          this.rmRequestsError = 'Impossible de charger les tickets RM.';
+        },
+      });
+  }
+
+  rmStatusClass(statut?: string | null): string {
+    const s = this.normalizeText(statut);
+    if (s.includes('progress') || s.includes('cours')) {
+      return 'rm-status-progress';
+    }
+    if (s.includes('valid') || s.includes('clos') || s.includes('closed') || s.includes('termin')) {
+      return 'rm-status-done';
+    }
+    return 'rm-status-default';
+  }
+
   openRmTicketModal(): void {
     // Pré-remplissage automatique (modifiable)
     this.rmClient = this.selectedClientInfo?.raisonSociale ?? '';
@@ -578,6 +620,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
         next: res => {
           this.rmTicketSuccess = `Ticket créé dans RM (réf. ${res?.reference ?? this.rmReference}).`;
           this.rmModalRef?.close();
+          this.loadRmRequests();
           this.cdr.detectChanges();
         },
         error: err => {
@@ -2287,6 +2330,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       this.loadAutresRessources(workOrder.id);
       this.loadParametrages(workOrder.id);
       this.loadPieceJointes(workOrder.id);
+      this.loadRmRequests();
     }
   }
 

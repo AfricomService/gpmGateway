@@ -37,6 +37,17 @@ export interface IRmTicketRequest {
   filesDefIds: number[];
 }
 
+export interface IRmRapportRequest {
+  reference: string;
+  dateCreation?: string | null;
+  datePlanification?: string | null;
+  dateFinTravaux?: string | null;
+  nomRapport?: string | null;
+  nomTechnicien?: string | null;
+  nomEntreprise?: string | null;
+  statut?: string | null;
+}
+
 export interface IRmTicketResponse {
   id?: number;
   reference?: string;
@@ -82,5 +93,9 @@ export class RmTicketService {
       .set('filesDefIds', req.filesDefIds.join(','));
 
     return this.http.post<IRmTicketResponse>(`${this.resourceUrl}/rapport-request`, null, { params });
+  }
+
+  getRapportRequests(uniqueId: string): Observable<IRmRapportRequest[]> {
+    return this.http.get<IRmRapportRequest[]>(`${this.resourceUrl}/rapport-requests`, { params: { uniqueId } });
   }
 }

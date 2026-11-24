@@ -801,24 +801,71 @@
         </div>
 
         <!-- SECTION : EXECUTION SUR SITE -->
+        <!-- SECTION : EXECUTION SUR SITE -->
         <div *ngIf="workOrder?.id" class="cu-accordion-item" [class.open]="isPanelOpen('executionSurSite')">
           <button type="button" class="cu-accordion-header" (click)="togglePanel('executionSurSite')">
             <span class="cu-accordion-header-left">
               <fa-icon icon="building" class="cu-accordion-icon"></fa-icon>
               <span>Execution Sur Site</span>
+              <span class="cu-accordion-count" *ngIf="rmRequests.length">{{ rmRequests.length }}</span>
             </span>
             <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
           </button>
 
           <div class="cu-accordion-body" *ngIf="isPanelOpen('executionSurSite')">
             <div class="cu-detail-toolbar">
+              <button type="button" class="btn-cu-add" title="Actualiser" [disabled]="loadingRmRequests" (click)="loadRmRequests()">
+                <fa-icon icon="sync"></fa-icon>
+              </button>
               <button type="button" class="btn-cu-add" title="Créer un ticket dans RM" (click)="openRmTicketModal()">
                 <fa-icon icon="plus"></fa-icon>
               </button>
             </div>
 
-            <div *ngIf="rmTicketSuccess" class="cu-options-feedback cu-options-feedback-success">✓ {{ rmTicketSuccess }}</div>
-            <div *ngIf="!rmTicketSuccess" class="cu-empty-panel">Cliquez sur « + » pour créer un ticket dans RM.</div>
+            <div *ngIf="rmTicketSuccess" class="cu-options-feedback cu-options-feedback-success mb-2">✓ {{ rmTicketSuccess }}</div>
+            <div *ngIf="rmRequestsError" class="cu-technicien-error">{{ rmRequestsError }}</div>
+
+            <div *ngIf="loadingRmRequests" class="cu-empty-panel">Chargement...</div>
+
+            <div *ngIf="!loadingRmRequests && !rmRequestsError && rmRequests.length === 0" class="cu-empty-panel">
+              Aucun ticket RM associé à ce work order. Cliquez sur « + » pour en créer un.
+            </div>
+
+            <div *ngIf="rmRequests.length > 0" class="cu-item-list">
+              <div class="cu-item-card rm-request-card" *ngFor="let r of rmRequests">
+                <div class="rm-request-main">
+                  <div class="cu-item-title">{{ r.reference }}</div>
+                  <div class="rm-request-sub">{{ r.nomRapport }}</div>
+                </div>
+
+                <div class="rm-request-meta">
+                  <span class="rm-meta-label">Technicien</span>
+                  <span class="rm-meta-value">{{ r.nomTechnicien || '—' }}</span>
+                </div>
+
+                <div class="rm-request-meta">
+                  <span class="rm-meta-label">Entreprise</span>
+                  <span class="rm-meta-value">{{ r.nomEntreprise || '—' }}</span>
+                </div>
+
+                <div class="rm-request-meta">
+                  <span class="rm-meta-label">Création</span>
+                  <span class="rm-meta-value">{{ r.dateCreation ? (r.dateCreation | date: 'dd/MM/yyyy HH:mm') : '—' }}</span>
+                </div>
+
+                <div class="rm-request-meta">
+                  <span class="rm-meta-label">Planification</span>
+                  <span class="rm-meta-value">{{ r.datePlanification ? (r.datePlanification | date: 'dd/MM/yyyy HH:mm') : '—' }}</span>
+                </div>
+
+                <div class="rm-request-meta">
+                  <span class="rm-meta-label">Fin travaux</span>
+                  <span class="rm-meta-value">{{ r.dateFinTravaux ? (r.dateFinTravaux | date: 'dd/MM/yyyy HH:mm') : '—' }}</span>
+                </div>
+
+                <span class="rm-status-chip" [ngClass]="rmStatusClass(r.statut)">{{ r.statut || '—' }}</span>
+              </div>
+            </div>
           </div>
         </div>
 

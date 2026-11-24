@@ -1081,3 +1081,60 @@ textarea.cu-input {
     cursor: default;
   }
 }
+
+/* ============ EXECUTION SUR SITE : TICKETS RM ============ */
+.rm-request-card {
+  flex-wrap: wrap;
+  row-gap: 0.4rem;
+}
+
+.rm-request-main {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.rm-request-sub {
+  font-size: 0.8rem;
+  color: var(--cp-text-muted);
+}
+
+.rm-request-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 110px;
+}
+
+.rm-meta-label {
+  font-size: 0.7rem;
+  color: var(--cp-text-muted);
+}
+
+.rm-meta-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--cp-text);
+}
+
+.rm-status-chip {
+  flex-shrink: 0;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: capitalize;
+
+  &.rm-status-progress {
+    background: #fff4d6;
+    color: #b8860b;
+  }
+
+  &.rm-status-done {
+    background: #e2f6e9;
+    color: #1c7c3f;
+  }
+
+  &.rm-status-default {
+    background: var(--cp-accent-soft);
+    color: var(--cp-accent);
+  }
+}
