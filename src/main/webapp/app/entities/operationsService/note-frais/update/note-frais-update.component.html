@@ -40,40 +40,8 @@
 
           <div class="cu-accordion-body" *ngIf="isPanelOpen('general')">
             <div class="row">
-              <div class="col-md-6 mb-3">
-                <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.dateDebut" for="field_dateDebut"
-                  >Date Debut</label
-                >
-                <input
-                  id="field_dateDebut"
-                  data-cy="dateDebut"
-                  type="datetime-local"
-                  class="form-control cu-input"
-                  name="dateDebut"
-                  formControlName="dateDebut"
-                  placeholder="YYYY-MM-DD HH:mm"
-                />
-              </div>
-
-              <div class="col-md-6 mb-3">
-                <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.dateFin" for="field_dateFin"
-                  >Date Fin</label
-                >
-                <input
-                  id="field_dateFin"
-                  data-cy="dateFin"
-                  type="datetime-local"
-                  class="form-control cu-input"
-                  name="dateFin"
-                  formControlName="dateFin"
-                  placeholder="YYYY-MM-DD HH:mm"
-                />
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label class="form-label" for="field_contactSocieteId">Bénéficiaire *</label>
+              <div class="col-md-4 mb-3">
+                <label class="form-label" for="field_contactSocieteId">Bénéficiaire <span class="cu-required">*</span></label>
 
                 <div class="cu-affaire-selector">
                   <input
@@ -109,6 +77,36 @@
                     <fa-icon icon="times"></fa-icon>
                   </button>
                 </div>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.dateDebut" for="field_dateDebut"
+                  >Date Debut</label
+                >
+                <input
+                  id="field_dateDebut"
+                  data-cy="dateDebut"
+                  type="date"
+                  class="form-control cu-input"
+                  name="dateDebut"
+                  formControlName="dateDebut"
+                  placeholder="YYYY-MM-DD"
+                />
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceNoteFrais.dateFin" for="field_dateFin"
+                  >Date Fin</label
+                >
+                <input
+                  id="field_dateFin"
+                  data-cy="dateFin"
+                  type="date"
+                  class="form-control cu-input"
+                  name="dateFin"
+                  formControlName="dateFin"
+                  placeholder="YYYY-MM-DD"
+                />
               </div>
             </div>
           </div>

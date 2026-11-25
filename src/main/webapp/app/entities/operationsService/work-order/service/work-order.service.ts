@@ -93,6 +93,11 @@ export class WorkOrderService {
     return this.http.post<StatutWO>(`${this.resourceUrl}/${id}/start-execution`, { missions }, { observe: 'response' });
   }
 
+  /** Aligne les missions sur le responsable + les techniciens enregistrés (statut ExecutionTravaux). */
+  syncMissions(id: number, missions: IMissionLine[]): Observable<HttpResponse<void>> {
+    return this.http.put<void>(`${this.resourceUrl}/${id}/sync-missions`, missions, { observe: 'response' });
+  }
+
   /**
    * Génère et incrémente l'identifiant unique du work order (ex: WO-0001-26).
    * L'endpoint renvoie du texte brut, d'où responseType: 'text'.

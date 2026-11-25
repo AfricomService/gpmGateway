@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import dayjs from 'dayjs/esm';
@@ -110,6 +110,14 @@ export class SocieteService {
   find(id: number): Observable<EntityResponseType> {
     return this.http
       .get<RestSociete>(`${this.resourceUrl}/${id}`, { observe: 'response' })
+      .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+
+  /** Retrouve une société par sa raison sociale (insensible à la casse et aux espaces autour). */
+  findByRaisonSociale(raisonSociale: string): Observable<EntityResponseType> {
+    const params = new HttpParams().set('raisonSociale', raisonSociale);
+    return this.http
+      .get<RestSociete>(`${this.resourceUrl}/by-raison-sociale`, { params, observe: 'response' })
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 

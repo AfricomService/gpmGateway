@@ -1,8 +1,8 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, Subject, Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs/operators';
+import { Observable, of, Subject, Subscription } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { WorkOrderFormService, WorkOrderFormGroup } from './work-order-form.service';
@@ -65,9 +65,13 @@ import { ArticleService } from '../../../projectService/article/service/article.
 import { IWoArticles } from '../wo-articles.model';
 import { AccountService } from 'app/core/auth/account.service';
 import { DATE_TIME_FORMAT } from 'app/config/input.constants';
-import { IMissionLine } from 'app/entities/operationsService/mission/mission.model';
+import { IMission, IMissionLine } from 'app/entities/operationsService/mission/mission.model';
+import { MissionService } from 'app/entities/operationsService/mission/service/mission.service';
 
 type AccordionPanel = 'global' | 'client' | 'equipes' | 'options' | 'articlesAssocies' | 'remarque' | 'piecesJointes';
+
+// Lignes de la grille de l'accordéon Equipes (mode lecture après passage en Exécution travaux)
+type EquipeRow = 'responsable' | 'techniciens' | 'valideur' | 'coordinateur';
 
 interface PendingPieceJointe {
   tempId: string;
@@ -80,13 +84,6 @@ interface StatutTransition {
   event: string; // valeur de l'enum backend WorkOrderEvent
   label: string; // texte du bouton
   next: StatutWO; // statut attendu après la transition
-}
-
-// Ligne de la modale « Exécuter » : un bénéficiaire de mission (responsable ou technicien)
-interface MissionRow {
-  contact: IContactSociete;
-  role: 'MANAGER' | 'TECHNIQUE'; // affichage seulement : le titre réel est déduit par le backend
-  noteMission: number | null;
 }
 
 const AFFAIRE_STATUT = 'ExecutionDesTravaux';
@@ -106,7 +103,6 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   @ViewChild('clientCommandeDetailsModal') clientCommandeDetailsModal!: TemplateRef<any>;
 
   @ViewChild('woArticleDeleteConfirmModal') woArticleDeleteConfirmModal!: TemplateRef<any>;
-  @ViewChild('missionsModal') missionsModal!: TemplateRef<any>;
 
   // ================================
   // Articles associés (persistés immédiatement via WoArticles)
@@ -128,10 +124,6 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   // ================================
   isTransitioning = false;
   transitionError = '';
-
-  // Modale « Exécuter » : missions à créer (responsable + techniciens) avant la passation de statut
-  missionRows: MissionRow[] = [];
-  missionsModalError = '';
 
   // Les valeurs de `event` correspondent à l'enum Java WorkOrderEvent
   readonly statutTransitions: Partial<Record<StatutWO, StatutTransition>> = {
@@ -194,9 +186,9 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
 
     this.transitionError = '';
 
-    // « Exécuter » : étape intermédiaire (création des missions) avant la passation de statut
+    // « Exécuter » : création automatique des missions (sans note) + passation de statut
     if (transition.event === 'START_EXECUTION') {
-      this.openMissionsModal(workOrderId, transition);
+      this.sendStartExecution(workOrderId, transition);
       return;
     }
 
@@ -212,89 +204,47 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   }
 
   // ================================
-  // Modale « Exécuter » : missions (responsable + techniciens)
+  // « Exécuter » : création automatique des missions (responsable + techniciens), sans note
   // ================================
   /** Responsable mission d'abord, puis les techniciens (sans doublon : un responsable déjà technicien n'a qu'une ligne). */
-  private buildMissionRows(): MissionRow[] {
-    const rows: MissionRow[] = [];
+  private buildMissionLines(): IMissionLine[] {
+    const lines: IMissionLine[] = [];
     const seen = new Set<number>();
 
     const responsable = this.selectedResponsable;
     if (responsable?.id !== null && responsable?.id !== undefined) {
-      rows.push({ contact: responsable, role: 'MANAGER', noteMission: null });
+      lines.push({
+        contactSocieteId: responsable.id,
+        contactSocieteMatricule: responsable.matricule ?? null,
+        noteMission: null,
+      });
       seen.add(responsable.id);
     }
 
     this.selectedTechniciens.forEach(technicien => {
       if (technicien.id !== null && technicien.id !== undefined && !seen.has(technicien.id)) {
-        rows.push({ contact: technicien, role: 'TECHNIQUE', noteMission: null });
+        lines.push({
+          contactSocieteId: technicien.id,
+          contactSocieteMatricule: technicien.matricule ?? null,
+          noteMission: null,
+        });
         seen.add(technicien.id);
       }
     });
 
-    return rows;
+    return lines;
   }
 
-  get missionRowsValid(): boolean {
-    return (
-      this.missionRows.length > 0 &&
-      this.missionRows.every(
-        r => r.noteMission !== null && r.noteMission !== undefined && !Number.isNaN(Number(r.noteMission)) && Number(r.noteMission) >= 0
-      )
-    );
-  }
-
-  private openMissionsModal(workOrderId: number, transition: StatutTransition): void {
-    this.missionRows = this.buildMissionRows();
-    this.missionsModalError = '';
-
-    // Aucune équipe sélectionnée : aucune mission à créer, on exécute directement
-    if (this.missionRows.length === 0) {
-      this.sendStartExecution(workOrderId, transition);
-      return;
-    }
-
-    this.modalService.open(this.missionsModal, { size: 'lg', centered: true, backdrop: 'static' });
-  }
-
-  confirmMissionsModal(modal: any): void {
-    const transition = this.nextTransition;
-    const workOrderId = this.workOrder?.id;
-
-    if (!transition || workOrderId === null || workOrderId === undefined || this.isTransitioning || !this.missionRowsValid) {
-      return;
-    }
-
-    this.missionsModalError = '';
-    this.sendStartExecution(workOrderId, transition, modal);
-  }
-
-  /** Envoie les missions + déclenche START_EXECUTION. Avec `modal`, les erreurs restent affichées dans la modale. */
-  private sendStartExecution(workOrderId: number, transition: StatutTransition, modal?: any): void {
-    const missions: IMissionLine[] = this.missionRows.map(row => ({
-      contactSocieteId: row.contact.id as number,
-      contactSocieteMatricule: row.contact.matricule ?? null,
-      noteMission: Number(row.noteMission),
-    }));
-
+  /** Envoie les missions (noteMission = null) + déclenche START_EXECUTION. */
+  private sendStartExecution(workOrderId: number, transition: StatutTransition): void {
     this.isTransitioning = true;
 
     this.workOrderService
-      .startExecution(workOrderId, missions)
+      .startExecution(workOrderId, this.buildMissionLines())
       .pipe(finalize(() => (this.isTransitioning = false)))
       .subscribe({
-        next: res => {
-          modal?.close();
-          this.onTransitionSuccess(workOrderId, (res.body ?? transition.next) as StatutWO);
-        },
-        error: err => {
-          const message = this.extractTransitionError(err);
-          if (modal) {
-            this.missionsModalError = message;
-          } else {
-            this.transitionError = message;
-          }
-        },
+        next: res => this.onTransitionSuccess(workOrderId, (res.body ?? transition.next) as StatutWO),
+        error: err => (this.transitionError = this.extractTransitionError(err)),
       });
   }
 
@@ -305,6 +255,9 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       this.workOrder = { ...this.workOrder, statut: newStatut };
     }
     this.cdr.detectChanges();
+
+    // Les missions viennent d'être créées par START_EXECUTION : on les charge pour la colonne Note
+    this.loadMissions(workOrderId);
 
     // Les actions du workflow modifient d'autres champs (ex. dateHeureDebutReel à START_EXECUTION) :
     // on les resynchronise pour qu'un « Sauvegarder » ultérieur ne les écrase pas.
@@ -571,7 +524,8 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     protected woArticlesService: WoArticlesService,
     protected articleService: ArticleService,
     protected societeService: SocieteService,
-    protected accountService: AccountService
+    protected accountService: AccountService,
+    protected missionService: MissionService
   ) {}
 
   ngOnInit(): void {
@@ -709,6 +663,106 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
 
   isPanelOpen(panel: AccordionPanel): boolean {
     return this.openPanels.has(panel);
+  }
+
+  // ================================
+  // Equipes : grille en lecture seule dès que le work order a quitté le statut Création
+  // ================================
+  editingEquipeRows: Set<EquipeRow> = new Set();
+
+  /** Vrai si le work order est enregistré et n'est plus en « Creation » : l'accordéon Equipes s'affiche en grille. */
+  get equipesGridMode(): boolean {
+    if (this.workOrder?.id === null || this.workOrder?.id === undefined) {
+      return false;
+    }
+    return this.currentStatut !== StatutWO.Creation;
+  }
+
+  isEquipeRowEditing(row: EquipeRow): boolean {
+    return this.editingEquipeRows.has(row);
+  }
+
+  toggleEquipeRowEdit(row: EquipeRow): void {
+    if (this.editingEquipeRows.has(row)) {
+      this.editingEquipeRows.delete(row);
+    } else {
+      this.editingEquipeRows.add(row);
+    }
+  }
+
+  // ================================
+  // Equipes : note de mission par bénéficiaire (missions créées à « Exécuter »)
+  // ================================
+  missionsByContact: { [contactId: number]: IMission } = {};
+  savingNoteContactId: number | null = null;
+  // Message d'erreur affiché sous le champ note, par contact
+  noteErrors: { [contactId: number]: string } = {};
+
+  private loadMissions(workOrderId: number): void {
+    this.missionService.findByWorkOrder(workOrderId).subscribe({
+      next: res => {
+        const map: { [contactId: number]: IMission } = {};
+        (res.body ?? []).forEach(m => {
+          if (m.contactSocieteId !== null && m.contactSocieteId !== undefined) {
+            map[m.contactSocieteId] = m;
+          }
+        });
+        this.missionsByContact = map;
+      },
+      error: () => {
+        this.missionsByContact = {};
+      },
+    });
+  }
+
+  getMission(contact: IContactSociete): IMission | undefined {
+    return contact.id !== null && contact.id !== undefined ? this.missionsByContact[contact.id] : undefined;
+  }
+
+  /** Enregistre la note dès que l'utilisateur valide le champ (blur / Entrée). Une valeur vide est ignorée. */
+  commitNote(contact: IContactSociete, rawValue: string): void {
+    const mission = this.getMission(contact);
+    const contactId = contact.id;
+
+    if (!mission || contactId === null || contactId === undefined || rawValue === '' || rawValue === null) {
+      return;
+    }
+
+    const note = Number(rawValue);
+    if (Number.isNaN(note) || note < 0 || note > 20) {
+      // Le champ garde la valeur saisie : l'erreur s'affiche dessous, l'utilisateur corrige
+      this.noteErrors = { ...this.noteErrors, [contactId]: 'La note doit être comprise entre 0 et 20.' };
+      return;
+    }
+
+    this.clearNoteError(contactId);
+
+    if (mission.noteMission === note) {
+      return;
+    }
+
+    this.savingNoteContactId = contactId;
+
+    this.missionService
+      .updateNote(mission.id, note)
+      .pipe(finalize(() => (this.savingNoteContactId = null)))
+      .subscribe({
+        next: () => {
+          this.missionsByContact = { ...this.missionsByContact, [contactId]: { ...mission, noteMission: note } };
+        },
+        error: () => {
+          this.noteErrors = { ...this.noteErrors, [contactId]: "Erreur lors de l'enregistrement de la note." };
+        },
+      });
+  }
+
+  /** Efface l'erreur dès que l'utilisateur modifie à nouveau le champ. */
+  clearNoteError(contactId: number | null | undefined): void {
+    if (contactId === null || contactId === undefined || !this.noteErrors[contactId]) {
+      return;
+    }
+    const { [contactId]: _removed, ...rest } = this.noteErrors;
+    this.noteErrors = rest;
   }
 
   // ================================
@@ -2396,10 +2450,33 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       this.articlesNeedReset = false;
     }
 
-    forkJoin(calls).subscribe({
-      next: () => this.uploadPendingPieceJointesThenNavigate(workOrderId),
-      error: () => this.uploadPendingPieceJointesThenNavigate(workOrderId),
-    });
+    // Au statut Exécution travaux, les missions suivent le responsable et les techniciens.
+    // La synchro passe APRÈS les autres appels : le backend relit les techniciens en base.
+    const syncMissions = this.currentStatut === StatutWO.ExecutionTravaux;
+    this.transitionError = '';
+
+    forkJoin(calls)
+      .pipe(
+        switchMap(() =>
+          syncMissions
+            ? this.workOrderService.syncMissions(workOrderId, this.buildMissionLines()).pipe(
+                catchError(err => {
+                  this.transitionError = this.extractTransitionError(err);
+                  return of(null);
+                })
+              )
+            : of(null)
+        )
+      )
+      .subscribe({
+        next: () => {
+          if (syncMissions) {
+            this.loadMissions(workOrderId); // les notes des nouveaux bénéficiaires deviennent saisissables
+          }
+          this.uploadPendingPieceJointesThenNavigate(workOrderId);
+        },
+        error: () => this.uploadPendingPieceJointesThenNavigate(workOrderId),
+      });
   }
   /**
    * Envoie les pièces jointes mises en attente juste après le premier enregistrement
@@ -2543,6 +2620,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       this.loadAutresRessources(workOrder.id);
       this.loadParametrages(workOrder.id);
       this.loadPieceJointes(workOrder.id);
+      this.loadMissions(workOrder.id);
     }
   }
 

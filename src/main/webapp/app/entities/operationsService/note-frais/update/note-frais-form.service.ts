@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 import dayjs from 'dayjs/esm';
-import { DATE_TIME_FORMAT } from 'app/config/input.constants';
+import { DATE_FORMAT } from 'app/config/input.constants';
 import { INoteFrais, NewNoteFrais } from '../note-frais.model';
 
 /**
@@ -79,20 +79,20 @@ export class NoteFraisFormService {
   }
 
   private getFormDefaults(): NoteFraisFormDefaults {
-    const currentTime = dayjs();
+    const moisDernier = dayjs().subtract(1, 'month');
 
     return {
       id: null,
-      dateDebut: currentTime,
-      dateFin: currentTime,
+      dateDebut: moisDernier.startOf('month'),
+      dateFin: moisDernier.endOf('month'),
     };
   }
 
   private convertNoteFraisRawValueToNoteFrais(rawNoteFrais: NoteFraisFormRawValue | NewNoteFraisFormRawValue): INoteFrais | NewNoteFrais {
     return {
       ...rawNoteFrais,
-      dateDebut: dayjs(rawNoteFrais.dateDebut, DATE_TIME_FORMAT),
-      dateFin: dayjs(rawNoteFrais.dateFin, DATE_TIME_FORMAT),
+      dateDebut: dayjs(rawNoteFrais.dateDebut, DATE_FORMAT).startOf('day'),
+      dateFin: dayjs(rawNoteFrais.dateFin, DATE_FORMAT).endOf('day'),
     };
   }
 
@@ -101,8 +101,8 @@ export class NoteFraisFormService {
   ): NoteFraisFormRawValue | PartialWithRequiredKeyOf<NewNoteFraisFormRawValue> {
     return {
       ...noteFrais,
-      dateDebut: noteFrais.dateDebut ? noteFrais.dateDebut.format(DATE_TIME_FORMAT) : undefined,
-      dateFin: noteFrais.dateFin ? noteFrais.dateFin.format(DATE_TIME_FORMAT) : undefined,
+      dateDebut: noteFrais.dateDebut ? noteFrais.dateDebut.format(DATE_FORMAT) : undefined,
+      dateFin: noteFrais.dateFin ? noteFrais.dateFin.format(DATE_FORMAT) : undefined,
     };
   }
 }

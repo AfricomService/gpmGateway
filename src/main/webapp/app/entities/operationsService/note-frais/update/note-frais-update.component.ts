@@ -1,8 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
-import { forkJoin, merge, Observable, Subject, Subscription } from 'rxjs';
-import { debounceTime, finalize, switchMap, takeUntil } from 'rxjs/operators';
+import { forkJoin, merge, Observable, of, Subject, Subscription } from 'rxjs';
+import { debounceTime, finalize, map, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { NumsequentielleService } from 'app/entities/projectService/numsequentielle/service/numsequentielle.service';
 import dayjs from 'dayjs/esm';
 
@@ -16,8 +16,12 @@ import { ClientService } from 'app/entities/projectService/client/service/client
 import { BonCommandeService } from 'app/entities/financeService/bon-commande/service/bon-commande.service';
 import { ContactSelectorModalComponent } from 'app/entities/financeService/bon-commande/contact-selector-modal/contact-selector-modal.component';
 import { IContactSociete } from 'app/entities/projectService/societe/contact-societe.model';
+import { SocieteService } from 'app/entities/projectService/societe/service/societe.service';
 
 type AccordionPanel = 'general' | 'missions' | 'montants';
+
+// Société dont les contacts sont proposés comme bénéficiaires (id résolu côté backend)
+const RAISON_SOCIALE_BENEFICIAIRES = 'Africom Services';
 
 @Component({
   selector: 'jhi-note-frais-update',
@@ -48,6 +52,8 @@ export class NoteFraisUpdateComponent implements OnInit, OnDestroy {
 
   // Personne bénéficiaire (contactSocieteId de la mission, persisté sur la note de frais)
   selectedBeneficiaire: IContactSociete | null = null;
+  // Id de la société « Africom Services » (résolu une seule fois)
+  private societeBeneficiairesId: number | null = null;
 
   editForm: NoteFraisFormGroup = this.noteFraisFormService.createNoteFraisFormGroup();
 
@@ -59,7 +65,8 @@ export class NoteFraisUpdateComponent implements OnInit, OnDestroy {
     protected modalService: NgbModal,
     protected bonCommandeService: BonCommandeService,
     protected clientService: ClientService,
-    protected numsequentielleService: NumsequentielleService
+    protected numsequentielleService: NumsequentielleService,
+    protected societeService: SocieteService
   ) {}
 
   ngOnInit(): void {
@@ -163,6 +170,30 @@ export class NoteFraisUpdateComponent implements OnInit, OnDestroy {
   }
 
   openBeneficiaireModal(): void {
+    this.resolveSocieteBeneficiairesId().subscribe({
+      next: societeId => this.openBeneficiaireModalForSociete(societeId),
+      error: () => (this.missionsError = 'Société « ' + RAISON_SOCIALE_BENEFICIAIRES + ' » introuvable.'),
+    });
+  }
+
+  /** Retrouve (puis met en cache) l'id de la société dont la raison sociale est « Africom Services ». */
+  private resolveSocieteBeneficiairesId(): Observable<number> {
+    if (this.societeBeneficiairesId !== null) {
+      return of(this.societeBeneficiairesId);
+    }
+    return this.societeService.findByRaisonSociale(RAISON_SOCIALE_BENEFICIAIRES).pipe(
+      map(res => {
+        const id = res.body?.id;
+        if (id === null || id === undefined) {
+          throw new Error('Société introuvable');
+        }
+        return id;
+      }),
+      tap(id => (this.societeBeneficiairesId = id))
+    );
+  }
+
+  private openBeneficiaireModalForSociete(societeId: number): void {
     const modalRef = this.modalService.open(ContactSelectorModalComponent, {
       size: 'lg',
       centered: true,
@@ -171,6 +202,7 @@ export class NoteFraisUpdateComponent implements OnInit, OnDestroy {
     });
 
     modalRef.componentInstance.modalTitle = 'Sélectionner un bénéficiaire';
+    modalRef.componentInstance.societeId = societeId;
     modalRef.componentInstance.initialSelection = this.selectedBeneficiaire ? [this.selectedBeneficiaire] : [];
 
     modalRef.result
@@ -218,8 +250,12 @@ export class NoteFraisUpdateComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const debut = dayjs(this.editForm.get('dateDebut')?.value as any).toISOString();
-    const fin = dayjs(this.editForm.get('dateFin')?.value as any).toISOString();
+    const debut = dayjs(this.editForm.get('dateDebut')?.value as any)
+      .startOf('day')
+      .toISOString();
+    const fin = dayjs(this.editForm.get('dateFin')?.value as any)
+      .endOf('day')
+      .toISOString();
     const contactSocieteId = this.editForm.get('contactSocieteId')?.value ?? null;
 
     this.loadingMissions = true;

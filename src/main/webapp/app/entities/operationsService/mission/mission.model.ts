@@ -18,7 +18,7 @@ export type NewMission = Omit<IMission, 'id'> & { id: null };
 export interface IMissionLine {
   contactSocieteId: number;
   contactSocieteMatricule: string | null;
-  noteMission: number;
+  noteMission: number | null;
 }
 
 export interface IMissionLigne {

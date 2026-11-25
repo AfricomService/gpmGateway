@@ -3,7 +3,7 @@ import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
-import { IMissionLigne } from '../mission.model';
+import { IMission, IMissionLigne } from '../mission.model';
 
 export type EntityArrayResponseType = HttpResponse<IMissionLigne[]>;
 
@@ -22,5 +22,16 @@ export class MissionService {
     }
 
     return this.http.get<IMissionLigne[]>(`${this.resourceUrl}/search`, { params, observe: 'response' });
+  }
+
+  /** Missions d'un work order (GET /missions?workorderId.equals=...). */
+  findByWorkOrder(workOrderId: number): Observable<HttpResponse<IMission[]>> {
+    const params = new HttpParams().set('workorderId.equals', workOrderId).set('size', 1000);
+    return this.http.get<IMission[]>(this.resourceUrl, { params, observe: 'response' });
+  }
+
+  /** Met à jour uniquement la note d'une mission (PATCH /missions/{id}). */
+  updateNote(id: number, noteMission: number): Observable<HttpResponse<IMission>> {
+    return this.http.patch<IMission>(`${this.resourceUrl}/${id}`, { id, noteMission }, { observe: 'response' });
   }
 }

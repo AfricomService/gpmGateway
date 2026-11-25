@@ -250,6 +250,13 @@
   cursor: default;
 }
 
+/* Astérisque des champs obligatoires */
+.cu-required {
+  color: #e0524d;
+  font-weight: 700;
+  margin-left: 2px;
+}
+
 /* ============ SELECTEUR (champ + boutons) ============ */
 .cu-affaire-selector {
   display: flex;
