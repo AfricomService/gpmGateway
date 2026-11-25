@@ -1,8 +1,8 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, Subject, Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs/operators';
+import { Observable, of, Subject, Subscription } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { WorkOrderFormService, WorkOrderFormGroup } from './work-order-form.service';
@@ -25,6 +25,10 @@ import { IVehicule } from 'app/entities/projectService/vehicule/vehicule.model';
 import { VehiculeService } from 'app/entities/projectService/vehicule/service/vehicule.service';
 import { WorkOrderVehiculeService } from '../service/work-order-vehicule.service';
 import { forkJoin, EMPTY } from 'rxjs';
+
+import { SocieteService } from 'app/entities/projectService/societe/service/societe.service';
+import { ISociete } from 'app/entities/projectService/societe/societe.model';
+import { map } from 'rxjs/operators';
 
 import { AffaireSelectorModalComponent } from 'app/entities/financeService/bon-commande/affaire-selector-modal/affaire-selector-modal.component';
 import { SiteSelectorModalComponent } from 'app/entities/financeService/bon-commande/site-selector-modal/site-selector-modal.component';
@@ -59,14 +63,27 @@ import {
 import { WoArticlesService } from '../service/wo-articles.service';
 import { ArticleService } from '../../../projectService/article/service/article.service';
 import { IWoArticles } from '../wo-articles.model';
+import { AccountService } from 'app/core/auth/account.service';
+import { DATE_TIME_FORMAT } from 'app/config/input.constants';
+import { IMission, IMissionLine } from 'app/entities/operationsService/mission/mission.model';
+import { MissionService } from 'app/entities/operationsService/mission/service/mission.service';
 
 type AccordionPanel = 'global' | 'client' | 'equipes' | 'options' | 'articlesAssocies' | 'remarque' | 'piecesJointes';
+
+// Lignes de la grille de l'accordéon Equipes (mode lecture après passage en Exécution travaux)
+type EquipeRow = 'responsable' | 'techniciens' | 'valideur' | 'coordinateur';
 
 interface PendingPieceJointe {
   tempId: string;
   file: File;
   displayName: string;
   extension: string;
+}
+
+interface StatutTransition {
+  event: string; // valeur de l'enum backend WorkOrderEvent
+  label: string; // texte du bouton
+  next: StatutWO; // statut attendu après la transition
 }
 
 const AFFAIRE_STATUT = 'ExecutionDesTravaux';
@@ -102,6 +119,41 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   workOrder: IWorkOrder | null = null;
   statutWOValues = Object.keys(StatutWO);
 
+  // ================================
+  // Changement de statut (workflow) — une seule action possible par statut
+  // ================================
+  isTransitioning = false;
+  transitionError = '';
+
+  // Les valeurs de `event` correspondent à l'enum Java WorkOrderEvent
+  readonly statutTransitions: Partial<Record<StatutWO, StatutTransition>> = {
+    [StatutWO.Creation]: { event: 'START_EXECUTION', label: 'Exécuter', next: StatutWO.ExecutionTravaux },
+    [StatutWO.ExecutionTravaux]: { event: 'VERIFY', label: 'Vérifier', next: StatutWO.VerificationWO },
+    [StatutWO.VerificationWO]: { event: 'VALIDATE_TECH', label: 'Valider technique', next: StatutWO.ValidationTechnique },
+    [StatutWO.ValidationTechnique]: { event: 'VALIDATE_RESOURCES', label: 'Valider ressources', next: StatutWO.ValidationRessources },
+    [StatutWO.ValidationRessources]: { event: 'FINISH', label: 'Terminer', next: StatutWO.Fin },
+  };
+
+  // ================================
+  // Société exécutrice + Type mission
+  // ================================
+  societesSharedCollection: ISociete[] = [];
+  readonly typeMissionOptions: { value: string; label: string }[] = [
+    { value: 'Principale', label: 'Principale' },
+    { value: 'Intermédiaire', label: 'Intermédiaire' },
+  ];
+
+  /** Raison sociale de la société exécutrice (lecture seule), retrouvée à partir de l'id du formulaire. */
+  get societeExecutriceLabel(): string {
+    const id = this.editForm.get('societeExecutrice')?.value;
+
+    if (id === null || id === undefined || (id as any) === '') {
+      return '';
+    }
+
+    return this.societesSharedCollection.find(s => s.id === Number(id))?.raisonSociale ?? '';
+  }
+
   // Cycle de vie affiché dans le stepper (ordre = ordre du workflow)
   readonly statutSteps: StatusStep[] = [
     { key: StatutWO.Creation, label: 'Création' },
@@ -116,6 +168,114 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     return (this.editForm.get('statut')?.value as string | null | undefined) ?? StatutWO.Creation;
   }
 
+  /** Transition disponible depuis le statut courant (undefined si statut final ou work order non enregistré). */
+  get nextTransition(): StatutTransition | undefined {
+    if (this.workOrder?.id === null || this.workOrder?.id === undefined) {
+      return undefined;
+    }
+    return this.statutTransitions[this.currentStatut as StatutWO];
+  }
+
+  triggerTransition(): void {
+    const transition = this.nextTransition;
+    const workOrderId = this.workOrder?.id;
+
+    if (!transition || workOrderId === null || workOrderId === undefined || this.isTransitioning) {
+      return;
+    }
+
+    this.transitionError = '';
+
+    // « Exécuter » : création automatique des missions (sans note) + passation de statut
+    if (transition.event === 'START_EXECUTION') {
+      this.sendStartExecution(workOrderId, transition);
+      return;
+    }
+
+    this.isTransitioning = true;
+
+    this.workOrderService
+      .triggerTransition(workOrderId, transition.event)
+      .pipe(finalize(() => (this.isTransitioning = false)))
+      .subscribe({
+        next: res => this.onTransitionSuccess(workOrderId, (res.body ?? transition.next) as StatutWO),
+        error: err => (this.transitionError = this.extractTransitionError(err)),
+      });
+  }
+
+  // ================================
+  // « Exécuter » : création automatique des missions (responsable + techniciens), sans note
+  // ================================
+  /** Responsable mission d'abord, puis les techniciens (sans doublon : un responsable déjà technicien n'a qu'une ligne). */
+  private buildMissionLines(): IMissionLine[] {
+    const lines: IMissionLine[] = [];
+    const seen = new Set<number>();
+
+    const responsable = this.selectedResponsable;
+    if (responsable?.id !== null && responsable?.id !== undefined) {
+      lines.push({
+        contactSocieteId: responsable.id,
+        contactSocieteMatricule: responsable.matricule ?? null,
+        noteMission: null,
+      });
+      seen.add(responsable.id);
+    }
+
+    this.selectedTechniciens.forEach(technicien => {
+      if (technicien.id !== null && technicien.id !== undefined && !seen.has(technicien.id)) {
+        lines.push({
+          contactSocieteId: technicien.id,
+          contactSocieteMatricule: technicien.matricule ?? null,
+          noteMission: null,
+        });
+        seen.add(technicien.id);
+      }
+    });
+
+    return lines;
+  }
+
+  /** Envoie les missions (noteMission = null) + déclenche START_EXECUTION. */
+  private sendStartExecution(workOrderId: number, transition: StatutTransition): void {
+    this.isTransitioning = true;
+
+    this.workOrderService
+      .startExecution(workOrderId, this.buildMissionLines())
+      .pipe(finalize(() => (this.isTransitioning = false)))
+      .subscribe({
+        next: res => this.onTransitionSuccess(workOrderId, (res.body ?? transition.next) as StatutWO),
+        error: err => (this.transitionError = this.extractTransitionError(err)),
+      });
+  }
+
+  private onTransitionSuccess(workOrderId: number, newStatut: StatutWO): void {
+    // Met à jour le formulaire : le badge et le stepper se rafraîchissent via valueChanges
+    this.editForm.patchValue({ statut: newStatut });
+    if (this.workOrder) {
+      this.workOrder = { ...this.workOrder, statut: newStatut };
+    }
+    this.cdr.detectChanges();
+
+    // Les missions viennent d'être créées par START_EXECUTION : on les charge pour la colonne Note
+    this.loadMissions(workOrderId);
+
+    // Les actions du workflow modifient d'autres champs (ex. dateHeureDebutReel à START_EXECUTION) :
+    // on les resynchronise pour qu'un « Sauvegarder » ultérieur ne les écrase pas.
+    this.workOrderService.find(workOrderId).subscribe(r => {
+      const fresh = r.body;
+      if (fresh) {
+        this.editForm.patchValue({
+          dateHeureDebutReel: fresh.dateHeureDebutReel ? fresh.dateHeureDebutReel.format(DATE_TIME_FORMAT) : null,
+          dateHeureFinReel: fresh.dateHeureFinReel ? fresh.dateHeureFinReel.format(DATE_TIME_FORMAT) : null,
+        });
+      }
+    });
+  }
+
+  private extractTransitionError(err: any): string {
+    // `message` vaut "error.http.400" : le texte utile est dans `detail` ou `title`
+    return err?.error?.detail ?? err?.error?.title ?? 'Transition de statut impossible.';
+  }
   /**
    * Liste des jours (calendaires, bornes incluses) entre Date Heure Début Prév. et Date Heure Fin Prév.
    * Ex. : début 30/10/2026 08:00, fin 01/11/2026 18:00 => ['30/10/2026', '31/10/2026', '01/11/2026'].
@@ -148,37 +308,17 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     return this.joursPrevus.length;
   }
 
-  // Compteurs calculés à partir des checkpoints cochés (un jour coché = +1)
-  get nombreHebergements(): number {
-    return this.countChecked('Hébergement');
-  }
-
-  get nombreNuits(): number {
-    return this.countChecked('Mission de nuit');
-  }
-
-  get nombreDeplacements(): number {
-    return this.countChecked('Déplacement');
-  }
-
-  private normalizeText(value?: string | null): string {
-    return (value ?? '')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .trim()
-      .toLowerCase();
-  }
-
-  /** Nombre de jours pour lesquels le paramètre portant ce nom est coché (comparaison sans accents ni casse). */
-  private countChecked(nomParametre: string): number {
-    const cible = this.normalizeText(nomParametre);
-    const parametre = this.parametresWO.find(p => this.normalizeText(p.nom) === cible);
-
-    if (!parametre) {
-      return 0;
-    }
-
+  /**
+   * Nombre de jours pour lesquels un paramètre est coché (un jour coché = +1).
+   * Calculé côté front à partir des checkpoints, jamais persisté.
+   */
+  countCheckedForParametre(parametre: IParametreWO): number {
     return this.joursPrevusDates.filter((_, index) => this.isParametreChecked(index, parametre)).length;
+  }
+
+  /** Total d'un paramètre, utilisé par l'affichage dynamique des totaux. */
+  totalParametre(parametre: IParametreWO): number {
+    return this.countCheckedForParametre(parametre);
   }
 
   // ================================
@@ -271,8 +411,11 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   // — logique identique au champ Responsable de ot-externe-update, réutilisée pour les 2 champs
   // ================================
   responsables: IContactSociete[] = [];
+  // Vrai après un changement d'affaire par l'utilisateur : Responsable/Coordinateur seront pré-remplis avec le user connecté
+  private prefillResponsablesFromUser = false;
   selectedResponsable: IContactSociete | null = null;
   selectedCoordinateur: IContactSociete | null = null;
+  selectedValideur: IContactSociete | null = null;
   loadingResponsables = false;
 
   // ================================
@@ -282,6 +425,9 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   techniciens: IContactSociete[] = [];
   selectedTechniciens: IContactSociete[] = [];
   loadingTechniciens = false;
+  // Sociétés dont les techniciens (et responsables) sont proposés : société de l'affaire + sociétés intermédiaires
+  societeIdsTechniciens: number[] = [];
+
   technicienError = '';
   private technicienErrorTimeoutId?: ReturnType<typeof setTimeout>;
 
@@ -376,7 +522,10 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     protected parametreWOService: ParametreWOService,
     protected parametrageDeplacementService: ParametrageDeplacementService,
     protected woArticlesService: WoArticlesService,
-    protected articleService: ArticleService
+    protected articleService: ArticleService,
+    protected societeService: SocieteService,
+    protected accountService: AccountService,
+    protected missionService: MissionService
   ) {}
 
   ngOnInit(): void {
@@ -384,10 +533,9 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.stepperService.show(this.statutSteps, this.currentStatut);
     this.editForm.get('statut')?.valueChanges.subscribe(() => this.stepperService.show(this.statutSteps, this.currentStatut));
 
-    this.loadResponsables();
-    this.loadTechniciens();
     this.loadModelPhases();
     this.loadParametresWO();
+    this.loadSocietes();
     this.loadAffaires(''); // Pré-charge la liste des projets dès l'ouverture du formulaire
 
     this.activatedRoute.data.subscribe(({ workOrder }) => {
@@ -518,6 +666,106 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   }
 
   // ================================
+  // Equipes : grille en lecture seule dès que le work order a quitté le statut Création
+  // ================================
+  editingEquipeRows: Set<EquipeRow> = new Set();
+
+  /** Vrai si le work order est enregistré et n'est plus en « Creation » : l'accordéon Equipes s'affiche en grille. */
+  get equipesGridMode(): boolean {
+    if (this.workOrder?.id === null || this.workOrder?.id === undefined) {
+      return false;
+    }
+    return this.currentStatut !== StatutWO.Creation;
+  }
+
+  isEquipeRowEditing(row: EquipeRow): boolean {
+    return this.editingEquipeRows.has(row);
+  }
+
+  toggleEquipeRowEdit(row: EquipeRow): void {
+    if (this.editingEquipeRows.has(row)) {
+      this.editingEquipeRows.delete(row);
+    } else {
+      this.editingEquipeRows.add(row);
+    }
+  }
+
+  // ================================
+  // Equipes : note de mission par bénéficiaire (missions créées à « Exécuter »)
+  // ================================
+  missionsByContact: { [contactId: number]: IMission } = {};
+  savingNoteContactId: number | null = null;
+  // Message d'erreur affiché sous le champ note, par contact
+  noteErrors: { [contactId: number]: string } = {};
+
+  private loadMissions(workOrderId: number): void {
+    this.missionService.findByWorkOrder(workOrderId).subscribe({
+      next: res => {
+        const map: { [contactId: number]: IMission } = {};
+        (res.body ?? []).forEach(m => {
+          if (m.contactSocieteId !== null && m.contactSocieteId !== undefined) {
+            map[m.contactSocieteId] = m;
+          }
+        });
+        this.missionsByContact = map;
+      },
+      error: () => {
+        this.missionsByContact = {};
+      },
+    });
+  }
+
+  getMission(contact: IContactSociete): IMission | undefined {
+    return contact.id !== null && contact.id !== undefined ? this.missionsByContact[contact.id] : undefined;
+  }
+
+  /** Enregistre la note dès que l'utilisateur valide le champ (blur / Entrée). Une valeur vide est ignorée. */
+  commitNote(contact: IContactSociete, rawValue: string): void {
+    const mission = this.getMission(contact);
+    const contactId = contact.id;
+
+    if (!mission || contactId === null || contactId === undefined || rawValue === '' || rawValue === null) {
+      return;
+    }
+
+    const note = Number(rawValue);
+    if (Number.isNaN(note) || note < 0 || note > 20) {
+      // Le champ garde la valeur saisie : l'erreur s'affiche dessous, l'utilisateur corrige
+      this.noteErrors = { ...this.noteErrors, [contactId]: 'La note doit être comprise entre 0 et 20.' };
+      return;
+    }
+
+    this.clearNoteError(contactId);
+
+    if (mission.noteMission === note) {
+      return;
+    }
+
+    this.savingNoteContactId = contactId;
+
+    this.missionService
+      .updateNote(mission.id, note)
+      .pipe(finalize(() => (this.savingNoteContactId = null)))
+      .subscribe({
+        next: () => {
+          this.missionsByContact = { ...this.missionsByContact, [contactId]: { ...mission, noteMission: note } };
+        },
+        error: () => {
+          this.noteErrors = { ...this.noteErrors, [contactId]: "Erreur lors de l'enregistrement de la note." };
+        },
+      });
+  }
+
+  /** Efface l'erreur dès que l'utilisateur modifie à nouveau le champ. */
+  clearNoteError(contactId: number | null | undefined): void {
+    if (contactId === null || contactId === undefined || !this.noteErrors[contactId]) {
+      return;
+    }
+    const { [contactId]: _removed, ...rest } = this.noteErrors;
+    this.noteErrors = rest;
+  }
+
+  // ================================
   // Liste déroulante Affaire (ng-select) — logique identique à ot-externe-update
   // ================================
 
@@ -606,7 +854,28 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
 
     this.loadClientInfo(clientId);
     this.loadClientCommandeInfo(affaire.clientCommande ?? null);
-    this.applyResponsableFromAffaire(affaire);
+
+    // Responsable / Coordinateur / Valideur : liste filtrée par la société de l'affaire + ses sociétés intermédiaires
+    // (chargée par loadSocieteIdsTechniciens() une fois les sociétés résolues)
+    if (affaireChanged) {
+      this.selectedResponsable = null;
+      this.selectedCoordinateur = null;
+      this.selectedValideur = null;
+      this.editForm.patchValue({ responsableId: null, coordinateur: null, valideur: null });
+      this.prefillResponsablesFromUser = true;
+    }
+    this.applyValideurFromAffaire(affaire);
+
+    // Société exécutrice : valeur par défaut = Société Principale de l'affaire (modifiable)
+    if (affaireChanged || !this.editForm.get('societeExecutrice')?.value) {
+      this.applySocieteExecutriceFromAffaire(affaire);
+    }
+
+    // Techniciens : liste filtrée par la société de l'affaire + ses sociétés intermédiaires
+    if (affaireChanged) {
+      this.selectedTechniciens = [];
+    }
+    this.loadSocieteIdsTechniciens(affaire);
 
     // Recharge les listes véhicules/ressources filtrées sur la société de l'affaire sélectionnée
     this.loadVehicules(societeId);
@@ -614,11 +883,11 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Pré-remplit le champ "Responsable" du work order avec le responsable
+   * Pré-remplit le champ "Valideur" du work order avec le responsable
    * projet déjà défini sur l'affaire sélectionnée (IAffaire.responsableProjetId),
    * en le proposant comme valeur par défaut (l'utilisateur peut ensuite la changer).
    */
-  private applyResponsableFromAffaire(affaire: IAffaire): void {
+  private applyValideurFromAffaire(affaire: IAffaire): void {
     const responsableProjetId = (affaire as any).responsableProjetId;
 
     if (responsableProjetId === null || responsableProjetId === undefined || responsableProjetId === '') {
@@ -634,10 +903,29 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       next: res => {
         const contact = res.body ?? null;
         if (contact) {
-          this.onResponsableSelectChange(contact);
+          this.onValideurSelectChange(contact);
         }
       },
     });
+  }
+
+  /**
+   * Pré-sélectionne la Société exécutrice avec la Société Principale de l'affaire
+   * (valeur par défaut, l'utilisateur peut ensuite la modifier).
+   */
+  private applySocieteExecutriceFromAffaire(affaire: IAffaire): void {
+    const societeId = (affaire as any).societeId;
+
+    if (societeId === null || societeId === undefined || societeId === '') {
+      return;
+    }
+
+    const parsedId = Number(societeId);
+    if (Number.isNaN(parsedId)) {
+      return;
+    }
+
+    this.editForm.patchValue({ societeExecutrice: parsedId }, { emitEvent: false });
   }
 
   onAffaireSelectChange(affaire: IAffaire | null): void {
@@ -646,6 +934,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     } else {
       this.editForm.patchValue({ affaireId: null, clientId: null, lieu: null, villeId: null, zoneId: null, siteId: null });
       this.selectedAffaire = null;
+      this.prefillResponsablesFromUser = false;
       this.selectedAffaireCode = null;
       this.selectedClientInfo = null;
       this.selectedClientCommandeInfo = null;
@@ -653,6 +942,14 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       this.clientSites = [];
       this.vehicules = [];
       this.ressources = [];
+      this.responsables = [];
+      this.techniciens = [];
+      this.societeIdsTechniciens = [];
+      this.selectedTechniciens = [];
+      this.selectedResponsable = null;
+      this.selectedCoordinateur = null;
+      this.selectedValideur = null;
+      this.editForm.patchValue({ responsableId: null, coordinateur: null, valideur: null, societeExecutrice: null });
       if (this.chosenArticles.length > 0) {
         this.articlesNeedReset = true;
       }
@@ -795,13 +1092,36 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   // ================================
   // Liste déroulante Responsable (contacts ayant le rôle MANAGER) — identique à ot-externe-update
   // ================================
+  /** Société de l'affaire sélectionnée (null tant qu'aucun projet n'est choisi). */
+  get societeIdAffaire(): number | null {
+    return (this.selectedAffaire as any)?.societeId ?? null;
+  }
+
+  /**
+   * Charge les contacts MANAGER de la société principale de l'affaire
+   * + de ses sociétés intermédiaires (liste partagée par Responsable, Coordinateur et Valideur).
+   * Appelée une fois societeIdsTechniciens résolu (voir loadSocieteIdsTechniciens).
+   */
   private loadResponsables(): void {
+    const societeIds = this.societeIdsTechniciens;
+
+    if (societeIds.length === 0) {
+      this.responsables = [];
+      this.loadingResponsables = false;
+      return;
+    }
+
     this.loadingResponsables = true;
 
-    this.bonCommandeService.findResponsablesByRole(RESPONSABLE_ROLE_CODE).subscribe({
-      next: res => {
-        this.responsables = res.body ?? [];
+    this.bonCommandeService.findResponsablesByRoleForSocietes(RESPONSABLE_ROLE_CODE, societeIds).subscribe({
+      next: contacts => {
+        this.responsables = contacts;
+        // Garde les valeurs déjà sélectionnées dans la liste, même si elles n'en font pas partie
+        this.ensureInResponsables(this.selectedResponsable);
+        this.ensureInResponsables(this.selectedCoordinateur);
+        this.ensureInResponsables(this.selectedValideur);
         this.loadingResponsables = false;
+        this.applyCurrentUserAsResponsableCoordinateur();
       },
       error: () => {
         this.responsables = [];
@@ -810,12 +1130,77 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Après un changement d'affaire (création ou édition) : pré-remplit Responsable et Coordinateur avec le contact du user connecté
+   * (login du user = matricule du contact). Ne s'applique que si le contact fait partie de la liste
+   * (rôle MANAGER, société principale ou intermédiaires) et si le champ est encore vide.
+   */
+  private applyCurrentUserAsResponsableCoordinateur(): void {
+    // Pas de pré-remplissage au chargement d'un work order existant : les valeurs enregistrées priment.
+    // Il n'a lieu qu'après un changement d'affaire par l'utilisateur (création ou édition).
+    if (!this.prefillResponsablesFromUser) {
+      return;
+    }
+    this.prefillResponsablesFromUser = false;
+
+    this.accountService.identity().subscribe(account => {
+      const login = account?.login?.trim().toLowerCase();
+
+      if (!login) {
+        return;
+      }
+
+      const moi = this.responsables.find(c => (c.matricule ?? '').trim().toLowerCase() === login);
+
+      if (!moi) {
+        return;
+      }
+
+      if (!this.editForm.get('responsableId')?.value) {
+        this.onResponsableSelectChange(moi);
+      }
+
+      if (!this.editForm.get('coordinateur')?.value) {
+        this.onCoordinateurSelectChange(moi);
+      }
+    });
+  }
+
+  /** Ajoute le contact à la liste `responsables` s'il n'y est pas, pour qu'il apparaisse sélectionné dans les listes. */
+  private ensureInResponsables(contact: IContactSociete | null): void {
+    if (contact && !this.responsables.some(r => r.id === contact.id)) {
+      this.responsables = [contact, ...this.responsables];
+    }
+  }
+
   onResponsableSelectChange(responsable: IContactSociete | null): void {
     this.editForm.patchValue({
       responsableId: responsable?.id ?? null,
     });
 
     this.selectedResponsable = responsable;
+    this.ensureInResponsables(responsable);
+    this.applySocieteExecutriceFromResponsable(responsable);
+  }
+
+  /**
+   * La Société exécutrice suit la société du Responsable mission sélectionné :
+   *  - responsable d'une société intermédiaire => société intermédiaire
+   *  - responsable de la société principale (ou champ vidé) => société principale de l'affaire
+   */
+  private applySocieteExecutriceFromResponsable(responsable: IContactSociete | null): void {
+    const principalId = this.societeIdAffaire;
+
+    if (principalId === null || principalId === undefined) {
+      return;
+    }
+
+    const societeResponsable = responsable?.societeId;
+    const cible = societeResponsable !== null && societeResponsable !== undefined ? Number(societeResponsable) : Number(principalId);
+
+    if (!Number.isNaN(cible)) {
+      this.editForm.patchValue({ societeExecutrice: cible });
+    }
   }
 
   onCoordinateurSelectChange(coordinateur: IContactSociete | null): void {
@@ -824,6 +1209,16 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     });
 
     this.selectedCoordinateur = coordinateur;
+    this.ensureInResponsables(coordinateur);
+  }
+
+  onValideurSelectChange(valideur: IContactSociete | null): void {
+    this.editForm.patchValue({
+      valideur: valideur?.id ?? null,
+    });
+
+    this.selectedValideur = valideur;
+    this.ensureInResponsables(valideur);
   }
 
   compareResponsable = (a: IContactSociete | null, b: IContactSociete | null): boolean => (a && b ? a.id === b.id : a === b);
@@ -838,8 +1233,22 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.bonCommandeService.findResponsableById(responsableId).subscribe({
       next: res => {
         this.selectedResponsable = res.body ?? null;
+        this.ensureInResponsables(this.selectedResponsable);
       },
     });
+  }
+
+  // ================================
+  // Sociétés (liste Société exécutrice — identique à Société Principale de affaire-update)
+  // ================================
+  private loadSocietes(): void {
+    this.societeService
+      .query({ page: 0, size: 1000, sort: ['id', 'asc'] })
+      .pipe(map((res: HttpResponse<ISociete[]>) => res.body ?? []))
+      .subscribe({
+        next: societes => (this.societesSharedCollection = societes),
+        error: () => (this.societesSharedCollection = []),
+      });
   }
 
   // ================================
@@ -1113,6 +1522,16 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.bonCommandeService.findResponsableById(coordinateurId).subscribe({
       next: res => {
         this.selectedCoordinateur = res.body ?? null;
+        this.ensureInResponsables(this.selectedCoordinateur);
+      },
+    });
+  }
+
+  private loadValideurLabel(valideurId: number): void {
+    this.bonCommandeService.findResponsableById(valideurId).subscribe({
+      next: res => {
+        this.selectedValideur = res.body ?? null;
+        this.ensureInResponsables(this.selectedValideur);
       },
     });
   }
@@ -1190,6 +1609,11 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
    *  - les lignes par jour (ParametrageDeplacement) via PUT /parametrage-deplacements/work-order/{id}
    *  - les compteurs du work order via PATCH /work-orders/{id} (les champs null sont ignorés côté backend)
    */
+  /**
+   * Enregistre uniquement les lignes par jour (ParametrageDeplacement) via
+   * PUT /parametrage-deplacements/work-order/{id}.
+   * Les totaux par paramètre sont calculés côté front et ne sont plus persistés.
+   */
   saveOptions(): void {
     const workOrderId = this.workOrder?.id;
 
@@ -1201,21 +1625,8 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.optionsSaved = false;
     this.optionsSaveError = false;
 
-    const nombreHebergements = this.nombreHebergements;
-    const nombreNuits = this.nombreNuits;
-    const nombreDeplacements = this.nombreDeplacements;
-
-    forkJoin([
-      this.parametrageDeplacementService.replaceForWorkOrder(workOrderId, this.buildParametrages(workOrderId)),
-      this.workOrderService.partialUpdate({
-        id: workOrderId,
-        nombreHebergements,
-        nombreNuits,
-        nombreDeplacements,
-        hebergement: nombreHebergements > 0,
-        missionDeNuit: nombreNuits > 0,
-      }),
-    ])
+    this.parametrageDeplacementService
+      .replaceForWorkOrder(workOrderId, this.buildParametrages(workOrderId))
       .pipe(finalize(() => (this.isSavingOptions = false)))
       .subscribe({
         next: () => this.showOptionsFeedback(false),
@@ -1241,12 +1652,62 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   // ================================
   // Techniciens (sélection multiple, persistée via WorkOrderTechniciens)
   // ================================
+  /**
+   * Détermine les sociétés éligibles (société principale + sociétés intermédiaires de l'affaire)
+   * puis charge les techniciens correspondants.
+   * En cas d'échec de l'appel, repli sur la société principale seule (comportement historique).
+   */
+  private loadSocieteIdsTechniciens(affaire: IAffaire): void {
+    const rawSocieteId = (affaire as any).societeId;
+    const principal: number[] = rawSocieteId !== null && rawSocieteId !== undefined ? [Number(rawSocieteId)] : [];
+
+    if (affaire.id === null || affaire.id === undefined) {
+      this.societeIdsTechniciens = principal;
+      this.loadTechniciens();
+      this.loadResponsables();
+      return;
+    }
+
+    this.bonCommandeService.findSocieteIdsForContacts(affaire.id).subscribe({
+      next: res => {
+        // L'utilisateur a changé d'affaire entre-temps : on ignore cette réponse
+        if (this.selectedAffaire?.id !== affaire.id) {
+          return;
+        }
+        const ids = res.body ?? [];
+        this.societeIdsTechniciens = ids.length > 0 ? ids : principal;
+        this.loadTechniciens();
+        this.loadResponsables();
+      },
+      error: () => {
+        if (this.selectedAffaire?.id !== affaire.id) {
+          return;
+        }
+        this.societeIdsTechniciens = principal;
+        this.loadTechniciens();
+        this.loadResponsables();
+      },
+    });
+  }
+
+  /**
+   * Charge les techniciens de la société principale de l'affaire
+   * + de ses sociétés intermédiaires (la société exécutrice n'intervient pas).
+   */
   private loadTechniciens(): void {
+    const societeIds = this.societeIdsTechniciens;
+
+    if (societeIds.length === 0) {
+      this.techniciens = [];
+      this.loadingTechniciens = false;
+      return;
+    }
+
     this.loadingTechniciens = true;
 
-    this.bonCommandeService.findResponsablesByRole(TECHNICIEN_ROLE_CODE).subscribe({
-      next: res => {
-        this.techniciens = res.body ?? [];
+    this.bonCommandeService.findResponsablesByRoleForSocietes(TECHNICIEN_ROLE_CODE, societeIds).subscribe({
+      next: contacts => {
+        this.techniciens = contacts;
         this.loadingTechniciens = false;
       },
       error: () => {
@@ -1332,6 +1793,10 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   }
 
   openTechnicienModal(): void {
+    if (this.societeIdAffaire === null) {
+      return;
+    }
+
     const modalRef = this.modalService.open(ContactSelectorModalComponent, {
       size: 'lg',
       centered: true,
@@ -1340,6 +1805,9 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     });
 
     modalRef.componentInstance.roleCode = TECHNICIEN_ROLE_CODE;
+    modalRef.componentInstance.societeId = this.societeIdAffaire;
+    // Société de l'affaire + sociétés intermédiaires (prioritaire sur societeId dans la modale)
+    modalRef.componentInstance.societeIds = this.societeIdsTechniciens;
     modalRef.componentInstance.modalTitle = 'Sélectionner un ou plusieurs techniciens';
     modalRef.componentInstance.multiple = true;
     modalRef.componentInstance.initialSelection = this.selectedTechniciens;
@@ -1608,6 +2076,10 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   }
 
   openResponsableModal(): void {
+    if (this.societeIdAffaire === null) {
+      return;
+    }
+
     const modalRef = this.modalService.open(ContactSelectorModalComponent, {
       size: 'lg',
       centered: true,
@@ -1616,7 +2088,11 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     });
 
     modalRef.componentInstance.roleCode = RESPONSABLE_ROLE_CODE;
+    modalRef.componentInstance.societeId = this.societeIdAffaire;
+    // Société principale + sociétés intermédiaires (prioritaire sur societeId dans la modale)
+    modalRef.componentInstance.societeIds = this.societeIdsTechniciens;
     modalRef.componentInstance.modalTitle = 'Sélectionner un responsable';
+    modalRef.componentInstance.initialSelection = this.selectedResponsable ? [this.selectedResponsable] : [];
 
     modalRef.result
       .then((contact: IContactSociete) => {
@@ -1630,6 +2106,10 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   }
 
   openCoordinateurModal(): void {
+    if (this.societeIdAffaire === null) {
+      return;
+    }
+
     const modalRef = this.modalService.open(ContactSelectorModalComponent, {
       size: 'lg',
       centered: true,
@@ -1638,12 +2118,44 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     });
 
     modalRef.componentInstance.roleCode = RESPONSABLE_ROLE_CODE;
+    modalRef.componentInstance.societeId = this.societeIdAffaire;
+    modalRef.componentInstance.societeIds = this.societeIdsTechniciens;
     modalRef.componentInstance.modalTitle = 'Sélectionner un coordinateur';
+    modalRef.componentInstance.initialSelection = this.selectedCoordinateur ? [this.selectedCoordinateur] : [];
 
     modalRef.result
       .then((contact: IContactSociete) => {
         if (contact) {
           this.onCoordinateurSelectChange(contact);
+        }
+      })
+      .catch(() => {
+        // Fermeture du modal sans sélection
+      });
+  }
+
+  openValideurModal(): void {
+    if (this.societeIdAffaire === null) {
+      return;
+    }
+
+    const modalRef = this.modalService.open(ContactSelectorModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'contact-selector-modal-window',
+    });
+
+    modalRef.componentInstance.roleCode = RESPONSABLE_ROLE_CODE;
+    modalRef.componentInstance.societeId = this.societeIdAffaire;
+    modalRef.componentInstance.societeIds = this.societeIdsTechniciens;
+    modalRef.componentInstance.modalTitle = 'Sélectionner un valideur';
+    modalRef.componentInstance.initialSelection = this.selectedValideur ? [this.selectedValideur] : [];
+
+    modalRef.result
+      .then((contact: IContactSociete) => {
+        if (contact) {
+          this.onValideurSelectChange(contact);
         }
       })
       .catch(() => {
@@ -1887,13 +2399,10 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.isSaving = true;
     const workOrder = this.workOrderFormService.getWorkOrder(this.editForm);
 
-    // Compteurs issus des checkpoints par jour
-    workOrder.nombreHebergements = this.nombreHebergements;
-    workOrder.nombreNuits = this.nombreNuits;
-    workOrder.nombreDeplacements = this.nombreDeplacements;
-    // Les booléens (obligatoires côté backend) sont dérivés des compteurs
-    workOrder.hebergement = this.nombreHebergements > 0;
-    workOrder.missionDeNuit = this.nombreNuits > 0;
+    // Les booléens hebergement / missionDeNuit sont obligatoires (@NotNull) côté backend.
+    // On ne les calcule plus à partir des compteurs : valeur neutre, jamais modifiée depuis l'écran.
+    workOrder.hebergement = workOrder.hebergement ?? false;
+    workOrder.missionDeNuit = workOrder.missionDeNuit ?? false;
 
     if (workOrder.id !== null) {
       this.subscribeToSaveResponse(this.workOrderService.update(workOrder));
@@ -1941,10 +2450,33 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       this.articlesNeedReset = false;
     }
 
-    forkJoin(calls).subscribe({
-      next: () => this.uploadPendingPieceJointesThenNavigate(workOrderId),
-      error: () => this.uploadPendingPieceJointesThenNavigate(workOrderId),
-    });
+    // Au statut Exécution travaux, les missions suivent le responsable et les techniciens.
+    // La synchro passe APRÈS les autres appels : le backend relit les techniciens en base.
+    const syncMissions = this.currentStatut === StatutWO.ExecutionTravaux;
+    this.transitionError = '';
+
+    forkJoin(calls)
+      .pipe(
+        switchMap(() =>
+          syncMissions
+            ? this.workOrderService.syncMissions(workOrderId, this.buildMissionLines()).pipe(
+                catchError(err => {
+                  this.transitionError = this.extractTransitionError(err);
+                  return of(null);
+                })
+              )
+            : of(null)
+        )
+      )
+      .subscribe({
+        next: () => {
+          if (syncMissions) {
+            this.loadMissions(workOrderId); // les notes des nouveaux bénéficiaires deviennent saisissables
+          }
+          this.uploadPendingPieceJointesThenNavigate(workOrderId);
+        },
+        error: () => this.uploadPendingPieceJointesThenNavigate(workOrderId),
+      });
   }
   /**
    * Envoie les pièces jointes mises en attente juste après le premier enregistrement
@@ -2032,6 +2564,8 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
             const societeId = (affaire as any).societeId ?? null;
             this.loadVehicules(societeId);
             this.loadRessources(societeId);
+            // loadSocieteIdsTechniciens charge aussi les responsables (principale + intermédiaires)
+            this.loadSocieteIdsTechniciens(affaire);
           }
         },
       });
@@ -2073,6 +2607,12 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       this.loadCoordinateurLabel(Number(coordinateurId));
     }
 
+    const valideurId = workOrder.valideur;
+
+    if (valideurId !== null && valideurId !== undefined) {
+      this.loadValideurLabel(Number(valideurId));
+    }
+
     // Techniciens / Véhicules / Ressources
     if (workOrder.id !== null && workOrder.id !== undefined) {
       this.loadAutresTechniciens(workOrder.id);
@@ -2080,6 +2620,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       this.loadAutresRessources(workOrder.id);
       this.loadParametrages(workOrder.id);
       this.loadPieceJointes(workOrder.id);
+      this.loadMissions(workOrder.id);
     }
   }
 

@@ -112,6 +112,45 @@
               </div>
             </div>
 
+            <!-- LIGNE 1 bis : SOCIETE EXECUTRICE + TYPE MISSION -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="field_societeExecutrice">Société exécutrice</label>
+
+                <!-- ID réel de la société exécutrice (persisté), dérivé de la société principale de l'affaire -->
+                <input type="hidden" formControlName="societeExecutrice" data-cy="societeExecutrice" />
+
+                <input
+                  type="text"
+                  class="form-control cu-input"
+                  id="field_societeExecutriceLabel"
+                  data-cy="societeExecutriceLabel"
+                  [value]="societeExecutriceLabel"
+                  placeholder="Sélectionnez d'abord un projet"
+                  readonly
+                />
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="field_typeMission">Type mission</label>
+
+                <ng-select
+                  id="field_typeMission"
+                  data-cy="typeMission"
+                  name="typeMission"
+                  formControlName="typeMission"
+                  [items]="typeMissionOptions"
+                  bindLabel="label"
+                  bindValue="value"
+                  [searchable]="false"
+                  [clearable]="true"
+                  class="custom-ng-select"
+                  placeholder="Sélectionner un type de mission..."
+                >
+                </ng-select>
+              </div>
+            </div>
+
             <!-- LIGNE 2 : MOTIF (liste de tous les ModelPhaseOT) -->
             <div class="row">
               <div class="col-md-6 mb-3">
@@ -568,148 +607,468 @@
           <div class="cu-accordion-body" *ngIf="isPanelOpen('equipes')">
             <!-- Champs conservés dans le formulaire (persistés) mais non affichés à l'écran -->
             <input type="hidden" formControlName="vehiculeId" data-cy="vehiculeId" />
-            <input type="hidden" formControlName="valideurId" data-cy="valideurId" />
             <input type="hidden" formControlName="valideurUserLogin" data-cy="valideurUserLogin" />
 
-            <div class="row">
-              <!-- RESPONSABLE — identique à ot-externe-update -->
-              <div class="col-md-6 mb-3">
-                <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.responsableId" for="field_responsableId"
-                  >Responsable</label
-                >
-
-                <!-- ID réel du responsable (contact ayant le rôle MANAGER) -->
-                <input type="hidden" formControlName="responsableId" />
-
-                <div class="cu-affaire-selector">
-                  <ng-select
-                    id="field_responsableId"
-                    data-cy="responsableId"
-                    name="responsableId"
-                    class="custom-ng-select"
-                    [items]="responsables"
-                    bindLabel="nomPrenom"
-                    [compareWith]="compareResponsable"
-                    [searchable]="true"
-                    [clearable]="true"
-                    [loading]="loadingResponsables"
-                    placeholder="Rechercher un responsable..."
-                    notFoundText="Aucun responsable trouvé"
-                    loadingText="Chargement..."
-                    [ngModel]="selectedResponsable"
+            <!-- ====== MODE GRILLE (statut ≠ Creation) : lecture seule + bouton edit par ligne ====== -->
+            <div class="cu-equipes-grid" *ngIf="equipesGridMode">
+              <!-- Champ note réutilisé pour le responsable et chaque technicien -->
+              <ng-template #noteInput let-c>
+                <div class="cu-equipes-note-wrap">
+                  <input
+                    type="number"
+                    min="0"
+                    max="20"
+                    step="0.01"
+                    class="form-control form-control-sm cu-equipes-note"
+                    [class.is-invalid]="noteErrors[c.id]"
+                    [ngModel]="getMission(c)?.noteMission"
                     [ngModelOptions]="{ standalone: true }"
-                    (change)="onResponsableSelectChange($event)"
-                  >
-                    <ng-template ng-option-tmp let-item="item">
-                      <div>{{ item.nomPrenom }}</div>
-                      <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
-                    </ng-template>
-                  </ng-select>
+                    [disabled]="!getMission(c) || savingNoteContactId === c.id"
+                    [title]="getMission(c) ? '' : 'Aucune mission pour ce bénéficiaire'"
+                    placeholder="Note"
+                    (input)="clearNoteError(c.id)"
+                    (keydown.enter)="$event.preventDefault(); $any($event.target).blur()"
+                    (change)="commitNote(c, $any($event.target).value)"
+                  />
+                  <small class="cu-equipes-note-error" *ngIf="noteErrors[c.id]">{{ noteErrors[c.id] }}</small>
+                </div>
+              </ng-template>
 
+              <div class="cu-equipes-head">
+                <div>Rôle</div>
+                <div>Personne</div>
+                <div>Note mission</div>
+                <div></div>
+              </div>
+
+              <!-- RESPONSABLE MISSION -->
+              <div class="cu-equipes-row">
+                <div class="cu-equipes-label">Responsable mission</div>
+                <div class="cu-equipes-value">
+                  <span *ngIf="!isEquipeRowEditing('responsable')">{{ selectedResponsable?.nomPrenom || '—' }}</span>
+
+                  <div *ngIf="isEquipeRowEditing('responsable')" class="cu-affaire-selector">
+                    <ng-select
+                      class="custom-ng-select"
+                      name="gridResponsable"
+                      [items]="responsables"
+                      bindLabel="nomPrenom"
+                      [compareWith]="compareResponsable"
+                      [searchable]="true"
+                      [clearable]="true"
+                      [loading]="loadingResponsables"
+                      [disabled]="!selectedAffaire"
+                      placeholder="Rechercher un responsable mission..."
+                      notFoundText="Aucun responsable trouvé"
+                      loadingText="Chargement..."
+                      [ngModel]="selectedResponsable"
+                      [ngModelOptions]="{ standalone: true }"
+                      (change)="onResponsableSelectChange($event)"
+                    >
+                      <ng-template ng-option-tmp let-item="item">
+                        <div>{{ item.nomPrenom }}</div>
+                        <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
+                      </ng-template>
+                    </ng-select>
+                    <button
+                      type="button"
+                      class="btn-cu-affaire-modal"
+                      title="Rechercher un responsable mission"
+                      [disabled]="!selectedAffaire"
+                      (click)="openResponsableModal()"
+                    >
+                      <fa-icon icon="search"></fa-icon>
+                    </button>
+                  </div>
+                </div>
+                <div class="cu-equipes-note-cell">
+                  <ng-container *ngIf="selectedResponsable && !isEquipeRowEditing('responsable')">
+                    <ng-container *ngTemplateOutlet="noteInput; context: { $implicit: selectedResponsable }"></ng-container>
+                  </ng-container>
+                </div>
+                <div class="cu-equipes-actions">
                   <button
                     type="button"
-                    class="btn-cu-affaire-modal"
-                    title="Rechercher un responsable"
-                    aria-label="Rechercher un responsable"
-                    (click)="openResponsableModal()"
+                    class="btn-cu-row-edit"
+                    [class.active]="isEquipeRowEditing('responsable')"
+                    [title]="isEquipeRowEditing('responsable') ? 'Terminer' : 'Modifier'"
+                    (click)="toggleEquipeRowEdit('responsable')"
                   >
-                    <fa-icon icon="search"></fa-icon>
+                    <fa-icon [icon]="isEquipeRowEditing('responsable') ? 'check' : 'pencil-alt'"></fa-icon>
                   </button>
                 </div>
               </div>
 
-              <!-- COORDINATEUR — même logique que Responsable -->
-              <div class="col-md-6 mb-3">
-                <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.coordinateur" for="field_coordinateur"
-                  >Coordinateur</label
-                >
+              <!-- TECHNICIENS -->
+              <div class="cu-equipes-row">
+                <div class="cu-equipes-label">Techniciens</div>
+                <div class="cu-equipes-value">
+                  <ng-container *ngIf="!isEquipeRowEditing('techniciens')">
+                    <div class="cu-equipes-line" *ngFor="let t of selectedTechniciens">{{ t.nomPrenom }}</div>
+                    <span *ngIf="selectedTechniciens.length === 0">—</span>
+                  </ng-container>
 
-                <!-- ID réel du coordinateur (contact ayant le rôle MANAGER) -->
-                <input type="hidden" formControlName="coordinateur" />
-
-                <div class="cu-affaire-selector">
-                  <ng-select
-                    id="field_coordinateur"
-                    data-cy="coordinateur"
-                    name="coordinateur"
-                    class="custom-ng-select"
-                    [items]="responsables"
-                    bindLabel="nomPrenom"
-                    [compareWith]="compareResponsable"
-                    [searchable]="true"
-                    [clearable]="true"
-                    [loading]="loadingResponsables"
-                    placeholder="Rechercher un coordinateur..."
-                    notFoundText="Aucun coordinateur trouvé"
-                    loadingText="Chargement..."
-                    [ngModel]="selectedCoordinateur"
-                    [ngModelOptions]="{ standalone: true }"
-                    (change)="onCoordinateurSelectChange($event)"
-                  >
-                    <ng-template ng-option-tmp let-item="item">
-                      <div>{{ item.nomPrenom }}</div>
-                      <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
-                    </ng-template>
-                  </ng-select>
-
+                  <ng-container *ngIf="isEquipeRowEditing('techniciens')">
+                    <div class="cu-affaire-selector">
+                      <ng-select
+                        class="custom-ng-select"
+                        name="gridTechniciens"
+                        [items]="techniciens"
+                        bindLabel="nomPrenom"
+                        [compareWith]="compareResponsable"
+                        [searchable]="true"
+                        [clearable]="true"
+                        [multiple]="true"
+                        [closeOnSelect]="false"
+                        [loading]="loadingTechniciens"
+                        [disabled]="!selectedAffaire"
+                        placeholder="Rechercher un ou plusieurs techniciens..."
+                        notFoundText="Aucun technicien trouvé"
+                        loadingText="Chargement..."
+                        [ngModel]="selectedTechniciens"
+                        [ngModelOptions]="{ standalone: true }"
+                        (change)="onTechnicienSelectChange($event)"
+                      >
+                        <ng-template ng-option-tmp let-item="item">
+                          <div>{{ item.nomPrenom }}</div>
+                          <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
+                        </ng-template>
+                      </ng-select>
+                      <button
+                        type="button"
+                        class="btn-cu-affaire-modal"
+                        title="Rechercher un technicien"
+                        [disabled]="!selectedAffaire"
+                        (click)="openTechnicienModal()"
+                      >
+                        <fa-icon icon="search"></fa-icon>
+                      </button>
+                    </div>
+                    <div *ngIf="technicienError" class="cu-technicien-error">{{ technicienError }}</div>
+                  </ng-container>
+                </div>
+                <div class="cu-equipes-note-cell">
+                  <ng-container *ngIf="!isEquipeRowEditing('techniciens')">
+                    <div class="cu-equipes-line" *ngFor="let t of selectedTechniciens">
+                      <ng-container *ngTemplateOutlet="noteInput; context: { $implicit: t }"></ng-container>
+                    </div>
+                  </ng-container>
+                </div>
+                <div class="cu-equipes-actions">
                   <button
                     type="button"
-                    class="btn-cu-affaire-modal"
-                    title="Rechercher un coordinateur"
-                    aria-label="Rechercher un coordinateur"
-                    (click)="openCoordinateurModal()"
+                    class="btn-cu-row-edit"
+                    [class.active]="isEquipeRowEditing('techniciens')"
+                    [title]="isEquipeRowEditing('techniciens') ? 'Terminer' : 'Modifier'"
+                    (click)="toggleEquipeRowEdit('techniciens')"
                   >
-                    <fa-icon icon="search"></fa-icon>
+                    <fa-icon [icon]="isEquipeRowEditing('techniciens') ? 'check' : 'pencil-alt'"></fa-icon>
+                  </button>
+                </div>
+              </div>
+
+              <!-- VALIDEUR -->
+              <div class="cu-equipes-row">
+                <div class="cu-equipes-label">Valideur</div>
+                <div class="cu-equipes-value">
+                  <span *ngIf="!isEquipeRowEditing('valideur')">{{ selectedValideur?.nomPrenom || '—' }}</span>
+
+                  <div *ngIf="isEquipeRowEditing('valideur')" class="cu-affaire-selector">
+                    <ng-select
+                      class="custom-ng-select"
+                      name="gridValideur"
+                      [items]="responsables"
+                      bindLabel="nomPrenom"
+                      [compareWith]="compareResponsable"
+                      [searchable]="true"
+                      [clearable]="true"
+                      [loading]="loadingResponsables"
+                      [disabled]="!selectedAffaire"
+                      placeholder="Rechercher un valideur..."
+                      notFoundText="Aucun valideur trouvé"
+                      loadingText="Chargement..."
+                      [ngModel]="selectedValideur"
+                      [ngModelOptions]="{ standalone: true }"
+                      (change)="onValideurSelectChange($event)"
+                    >
+                      <ng-template ng-option-tmp let-item="item">
+                        <div>{{ item.nomPrenom }}</div>
+                        <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
+                      </ng-template>
+                    </ng-select>
+                    <button
+                      type="button"
+                      class="btn-cu-affaire-modal"
+                      title="Rechercher un valideur"
+                      [disabled]="!selectedAffaire"
+                      (click)="openValideurModal()"
+                    >
+                      <fa-icon icon="search"></fa-icon>
+                    </button>
+                  </div>
+                </div>
+                <div></div>
+                <div class="cu-equipes-actions">
+                  <button
+                    type="button"
+                    class="btn-cu-row-edit"
+                    [class.active]="isEquipeRowEditing('valideur')"
+                    [title]="isEquipeRowEditing('valideur') ? 'Terminer' : 'Modifier'"
+                    (click)="toggleEquipeRowEdit('valideur')"
+                  >
+                    <fa-icon [icon]="isEquipeRowEditing('valideur') ? 'check' : 'pencil-alt'"></fa-icon>
+                  </button>
+                </div>
+              </div>
+
+              <!-- COORDINATEUR -->
+              <div class="cu-equipes-row">
+                <div class="cu-equipes-label">Coordinateur</div>
+                <div class="cu-equipes-value">
+                  <span *ngIf="!isEquipeRowEditing('coordinateur')">{{ selectedCoordinateur?.nomPrenom || '—' }}</span>
+
+                  <div *ngIf="isEquipeRowEditing('coordinateur')" class="cu-affaire-selector">
+                    <ng-select
+                      class="custom-ng-select"
+                      name="gridCoordinateur"
+                      [items]="responsables"
+                      bindLabel="nomPrenom"
+                      [compareWith]="compareResponsable"
+                      [searchable]="true"
+                      [clearable]="true"
+                      [loading]="loadingResponsables"
+                      [disabled]="!selectedAffaire"
+                      placeholder="Rechercher un coordinateur..."
+                      notFoundText="Aucun coordinateur trouvé"
+                      loadingText="Chargement..."
+                      [ngModel]="selectedCoordinateur"
+                      [ngModelOptions]="{ standalone: true }"
+                      (change)="onCoordinateurSelectChange($event)"
+                    >
+                      <ng-template ng-option-tmp let-item="item">
+                        <div>{{ item.nomPrenom }}</div>
+                        <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
+                      </ng-template>
+                    </ng-select>
+                    <button
+                      type="button"
+                      class="btn-cu-affaire-modal"
+                      title="Rechercher un coordinateur"
+                      [disabled]="!selectedAffaire"
+                      (click)="openCoordinateurModal()"
+                    >
+                      <fa-icon icon="search"></fa-icon>
+                    </button>
+                  </div>
+                </div>
+                <div></div>
+                <div class="cu-equipes-actions">
+                  <button
+                    type="button"
+                    class="btn-cu-row-edit"
+                    [class.active]="isEquipeRowEditing('coordinateur')"
+                    [title]="isEquipeRowEditing('coordinateur') ? 'Terminer' : 'Modifier'"
+                    (click)="toggleEquipeRowEdit('coordinateur')"
+                  >
+                    <fa-icon [icon]="isEquipeRowEditing('coordinateur') ? 'check' : 'pencil-alt'"></fa-icon>
                   </button>
                 </div>
               </div>
             </div>
 
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label class="form-label" for="field_techniciens">Techniciens</label>
+            <!-- ====== MODE FORMULAIRE (statut Creation) : comportement actuel inchangé ====== -->
+            <ng-container *ngIf="!equipesGridMode">
+              <div class="row">
+                <!-- RESPONSABLE MISSION -->
+                <div class="col-md-6 mb-3">
+                  <label class="form-label" for="field_responsableId">Responsable mission</label>
 
-                <div class="cu-affaire-selector">
-                  <ng-select
-                    id="field_techniciens"
-                    data-cy="techniciens"
-                    name="techniciens"
-                    class="custom-ng-select"
-                    [items]="techniciens"
-                    bindLabel="nomPrenom"
-                    [compareWith]="compareResponsable"
-                    [searchable]="true"
-                    [clearable]="true"
-                    [multiple]="true"
-                    [closeOnSelect]="false"
-                    [loading]="loadingTechniciens"
-                    placeholder="Rechercher un ou plusieurs techniciens..."
-                    notFoundText="Aucun technicien trouvé"
-                    loadingText="Chargement..."
-                    [ngModel]="selectedTechniciens"
-                    [ngModelOptions]="{ standalone: true }"
-                    (change)="onTechnicienSelectChange($event)"
-                  >
-                    <ng-template ng-option-tmp let-item="item">
-                      <div>{{ item.nomPrenom }}</div>
-                      <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
-                    </ng-template>
-                  </ng-select>
+                  <!-- ID réel du responsable (contact ayant le rôle MANAGER) -->
+                  <input type="hidden" formControlName="responsableId" />
 
-                  <button
-                    type="button"
-                    class="btn-cu-affaire-modal"
-                    title="Rechercher un technicien"
-                    aria-label="Rechercher un technicien"
-                    (click)="openTechnicienModal()"
-                  >
-                    <fa-icon icon="search"></fa-icon>
-                  </button>
+                  <div class="cu-affaire-selector">
+                    <ng-select
+                      id="field_responsableId"
+                      data-cy="responsableId"
+                      name="responsableId"
+                      class="custom-ng-select"
+                      [items]="responsables"
+                      bindLabel="nomPrenom"
+                      [compareWith]="compareResponsable"
+                      [searchable]="true"
+                      [clearable]="true"
+                      [loading]="loadingResponsables"
+                      [disabled]="!selectedAffaire"
+                      [placeholder]="selectedAffaire ? 'Rechercher un responsable mission...' : 'Sélectionnez d\'abord un projet'"
+                      notFoundText="Aucun responsable trouvé"
+                      loadingText="Chargement..."
+                      [ngModel]="selectedResponsable"
+                      [ngModelOptions]="{ standalone: true }"
+                      (change)="onResponsableSelectChange($event)"
+                    >
+                      <ng-template ng-option-tmp let-item="item">
+                        <div>{{ item.nomPrenom }}</div>
+                        <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
+                      </ng-template>
+                    </ng-select>
+
+                    <button
+                      type="button"
+                      class="btn-cu-affaire-modal"
+                      title="Rechercher un responsable mission"
+                      aria-label="Rechercher un responsable mission"
+                      [disabled]="!selectedAffaire"
+                      (click)="openResponsableModal()"
+                    >
+                      <fa-icon icon="search"></fa-icon>
+                    </button>
+                  </div>
                 </div>
 
-                <div *ngIf="technicienError" class="cu-technicien-error">{{ technicienError }}</div>
+                <!-- TECHNICIENS -->
+                <div class="col-md-6 mb-3">
+                  <label class="form-label" for="field_techniciens">Techniciens</label>
+
+                  <div class="cu-affaire-selector">
+                    <ng-select
+                      id="field_techniciens"
+                      data-cy="techniciens"
+                      name="techniciens"
+                      class="custom-ng-select"
+                      [items]="techniciens"
+                      bindLabel="nomPrenom"
+                      [compareWith]="compareResponsable"
+                      [searchable]="true"
+                      [clearable]="true"
+                      [multiple]="true"
+                      [closeOnSelect]="false"
+                      [loading]="loadingTechniciens"
+                      [disabled]="!selectedAffaire"
+                      [placeholder]="selectedAffaire ? 'Rechercher un ou plusieurs techniciens...' : 'Sélectionnez d\'abord un projet'"
+                      notFoundText="Aucun technicien trouvé"
+                      loadingText="Chargement..."
+                      [ngModel]="selectedTechniciens"
+                      [ngModelOptions]="{ standalone: true }"
+                      (change)="onTechnicienSelectChange($event)"
+                    >
+                      <ng-template ng-option-tmp let-item="item">
+                        <div>{{ item.nomPrenom }}</div>
+                        <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
+                      </ng-template>
+                    </ng-select>
+
+                    <button
+                      type="button"
+                      class="btn-cu-affaire-modal"
+                      title="Rechercher un technicien"
+                      aria-label="Rechercher un technicien"
+                      [disabled]="!selectedAffaire"
+                      (click)="openTechnicienModal()"
+                    >
+                      <fa-icon icon="search"></fa-icon>
+                    </button>
+                  </div>
+
+                  <div *ngIf="technicienError" class="cu-technicien-error">{{ technicienError }}</div>
+                </div>
               </div>
-            </div>
+
+              <div class="row">
+                <!-- VALIDEUR -->
+                <div class="col-md-6 mb-3">
+                  <label class="form-label" for="field_valideurId">Valideur</label>
+
+                  <!-- ID réel du valideur (contact ayant le rôle MANAGER) -->
+                  <input type="hidden" formControlName="valideur" data-cy="valideurId" />
+
+                  <div class="cu-affaire-selector">
+                    <ng-select
+                      id="field_valideurId"
+                      data-cy="valideur"
+                      name="valideur"
+                      class="custom-ng-select"
+                      [items]="responsables"
+                      bindLabel="nomPrenom"
+                      [compareWith]="compareResponsable"
+                      [searchable]="true"
+                      [clearable]="true"
+                      [loading]="loadingResponsables"
+                      [disabled]="!selectedAffaire"
+                      [placeholder]="selectedAffaire ? 'Rechercher un valideur...' : 'Sélectionnez d\'abord un projet'"
+                      notFoundText="Aucun valideur trouvé"
+                      loadingText="Chargement..."
+                      [ngModel]="selectedValideur"
+                      [ngModelOptions]="{ standalone: true }"
+                      (change)="onValideurSelectChange($event)"
+                    >
+                      <ng-template ng-option-tmp let-item="item">
+                        <div>{{ item.nomPrenom }}</div>
+                        <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
+                      </ng-template>
+                    </ng-select>
+
+                    <button
+                      type="button"
+                      class="btn-cu-affaire-modal"
+                      title="Rechercher un valideur"
+                      aria-label="Rechercher un valideur"
+                      [disabled]="!selectedAffaire"
+                      (click)="openValideurModal()"
+                    >
+                      <fa-icon icon="search"></fa-icon>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- COORDINATEUR -->
+                <div class="col-md-6 mb-3">
+                  <label class="form-label" jhiTranslate="gpmGatewayApp.operationsServiceWorkOrder.coordinateur" for="field_coordinateur"
+                    >Coordinateur</label
+                  >
+
+                  <!-- ID réel du coordinateur (contact ayant le rôle MANAGER) -->
+                  <input type="hidden" formControlName="coordinateur" />
+
+                  <div class="cu-affaire-selector">
+                    <ng-select
+                      id="field_coordinateur"
+                      data-cy="coordinateur"
+                      name="coordinateur"
+                      class="custom-ng-select"
+                      [items]="responsables"
+                      bindLabel="nomPrenom"
+                      [compareWith]="compareResponsable"
+                      [searchable]="true"
+                      [clearable]="true"
+                      [loading]="loadingResponsables"
+                      [disabled]="!selectedAffaire"
+                      [placeholder]="selectedAffaire ? 'Rechercher un coordinateur...' : 'Sélectionnez d\'abord un projet'"
+                      notFoundText="Aucun coordinateur trouvé"
+                      loadingText="Chargement..."
+                      [ngModel]="selectedCoordinateur"
+                      [ngModelOptions]="{ standalone: true }"
+                      (change)="onCoordinateurSelectChange($event)"
+                    >
+                      <ng-template ng-option-tmp let-item="item">
+                        <div>{{ item.nomPrenom }}</div>
+                        <small class="text-muted" *ngIf="item.email">{{ item.email }}</small>
+                      </ng-template>
+                    </ng-select>
+
+                    <button
+                      type="button"
+                      class="btn-cu-affaire-modal"
+                      title="Rechercher un coordinateur"
+                      aria-label="Rechercher un coordinateur"
+                      [disabled]="!selectedAffaire"
+                      (click)="openCoordinateurModal()"
+                    >
+                      <fa-icon icon="search"></fa-icon>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
           </div>
         </div>
 
@@ -857,18 +1216,10 @@
               </div>
             </div>
 
-            <div class="cu-totaux" *ngIf="joursPrevus.length > 0">
-              <div class="cu-total-item">
-                <span class="cu-total-label">Nombre d'hébergements</span>
-                <span class="cu-total-value">{{ nombreHebergements }}</span>
-              </div>
-              <div class="cu-total-item">
-                <span class="cu-total-label">Nombre de missions de nuit</span>
-                <span class="cu-total-value">{{ nombreNuits }}</span>
-              </div>
-              <div class="cu-total-item">
-                <span class="cu-total-label">Nombre de déplacements</span>
-                <span class="cu-total-value">{{ nombreDeplacements }}</span>
+            <div class="cu-totaux" *ngIf="joursPrevus.length > 0 && parametresWO.length > 0">
+              <div class="cu-total-item" *ngFor="let parametre of parametresWO" [title]="parametre.description ?? ''">
+                <span class="cu-total-label">{{ parametre.nom }}</span>
+                <span class="cu-total-value">{{ totalParametre(parametre) }}</span>
               </div>
             </div>
 
@@ -2037,6 +2388,21 @@
           >
             {{ 'gpmGatewayApp.StatutWO.' + editForm.controls.statut.value | translate }}
           </span>
+
+          <!-- Bouton de transition : Creation → Exécuter, ExecutionTravaux → Vérifier, ... -->
+          <button
+            *ngIf="nextTransition as transition"
+            type="button"
+            class="btn-cu-transition"
+            data-cy="statutTransitionButton"
+            [disabled]="isTransitioning || isSaving"
+            (click)="triggerTransition()"
+          >
+            <span *ngIf="isTransitioning" class="spinner-border spinner-border-sm me-1" role="status"></span>
+            {{ transition.label }}&nbsp;&rarr;
+          </button>
+
+          <span *ngIf="transitionError" class="cu-technicien-error" style="margin-top: 0">{{ transitionError }}</span>
         </div>
 
         <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn-cu-cancel" (click)="previousState()">

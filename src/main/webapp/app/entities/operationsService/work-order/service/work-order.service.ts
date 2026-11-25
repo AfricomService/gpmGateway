@@ -8,6 +8,8 @@ import { isPresent } from 'app/core/util/operators';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { IWorkOrder, NewWorkOrder } from '../work-order.model';
+import { StatutWO } from 'app/entities/enumerations/statut-wo.model';
+import { IMissionLine } from 'app/entities/operationsService/mission/mission.model';
 
 export type PartialUpdateWorkOrder = Partial<IWorkOrder> & Pick<IWorkOrder, 'id'>;
 
@@ -76,6 +78,24 @@ export class WorkOrderService {
 
   delete(id: number): Observable<HttpResponse<{}>> {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
+  }
+
+  /**
+   * Déclenche une transition de statut (POST /work-orders/{id}/transition/{event}).
+   * Le backend valide la transition et renvoie le nouveau statut.
+   */
+  triggerTransition(id: number, event: string): Observable<HttpResponse<StatutWO>> {
+    return this.http.post<StatutWO>(`${this.resourceUrl}/${id}/transition/${event}`, null, { observe: 'response' });
+  }
+
+  /** Crée les missions puis passe le work order à ExecutionTravaux (une seule transaction côté backend). */
+  startExecution(id: number, missions: IMissionLine[]): Observable<HttpResponse<StatutWO>> {
+    return this.http.post<StatutWO>(`${this.resourceUrl}/${id}/start-execution`, { missions }, { observe: 'response' });
+  }
+
+  /** Aligne les missions sur le responsable + les techniciens enregistrés (statut ExecutionTravaux). */
+  syncMissions(id: number, missions: IMissionLine[]): Observable<HttpResponse<void>> {
+    return this.http.put<void>(`${this.resourceUrl}/${id}/sync-missions`, missions, { observe: 'response' });
   }
 
   /**

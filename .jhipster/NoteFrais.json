@@ -1,0 +1,36 @@
+{
+  "changelogDate": "20261119150146",
+  "clientRootFolder": "operationsService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "dateDebut",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "dateFin",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "contactSocieteId",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "montantTotale",
+      "fieldType": "BigDecimal"
+    },
+    {
+      "fieldName": "montantTotaleEnLettre",
+      "fieldType": "String"
+    }
+  ],
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "operationsService",
+  "microservicePath": "D:\\CODE\\GPM\\operationsService",
+  "name": "NoteFrais",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceClass"
+}

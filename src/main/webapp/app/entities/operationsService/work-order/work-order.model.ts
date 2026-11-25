@@ -29,8 +29,11 @@ export interface IWorkOrder {
   siteId?: number | null;
   responsableId?: number | null;
   coordinateur?: number | null;
+  valideur?: number | null;
   sousProjet?: string | null;
   bonCommandeId?: number | null;
+  typeMission?: string | null;
+  societeExecutrice?: number | null;
   identifiantUnique?: string | null;
   createdAt?: dayjs.Dayjs | null;
   updatedAt?: dayjs.Dayjs | null;
