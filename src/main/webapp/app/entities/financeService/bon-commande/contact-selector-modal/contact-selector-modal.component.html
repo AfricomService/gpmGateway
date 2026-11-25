@@ -4,7 +4,7 @@
 </div>
 
 <div class="modal-body cs-modal-body">
-  <div class="cs-role-selector" *ngIf="!loadingRoles">
+  <div class="cs-role-selector" *ngIf="!loadingRoles && !lockRole">
     <button type="button" class="cs-role-btn" *ngFor="let role of roles" [class.active]="role.code === roleCode" (click)="selectRole(role)">
       {{ role.label }}
     </button>
@@ -32,7 +32,7 @@
     <button
       type="button"
       class="cs-list-item"
-      [class.cs-list-item-selected]="multiple && isSelected(contact)"
+      [class.cs-list-item-selected]="isSelected(contact)"
       *ngFor="let contact of filteredContacts"
       (click)="select(contact)"
     >

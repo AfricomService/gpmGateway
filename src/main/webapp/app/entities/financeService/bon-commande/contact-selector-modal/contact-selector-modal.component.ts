@@ -1,6 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { IContactSociete } from 'app/entities/projectService/societe/contact-societe.model';
 import { IRoleContactSociete } from 'app/entities/projectService/societe/role-contact-societe.model';
@@ -24,6 +26,16 @@ export class ContactSelectorModalComponent implements OnInit {
 
   // Work order courant à exclure du contrôle (mode édition)
   @Input() excludeWorkOrderId: number | null = null;
+
+  // Optionnel : si renseigné, ne liste que les contacts de cette société
+  @Input() societeId: number | null = null;
+
+  // Optionnel : si renseigné (non vide), liste les contacts de TOUTES ces sociétés
+  // (société principale + sociétés intermédiaires). Prioritaire sur `societeId`.
+  @Input() societeIds: number[] | null = null;
+
+  // Optionnel : si true, masque les boutons de rôle (le rôle reste celui passé par le parent)
+  @Input() lockRole = false;
 
   contacts: IContactSociete[] = [];
   filteredContacts: IContactSociete[] = [];
@@ -153,9 +165,14 @@ export class ContactSelectorModalComponent implements OnInit {
   private loadContacts(): void {
     this.loading = true;
 
-    this.bonCommandeService.findResponsablesByRole(this.roleCode).subscribe({
-      next: (res: HttpResponse<IContactSociete[]>) => {
-        this.contacts = res.body ?? [];
+    const contacts$: Observable<IContactSociete[]> =
+      this.societeIds && this.societeIds.length > 0
+        ? this.bonCommandeService.findResponsablesByRoleForSocietes(this.roleCode, this.societeIds)
+        : this.bonCommandeService.findResponsablesByRole(this.roleCode, this.societeId).pipe(map(res => res.body ?? []));
+
+    contacts$.subscribe({
+      next: (contacts: IContactSociete[]) => {
+        this.contacts = contacts;
         this.applyFilter();
         this.loading = false;
       },

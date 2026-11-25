@@ -344,6 +344,14 @@ textarea.cu-input {
     border-color: var(--cp-accent);
     box-shadow: 0 0 0 3px var(--cp-accent-soft);
   }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--cp-surface-hover);
+    color: var(--cp-text-muted);
+    transform: none;
+  }
 }
 
 /* ============ INFORMATION CLIENT (colonnes) ============ */
@@ -973,6 +981,147 @@ textarea.cu-input {
   &[readonly] {
     background: var(--cp-surface-hover);
     color: var(--cp-text-muted);
+    cursor: default;
+  }
+}
+/* ============ EQUIPES : GRILLE LECTURE SEULE + EDIT PAR LIGNE ============ */
+.cu-equipes-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.cu-equipes-head,
+.cu-equipes-row {
+  display: grid;
+  grid-template-columns: 220px 1fr 160px 44px;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cu-equipes-head {
+  padding: 0 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cp-text-muted);
+}
+
+.cu-equipes-row {
+  padding: 0.5rem 0.85rem;
+  background: var(--cp-surface-hover);
+  border: 1px solid var(--cp-border);
+  border-radius: 10px;
+}
+
+.cu-equipes-label {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--cp-text);
+}
+
+.cu-equipes-value {
+  min-width: 0;
+  font-size: 0.9rem;
+  color: var(--cp-text);
+}
+
+.cu-equipes-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Une ligne par bénéficiaire : même hauteur dans la colonne Valeur et la colonne Note pour rester alignées */
+.cu-equipes-line {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+}
+
+.cu-equipes-note-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.cu-equipes-note-error {
+  color: #c0362c;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  margin-top: 0.25rem;
+  max-width: 150px;
+}
+
+.cu-equipes-note {
+  width: 120px;
+  text-align: center;
+  border-radius: 8px;
+  border: 1px solid var(--cp-border);
+
+  &:focus {
+    border-color: var(--cp-accent);
+    box-shadow: 0 0 0 3px var(--cp-accent-soft);
+  }
+}
+
+.btn-cu-row-edit {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--cp-border);
+  border-radius: 8px;
+  background: var(--cp-surface);
+  color: var(--cp-accent);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+  &:hover,
+  &.active {
+    background: var(--cp-accent);
+    border-color: var(--cp-accent);
+    color: #ffffff;
+  }
+}
+
+@media (max-width: 768px) {
+  .cu-equipes-head {
+    display: none;
+  }
+
+  .cu-equipes-row {
+    grid-template-columns: 1fr 44px;
+
+    .cu-equipes-label,
+    .cu-equipes-note-cell {
+      grid-column: 1 / -1;
+    }
+  }
+}
+
+/* ============ BOUTON DE TRANSITION DE STATUT ============ */
+.btn-cu-transition {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.9rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--cp-accent);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  transition: background 0.2s ease, transform 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--cp-accent-hover);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.55;
     cursor: default;
   }
 }

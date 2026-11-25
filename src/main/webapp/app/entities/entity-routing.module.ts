@@ -227,6 +227,11 @@ import { RouterModule } from '@angular/router';
         loadChildren: () => import('./projectService/zone/zone.module').then(m => m.ProjectServiceZoneModule),
       },
       {
+        path: 'note-frais',
+        data: { pageTitle: 'gpmGatewayApp.operationsServiceNoteFrais.home.title' },
+        loadChildren: () => import('./operationsService/note-frais/note-frais.module').then(m => m.OperationsServiceNoteFraisModule),
+      },
+      {
         path: 'numsequentielle',
         data: { pageTitle: 'gpmGatewayApp.projectServiceNumsequentielle.home.title' },
         loadChildren: () =>
