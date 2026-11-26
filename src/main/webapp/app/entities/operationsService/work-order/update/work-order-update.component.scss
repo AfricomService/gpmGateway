@@ -984,6 +984,139 @@ textarea.cu-input {
     cursor: default;
   }
 }
+
+/* ============ MODAL TICKET RM ============ */
+.rm-count {
+  margin-left: 0.4rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(47, 111, 237, 0.1);
+  color: #2f6fed;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.rm-select-list {
+  height: 220px;
+  overflow-y: auto;
+  border: 1px solid #e9ecf2;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 0.3rem;
+}
+
+.rm-select-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.6rem;
+  margin: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: #f4f6fa;
+  }
+
+  &.selected {
+    background: rgba(47, 111, 237, 0.1);
+    color: #2f6fed;
+    font-weight: 600;
+  }
+
+  input[type='checkbox'] {
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+}
+
+.rm-select-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #5b6475;
+  font-size: 0.85rem;
+  font-style: italic;
+  text-align: center;
+}
+
+/* ============ LARGEUR DE LA FENÊTRE MODALE TICKET RM ============ */
+::ng-deep .rm-ticket-modal-window {
+  .modal-dialog {
+    max-width: 1500px;
+  }
+}
+
+@media (max-width: 1200px) {
+  ::ng-deep .rm-ticket-modal-window .modal-dialog {
+    max-width: 95vw;
+  }
+}
+
+.rm-search-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+
+  .form-control {
+    flex: 1;
+    min-width: 0;
+    border-radius: 8px;
+  }
+}
+
+.rm-link-btn {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: #2f6fed;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0.4rem;
+  border-radius: 6px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: rgba(47, 111, 237, 0.1);
+  }
+
+  &:disabled {
+    color: #9aa3b2;
+    cursor: default;
+  }
+}
+
+/* ============ EXECUTION SUR SITE : TICKETS RM ============ */
+.rm-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  overflow-x: auto;
+}
+
+.rm-table-head,
+.rm-table-row {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  column-gap: 0.75rem;
+  align-items: center;
+  min-width: 900px;
+  padding: 0.5rem 0.85rem;
+}
+
+.rm-table-head {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--cp-text-muted);
+}
+
+.rm-table-row {
 /* ============ EQUIPES : GRILLE LECTURE SEULE + EDIT PAR LIGNE ============ */
 .cu-equipes-grid {
   display: flex;
@@ -1015,6 +1148,70 @@ textarea.cu-input {
   border-radius: 10px;
 }
 
+.rm-cell {
+  font-size: 0.85rem;
+  color: var(--cp-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rm-cell-strong {
+  font-weight: 700;
+}
+
+.rm-status-chip {
+  flex-shrink: 0;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: capitalize;
+
+  &.rm-status-progress {
+    background: #fff4d6;
+    color: #b8860b;
+  }
+
+  &.rm-status-done {
+    background: #e2f6e9;
+    color: #1c7c3f;
+  }
+
+  &.rm-status-default {
+    background: var(--cp-accent-soft);
+    color: var(--cp-accent);
+  }
+}
+
+.rm-table-row-clickable {
+  cursor: pointer;
+  user-select: none; /* évite la sélection de texte lors du double-clic */
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    border-color: var(--cp-accent);
+    background: var(--cp-accent-soft);
+  }
+}
+
+.rm-select-item-with-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .rm-select-item-label {
+    flex: 1;
+  }
+
+  .rm-line-value-input {
+    width: 140px;
+    flex-shrink: 0;
+  }
+
+  .rm-line-value-readonly {
+    background: #f1f5f9;
+    color: #94a3b8;
 .cu-equipes-label {
   font-weight: 700;
   font-size: 0.9rem;

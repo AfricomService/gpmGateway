@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin, merge, Observable, of, Subject, Subscription } from 'rxjs';
 import { debounceTime, finalize, map, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { NumsequentielleService } from 'app/entities/projectService/numsequentielle/service/numsequentielle.service';
@@ -66,7 +66,8 @@ export class NoteFraisUpdateComponent implements OnInit, OnDestroy {
     protected bonCommandeService: BonCommandeService,
     protected clientService: ClientService,
     protected numsequentielleService: NumsequentielleService,
-    protected societeService: SocieteService
+    protected societeService: SocieteService,
+    protected router: Router
   ) {}
 
   ngOnInit(): void {
@@ -322,13 +323,18 @@ export class NoteFraisUpdateComponent implements OnInit, OnDestroy {
 
   protected subscribeToSaveResponse(result: Observable<HttpResponse<INoteFrais>>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
-      next: () => this.onSaveSuccess(),
+      next: res => this.onSaveSuccess(res.body),
       error: () => this.onSaveError(),
     });
   }
 
-  protected onSaveSuccess(): void {
-    this.previousState();
+  protected onSaveSuccess(saved?: INoteFrais | null): void {
+    if (this.isNew && saved?.id !== null && saved?.id !== undefined) {
+      // Création : de .../note-frais/new vers .../note-frais/{id}/edit (préfixe conservé)
+      this.router.navigate(['../', saved.id, 'edit'], { relativeTo: this.activatedRoute, replaceUrl: true });
+    } else {
+      this.previousState();
+    }
   }
 
   protected onSaveError(): void {

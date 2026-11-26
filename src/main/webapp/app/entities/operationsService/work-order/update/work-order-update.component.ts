@@ -1,8 +1,8 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, of, Subject, Subscription } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs/operators';
+import { concatMap, from, last, Observable, of, Subject, Subscription } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, finalize, map, switchMap } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { WorkOrderFormService, WorkOrderFormGroup } from './work-order-form.service';
@@ -68,7 +68,10 @@ import { DATE_TIME_FORMAT } from 'app/config/input.constants';
 import { IMission, IMissionLine } from 'app/entities/operationsService/mission/mission.model';
 import { MissionService } from 'app/entities/operationsService/mission/service/mission.service';
 
-type AccordionPanel = 'global' | 'client' | 'equipes' | 'options' | 'articlesAssocies' | 'remarque' | 'piecesJointes';
+import { NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { RmTicketService, IRmTemplate, IRmLineType, IRmFilesDefinition, IRmUser, IRmRapportRequest } from '../service/rm-ticket.service';
+
+type AccordionPanel = 'global' | 'client' | 'equipes' | 'options' | 'articlesAssocies' | 'executionSurSite' | 'remarque' | 'piecesJointes';
 
 // Lignes de la grille de l'accordéon Equipes (mode lecture après passage en Exécution travaux)
 type EquipeRow = 'responsable' | 'techniciens' | 'valideur' | 'coordinateur';
@@ -80,6 +83,7 @@ interface PendingPieceJointe {
   extension: string;
 }
 
+const RM_APP_URL = 'http://www.globalgpm-tn.com';
 interface StatutTransition {
   event: string; // valeur de l'enum backend WorkOrderEvent
   label: string; // texte du bouton
@@ -93,6 +97,9 @@ const SITE_PAGE_SIZE = 15;
 const RESPONSABLE_ROLE_CODE = 'MANAGER';
 const TECHNICIEN_ROLE_CODE = 'TECHNIQUE';
 
+/** Line types (codes RM) sélectionnés par défaut, quel que soit le template choisi. */
+const RM_DEFAULT_LINE_TYPE_CODES = ['B4', 'B7', 'B41', 'B12'];
+
 @Component({
   selector: 'jhi-work-order-update',
   templateUrl: './work-order-update.component.html',
@@ -103,6 +110,43 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   @ViewChild('clientCommandeDetailsModal') clientCommandeDetailsModal!: TemplateRef<any>;
 
   @ViewChild('woArticleDeleteConfirmModal') woArticleDeleteConfirmModal!: TemplateRef<any>;
+
+  @ViewChild('rmTicketModal') rmTicketModal!: TemplateRef<any>;
+
+  // ================================
+  // Exécution sur site — création d'un ticket dans RM
+  // ================================
+  rmModalRef?: NgbModalRef;
+  rmClient = '';
+  rmReference = '';
+
+  /** Valeurs initiales saisies par line type (clé = lineTypeId). */
+  rmLineTypeValues: { [lineTypeId: number]: string } = {};
+
+  rmRequests: IRmRapportRequest[] = [];
+  loadingRmRequests = false;
+  rmRequestsError = '';
+
+  rmTemplates: IRmTemplate[] = [];
+  loadingRmTemplates = false;
+  selectedRmTemplate: IRmTemplate | null = null;
+
+  rmLineTypes: IRmLineType[] = [];
+  rmFilesDefs: IRmFilesDefinition[] = [];
+  loadingRmDetails = false;
+  selectedRmLineTypeIds = new Set<number>();
+  selectedRmFilesDefIds = new Set<number>();
+
+  rmUsers: IRmUser[] = [];
+  loadingRmUsers = false;
+  selectedRmUser: IRmUser | null = null;
+
+  creatingRmTicket = false;
+  rmTicketError = '';
+  rmTicketSuccess = '';
+
+  rmLineTypeSearch = '';
+  rmFilesDefSearch = '';
 
   // ================================
   // Articles associés (persistés immédiatement via WoArticles)
@@ -163,6 +207,21 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     { key: StatutWO.ValidationRessources, label: 'Validation ressources' },
     { key: StatutWO.Fin, label: 'Fin' },
   ];
+
+  get filteredRmLineTypes(): IRmLineType[] {
+    return this.filterRmByLabel(this.rmLineTypes, this.rmLineTypeSearch);
+  }
+
+  get filteredRmFilesDefs(): IRmFilesDefinition[] {
+    return this.filterRmByLabel(this.rmFilesDefs, this.rmFilesDefSearch);
+  }
+
+  private filterRmByLabel<T extends { label: string; code?: string | null }>(items: T[], term: string): T[] {
+    const search = this.normalizeText(term);
+    return search
+      ? items.filter(item => this.normalizeText(item.label).includes(search) || this.normalizeText(item.code).includes(search))
+      : items;
+  }
 
   get currentStatut(): string {
     return (this.editForm.get('statut')?.value as string | null | undefined) ?? StatutWO.Creation;
@@ -523,10 +582,360 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     protected parametrageDeplacementService: ParametrageDeplacementService,
     protected woArticlesService: WoArticlesService,
     protected articleService: ArticleService,
+    protected rmTicketService: RmTicketService
     protected societeService: SocieteService,
     protected accountService: AccountService,
     protected missionService: MissionService
   ) {}
+
+  // ================================
+  // Exécution sur site — ticket RM
+  // ================================
+  get canCreateRmTicket(): boolean {
+    return (
+      this.rmClient.trim().length > 0 &&
+      this.rmReference.trim().length > 0 &&
+      !!this.selectedRmTemplate &&
+      this.selectedRmLineTypeIds.size > 0 &&
+      this.selectedRmFilesDefIds.size > 0 &&
+      !!this.selectedRmUser
+    );
+  }
+
+  /** Charge les rapport requests RM liés à l'identifiant unique du work order. */
+  loadRmRequests(): void {
+    const uniqueId = this.workOrder?.identifiantUnique;
+
+    if (!uniqueId) {
+      this.rmRequests = [];
+      return;
+    }
+
+    this.loadingRmRequests = true;
+    this.rmRequestsError = '';
+
+    this.rmTicketService
+      .getRapportRequests(uniqueId)
+      .pipe(finalize(() => (this.loadingRmRequests = false)))
+      .subscribe({
+        next: list => {
+          // plus récent en premier
+          this.rmRequests = [...(list ?? [])].sort((a, b) => Date.parse(b.dateCreation ?? '') - Date.parse(a.dateCreation ?? ''));
+        },
+        error: () => {
+          this.rmRequests = [];
+          this.rmRequestsError = 'Impossible de charger les tickets RM.';
+        },
+      });
+  }
+
+  /** Double-clic sur un ticket : ouvre sa vue détail dans RM (nouvel onglet). */
+  openRmRequest(r: IRmRapportRequest): void {
+    if (r.id === null || r.id === undefined) {
+      return;
+    }
+    window.open(`${RM_APP_URL}/rapport-request/${r.id}/view`, '_blank');
+  }
+
+  /**
+   * Référence unique du prochain ticket RM :
+   * EXE-<WO>, puis EXE-1-<WO>, EXE-2-<WO>, ...
+   * Se base sur les références déjà existantes pour garantir l'unicité.
+   */
+  buildNextRmReference(): string {
+    const wo = this.workOrder?.identifiantUnique ?? '';
+    const used = new Set(this.rmRequests.map(r => (r.reference ?? '').trim().toUpperCase()));
+
+    const first = `EXE-${wo}`;
+    if (!used.has(first.toUpperCase())) {
+      return first;
+    }
+
+    let n = 1;
+    while (used.has(`EXE-${n}-${wo}`.toUpperCase())) {
+      n++;
+    }
+    return `EXE-${n}-${wo}`;
+  }
+
+  rmStatusClass(statut?: string | null): string {
+    const s = this.normalizeText(statut);
+    if (s.includes('progress') || s.includes('cours')) {
+      return 'rm-status-progress';
+    }
+    if (s.includes('valid') || s.includes('clos') || s.includes('closed') || s.includes('termin')) {
+      return 'rm-status-done';
+    }
+    return 'rm-status-default';
+  }
+
+  openRmTicketModal(): void {
+    // Pré-remplissage automatique (modifiable)
+    this.rmClient = this.selectedClientInfo?.raisonSociale ?? '';
+    this.rmReference = this.buildNextRmReference();
+
+    this.selectedRmTemplate = null;
+    this.selectedRmUser = null;
+    this.rmLineTypes = [];
+    this.rmFilesDefs = [];
+    this.selectedRmLineTypeIds.clear();
+    this.selectedRmFilesDefIds.clear();
+    this.rmLineTypeSearch = '';
+    this.rmFilesDefSearch = '';
+    this.rmTicketError = '';
+
+    const affaireId = this.editForm.get('affaireId')?.value;
+
+    if (affaireId) {
+      this.loadRmTemplates(Number(affaireId));
+    } else {
+      this.rmTemplates = [];
+      this.rmTicketError = 'Veuillez sélectionner une affaire avant de créer un ticket RM.';
+    }
+    if (this.rmUsers.length === 0) {
+      this.loadRmUsers();
+    }
+
+    this.rmModalRef = this.modalService.open(this.rmTicketModal, {
+      centered: true,
+      backdrop: 'static',
+      windowClass: 'rm-ticket-modal-window',
+    });
+  }
+
+  private loadRmTemplates(affaireId: number): void {
+    this.loadingRmTemplates = true;
+    this.rmTemplates = [];
+
+    this.rmTicketService.getTemplatesByAffaireId(affaireId).subscribe({
+      next: templates => {
+        this.rmTemplates = templates ?? [];
+        this.loadingRmTemplates = false;
+
+        if (this.rmTemplates.length === 0) {
+          this.rmTicketError = 'Aucun template RM associé à cette affaire.';
+        }
+      },
+      error: () => {
+        this.rmTemplates = [];
+        this.loadingRmTemplates = false;
+        this.rmTicketError = 'Impossible de charger les templates RM de cette affaire.';
+      },
+    });
+  }
+
+  private loadRmUsers(): void {
+    this.loadingRmUsers = true;
+    this.rmTicketService.getUsers().subscribe({
+      next: users => {
+        this.rmUsers = users;
+        this.loadingRmUsers = false;
+      },
+      error: () => {
+        this.rmUsers = [];
+        this.loadingRmUsers = false;
+        this.rmTicketError = 'Impossible de charger les utilisateurs RM.';
+      },
+    });
+  }
+
+  selectAllRmLineTypes(): void {
+    this.filteredRmLineTypes.forEach(lt => this.selectedRmLineTypeIds.add(lt.id));
+  }
+
+  clearRmLineTypes(): void {
+    this.selectedRmLineTypeIds.clear();
+  }
+
+  selectAllRmFilesDefs(): void {
+    this.filteredRmFilesDefs.forEach(fd => this.selectedRmFilesDefIds.add(fd.id));
+  }
+
+  clearRmFilesDefs(): void {
+    this.selectedRmFilesDefIds.clear();
+  }
+
+  onRmTemplateChange(template: IRmTemplate | null): void {
+    this.selectedRmTemplate = template;
+    this.rmLineTypes = [];
+    this.rmFilesDefs = [];
+    this.selectedRmLineTypeIds.clear();
+    this.selectedRmFilesDefIds.clear();
+    this.rmLineTypeSearch = '';
+    this.rmFilesDefSearch = '';
+    this.rmLineTypeValues = {};
+
+    if (!template) {
+      return;
+    }
+
+    this.loadingRmDetails = true;
+    forkJoin({
+      lineTypes: this.rmTicketService.getLineTypes(template.id),
+      filesDefs: this.rmTicketService.getFilesDefinitions(template.id),
+    }).subscribe({
+      next: ({ lineTypes, filesDefs }) => {
+        if (this.selectedRmTemplate?.id !== template.id) {
+          return; // le template a changé entre-temps
+        }
+        this.rmLineTypes = lineTypes;
+        this.rmFilesDefs = filesDefs;
+        this.preselectRmLineTypes(); // <-- remplace preselectRmLineTypesFromArticles()
+        this.loadingRmDetails = false;
+      },
+      error: () => {
+        this.loadingRmDetails = false;
+        this.rmTicketError = 'Impossible de charger les types de ligne / définitions de fichiers.';
+      },
+    });
+  }
+
+  toggleRmLineType(id: number): void {
+    if (this.selectedRmLineTypeIds.has(id)) {
+      this.selectedRmLineTypeIds.delete(id);
+      delete this.rmLineTypeValues[id];
+    } else {
+      this.selectedRmLineTypeIds.add(id);
+    }
+  }
+
+  /**
+   * Présélectionne les line types dont le code vaut "AF_" + code d'un article déjà associé au WO.
+   * Ex. : article "00_3000000_0000125" => line type "AF_00_3000000_0000125".
+   * Comparaison sans accents ni casse, et en ignorant les espaces.
+   */
+  /**
+   * Présélectionne les line types :
+   *  - ceux dont le code figure dans RM_DEFAULT_LINE_TYPE_CODES (correspondance exacte, donc B4 ≠ B41)
+   *  - ceux dont le code vaut "AF_" + code d'un article déjà associé au WO
+   * Puis place les line types sélectionnés en tête de liste (ordre d'origine conservé dans chaque groupe).
+   */
+  private preselectRmLineTypes(): void {
+    if (this.rmLineTypes.length === 0) {
+      return;
+    }
+
+    const defaultCodes = new Set(RM_DEFAULT_LINE_TYPE_CODES.map(code => this.normalizeText(code)));
+
+    const articleCodes = new Set(this.chosenArticles.map(sel => this.normalizeText(sel.article.code)).filter(code => code.length > 0));
+
+    this.rmLineTypes.forEach(lt => {
+      const ltCode = this.normalizeText(lt.code);
+
+      if (ltCode.length === 0) {
+        return;
+      }
+
+      const isDefault = defaultCodes.has(ltCode);
+      const isArticle = ltCode.startsWith('af_') && articleCodes.has(ltCode.substring(3));
+
+      if (isDefault || isArticle) {
+        this.selectedRmLineTypeIds.add(lt.id);
+      }
+    });
+
+    // Sélectionnés en premier (tri stable : l'ordre relatif d'origine est conservé)
+    this.rmLineTypes = [...this.rmLineTypes].sort(
+      (a, b) => Number(this.selectedRmLineTypeIds.has(b.id)) - Number(this.selectedRmLineTypeIds.has(a.id))
+    );
+  }
+
+  toggleRmFilesDef(id: number): void {
+    this.selectedRmFilesDefIds.has(id) ? this.selectedRmFilesDefIds.delete(id) : this.selectedRmFilesDefIds.add(id);
+  }
+
+  createRmTicket(): void {
+    if (!this.canCreateRmTicket || this.creatingRmTicket) {
+      return;
+    }
+
+    this.creatingRmTicket = true;
+    this.rmTicketError = '';
+
+    this.rmTicketService
+      .createTicket({
+        reference: this.rmReference.trim(),
+        clientFinal: this.rmClient.trim(),
+        technicianId: this.selectedRmUser!.id,
+        rapportTemplateId: this.selectedRmTemplate!.id,
+        lineTypeIds: Array.from(this.selectedRmLineTypeIds),
+        filesDefIds: Array.from(this.selectedRmFilesDefIds),
+      })
+      .pipe(
+        finalize(() => (this.creatingRmTicket = false)),
+        concatMap(created => (created?.id !== null && created?.id !== undefined ? this.applyInitialLineValues(created.id) : of(null)))
+      )
+      .subscribe({
+        next: () => {
+          this.rmTicketSuccess = `Ticket créé dans RM (réf. ${this.rmReference}).`;
+          this.rmModalRef?.close();
+          this.loadRmRequests();
+          this.cdr.detectChanges();
+        },
+        error: err => {
+          this.rmTicketError = err?.error?.detail ?? err?.error?.message ?? 'Échec de la création du ticket dans RM.';
+        },
+      });
+  }
+
+  /**
+   * Boucle séquentielle sur les line types sélectionnés AYANT une valeur initiale.
+   * Séquentiel (et non parallèle) pour éviter les écritures concurrentes sur le même rapport request.
+   */
+  // applyInitialLineValues(rapportRequestId: number): Observable<void> {
+  //   const valuedLines = this.rmLineTypes
+  //     .filter(lt => this.selectedRmLineTypeIds.has(lt.id))
+  //     .map(lt => ({
+  //       lt,
+  //       value: (this.rmLineTypeValues[lt.id] ?? '').trim(),
+  //     }))
+  //     .filter(e => e.value !== '');
+  //
+  //   if (valuedLines.length === 0) {
+  //     return of(void 0);
+  //   }
+  //
+  //   return from(valuedLines).pipe(
+  //     concatMap(e =>
+  //       this.rmTicketService.editLineData(
+  //         rapportRequestId,
+  //         e.value,
+  //         e.lt.code ?? String(e.lt.id),
+  //         e.lt.inputType ?? 'TEXT'
+  //       )
+  //     ),
+  //     last(),
+  //     map(() => void 0)
+  //   );
+  // }
+
+  /**
+   * Boucle séquentielle sur les line types sélectionnés AYANT une valeur initiale :
+   * chaque appel editLineData renvoie le DTO mis à jour, qui est passé à l'appel suivant.
+   */
+  applyInitialLineValues(created: any): Observable<any> {
+    const valuedLines = this.rmLineTypes
+      .filter(lt => this.selectedRmLineTypeIds.has(lt.id))
+      .map(lt => ({
+        lt,
+        value: (this.rmLineTypeValues[lt.id] ?? '').trim(),
+      }))
+      .filter(e => e.value !== '');
+
+    if (valuedLines.length === 0) {
+      return of(created);
+    }
+
+    let current = created;
+
+    return from(valuedLines).pipe(
+      concatMap(e =>
+        this.rmTicketService.editLineData(current, e.value, e.lt.code ?? String(e.lt.id), e.lt.inputType ?? 'TEXT').pipe(map(() => current))
+      ),
+      last(),
+      map(() => current)
+    );
+  }
 
   ngOnInit(): void {
     // Cycle de vie affiché sous le breadcrumb (rendu par MainComponent)
@@ -2620,6 +3029,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       this.loadAutresRessources(workOrder.id);
       this.loadParametrages(workOrder.id);
       this.loadPieceJointes(workOrder.id);
+      this.loadRmRequests();
       this.loadMissions(workOrder.id);
     }
   }
