@@ -627,6 +627,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
         }
         this.rmLineTypes = lineTypes;
         this.rmFilesDefs = filesDefs;
+        this.preselectRmLineTypesFromArticles(); // <-- ajout
         this.loadingRmDetails = false;
       },
       error: () => {
@@ -643,6 +644,32 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     } else {
       this.selectedRmLineTypeIds.add(id);
     }
+  }
+
+  /**
+   * Présélectionne les line types dont le code vaut "AF_" + code d'un article déjà associé au WO.
+   * Ex. : article "00_3000000_0000125" => line type "AF_00_3000000_0000125".
+   * Comparaison sans accents ni casse, et en ignorant les espaces.
+   */
+  preselectRmLineTypesFromArticles(): void {
+    if (this.chosenArticles.length === 0 || this.rmLineTypes.length === 0) {
+      return;
+    }
+
+    const articleCodes = new Set(this.chosenArticles.map(sel => this.normalizeText(sel.article.code)).filter(code => code.length > 0));
+
+    this.rmLineTypes.forEach(lt => {
+      const ltCode = this.normalizeText(lt.code);
+
+      if (!ltCode.startsWith('af_')) {
+        return;
+      }
+
+      const articleCode = ltCode.substring(3); // retire "af_"
+      if (articleCodes.has(articleCode)) {
+        this.selectedRmLineTypeIds.add(lt.id);
+      }
+    });
   }
 
   toggleRmFilesDef(id: number): void {
