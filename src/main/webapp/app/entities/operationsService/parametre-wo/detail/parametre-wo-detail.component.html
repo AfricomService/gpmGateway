@@ -24,6 +24,18 @@
         <dd>
           <span>{{ parametreWO.description }}</span>
         </dd>
+        <dt>
+          <span jhiTranslate="gpmGatewayApp.operationsServiceParametreWo.montantTechnicien">Montant Technicien</span>
+        </dt>
+        <dd>
+          <span>{{ parametreWO.montantTechnicien }}</span>
+        </dd>
+        <dt>
+          <span jhiTranslate="gpmGatewayApp.operationsServiceParametreWo.montantChefTechnicien">Montant Chef Technicien</span>
+        </dt>
+        <dd>
+          <span>{{ parametreWO.montantChefTechnicien }}</span>
+        </dd>
       </dl>
 
       <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">

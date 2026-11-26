@@ -1,0 +1,32 @@
+{
+  "gpmGatewayApp": {
+    "operationsServiceNoteFrais": {
+      "home": {
+        "title": "Note Frais",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Note Frais",
+        "createOrEditLabel": "Create or edit a Note Frais",
+        "notFound": "No Note Frais found"
+      },
+      "delete": {
+        "question": "Are you sure you want to delete Note Frais {{ id }}?"
+      },
+      "detail": {
+        "title": "Note Frais"
+      },
+      "id": "ID",
+      "dateDebut": "Date Debut",
+      "dateFin": "Date Fin",
+      "contactSocieteId": "Contact Societe Id",
+      "montantTotale": "Montant Totale",
+      "montantTotaleEnLettre": "Montant Totale En Lettre"
+    }
+  },
+  "operationsServiceApp": {
+    "operationsServiceNoteFrais": {
+      "created": "A new Note Frais is created with identifier {{ param }}",
+      "updated": "A Note Frais is updated with identifier {{ param }}",
+      "deleted": "A Note Frais is deleted with identifier {{ param }}"
+    }
+  }
+}

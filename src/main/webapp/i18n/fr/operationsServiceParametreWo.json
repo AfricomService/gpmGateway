@@ -16,7 +16,9 @@
       },
       "id": "ID",
       "nom": "Nom",
-      "description": "Description"
+      "description": "Description",
+      "montantTechnicien": "Montant Technicien",
+      "montantChefTechnicien": "Montant Chef Technicien"
     }
   },
   "operationsServiceApp": {

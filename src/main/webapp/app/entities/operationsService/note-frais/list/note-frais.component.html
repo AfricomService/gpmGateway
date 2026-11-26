@@ -1,0 +1,110 @@
+<div class="nf-page">
+  <!-- En-tête -->
+  <div class="nf-header">
+    <h2 id="page-heading" data-cy="NoteFraisHeading">Notes de frais</h2>
+
+    <div class="nf-header-actions">
+      <button class="btn-refresh" (click)="load()" [disabled]="isLoading" title="Actualiser la liste">
+        <fa-icon icon="sync" [spin]="isLoading"></fa-icon>
+      </button>
+
+      <button id="jh-create-entity" data-cy="entityCreateButton" class="btn-nf-new create-note-frais" [routerLink]="['/note-frais/new']">
+        <fa-icon icon="plus"></fa-icon>
+        <span>Nouvelle note de frais</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Barre d'outils -->
+  <div class="nf-toolbar">
+    <span class="nf-count">{{ totalItems }} résultat{{ totalItems > 1 ? 's' : '' }}</span>
+  </div>
+
+  <jhi-alert-error></jhi-alert-error>
+
+  <jhi-alert></jhi-alert>
+
+  <div class="alert alert-warning" id="no-result" *ngIf="noteFrais?.length === 0">
+    <span>Aucune note de frais trouvée</span>
+  </div>
+
+  <!-- Tableau -->
+  <div class="nf-table-wrapper" id="entities" *ngIf="noteFrais && noteFrais.length > 0">
+    <div class="table-responsive">
+      <table class="nf-table" aria-describedby="page-heading">
+        <thead>
+          <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" (sortChange)="navigateToWithComponentValues()">
+            <th scope="col" jhiSortBy="contactSocieteId">
+              <div class="nf-th">
+                <span>Bénéficiaire</span>
+                <fa-icon class="nf-sort-icon" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="dateDebut">
+              <div class="nf-th">
+                <span>Date début</span>
+                <fa-icon class="nf-sort-icon" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="dateFin">
+              <div class="nf-th">
+                <span>Date fin</span>
+                <fa-icon class="nf-sort-icon" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="montantTotale">
+              <div class="nf-th">
+                <span>Montant total</span>
+                <fa-icon class="nf-sort-icon" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of noteFrais; trackBy: trackId" data-cy="entityTable" (click)="openView(item)">
+            <td>
+              <span class="nf-beneficiaire">{{ beneficiaireName(item.contactSocieteId) }}</span>
+            </td>
+            <td>{{ item.dateDebut | formatMediumDate }}</td>
+            <td>{{ item.dateFin | formatMediumDate }}</td>
+            <td>
+              <span class="nf-montant">{{ item.montantTotale | number: '1.2-2' }}</span>
+            </td>
+            <td class="nf-col-actions" (click)="$event.stopPropagation()">
+              <div class="nf-actions">
+                <button
+                  type="button"
+                  (click)="delete(item)"
+                  class="nf-action nf-action-delete"
+                  title="Supprimer"
+                  data-cy="entityDeleteButton"
+                >
+                  <fa-icon icon="trash"></fa-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div *ngIf="noteFrais && noteFrais.length > 0">
+    <div class="d-flex justify-content-center">
+      <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+    </div>
+
+    <div class="d-flex justify-content-center">
+      <ngb-pagination
+        [collectionSize]="totalItems"
+        [page]="page"
+        [pageSize]="itemsPerPage"
+        [maxSize]="5"
+        [rotate]="true"
+        [boundaryLinks]="true"
+        (pageChange)="navigateToPage($event)"
+      ></ngb-pagination>
+    </div>
+  </div>
+</div>

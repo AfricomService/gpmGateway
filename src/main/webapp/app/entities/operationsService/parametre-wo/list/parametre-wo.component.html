@@ -50,6 +50,18 @@
               <fa-icon class="p-1" icon="sort"></fa-icon>
             </div>
           </th>
+          <th scope="col" jhiSortBy="montantTechnicien">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.operationsServiceParametreWo.montantTechnicien">Montant Technicien</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
+          <th scope="col" jhiSortBy="montantChefTechnicien">
+            <div class="d-flex">
+              <span jhiTranslate="gpmGatewayApp.operationsServiceParametreWo.montantChefTechnicien">Montant Chef Technicien</span>
+              <fa-icon class="p-1" icon="sort"></fa-icon>
+            </div>
+          </th>
           <th scope="col"></th>
         </tr>
       </thead>
@@ -60,6 +72,8 @@
           </td>
           <td>{{ parametreWO.nom }}</td>
           <td>{{ parametreWO.description }}</td>
+          <td>{{ parametreWO.montantTechnicien }}</td>
+          <td>{{ parametreWO.montantChefTechnicien }}</td>
           <td class="text-end">
             <div class="btn-group">
               <button
