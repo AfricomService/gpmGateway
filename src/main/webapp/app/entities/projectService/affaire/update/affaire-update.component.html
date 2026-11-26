@@ -491,7 +491,8 @@
                   <div class="cu-item-sub">{{ societe.adresse || 'Adresse non renseignée' }}</div>
                   <div class="cu-item-sub" *ngIf="societe.telephone">
                     <a [href]="'tel:' + societe.telephone" class="cu-item-link">
-                      <fa-icon icon="phone" class="cu-item-link-icon"></fa-icon>{{ societe.telephone }}
+                      <fa-icon icon="phone" class="cu-item-link-icon"></fa-icon>
+                      {{ societe.telephone }}
                     </a>
                   </div>
                 </div>
@@ -499,6 +500,42 @@
             </div>
             <ng-template #noSocietes>
               <div class="cu-empty">Aucune société associée à cette affaire</div>
+            </ng-template>
+          </div>
+        </div>
+
+        <!-- Rapport Templates -->
+        <div *ngIf="isExisting || isEditMode" class="cu-accordion-item" [class.open]="isSectionOpen('rapportTemplates')">
+          <button type="button" class="cu-accordion-header" (click)="toggleSection('rapportTemplates')">
+            <span class="cu-accordion-header-left">
+              <fa-icon icon="file-alt" class="cu-accordion-icon"></fa-icon>
+              <span>Modèles de Rapport RM associés</span>
+              <span class="cu-accordion-count" *ngIf="assignedRapportTemplateIds.length">{{ assignedRapportTemplateIds.length }}</span>
+            </span>
+            <span class="cu-accordion-header-right">
+              <button
+                *ngIf="isEditMode && canWrite"
+                type="button"
+                class="btn-cu-add"
+                (click)="$event.stopPropagation(); openRapportTemplateModal()"
+              >
+                <fa-icon icon="pen"></fa-icon>&nbsp;Gérer
+              </button>
+              <fa-icon icon="chevron-down" class="cu-accordion-chevron"></fa-icon>
+            </span>
+          </button>
+
+          <div class="cu-accordion-body" *ngIf="isSectionOpen('rapportTemplates')">
+            <div *ngIf="assignedRapportTemplates.length > 0; else noRapportTemplates" class="cu-item-list">
+              <div class="cu-item-card" *ngFor="let template of assignedRapportTemplates">
+                <div class="cu-item-info">
+                  <div class="cu-item-title">{{ template.name }}</div>
+                  <div class="cu-item-sub" *ngIf="template.description">{{ template.description }}</div>
+                </div>
+              </div>
+            </div>
+            <ng-template #noRapportTemplates>
+              <div class="cu-empty">Aucun modèle de rapport associé à cette affaire</div>
             </ng-template>
           </div>
         </div>
@@ -734,6 +771,65 @@
       <button class="btn btn-outline-secondary" (click)="modal.dismiss()" [disabled]="isSavingSocietes">Annuler</button>
       <button class="btn btn-primary" (click)="confirmSocieteSelection(modal)" [disabled]="isSavingSocietes">
         <span *ngIf="isSavingSocietes" class="spinner-border spinner-border-sm me-1"></span>
+        Confirmer
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- Modal: Rapport Template Selection -->
+  <ng-template #rapportTemplateModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Sélection des Modèles de Rapport</h5>
+      <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    </div>
+
+    <div class="modal-body">
+      <input
+        type="text"
+        class="form-control mb-3"
+        placeholder="Rechercher un modèle..."
+        [(ngModel)]="rapportTemplateSearchTerm"
+        [ngModelOptions]="{ standalone: true }"
+      />
+
+      <div style="max-height: 350px; overflow-y: auto">
+        <div *ngFor="let template of filteredRapportTemplates" class="form-check mb-3">
+          <input
+            type="checkbox"
+            class="form-check-input me-3"
+            style="width: 1.5rem; height: 1.5rem; cursor: pointer; margin-top: 0"
+            [id]="'modal_rt_' + template.id"
+            [checked]="isTempRapportTemplateSelected(template.id)"
+            (change)="toggleTempRapportTemplateSelection(template.id)"
+          />
+          <label class="form-check-label" [for]="'modal_rt_' + template.id">
+            {{ template.name }}
+            <small class="text-muted d-block" *ngIf="template.description">{{ template.description }}</small>
+          </label>
+        </div>
+
+        <div *ngIf="filteredRapportTemplates.length === 0" class="text-center text-muted py-3">Aucun modèle trouvé</div>
+      </div>
+
+      <hr />
+
+      <div>
+        <strong>Modèles sélectionnés :</strong>
+        <div *ngIf="tempSelectedRapportTemplateIds.length > 0; else noRtSelected" class="mt-2 d-flex flex-wrap gap-2">
+          <span class="badge bg-primary" *ngFor="let id of tempSelectedRapportTemplateIds">
+            {{ getRapportTemplateName(id) }}
+          </span>
+        </div>
+        <ng-template #noRtSelected>
+          <div class="text-muted mt-2">Aucun modèle sélectionné</div>
+        </ng-template>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline-secondary" (click)="modal.dismiss()" [disabled]="isSavingRapportTemplates">Annuler</button>
+      <button class="btn btn-primary" (click)="confirmRapportTemplateSelection(modal)" [disabled]="isSavingRapportTemplates">
+        <span *ngIf="isSavingRapportTemplates" class="spinner-border spinner-border-sm me-1"></span>
         Confirmer
       </button>
     </div>

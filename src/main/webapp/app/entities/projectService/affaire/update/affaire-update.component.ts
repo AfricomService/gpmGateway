@@ -32,8 +32,9 @@ import { ISociete } from '../../societe/societe.model';
 import { IAgence } from 'app/entities/projectService/agence/agence.model';
 import { Authority } from '../../../../config/authority.constants';
 import { AccountService } from '../../../../core/auth/account.service';
+import { AffaireRapportTemplateService, IRapportTemplate } from '../service/affaire-rapport-template.service';
 
-type AccordionSection = 'general' | 'dates' | 'articles' | 'societes';
+type AccordionSection = 'general' | 'dates' | 'articles' | 'societes' | 'rapportTemplates';
 
 interface IStatutTransition {
   statut: StatutAffaire;
@@ -62,6 +63,8 @@ export class AffaireUpdateComponent implements OnInit {
   @ViewChild('societeModal') societeModal!: TemplateRef<any>;
   @ViewChild('statutConfirmModal') statutConfirmModal!: TemplateRef<any>;
   @ViewChild('articleDeleteConfirmModal') articleDeleteConfirmModal!: TemplateRef<any>;
+
+  @ViewChild('rapportTemplateModal') rapportTemplateModal!: TemplateRef<any>;
 
   isSaving = false;
   affaire: IAffaire | null = null;
@@ -127,6 +130,14 @@ export class AffaireUpdateComponent implements OnInit {
   editForm: AffaireFormGroup = this.affaireFormService.createAffaireFormGroup();
   societesSharedCollection: ISociete[] = [];
 
+  // ── Rapport Templates ────────────────────────────────────────────
+  allRapportTemplates: IRapportTemplate[] = [];
+  assignedRapportTemplateIds: number[] = [];
+  tempSelectedRapportTemplateIds: number[] = [];
+  rapportTemplateSearchTerm = '';
+  isLoadingRapportTemplates = false;
+  isSavingRapportTemplates = false;
+
   // ── Success message ─────────────────────────────────────────────
   successMessage: string | null = null;
   private successMessageTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -149,7 +160,8 @@ export class AffaireUpdateComponent implements OnInit {
     protected societeService: SocieteService,
     protected router: Router,
     protected location: Location,
-    protected accountService: AccountService
+    protected accountService: AccountService,
+    protected affaireRapportTemplateService: AffaireRapportTemplateService
   ) {}
 
   get canRead(): boolean {
@@ -175,6 +187,10 @@ export class AffaireUpdateComponent implements OnInit {
     });
     this.editForm.get('responsableProjetId')?.markAsDirty();
     this.editForm.get('responsableProjetId')?.markAsTouched();
+  }
+
+  getRapportTemplateName(templateId: number): string {
+    return this.allRapportTemplates.find(t => t.id === templateId)?.name ?? `#${templateId}`;
   }
 
   compareResponsable = (a: IContactSociete | null, b: IContactSociete | null): boolean => (a && b ? a.id === b.id : a === b);
@@ -281,6 +297,8 @@ export class AffaireUpdateComponent implements OnInit {
 
     this.loadSocietesAssociees();
 
+    this.loadRapportTemplates();
+
     const clientId = this.editForm.get('client')?.value?.id;
     if (clientId != null) {
       this.loadAgencesClient(clientId);
@@ -292,6 +310,82 @@ export class AffaireUpdateComponent implements OnInit {
         this.loadAgencesClient(client.id);
       }
     });
+  }
+
+  // ── Rapport Templates ────────────────────────────────────────────
+  loadRapportTemplates(): void {
+    // Liste complète des templates (une seule fois, c'est une référence)
+    this.affaireRapportTemplateService.getAllTemplates().subscribe({
+      next: templates => (this.allRapportTemplates = templates ?? []),
+      error: err => console.error('Failed to load rapport templates', err),
+    });
+
+    // Templates déjà associés à l'affaire (pour pré-cocher)
+    if (this.affaire?.id) {
+      this.isLoadingRapportTemplates = true;
+      this.affaireRapportTemplateService
+        .getAssignedTemplateIds(this.affaire.id)
+        .pipe(finalize(() => (this.isLoadingRapportTemplates = false)))
+        .subscribe({
+          next: ids => (this.assignedRapportTemplateIds = ids ?? []),
+          error: err => console.error('Failed to load assigned rapport templates', err),
+        });
+    }
+  }
+
+  openRapportTemplateModal(): void {
+    this.tempSelectedRapportTemplateIds = [...this.assignedRapportTemplateIds];
+    this.rapportTemplateSearchTerm = '';
+    this.modalService.open(this.rapportTemplateModal, { size: 'lg', backdrop: 'static', centered: true });
+  }
+
+  toggleTempRapportTemplateSelection(templateId: number): void {
+    const index = this.tempSelectedRapportTemplateIds.indexOf(templateId);
+    if (index > -1) {
+      this.tempSelectedRapportTemplateIds.splice(index, 1);
+    } else {
+      this.tempSelectedRapportTemplateIds.push(templateId);
+    }
+  }
+
+  isTempRapportTemplateSelected(templateId: number): boolean {
+    return this.tempSelectedRapportTemplateIds.includes(templateId);
+  }
+
+  get filteredRapportTemplates(): IRapportTemplate[] {
+    if (!this.rapportTemplateSearchTerm) {
+      return this.allRapportTemplates;
+    }
+    const term = this.rapportTemplateSearchTerm.toLowerCase();
+    return this.allRapportTemplates.filter(t => (t.name?.toLowerCase() ?? '').includes(term));
+  }
+
+  /** Libellés des templates associés, pour l'affichage en lecture. */
+  get assignedRapportTemplates(): IRapportTemplate[] {
+    return this.allRapportTemplates.filter(t => this.assignedRapportTemplateIds.includes(t.id));
+  }
+
+  confirmRapportTemplateSelection(modal: any): void {
+    if (!this.affaire?.id) {
+      // Affaire non encore créée : on garde la sélection en local,
+      // elle sera persistée après le save (cf. assignRapportTemplatesAfterCreate)
+      this.assignedRapportTemplateIds = [...this.tempSelectedRapportTemplateIds];
+      modal.close();
+      return;
+    }
+
+    this.isSavingRapportTemplates = true;
+
+    this.affaireRapportTemplateService
+      .setAssignedTemplateIds(this.affaire.id, [...this.tempSelectedRapportTemplateIds])
+      .pipe(finalize(() => (this.isSavingRapportTemplates = false)))
+      .subscribe({
+        next: () => {
+          this.assignedRapportTemplateIds = [...this.tempSelectedRapportTemplateIds];
+          modal.close();
+        },
+        error: err => console.error(err),
+      });
   }
 
   // ── Articles Server-Side Operations ──────────────────────────────
@@ -1022,13 +1116,40 @@ export class AffaireUpdateComponent implements OnInit {
     });
   }
 
+  assignRapportTemplatesAfterCreate(affaire: IAffaire, isCreation: boolean): void {
+    if (this.tempSelectedRapportTemplateIds.length > 0 && affaire.id !== null) {
+      this.affaireRapportTemplateService.setAssignedTemplateIds(affaire.id, [...this.tempSelectedRapportTemplateIds]).subscribe({
+        next: () => {
+          this.assignedRapportTemplateIds = [...this.tempSelectedRapportTemplateIds];
+          this.onSaveSuccess(affaire, isCreation);
+        },
+        error: err => {
+          console.error(err);
+          this.onSaveSuccess(affaire, isCreation);
+        },
+      });
+    } else {
+      this.onSaveSuccess(affaire, isCreation);
+    }
+  }
+
   protected onSaveSuccess(affaire: IAffaire, isCreation: boolean): void {
     this.affaire = affaire;
     this.updateForm(affaire);
 
     if (isCreation && affaire.id !== null) {
-      const editUrl = this.router.createUrlTree(['/affaire', affaire.id, 'edit']).toString();
-      this.location.replaceState(editUrl);
+      const articleIds = this.selectedArticles.map(a => a.id).filter((id): id is number => id != null);
+
+      // 1. articles
+      this.affaireService.replaceArticlesForAffaire(affaire.id, articleIds).subscribe({
+        next: () => this.assignRapportTemplatesAfterCreate(affaire, isCreation),
+        error: err => {
+          console.error(err);
+          this.assignRapportTemplatesAfterCreate(affaire, isCreation);
+        },
+      });
+    } else {
+      this.onSaveSuccess(affaire, isCreation);
     }
 
     this.loadSocietesAssociees();
