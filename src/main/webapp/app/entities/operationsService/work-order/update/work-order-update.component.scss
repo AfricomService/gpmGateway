@@ -27,7 +27,6 @@
   max-width: 100%;
 }
 
-/* ============ TOOLBAR ============ */
 .cu-toolbar {
   display: flex;
   align-items: center;
@@ -92,7 +91,6 @@
   }
 }
 
-/* ============ BOUTONS TOOLBAR ============ */
 .btn-cu-save {
   display: flex;
   align-items: center;
@@ -142,7 +140,6 @@
   }
 }
 
-/* ============ ACCORDEON ============ */
 .cu-accordion {
   display: flex;
   flex-direction: column;
@@ -160,7 +157,6 @@
   &.open {
     border-color: var(--cp-accent);
     box-shadow: 0 10px 24px -18px rgba(47, 111, 237, 0.5);
-    /* Permet aux listes déroulantes (ng-select) de dépasser du cadre de l'accordéon ouvert */
     overflow: visible;
   }
 }
@@ -228,8 +224,6 @@
     margin-bottom: 0.2rem;
   }
 
-  /* Espace entre les lignes de champs : remplace le mb-3 (1rem) du HTML.
-     !important nécessaire car Bootstrap déclare .mb-3 avec !important. */
   .row {
     --bs-gutter-x: 1rem;
   }
@@ -253,7 +247,6 @@ textarea.cu-input {
   resize: vertical;
 }
 
-/* ============ CHECKBOX / SWITCH ============ */
 .cu-checkbox-field {
   display: flex;
   align-items: center;
@@ -305,7 +298,6 @@ textarea.cu-input {
   }
 }
 
-/* ============ SELECT AFFAIRE + BOUTON MODAL ============ */
 .cu-affaire-selector {
   display: flex;
   align-items: stretch;
@@ -354,7 +346,6 @@ textarea.cu-input {
   }
 }
 
-/* ============ INFORMATION CLIENT (colonnes) ============ */
 .cu-client-columns {
   display: flex;
   gap: 1.5rem;
@@ -435,14 +426,12 @@ textarea.cu-input {
   }
 }
 
-/* ============ CHAMP CLIENT (lecture seule) ============ */
 .form-control[readonly] {
   background: var(--cp-surface-hover);
   color: var(--cp-text-muted);
   cursor: default;
 }
 
-/* ============ OPTIONS : LIGNE TOGGLE + STEPPER ============ */
 .cu-option-row {
   display: flex;
   align-items: center;
@@ -526,7 +515,6 @@ textarea.cu-input {
   }
 }
 
-/* ============ LARGEUR DE LA FENÊTRE MODALE SCAN PJCARE (ng-bootstrap) ============ */
 ::ng-deep .scan-modal-window {
   .modal-dialog {
     max-width: 700px;
@@ -539,7 +527,6 @@ textarea.cu-input {
   }
 }
 
-/* ============ CONTENU VIDE (accordéons en attente de contenu) ============ */
 .cu-empty-panel {
   display: flex;
   align-items: center;
@@ -551,7 +538,6 @@ textarea.cu-input {
   font-style: italic;
 }
 
-/* ============ BADGE COMPTEUR DANS L'EN-TÊTE DE L'ACCORDÉON ============ */
 .cu-accordion-count {
   background: var(--cp-accent-soft);
   color: var(--cp-accent);
@@ -589,7 +575,6 @@ textarea.cu-input {
   margin-bottom: 0.6rem;
 }
 
-/* ============ MESSAGE D'ERREUR TECHNICIEN (conflit de disponibilité) ============ */
 .cu-technicien-error {
   color: #c0362c;
   background: #fde2e1;
@@ -613,9 +598,6 @@ textarea.cu-input {
   }
 }
 
-// ============================================================
-// MODAL RENOMMER PJ
-// ============================================================
 .rename-pj-overlay {
   position: fixed;
   top: 0;
@@ -705,7 +687,7 @@ textarea.cu-input {
   background: var(--cp-surface-hover);
   border-radius: 0 0 12px 12px;
 }
-/* ============ OPTIONS : LISTE DES JOURS PRÉVUS ============ */
+
 .cu-jours-title {
   font-size: 0.9rem;
   color: var(--cp-text-muted);
@@ -735,7 +717,7 @@ textarea.cu-input {
 .cu-jours-label {
   font-weight: 700;
 }
-/* ============ OPTIONS : PARAMÈTRES PAR JOUR (checkpoints) ============ */
+
 .cu-jours-grid {
   display: flex;
   flex-direction: column;
@@ -787,18 +769,18 @@ textarea.cu-input {
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background: #ffffff; /* blanc = faux */
+    background: #ffffff;
     border: 1.5px solid #c3cad6;
     transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   }
 
   &.checked .cu-checkpoint {
-    background: #1c9c4f; /* vert = vrai */
+    background: #1c9c4f;
     border-color: #1c9c4f;
     box-shadow: 0 0 0 3px rgba(28, 156, 79, 0.2);
   }
 }
-/* ============ OPTIONS : TOTAUX (hébergements, nuits, déplacements) ============ */
+
 .cu-totaux {
   display: flex;
   flex-wrap: wrap;
@@ -834,7 +816,7 @@ textarea.cu-input {
   font-size: 0.8rem;
   font-weight: 700;
 }
-/* ============ OPTIONS : BOUTON ENREGISTRER ============ */
+
 .cu-options-header {
   display: flex;
   align-items: center;
@@ -892,7 +874,6 @@ textarea.cu-input {
   }
 }
 
-/* ============ ARTICLES ASSOCIES : LISTE (identique à Détails Commande du bon de commande) ============ */
 .cu-item-remove {
   width: 30px;
   height: 30px;
@@ -965,8 +946,6 @@ textarea.cu-input {
   text-align: center;
 }
 
-/* Champs de quantité : même rendu que .cu-accordion-body .form-control du bon de commande.
-   Sélecteur plus spécifique que .form-control-sm de Bootstrap pour que le style s'applique. */
 .cu-accordion-body .cu-item-qte .form-control {
   border-radius: 10px;
   border: 1px solid var(--cp-border);
@@ -985,7 +964,6 @@ textarea.cu-input {
   }
 }
 
-/* ============ MODAL TICKET RM ============ */
 .rm-count {
   margin-left: 0.4rem;
   padding: 0.1rem 0.5rem;
@@ -1043,7 +1021,6 @@ textarea.cu-input {
   text-align: center;
 }
 
-/* ============ LARGEUR DE LA FENÊTRE MODALE TICKET RM ============ */
 ::ng-deep .rm-ticket-modal-window {
   .modal-dialog {
     max-width: 1500px;
@@ -1090,7 +1067,6 @@ textarea.cu-input {
   }
 }
 
-/* ============ EXECUTION SUR SITE : TICKETS RM ============ */
 .rm-table {
   display: flex;
   flex-direction: column;
@@ -1116,8 +1092,6 @@ textarea.cu-input {
   color: var(--cp-text-muted);
 }
 
-.rm-table-row {
-/* ============ EQUIPES : GRILLE LECTURE SEULE + EDIT PAR LIGNE ============ */
 .cu-equipes-grid {
   display: flex;
   flex-direction: column;
@@ -1186,7 +1160,7 @@ textarea.cu-input {
 
 .rm-table-row-clickable {
   cursor: pointer;
-  user-select: none; /* évite la sélection de texte lors du double-clic */
+  user-select: none;
   transition: border-color 0.15s ease, background 0.15s ease;
 
   &:hover {
@@ -1212,6 +1186,9 @@ textarea.cu-input {
   .rm-line-value-readonly {
     background: #f1f5f9;
     color: #94a3b8;
+  }
+}
+
 .cu-equipes-label {
   font-weight: 700;
   font-size: 0.9rem;
@@ -1229,7 +1206,6 @@ textarea.cu-input {
   justify-content: flex-end;
 }
 
-/* Une ligne par bénéficiaire : même hauteur dans la colonne Valeur et la colonne Note pour rester alignées */
 .cu-equipes-line {
   display: flex;
   align-items: center;
@@ -1298,7 +1274,6 @@ textarea.cu-input {
   }
 }
 
-/* ============ BOUTON DE TRANSITION DE STATUT ============ */
 .btn-cu-transition {
   display: inline-flex;
   align-items: center;
