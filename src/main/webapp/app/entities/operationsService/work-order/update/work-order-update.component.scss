@@ -1117,7 +1117,9 @@ textarea.cu-input {
 }
 
 .rm-table-row {
-/* ============ EQUIPES : GRILLE LECTURE SEULE + EDIT PAR LIGNE ============ */
+  /* ============ EQUIPES : GRILLE LECTURE SEULE + EDIT PAR LIGNE ============ */
+}
+
 .cu-equipes-grid {
   display: flex;
   flex-direction: column;
@@ -1186,7 +1188,7 @@ textarea.cu-input {
 
 .rm-table-row-clickable {
   cursor: pointer;
-  user-select: none; /* évite la sélection de texte lors du double-clic */
+  user-select: none;
   transition: border-color 0.15s ease, background 0.15s ease;
 
   &:hover {
@@ -1212,6 +1214,9 @@ textarea.cu-input {
   .rm-line-value-readonly {
     background: #f1f5f9;
     color: #94a3b8;
+  }
+}
+
 .cu-equipes-label {
   font-weight: 700;
   font-size: 0.9rem;
@@ -1229,7 +1234,6 @@ textarea.cu-input {
   justify-content: flex-end;
 }
 
-/* Une ligne par bénéficiaire : même hauteur dans la colonne Valeur et la colonne Note pour rester alignées */
 .cu-equipes-line {
   display: flex;
   align-items: center;
