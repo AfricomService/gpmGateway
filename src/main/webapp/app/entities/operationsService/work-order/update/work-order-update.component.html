@@ -1428,7 +1428,10 @@
                   [class.selected]="selectedRmLineTypeIds.has(lt.id)"
                 >
                   <input type="checkbox" [checked]="selectedRmLineTypeIds.has(lt.id)" (change)="toggleRmLineType(lt.id)" />
-                  <span class="rm-select-item-label">{{ lt.label }}</span>
+                  <span class="rm-select-item-label">
+                    {{ lt.label }}
+                    <small class="text-muted ms-1" *ngIf="lt.code">({{ lt.code }})</small>
+                  </span>
 
                   <input
                     type="text"

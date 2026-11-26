@@ -81,6 +81,9 @@ const SITE_PAGE_SIZE = 15;
 const RESPONSABLE_ROLE_CODE = 'MANAGER';
 const TECHNICIEN_ROLE_CODE = 'TECHNIQUE';
 
+/** Line types (codes RM) sélectionnés par défaut, quel que soit le template choisi. */
+const RM_DEFAULT_LINE_TYPE_CODES = ['B4', 'B7', 'B41', 'B12'];
+
 @Component({
   selector: 'jhi-work-order-update',
   templateUrl: './work-order-update.component.html',
@@ -162,9 +165,11 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     return this.filterRmByLabel(this.rmFilesDefs, this.rmFilesDefSearch);
   }
 
-  private filterRmByLabel<T extends { label: string }>(items: T[], term: string): T[] {
+  private filterRmByLabel<T extends { label: string; code?: string | null }>(items: T[], term: string): T[] {
     const search = this.normalizeText(term);
-    return search ? items.filter(item => this.normalizeText(item.label).includes(search)) : items;
+    return search
+      ? items.filter(item => this.normalizeText(item.label).includes(search) || this.normalizeText(item.code).includes(search))
+      : items;
   }
 
   get currentStatut(): string {
@@ -627,7 +632,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
         }
         this.rmLineTypes = lineTypes;
         this.rmFilesDefs = filesDefs;
-        this.preselectRmLineTypesFromArticles(); // <-- ajout
+        this.preselectRmLineTypes(); // <-- remplace preselectRmLineTypesFromArticles()
         this.loadingRmDetails = false;
       },
       error: () => {
@@ -651,25 +656,40 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
    * Ex. : article "00_3000000_0000125" => line type "AF_00_3000000_0000125".
    * Comparaison sans accents ni casse, et en ignorant les espaces.
    */
-  preselectRmLineTypesFromArticles(): void {
-    if (this.chosenArticles.length === 0 || this.rmLineTypes.length === 0) {
+  /**
+   * Présélectionne les line types :
+   *  - ceux dont le code figure dans RM_DEFAULT_LINE_TYPE_CODES (correspondance exacte, donc B4 ≠ B41)
+   *  - ceux dont le code vaut "AF_" + code d'un article déjà associé au WO
+   * Puis place les line types sélectionnés en tête de liste (ordre d'origine conservé dans chaque groupe).
+   */
+  private preselectRmLineTypes(): void {
+    if (this.rmLineTypes.length === 0) {
       return;
     }
+
+    const defaultCodes = new Set(RM_DEFAULT_LINE_TYPE_CODES.map(code => this.normalizeText(code)));
 
     const articleCodes = new Set(this.chosenArticles.map(sel => this.normalizeText(sel.article.code)).filter(code => code.length > 0));
 
     this.rmLineTypes.forEach(lt => {
       const ltCode = this.normalizeText(lt.code);
 
-      if (!ltCode.startsWith('af_')) {
+      if (ltCode.length === 0) {
         return;
       }
 
-      const articleCode = ltCode.substring(3); // retire "af_"
-      if (articleCodes.has(articleCode)) {
+      const isDefault = defaultCodes.has(ltCode);
+      const isArticle = ltCode.startsWith('af_') && articleCodes.has(ltCode.substring(3));
+
+      if (isDefault || isArticle) {
         this.selectedRmLineTypeIds.add(lt.id);
       }
     });
+
+    // Sélectionnés en premier (tri stable : l'ordre relatif d'origine est conservé)
+    this.rmLineTypes = [...this.rmLineTypes].sort(
+      (a, b) => Number(this.selectedRmLineTypeIds.has(b.id)) - Number(this.selectedRmLineTypeIds.has(a.id))
+    );
   }
 
   toggleRmFilesDef(id: number): void {
