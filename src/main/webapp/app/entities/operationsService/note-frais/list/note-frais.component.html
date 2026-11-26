@@ -66,8 +66,8 @@
             <td>
               <span class="nf-beneficiaire">{{ beneficiaireName(item.contactSocieteId) }}</span>
             </td>
-            <td>{{ item.dateDebut | formatMediumDatetime }}</td>
-            <td>{{ item.dateFin | formatMediumDatetime }}</td>
+            <td>{{ item.dateDebut | formatMediumDate }}</td>
+            <td>{{ item.dateFin | formatMediumDate }}</td>
             <td>
               <span class="nf-montant">{{ item.montantTotale | number: '1.2-2' }}</span>
             </td>
