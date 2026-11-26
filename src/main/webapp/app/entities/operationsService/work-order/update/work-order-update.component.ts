@@ -28,7 +28,6 @@ import { forkJoin, EMPTY } from 'rxjs';
 
 import { SocieteService } from 'app/entities/projectService/societe/service/societe.service';
 import { ISociete } from 'app/entities/projectService/societe/societe.model';
-import { map } from 'rxjs/operators';
 
 import { AffaireSelectorModalComponent } from 'app/entities/financeService/bon-commande/affaire-selector-modal/affaire-selector-modal.component';
 import { SiteSelectorModalComponent } from 'app/entities/financeService/bon-commande/site-selector-modal/site-selector-modal.component';
@@ -582,7 +581,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     protected parametrageDeplacementService: ParametrageDeplacementService,
     protected woArticlesService: WoArticlesService,
     protected articleService: ArticleService,
-    protected rmTicketService: RmTicketService
+    protected rmTicketService: RmTicketService,
     protected societeService: SocieteService,
     protected accountService: AccountService,
     protected missionService: MissionService
@@ -656,6 +655,14 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
       n++;
     }
     return `EXE-${n}-${wo}`;
+  }
+
+  private normalizeText(value?: string | null): string {
+    return (value ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toLowerCase();
   }
 
   rmStatusClass(statut?: string | null): string {
