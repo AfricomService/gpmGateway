@@ -58,6 +58,7 @@ export interface IRmTicketResponse {
 export class RmTicketService {
   // Microservice that hosts the TestController (adjust the service name if needed)
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/test', 'operationsservice');
+  protected resourceUrlProjet = this.applicationConfigService.getEndpointFor('api', 'projectservice');
 
   constructor(protected http: HttpClient, protected applicationConfigService: ApplicationConfigService) {}
 
@@ -98,5 +99,11 @@ export class RmTicketService {
 
   getRapportRequests(uniqueId: string): Observable<IRmRapportRequest[]> {
     return this.http.get<IRmRapportRequest[]>(`${this.resourceUrl}/rapport-requests`, { params: { uniqueId } });
+  }
+
+  getTemplatesByAffaireId(affaireId: number): Observable<IRmTemplate[]> {
+    return this.http.get<IRmTemplate[]>(`${this.resourceUrlProjet}/rapport-templates/by-affaire-id`, {
+      params: { affaireId },
+    });
   }
 }

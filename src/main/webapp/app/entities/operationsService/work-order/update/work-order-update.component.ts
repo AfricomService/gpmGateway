@@ -528,8 +528,13 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.rmFilesDefSearch = '';
     this.rmTicketError = '';
 
-    if (this.rmTemplates.length === 0) {
-      this.loadRmTemplates();
+    const affaireId = this.editForm.get('affaireId')?.value;
+
+    if (affaireId) {
+      this.loadRmTemplates(Number(affaireId));
+    } else {
+      this.rmTemplates = [];
+      this.rmTicketError = 'Veuillez sélectionner une affaire avant de créer un ticket RM.';
     }
     if (this.rmUsers.length === 0) {
       this.loadRmUsers();
@@ -542,17 +547,23 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     });
   }
 
-  private loadRmTemplates(): void {
+  private loadRmTemplates(affaireId: number): void {
     this.loadingRmTemplates = true;
-    this.rmTicketService.getTemplates().subscribe({
+    this.rmTemplates = [];
+
+    this.rmTicketService.getTemplatesByAffaireId(affaireId).subscribe({
       next: templates => {
-        this.rmTemplates = templates;
+        this.rmTemplates = templates ?? [];
         this.loadingRmTemplates = false;
+
+        if (this.rmTemplates.length === 0) {
+          this.rmTicketError = 'Aucun template RM associé à cette affaire.';
+        }
       },
       error: () => {
         this.rmTemplates = [];
         this.loadingRmTemplates = false;
-        this.rmTicketError = 'Impossible de charger les templates RM.';
+        this.rmTicketError = 'Impossible de charger les templates RM de cette affaire.';
       },
     });
   }
