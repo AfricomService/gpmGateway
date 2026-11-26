@@ -13,6 +13,8 @@ export interface IRmTemplate {
 export interface IRmLineType {
   id: number;
   label: string;
+  code?: string | null;
+  inputType?: string | null;
 }
 
 export interface IRmFilesDefinition {
@@ -105,5 +107,17 @@ export class RmTicketService {
     return this.http.get<IRmTemplate[]>(`${this.resourceUrlProjet}/rapport-templates/by-affaire-id`, {
       params: { affaireId },
     });
+  }
+
+  /**
+   * POST /rapport-requests/editLineDataNewGPM?rapportRequestId=..&newValue=..&lineDataKey=..&lineDataType=..
+   */
+  editLineData(rapportRequestId: number, newValue: string, lineDataKey: string, lineDataType: string): Observable<void> {
+    const params = new HttpParams()
+      .set('rapportRequestId', rapportRequestId)
+      .set('newValue', newValue)
+      .set('lineDataKey', lineDataKey)
+      .set('lineDataType', lineDataType);
+    return this.http.post<void>(`${this.resourceUrl}/rapport-requests/editLineDataNewGPM`, null, { params });
   }
 }

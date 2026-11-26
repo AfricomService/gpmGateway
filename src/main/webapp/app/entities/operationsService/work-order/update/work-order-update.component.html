@@ -1421,9 +1421,26 @@
                 <div *ngIf="!loadingRmDetails && rmLineTypes.length > 0 && filteredRmLineTypes.length === 0" class="rm-select-empty">
                   Aucun résultat
                 </div>
-                <label class="rm-select-item" *ngFor="let lt of filteredRmLineTypes" [class.selected]="selectedRmLineTypeIds.has(lt.id)">
+
+                <label
+                  class="rm-select-item rm-select-item-with-value"
+                  *ngFor="let lt of filteredRmLineTypes"
+                  [class.selected]="selectedRmLineTypeIds.has(lt.id)"
+                >
                   <input type="checkbox" [checked]="selectedRmLineTypeIds.has(lt.id)" (change)="toggleRmLineType(lt.id)" />
-                  <span>{{ lt.label }}</span>
+                  <span class="rm-select-item-label">{{ lt.label }}</span>
+
+                  <input
+                    type="text"
+                    class="form-control form-control-sm rm-line-value-input"
+                    [ngModel]="rmLineTypeValues[lt.id]"
+                    [attr.type]="lt.inputType === 'InputNumeric' ? 'number' : 'text'"
+                    [ngModelOptions]="{ standalone: true }"
+                    [readonly]="!selectedRmLineTypeIds.has(lt.id)"
+                    [class.rm-line-value-readonly]="!selectedRmLineTypeIds.has(lt.id)"
+                    placeholder="Valeur initiale"
+                    (ngModelChange)="rmLineTypeValues[lt.id] = $event"
+                  />
                 </label>
               </div>
             </div>

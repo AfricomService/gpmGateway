@@ -1,8 +1,8 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, Subject, Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs/operators';
+import { concatMap, from, last, Observable, of, Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, finalize, map, switchMap } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { WorkOrderFormService, WorkOrderFormGroup } from './work-order-form.service';
@@ -100,6 +100,9 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   rmModalRef?: NgbModalRef;
   rmClient = '';
   rmReference = '';
+
+  /** Valeurs initiales saisies par line type (clé = lineTypeId). */
+  rmLineTypeValues: { [lineTypeId: number]: string } = {};
 
   rmRequests: IRmRapportRequest[] = [];
   loadingRmRequests = false;
@@ -607,6 +610,7 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
     this.selectedRmFilesDefIds.clear();
     this.rmLineTypeSearch = '';
     this.rmFilesDefSearch = '';
+    this.rmLineTypeValues = {};
 
     if (!template) {
       return;
@@ -633,7 +637,12 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
   }
 
   toggleRmLineType(id: number): void {
-    this.selectedRmLineTypeIds.has(id) ? this.selectedRmLineTypeIds.delete(id) : this.selectedRmLineTypeIds.add(id);
+    if (this.selectedRmLineTypeIds.has(id)) {
+      this.selectedRmLineTypeIds.delete(id);
+      delete this.rmLineTypeValues[id];
+    } else {
+      this.selectedRmLineTypeIds.add(id);
+    }
   }
 
   toggleRmFilesDef(id: number): void {
@@ -657,10 +666,13 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
         lineTypeIds: Array.from(this.selectedRmLineTypeIds),
         filesDefIds: Array.from(this.selectedRmFilesDefIds),
       })
-      .pipe(finalize(() => (this.creatingRmTicket = false)))
+      .pipe(
+        finalize(() => (this.creatingRmTicket = false)),
+        concatMap(created => (created?.id !== null && created?.id !== undefined ? this.applyInitialLineValues(created.id) : of(null)))
+      )
       .subscribe({
-        next: res => {
-          this.rmTicketSuccess = `Ticket créé dans RM (réf. ${res?.reference ?? this.rmReference}).`;
+        next: () => {
+          this.rmTicketSuccess = `Ticket créé dans RM (réf. ${this.rmReference}).`;
           this.rmModalRef?.close();
           this.loadRmRequests();
           this.cdr.detectChanges();
@@ -669,6 +681,65 @@ export class WorkOrderUpdateComponent implements OnInit, OnDestroy {
           this.rmTicketError = err?.error?.detail ?? err?.error?.message ?? 'Échec de la création du ticket dans RM.';
         },
       });
+  }
+
+  /**
+   * Boucle séquentielle sur les line types sélectionnés AYANT une valeur initiale.
+   * Séquentiel (et non parallèle) pour éviter les écritures concurrentes sur le même rapport request.
+   */
+  // applyInitialLineValues(rapportRequestId: number): Observable<void> {
+  //   const valuedLines = this.rmLineTypes
+  //     .filter(lt => this.selectedRmLineTypeIds.has(lt.id))
+  //     .map(lt => ({
+  //       lt,
+  //       value: (this.rmLineTypeValues[lt.id] ?? '').trim(),
+  //     }))
+  //     .filter(e => e.value !== '');
+  //
+  //   if (valuedLines.length === 0) {
+  //     return of(void 0);
+  //   }
+  //
+  //   return from(valuedLines).pipe(
+  //     concatMap(e =>
+  //       this.rmTicketService.editLineData(
+  //         rapportRequestId,
+  //         e.value,
+  //         e.lt.code ?? String(e.lt.id),
+  //         e.lt.inputType ?? 'TEXT'
+  //       )
+  //     ),
+  //     last(),
+  //     map(() => void 0)
+  //   );
+  // }
+
+  /**
+   * Boucle séquentielle sur les line types sélectionnés AYANT une valeur initiale :
+   * chaque appel editLineData renvoie le DTO mis à jour, qui est passé à l'appel suivant.
+   */
+  applyInitialLineValues(created: any): Observable<any> {
+    const valuedLines = this.rmLineTypes
+      .filter(lt => this.selectedRmLineTypeIds.has(lt.id))
+      .map(lt => ({
+        lt,
+        value: (this.rmLineTypeValues[lt.id] ?? '').trim(),
+      }))
+      .filter(e => e.value !== '');
+
+    if (valuedLines.length === 0) {
+      return of(created);
+    }
+
+    let current = created;
+
+    return from(valuedLines).pipe(
+      concatMap(e =>
+        this.rmTicketService.editLineData(current, e.value, e.lt.code ?? String(e.lt.id), e.lt.inputType ?? 'TEXT').pipe(map(() => current))
+      ),
+      last(),
+      map(() => current)
+    );
   }
 
   ngOnInit(): void {

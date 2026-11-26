@@ -1160,3 +1160,23 @@ textarea.cu-input {
     background: var(--cp-accent-soft);
   }
 }
+
+.rm-select-item-with-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .rm-select-item-label {
+    flex: 1;
+  }
+
+  .rm-line-value-input {
+    width: 140px;
+    flex-shrink: 0;
+  }
+
+  .rm-line-value-readonly {
+    background: #f1f5f9;
+    color: #94a3b8;
+  }
+}
